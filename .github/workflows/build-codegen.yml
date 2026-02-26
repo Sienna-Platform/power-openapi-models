@@ -1,0 +1,35 @@
+name: Build Codegen Image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Dockerfile"
+      - "scripts/**"
+  workflow_dispatch:
+
+permissions:
+  packages: write
+
+env:
+  IMAGE: ghcr.io/nrel-sienna/power-openapi-models/codegen:latest
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE }}

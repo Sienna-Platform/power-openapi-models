@@ -11,7 +11,7 @@ permissions:
   packages: read
 
 env:
-  CODEGEN_IMAGE: ghcr.io/myorg/power-codegen:latest
+  CODEGEN_IMAGE: ghcr.io/nrel-sienna/power-openapi-models/codegen:latest
 
 jobs:
   check-and-update:
@@ -24,7 +24,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          LATEST=$(gh release view --repo myorg/data-schemas --json tagName -q .tagName)
+          LATEST=$(gh release view --repo NREL-Sienna/SiennaSchemas --json tagName -q .tagName)
           CURRENT=$(cat .schema-version 2>/dev/null || echo "none")
           echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
           echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
@@ -36,7 +36,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release download ${{ steps.schema.outputs.latest }} \
-            --repo myorg/data-schemas --pattern '*.tar.gz' --dir /tmp
+            --repo NREL-Sienna/SiennaSchemas --pattern '*.tar.gz' --dir /tmp
           tar -xzf /tmp/schemas-*.tar.gz -C /tmp
 
       - name: Login to GHCR
@@ -54,7 +54,7 @@ jobs:
             -v /tmp/schemas:/schemas:ro \
             -v ${{ github.workspace }}:/output \
             $CODEGEN_IMAGE \
-            --target python --schemas /schemas --output /output
+            /schemas /output
           echo "${{ steps.schema.outputs.latest }}" > .schema-version
 
       - name: Open Pull Request
@@ -64,7 +64,7 @@ jobs:
           branch: auto/schema-${{ steps.schema.outputs.latest }}
           title: "chore: update to schema ${{ steps.schema.outputs.latest }}"
           body: |
-            Auto-generated from [data-schemas ${{ steps.schema.outputs.latest }}](https://github.com/myorg/data-schemas/releases/tag/${{ steps.schema.outputs.latest }}).
+            Auto-generated from [SiennaSchemas ${{ steps.schema.outputs.latest }}](https://github.com/NREL-Sienna/SiennaSchemas/releases/tag/${{ steps.schema.outputs.latest }}).
 
             **Review checklist:**
             - [ ] Generated models look correct
