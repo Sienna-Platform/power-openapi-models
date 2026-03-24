@@ -31,8 +31,6 @@ def fix_thermal_generation_cost_start_up(content: str) -> tuple[str, bool]:
     start_up field, but its type is ``float | StartUpStages``. Pydantic
     requires all discriminated-union variants to be BaseModel subclasses,
     so the discriminator must be removed.
-
-    See: https://github.com/koxudaxi/datamodel-code-generator/issues/2174
     """
     fixed = re.sub(
         r'(start_up: float \| StartUpStages = Field\([^)]*?)'

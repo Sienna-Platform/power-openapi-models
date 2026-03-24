@@ -4,7 +4,8 @@ PKG_DIR := src/power_openapi_models
 CODEGEN := datamodel-codegen --input-file-type openapi \
 	--output-model-type pydantic_v2.BaseModel \
 	--formatters ruff-format \
-	--use-enum-values-in-discriminator
+	--use-enum-values-in-discriminator \
+	--disable-timestamp
 CORE_REF := --external-ref-mapping "Core/common.json=power_openapi_models.core.models"
 
 .PHONY: generate generate-docker clean validate

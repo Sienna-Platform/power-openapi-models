@@ -27,7 +27,7 @@ def test_import_operations_models():
     """Verify operations models can be imported."""
     from power_openapi_models.operations import models
 
-    assert hasattr(models, "AcBus") or hasattr(models, "ACBus")
+    assert hasattr(models, "ACBus")
 
 
 def test_simple_model_roundtrip():
