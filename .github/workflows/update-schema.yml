@@ -53,9 +53,19 @@ jobs:
           docker run --rm \
             -v /tmp/schemas:/schemas:ro \
             -v ${{ github.workspace }}:/output \
-            $CODEGEN_IMAGE \
-            /schemas /output
+            $CODEGEN_IMAGE
           echo "${{ steps.schema.outputs.latest }}" > .schema-version
+
+      - uses: actions/setup-python@v5
+        if: steps.schema.outputs.changed == 'true'
+        with:
+          python-version: "3.12"
+
+      - name: Validate
+        if: steps.schema.outputs.changed == 'true'
+        run: |
+          pip install -e ".[dev]"
+          make validate
 
       - name: Open Pull Request
         if: steps.schema.outputs.changed == 'true'
