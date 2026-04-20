@@ -11,7 +11,7 @@ permissions:
   packages: read
 
 env:
-  CODEGEN_IMAGE: ghcr.io/nrel-sienna/power-openapi-models/codegen:latest
+  CODEGEN_IMAGE: ghcr.io/sienna-platform/power-openapi-models/codegen:latest
 
 jobs:
   check-and-update:
@@ -24,7 +24,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          LATEST=$(gh release view --repo NREL-Sienna/SiennaSchemas --json tagName -q .tagName)
+          LATEST=$(gh release view --repo Sienna-Platform/SiennaSchemas --json tagName -q .tagName)
           CURRENT=$(cat .schema-version 2>/dev/null || echo "none")
           echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
           echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
@@ -36,7 +36,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release download ${{ steps.schema.outputs.latest }} \
-            --repo NREL-Sienna/SiennaSchemas --pattern '*.tar.gz' --dir /tmp
+            --repo Sienna-Platform/SiennaSchemas --pattern '*.tar.gz' --dir /tmp
           tar -xzf /tmp/schemas-*.tar.gz -C /tmp
 
       - name: Login to GHCR
@@ -64,7 +64,7 @@ jobs:
           branch: auto/schema-${{ steps.schema.outputs.latest }}
           title: "chore: update to schema ${{ steps.schema.outputs.latest }}"
           body: |
-            Auto-generated from [SiennaSchemas ${{ steps.schema.outputs.latest }}](https://github.com/NREL-Sienna/SiennaSchemas/releases/tag/${{ steps.schema.outputs.latest }}).
+            Auto-generated from [SiennaSchemas ${{ steps.schema.outputs.latest }}](https://github.com/Sienna-Platform/SiennaSchemas/releases/tag/${{ steps.schema.outputs.latest }}).
 
             **Review checklist:**
             - [ ] Generated models look correct

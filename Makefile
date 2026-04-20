@@ -1,4 +1,4 @@
-CODEGEN_IMAGE := ghcr.io/nrel-sienna/power-openapi-models/codegen:latest
+CODEGEN_IMAGE := ghcr.io/sienna-platform/power-openapi-models/codegen:latest
 
 .PHONY: generate generate-local
 
