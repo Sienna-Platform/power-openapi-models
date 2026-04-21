@@ -1,6 +1,6 @@
 # power-openapi-models
 
-Auto-generated Python models from NREL-Sienna power system OpenAPI schemas.
+Auto-generated Python models from Sienna-Platform power system OpenAPI schemas.
 
 ## Package Structure
 
@@ -34,7 +34,7 @@ from power_openapi_models import operations
 
 ## Regenerating Stubs
 
-Models are auto-generated from OpenAPI schemas in [SiennaSchemas](https://github.com/NREL-Sienna/SiennaSchemas). There are two ways to regenerate locally:
+Models are auto-generated from OpenAPI schemas in [SiennaSchemas](https://github.com/Sienna-Platform/SiennaSchemas). There are two ways to regenerate locally:
 
 ### Via pre-built image (pulls from GHCR)
 
