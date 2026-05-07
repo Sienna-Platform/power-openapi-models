@@ -1,5 +1,5 @@
 SCHEMA_DIR ?= ../SiennaSchemas
-CODEGEN_IMAGE ?= ghcr.io/nrel-sienna/power-openapi-models/codegen:latest
+CODEGEN_IMAGE ?= ghcr.io/sienna-platform/power-openapi-models/codegen:latest
 PKG_DIR := src/power_openapi_models
 CODEGEN := datamodel-codegen --input-file-type openapi \
 	--output-model-type pydantic_v2.BaseModel \
