@@ -1,18 +1,10 @@
 FROM python:3.12-slim-bookworm
 
-# Install Node.js (for openapi-generator-cli) and Java (runtime dependency)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends nodejs npm default-jre-headless && \
+    apt-get install -y --no-install-recommends make && \
     rm -rf /var/lib/apt/lists/*
 
-# Install openapi-generator-cli
-RUN npm install -g @openapitools/openapi-generator-cli
+RUN pip install --no-cache-dir datamodel-code-generator ruff
 
-# Install ruff
-RUN pip install --no-cache-dir ruff
-
-# Copy scripts into the image
-COPY scripts/ /opt/scripts/
-RUN chmod +x /opt/scripts/*.sh
-
-ENTRYPOINT ["/opt/scripts/generate.sh"]
+WORKDIR /output
+ENTRYPOINT ["make", "generate", "SCHEMA_DIR=/schemas"]
