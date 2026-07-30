@@ -3,8 +3,9 @@
 
 from __future__ import annotations
 from enum import Enum
-from typing import Literal
-from pydantic import BaseModel, Field, RootModel
+from typing import Any, Literal
+from pydantic import AwareDatetime, BaseModel, Field, RootModel
+from uuid import UUID
 
 
 class ACBusType(Enum):
@@ -13,6 +14,13 @@ class ACBusType(Enum):
     REF = "REF"
     ISOLATED = "ISOLATED"
     SLACK = "SLACK"
+
+
+class StartUpStages(BaseModel):
+    startup_stages_type: Literal["STAGES"] = "STAGES"
+    cold: float
+    hot: float
+    warm: float
 
 
 class LinearFunctionData(BaseModel):
@@ -28,20 +36,15 @@ class QuadraticFunctionData(BaseModel):
     quadratic_term: float
 
 
-class XYCoords(BaseModel):
-    x: float
-    y: float
-
-
-class ComplexNumber(BaseModel):
-    real: float | None = None
-    imag: float | None = None
-
-
 class UnitSystem(Enum):
     SYSTEM_BASE = "SYSTEM_BASE"
     DEVICE_BASE = "DEVICE_BASE"
     NATURAL_UNITS = "NATURAL_UNITS"
+
+
+class XYCoords(BaseModel):
+    x: float
+    y: float
 
 
 class PiecewiseStepData(BaseModel):
@@ -50,26 +53,29 @@ class PiecewiseStepData(BaseModel):
     y_coords: list[float]
 
 
+class ComplexNumber(BaseModel):
+    real: float | None = None
+    imag: float | None = None
+
+
 class DbdPnts(BaseModel):
     dbd1: float | None = None
     dbd2: float | None = None
 
 
-class DiscreteControlledBranchStatus(Enum):
-    OPEN = "OPEN"
-    CLOSED = "CLOSED"
+class Feature(RootModel[dict[str, bool | int | str]]):
+    root: dict[str, bool | int | str] = Field(..., max_length=1, min_length=1)
 
 
-class DiscreteControlledBranchType(Enum):
-    SWITCH = "SWITCH"
-    BREAKER = "BREAKER"
-    OTHER = "OTHER"
+class ImpedanceUnitBasis(Enum):
+    SYSTEM_BASE = "SYSTEM_BASE"
+    NATURAL_UNITS = "NATURAL_UNITS"
 
 
-class FACTSOperationModes(Enum):
-    OOS = "OOS"
-    NML = "NML"
-    BYP = "BYP"
+class AdmittanceUnitBasis(Enum):
+    SYSTEM_BASE = "SYSTEM_BASE"
+    NATURAL_UNITS = "NATURAL_UNITS"
+    DEVICE_MVAR = "DEVICE_MVAR"
 
 
 class FdbdPnts(BaseModel):
@@ -99,44 +105,14 @@ class StartUp(BaseModel):
     discharge: float | None = None
 
 
-class HydroTurbineType(Enum):
-    UNKNOWN = "UNKNOWN"
-    PELTON = "PELTON"
-    FRANCIS = "FRANCIS"
-    KAPLAN = "KAPLAN"
-    TURGO = "TURGO"
-    CROSSFLOW = "CROSSFLOW"
-    BULB = "BULB"
-    DERIAZ = "DERIAZ"
-    PROPELLER = "PROPELLER"
-    OTHER = "OTHER"
-
-
-class ImpedanceCorrectionTransformerControlMode(Enum):
-    PHASE_SHIFT_ANGLE = "PHASE_SHIFT_ANGLE"
-    TAP_RATIO = "TAP_RATIO"
-
-
 class InOut(BaseModel):
     in_: float | None = Field(None, alias="in")
     out: float | None = None
 
 
-class LoadConformity(Enum):
-    NON_CONFORMING = "NON_CONFORMING"
-    CONFORMING = "CONFORMING"
-    UNDEFINED = "UNDEFINED"
-
-
 class MinMax(BaseModel):
     max: float | None = Field(None, title="Max")
     min: float | None = Field(None, title="Min")
-
-
-class MotorLoadTechnology(Enum):
-    INDUCTION = "INDUCTION"
-    SYNCHRONOUS = "SYNCHRONOUS"
-    UNDETERMINED = "UNDETERMINED"
 
 
 class PrimeMovers(Enum):
@@ -165,25 +141,6 @@ class PrimeMovers(Enum):
     WS = "WS"
 
 
-class PumpHydroStatus(Enum):
-    PUMP = "PUMP"
-    GEN = "GEN"
-    OFF = "OFF"
-
-
-class ReserveDirection(Enum):
-    UP = "UP"
-    DOWN = "DOWN"
-    SYMMETRIC = "SYMMETRIC"
-
-
-class ReservoirDataType(Enum):
-    USABLE_VOLUME = "USABLE_VOLUME"
-    TOTAL_VOLUME = "TOTAL_VOLUME"
-    HEAD = "HEAD"
-    ENERGY = "ENERGY"
-
-
 class ReservoirLocation(Enum):
     HEAD = "HEAD"
     TAIL = "TAIL"
@@ -192,13 +149,6 @@ class ReservoirLocation(Enum):
 class StartUpShutDown(BaseModel):
     startup: float | None = Field(None, title="StartUp")
     shutdown: float | None = Field(None, title="ShutDown")
-
-
-class StartUpStages(BaseModel):
-    startup_stages_type: Literal["STAGES"] = "STAGES"
-    cold: float
-    hot: float
-    warm: float
 
 
 class StorageTech(Enum):
@@ -261,21 +211,6 @@ class ThermalFuels(Enum):
     OTHER = "OTHER"
 
 
-class TransformerControlObjective(Enum):
-    UNDEFINED = "UNDEFINED"
-    VOLTAGE_DISABLED = "VOLTAGE_DISABLED"
-    REACTIVE_POWER_FLOW_DISABLED = "REACTIVE_POWER_FLOW_DISABLED"
-    ACTIVE_POWER_FLOW_DISABLED = "ACTIVE_POWER_FLOW_DISABLED"
-    CONTROL_OF_DC_LINE_DISABLED = "CONTROL_OF_DC_LINE_DISABLED"
-    ASYMETRIC_ACTIVE_POWER_FLOW_DISABLED = "ASYMETRIC_ACTIVE_POWER_FLOW_DISABLED"
-    FIXED = "FIXED"
-    VOLTAGE = "VOLTAGE"
-    REACTIVE_POWER_FLOW = "REACTIVE_POWER_FLOW"
-    ACTIVE_POWER_FLOW = "ACTIVE_POWER_FLOW"
-    CONTROL_OF_DC_LINE = "CONTROL_OF_DC_LINE"
-    ASYMETRIC_ACTIVE_POWER_FLOW = "ASYMETRIC_ACTIVE_POWER_FLOW"
-
-
 class TurbinePump(BaseModel):
     turbine: float
     pump: float
@@ -286,21 +221,83 @@ class UpDown(BaseModel):
     up: float = Field(..., title="Up")
 
 
-class WindingCategory(Enum):
-    TR2W_WINDING = "TR2W_WINDING"
-    PRIMARY_WINDING = "PRIMARY_WINDING"
-    SECONDARY_WINDING = "SECONDARY_WINDING"
-    TERTIARY_WINDING = "TERTIARY_WINDING"
+class GeographicInfo(BaseModel):
+    id: int
+    geo_json: dict[str, Any]
 
 
-class WindingGroupNumber(Enum):
-    UNDEFINED = "UNDEFINED"
-    GROUP_0 = "GROUP_0"
-    GROUP_1 = "GROUP_1"
-    GROUP_5 = "GROUP_5"
-    GROUP_6 = "GROUP_6"
-    GROUP_7 = "GROUP_7"
-    GROUP_11 = "GROUP_11"
+class OwnerCategory(Enum):
+    Component = "Component"
+    SupplementalAttribute = "SupplementalAttribute"
+
+
+class TimeSeriesAssociation(BaseModel):
+    id: int
+    time_series_uuid: UUID = Field(
+        ...,
+        description="UUID of the time series data. May reference inline data or an external store (e.g., HDF5).",
+    )
+    time_series_type: str
+    initial_timestamp: AwareDatetime
+    resolution: str = Field(..., description="ISO 8601 duration (e.g., PT1H, PT5M).")
+    horizon: str | None = Field(
+        None, description="ISO 8601 duration for forecast horizon."
+    )
+    interval: str | None = Field(
+        None, description="ISO 8601 duration for forecast interval."
+    )
+    window_count: int | None = None
+    length: int | None = None
+    name: str = Field(..., description="Time series name (e.g., max_active_power).")
+    owner_id: int = Field(..., description="ID of the owning component.")
+    owner_type: str = Field(..., description="Type name of the owning component.")
+    owner_category: OwnerCategory = Field(
+        ..., description="Whether the owner is component or supplemental attribute"
+    )
+    features: list[Feature]
+    scaling_factor_multiplier: str | None = Field(
+        None,
+        description="Dot-encoded function name like PowerSystems.get_max_active_power.",
+    )
+    metadata_uuid: UUID = Field(
+        ..., description="Usually unique for each association, but not necessarily"
+    )
+    units: str | None = Field(
+        None,
+        description="Unit string for the series values; must be a unit from the Core/units.json vocabulary for the series' quantity type.",
+    )
+
+
+class PollutantType(Enum):
+    CO2 = "CO2"
+    CO2E = "CO2E"
+    CH4 = "CH4"
+    N2O = "N2O"
+    NOX = "NOX"
+    SO2 = "SO2"
+    PM25 = "PM25"
+    PM10 = "PM10"
+    HG = "HG"
+    HAP = "HAP"
+    CUSTOM = "CUSTOM"
+
+
+class EmissionBasis(Enum):
+    FUEL_INPUT = "FUEL_INPUT"
+    POWER_OUTPUT = "POWER_OUTPUT"
+
+
+class MassUnit(Enum):
+    KG = "KG"
+    LB = "LB"
+    SHORT_TON = "SHORT_TON"
+    METRIC_TON = "METRIC_TON"
+
+
+class EnergyUnit(Enum):
+    MMBTU = "MMBTU"
+    GJ = "GJ"
+    MWH = "MWH"
 
 
 class PiecewiseLinearData(BaseModel):
@@ -308,11 +305,12 @@ class PiecewiseLinearData(BaseModel):
     points: list[XYCoords]
 
 
-class InputOutputCurve(BaseModel):
-    curve_type: Literal["INPUT_OUTPUT"]
-    function_data: QuadraticFunctionData | LinearFunctionData | PiecewiseLinearData = (
+class AverageRateCurve(BaseModel):
+    curve_type: Literal["AVERAGE_RATE"]
+    function_data: LinearFunctionData | QuadraticFunctionData | PiecewiseLinearData = (
         Field(..., discriminator="function_type")
     )
+    initial_input: float | None = None
     input_at_zero: float | None = None
 
 
@@ -341,30 +339,11 @@ class FunctionData(
     ) = Field(..., discriminator="function_type", title="FunctionData")
 
 
-class TwoTerminalLoss(RootModel[InputOutputCurve | IncrementalCurve]):
-    root: InputOutputCurve | IncrementalCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-                "input_at_zero": 0,
-            }
-        ),
-        discriminator="curve_type",
-        title="TwoTerminalLoss",
-    )
-
-
-class AverageRateCurve(BaseModel):
-    curve_type: Literal["AVERAGE_RATE"]
-    function_data: LinearFunctionData | QuadraticFunctionData | PiecewiseLinearData = (
+class InputOutputCurve(BaseModel):
+    curve_type: Literal["INPUT_OUTPUT"]
+    function_data: QuadraticFunctionData | LinearFunctionData | PiecewiseLinearData = (
         Field(..., discriminator="function_type")
     )
-    initial_input: float | None = None
     input_at_zero: float | None = None
 
 
@@ -382,23 +361,28 @@ class FuelCurve(BaseModel):
     vom_cost: InputOutputCurve
 
 
+class TwoTerminalLoss(RootModel[InputOutputCurve | IncrementalCurve]):
+    root: InputOutputCurve | IncrementalCurve = Field(
+        {
+            "curve_type": "INPUT_OUTPUT",
+            "function_data": {
+                "function_type": "LINEAR",
+                "constant_term": 0,
+                "proportional_term": 0,
+            },
+            "input_at_zero": 0,
+        },
+        discriminator="curve_type",
+        title="TwoTerminalLoss",
+        validate_default=True,
+    )
+
+
 class CostCurve(BaseModel):
     power_units: UnitSystem
     value_curve: ValueCurve
     variable_cost_type: Literal["COST"]
-    vom_cost: InputOutputCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-                "input_at_zero": 0,
-            }
-        )
-    )
+    vom_cost: InputOutputCurve
 
 
 class ProductionVariableCostCurve(RootModel[CostCurve | FuelCurve]):
@@ -435,29 +419,28 @@ class LoadCost(BaseModel):
 class RenewableGenerationCost(BaseModel):
     cost_type: Literal["RENEWABLE"] = "RENEWABLE"
     curtailment_cost: CostCurve | None = Field(
-        default_factory=lambda: CostCurve.model_validate(
-            {
-                "variable_cost_type": "COST",
-                "value_curve": {
-                    "curve_type": "INPUT_OUTPUT",
-                    "function_data": {
-                        "function_type": "LINEAR",
-                        "constant_term": 0,
-                        "proportional_term": 0,
-                    },
-                    "input_at_zero": 0,
+        {
+            "variable_cost_type": "COST",
+            "value_curve": {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
                 },
-                "vom_cost": {
-                    "curve_type": "INPUT_OUTPUT",
-                    "function_data": {
-                        "function_type": "LINEAR",
-                        "constant_term": 0,
-                        "proportional_term": 0,
-                    },
-                    "input_at_zero": 0,
+                "input_at_zero": 0,
+            },
+            "vom_cost": {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
                 },
-            }
-        )
+                "input_at_zero": 0,
+            },
+        },
+        validate_default=True,
     )
     variable: CostCurve
     fixed: float | None = 0.0
@@ -475,6 +458,36 @@ class ThermalGenerationCost(BaseModel):
         description="Start-up cost can take linear or multi-stage cost",
     )
     variable: ProductionVariableCostCurve
+
+
+class ThermalRenewableGenerationCost(
+    RootModel[ThermalGenerationCost | RenewableGenerationCost]
+):
+    root: ThermalGenerationCost | RenewableGenerationCost = Field(
+        ..., discriminator="cost_type", title="ThermalRenewableGenerationCost"
+    )
+
+
+class MarketBidCost(BaseModel):
+    cost_type: Literal["MARKET_BID"] = "MARKET_BID"
+    no_load_cost: InputOutputCurve = Field(..., description="No load cost.")
+    start_up: StartUpStages = Field(
+        ...,
+        description="Start-up cost at different stages of the thermal cycle (hot, warm, cold).",
+    )
+    shut_down: InputOutputCurve = Field(..., description="Shut-down cost.")
+    incremental_offer_curves: CostCurve = Field(
+        ...,
+        description="Sell offer curves data as a `CostCurve` of `PiecewiseIncrementalCurve`.",
+    )
+    decremental_offer_curves: CostCurve = Field(
+        ...,
+        description="Buy offer curves data as a `CostCurve` of `PiecewiseIncrementalCurve`.",
+    )
+    ancillary_service_offers: list[int] = Field(
+        ...,
+        description="IDs of the ancillary service components that this market bid offers into.",
+    )
 
 
 class HydroGenerationCost(BaseModel):

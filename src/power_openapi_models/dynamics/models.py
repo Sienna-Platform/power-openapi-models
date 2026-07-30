@@ -3,115 +3,252 @@
 
 from __future__ import annotations
 from power_openapi_models.core.models import DbdPnts, FdbdPnts, MinMax
-from power_openapi_models.core.models import DbdPnts, FdbdPnts, MinMax
 from pydantic import BaseModel, Field
+from power_openapi_models.core.models import DbdPnts, FdbdPnts, MinMax
 
 
 class ActiveRenewableControllerAB(BaseModel):
-    id: int
-    bus_control: int
-    from_branch_control: int
-    to_branch_control: int
-    branch_id_control: int
-    Freq_Flag: bool
-    K_pg: float
-    K_ig: float
-    T_p: float
-    fdbd_pnts: FdbdPnts
-    fe_lim: MinMax
-    P_lim: MinMax
-    T_g: float
-    D_dn: float
-    D_up: float
-    dP_lim: MinMax
-    P_lim_inner: MinMax
-    T_pord: float | None = None
-    P_ref: float | None = 1.0
+    bus_control: int = Field(
+        ...,
+        description="ACBus identification number for voltage control. `0` identifies the local bus connected to this component.",
+    )
+    from_branch_control: int = Field(
+        ...,
+        description="Monitored branch FROM bus number for line drop compensation (if 0 generator power will be used).",
+    )
+    to_branch_control: int = Field(
+        ...,
+        description="Monitored branch TO bus number for line drop compensation (if 0 generator power will be used).",
+    )
+    branch_id_control: int = Field(
+        ...,
+        description="Branch circuit id for line drop compensation. If 0 generator power will be used. in psy this is a string representing the branch name",
+    )
+    Freq_Flag: bool = Field(
+        ..., description="Frequency Flag for REPCA1: `false`: disable, `true`: enable."
+    )
+    K_pg: float = Field(..., description="Active power PI control proportional gain.")
+    K_ig: float = Field(..., description="Active power PI control integral gain.")
+    T_p: float = Field(
+        ..., description="Real power measurement filter time constant. Units: s."
+    )
+    fdbd_pnts: FdbdPnts = Field(
+        ..., description="Frequency error dead band thresholds `(fdbd1, fdbd2)`."
+    )
+    fe_lim: MinMax = Field(
+        ..., description="Upper/Lower limit on frequency error `(fe_min, fe_max)`."
+    )
+    P_lim: MinMax = Field(
+        ..., description="Upper/Lower limit on power reference `(P_min, P_max)`."
+    )
+    T_g: float = Field(..., description="Power Controller lag time constant. Units: s.")
+    D_dn: float = Field(..., description="Droop for over-frequency conditions.")
+    D_up: float = Field(..., description="Droop for under-frequency conditions.")
+    dP_lim: MinMax = Field(
+        ...,
+        description="Upper/Lower limit on power reference ramp rates `(dP_min, dP_max)`.",
+    )
+    P_lim_inner: MinMax = Field(
+        ...,
+        description="Upper/Lower limit on power reference for REECB `(P_min_inner, P_max_inner)`.",
+    )
+    T_pord: float | None = Field(
+        None, description="Power filter time constant REECB time constant. Units: s."
+    )
+    P_ref: float | None = Field(1.0, description="Reference Power Set-point.")
 
 
 class RECurrentControlB(BaseModel):
-    id: int
-    Q_Flag: bool
-    PQ_Flag: bool
-    Vdip_lim: MinMax
-    T_rv: float
-    dbd_pnts: DbdPnts
-    K_qv: float
-    Iqinj_lim: MinMax
-    V_ref0: float
-    K_vp: float
-    K_vi: float
-    T_iq: float
-    I_max: float
+    Q_Flag: bool = Field(..., description="Q Flag used for I_qinj.")
+    PQ_Flag: bool = Field(..., description="PQ Flag used for the Current Limit Logic.")
+    Vdip_lim: MinMax = Field(
+        ..., description="Limits for Voltage Dip Logic `(Vdip, Vup)`."
+    )
+    T_rv: float = Field(..., description="Voltage Filter Time Constant. Units: s.")
+    dbd_pnts: DbdPnts = Field(
+        ..., description="Voltage error deadband thresholds `(dbd1, dbd2)`."
+    )
+    K_qv: float = Field(
+        ...,
+        description="Reactive current injection gain during over and undervoltage conditions.",
+    )
+    Iqinj_lim: MinMax = Field(..., description="Limits for Iqinj `(I_qh1, I_ql1)`.")
+    V_ref0: float = Field(
+        ...,
+        description="User defined reference. If 0, `PowerSimulationsDynamics.jl` initializes to initial terminal voltage.",
+    )
+    K_vp: float = Field(
+        ..., description="Voltage regulator proportional gain (used when QFlag = 1)."
+    )
+    K_vi: float = Field(
+        ..., description="Voltage regulator integral gain (used when QFlag = 1)."
+    )
+    T_iq: float = Field(
+        ...,
+        description="Time constant for low-pass filter for state q_V when QFlag = 0. Units: s.",
+    )
+    I_max: float = Field(..., description="Maximum limit on total converter current.")
 
 
 class ReactiveRenewableControllerAB(BaseModel):
-    id: int
-    bus_control: int
-    from_branch_control: int
-    to_branch_control: int
-    branch_id_control: str
-    VC_Flag: bool
-    Ref_Flag: bool
-    PF_Flag: bool
-    V_Flag: bool
-    T_fltr: float
-    K_p: float
-    K_i: float
-    T_ft: float
-    T_fv: float
-    V_frz: float
-    R_c: float
-    X_c: float
-    K_c: float
-    e_lim: MinMax
-    dbd_pnts: DbdPnts
-    Q_lim: MinMax
-    T_p: float
-    Q_lim_inner: MinMax
-    V_lim: MinMax
-    K_qp: float
-    K_qi: float
-    Q_ref: float | None = 1.0
-    V_ref: float | None = 1.0
+    bus_control: int = Field(
+        ...,
+        description="ACBus identification number for voltage control. `0` identifies the local bus connected to this component.",
+    )
+    from_branch_control: int = Field(
+        ...,
+        description="Monitored branch FROM bus identification number for line drop compensation (if 0 generator power will be used).",
+    )
+    to_branch_control: int = Field(
+        ...,
+        description="Monitored branch TO bus identification number for line drop compensation (if 0 generator power will be used).",
+    )
+    branch_id_control: str = Field(
+        ...,
+        description="Branch circuit id for line drop compensation (as a string). If 0 generator power will be used.",
+    )
+    VC_Flag: bool = Field(..., description="Voltage Compensator Flag for REPCA1.")
+    Ref_Flag: bool = Field(
+        ...,
+        description="Flag for Reactive Power Control for REPCA1. `false`: Q-control, `true`: V-control.",
+    )
+    PF_Flag: bool = Field(
+        ...,
+        description="Flag for Power Factor Control for Outer Control of REECB1. `false`: Q-control, `true`: Power Factor Control.",
+    )
+    V_Flag: bool = Field(
+        ...,
+        description="Flag for Voltage Control for Outer Control of REECB1. `false`: Voltage Control, `true`: Q-Control.",
+    )
+    T_fltr: float = Field(
+        ..., description="Voltage or Q-power of REPCA Filter Time Constant. Units: s."
+    )
+    K_p: float = Field(..., description="Reactive power PI control proportional gain.")
+    K_i: float = Field(..., description="Reactive power PI control integral gain.")
+    T_ft: float = Field(..., description="Reactive power lead time constant. Units: s.")
+    T_fv: float = Field(..., description="Reactive power lag time constant. Units: s.")
+    V_frz: float = Field(
+        ...,
+        description="Voltage below which state xiq_oc (integrator state) is freeze.",
+    )
+    R_c: float = Field(
+        ..., description="Line drop compensation resistance (used when VC_Flag = 1)."
+    )
+    X_c: float = Field(
+        ..., description="Line drop compensation reactance (used when VC_Flag = 1)."
+    )
+    K_c: float = Field(
+        ..., description="Reactive current compensation gain (used when VC_Flag = 0)."
+    )
+    e_lim: MinMax = Field(
+        ...,
+        description="Upper/Lower limit on Voltage or Q-power deadband output `(e_min, e_max)`.",
+    )
+    dbd_pnts: DbdPnts = Field(
+        ..., description="Voltage or Q-power error dead band thresholds `(dbd1, dbd2)`."
+    )
+    Q_lim: MinMax = Field(
+        ...,
+        description="Upper/Lower limit on reactive power V/Q control in REPCA `(Q_min, Q_max)`.",
+    )
+    T_p: float = Field(
+        ...,
+        description="Active power lag time constant in REECB. Used only when PF_Flag = 1. Units: s.",
+    )
+    Q_lim_inner: MinMax = Field(
+        ...,
+        description="Upper/Lower limit on reactive power input in REECB `(Q_min_inner, Q_max_inner)`. Only used when V_Flag = 1.",
+    )
+    V_lim: MinMax = Field(
+        ...,
+        description="Upper/Lower limit on reactive power PI controller in REECB `(V_min, V_max)`. Only used when V_Flag = 1.",
+    )
+    K_qp: float = Field(
+        ...,
+        description="Reactive power regulator proportional gain (used when V_Flag = 1).",
+    )
+    K_qi: float = Field(
+        ...,
+        description="Reactive power regulator integral gain (used when V_Flag = 1).",
+    )
+    Q_ref: float | None = Field(1.0, description="Reference Reactive Power Set-point.")
+    V_ref: float | None = Field(1.0, description="Reference Voltage Set-point.")
 
 
 class RenewableEnergyConverterTypeA(BaseModel):
-    id: int
-    T_g: float
-    Rrpwr: float
-    Brkpt: float
-    Zerox: float
-    Lvpl1: float
-    Vo_lim: float
-    Lv_pnts: MinMax
-    Io_lim: float
-    T_fltr: float
-    K_hv: float
-    Iqr_lims: MinMax
-    Accel: float
-    Lvpl_sw: bool
-    Q_ref: float | None = 1.0
-    R_source: float | None = 0.0
-    X_source: float | None = 100000.0
+    T_g: float = Field(..., description="Converter time constant. Units: s.")
+    Rrpwr: float = Field(
+        ..., description="Low Voltage Power Logic (LVPL) ramp rate limit."
+    )
+    Brkpt: float = Field(..., description="LVPL characteristic voltage 2.")
+    Zerox: float = Field(..., description="LVPL characteristic voltage 1.")
+    Lvpl1: float = Field(..., description="LVPL gain.")
+    Vo_lim: float = Field(
+        ..., description="Voltage limit for high voltage reactive current management."
+    )
+    Lv_pnts: MinMax = Field(
+        ...,
+        description="Voltage points for low voltage active current management (Lvpnt0, Lvpnt1).",
+    )
+    Io_lim: float = Field(
+        ...,
+        description="Current limit for high voltage reactive current management (specified as a negative value).",
+    )
+    T_fltr: float = Field(
+        ...,
+        description="Voltage filter time constant for low voltage active current management. Units: s.",
+    )
+    K_hv: float = Field(
+        ...,
+        description="Overvoltage compensation gain used in the high voltage reactive current management.",
+    )
+    Iqr_lims: MinMax = Field(
+        ...,
+        description="Limit on rate of change for reactive current (Iqr_min, Iqr_max).",
+    )
+    Accel: float = Field(..., description="Acceleration factor.")
+    Lvpl_sw: bool = Field(
+        ...,
+        description="Low voltage power logic (LVPL) switch. (`false`: LVPL not present, `true`: LVPL present).",
+    )
+    Q_ref: float | None = Field(
+        1.0, description="Initial condition of reactive power from power flow."
+    )
+    R_source: float | None = Field(
+        0.0, description="Output resistor used for the Thevenin Equivalent."
+    )
+    X_source: float | None = Field(
+        100000.0, description="Output reactance used for the Thevenin Equivalent."
+    )
 
 
 class RoundRotorMachine(BaseModel):
-    id: int
-    R: float
-    Td0_p: float
-    Td0_pp: float
-    Tq0_p: float
-    Tq0_pp: float
-    Xd: float
-    Xq: float
-    Xd_p: float
-    Xq_p: float
-    Xd_pp: float
-    Xl: float
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    R: float = Field(..., description="Armature resistance.")
+    Td0_p: float = Field(
+        ..., description="Time constant of transient d-axis voltage. Units: s."
+    )
+    Td0_pp: float = Field(
+        ..., description="Time constant of sub-transient d-axis voltage. Units: s."
+    )
+    Tq0_p: float = Field(
+        ..., description="Time constant of transient q-axis voltage. Units: s."
+    )
+    Tq0_pp: float = Field(
+        ..., description="Time constant of sub-transient q-axis voltage. Units: s."
+    )
+    Xd: float = Field(..., description="Reactance after EMF in d-axis.")
+    Xq: float = Field(..., description="Reactance after EMF in q-axis.")
+    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis.")
+    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis.")
+    Xd_pp: float = Field(
+        ...,
+        description="Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp.",
+    )
+    Xl: float = Field(..., description="Stator leakage reactance.")
     Se: list[float] = Field(
         ...,
-        description="this is meant to be a tuple, should we do this another way?",
+        description="Saturation factor at 1 and 1.2 pu flux: S(1.0) = B(|psi_pp|-A)^2.",
         max_length=2,
         min_length=2,
     )
@@ -123,24 +260,26 @@ class RoundRotorMachine(BaseModel):
 
 
 class SEXS(BaseModel):
-    id: int
-    Ta_Tb: float
-    Tb: float
-    K: float
-    Te: float
-    V_lim: MinMax
-    V_ref: float | None = 1.0
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    Ta_Tb: float = Field(..., description="Ratio of lead and lag time constants.")
+    Tb: float = Field(..., description="Lag time constant. Units: s.")
+    K: float = Field(..., description="Gain.")
+    Te: float = Field(..., description="Field circuit time constant. Units: s.")
+    V_lim: MinMax = Field(..., description="Field voltage limits.")
+    V_ref: float | None = Field(1.0, description="Reference Voltage Set-point.")
 
 
 class SteamTurbineGov1(BaseModel):
-    id: int
-    R: float
-    T1: float
-    valve_position_limits: MinMax
-    T2: float
-    T3: float
-    D_T: float
-    DB_h: float
-    DB_l: float
-    T_rate: float
-    P_ref: float | None = None
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    R: float = Field(..., description="Droop parameter.")
+    T1: float = Field(..., description="Governor time constant. Units: s.")
+    valve_position_limits: MinMax = Field(..., description="Valve position limits.")
+    T2: float = Field(..., description="Lead Lag Lead Time constant. Units: s.")
+    T3: float = Field(..., description="Lead Lag Lag Time constant. Units: s.")
+    D_T: float = Field(..., description="Turbine Damping.")
+    DB_h: float = Field(..., description="Deadband for overspeed.")
+    DB_l: float = Field(..., description="Deadband for underspeed.")
+    T_rate: float = Field(
+        ..., description="Turbine Rate. If zero, generator base is used. Units: MW."
+    )
+    P_ref: float | None = Field(None, description="Reference Power Set-point.")
