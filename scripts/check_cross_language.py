@@ -27,6 +27,12 @@ construction. Both honour the schema; only Julia can be bypassed.
 
 Exit status is non-zero when a real divergence is found, so this is usable as a
 gate. NOTEs alone do not fail the run.
+
+A small, named set of divergences is EXEMPTED (see `EXEMPTIONS` below) rather
+than fixed: each entry is a specific `type.field`, carries a one-line reason,
+and a removal condition — never a category or a wildcard. An exempted
+divergence still prints, under its own heading, so it stays visible; it just
+does not fail the run.
 """
 
 import argparse
@@ -307,14 +313,132 @@ def python_default_value(info):
     return _to_jsonable_python(info.default)
 
 
+# --------------------------------------------------------------------------- #
+# Named exemptions — each keyed by (type, field); field is None for a
+# whole-type divergence. No categories, no wildcards: a schema change that
+# alters the shape of one of these must re-earn its exemption by editing this
+# table, not by matching a pattern. An exempted divergence still prints under
+# its own heading, so it stays visible; it just does not fail the run.
+# --------------------------------------------------------------------------- #
+
+EXEMPTIONS = {
+    ("MarketBidCost1", None): {
+        "reason": (
+            "openapi-generator (Java/julia-client) emits a duplicate struct "
+            "when a schema is reused as a discriminated oneOf branch — "
+            "HybridSystem.operation_cost references MarketBidCost via a "
+            "discriminator mapping, so Julia gets a second, field-identical "
+            "MarketBidCost1. datamodel-codegen reuses the single MarketBidCost "
+            "class for the same field instead of duplicating it (verified: "
+            "Python HybridSystem.operation_cost is typed plain MarketBidCost). "
+            "No surface is actually missing on the Python side."
+        ),
+        "remove_when": (
+            "openapi-generator stops duplicating discriminator-mapped schemas, "
+            "or this checker resolves Julia struct identity by shape instead of "
+            "by name for the type-only-in-Julia category."
+        ),
+    },
+    ("StorageCostStartUpOneOf", None): {
+        "reason": (
+            "Anonymous oneOf branch on StorageCost.start_up. openapi-generator "
+            "names it from parent+field (StorageCostStartUpOneOf); "
+            "datamodel-codegen names the identical-shape model from the "
+            "schema's own title (StartUp). Verified field-for-field identical: "
+            "both have exactly {charge: float|None, discharge: float|None}."
+        ),
+        "remove_when": (
+            "the two generators agree on a naming convention for anonymous "
+            "oneOf branches, or this checker matches by shape instead of name."
+        ),
+    },
+    ("CostCurve", "vom_cost"): {
+        "reason": (
+            "vom_cost is schema-required with a schema-default. Julia's "
+            "check_required always tests every schema-required $ref/object "
+            "field for `=== nothing`, regardless of whether "
+            "materialize_defaults.jl gave it a real default; datamodel-codegen "
+            "correctly drops `required` once a default is present. Verified no "
+            "runtime divergence: CostCurve(...) omitting vom_cost succeeds and "
+            "passes check_required on both sides (the default is never "
+            "`nothing`); an explicit null is rejected on both sides."
+        ),
+        "remove_when": (
+            "openapi-generator's Julia template stops listing a required field "
+            "with a materialized default in check_required (a template/"
+            "upstream change — cannot be done by hand-editing generated code)."
+        ),
+    },
+    ("CostCurve", "power_units"): {
+        "reason": (
+            "power_units is schema-required with a schema-default "
+            "(NATURAL_UNITS). Same root cause as CostCurve.vom_cost: Julia's "
+            "check_required still tests it for `=== nothing` even though its "
+            "kwdef default is never nothing; datamodel-codegen (after this "
+            "task's postprocess fix restoring the default) correctly drops "
+            "`required`. Verified no runtime divergence: CostCurve(...) "
+            "omitting power_units resolves to NATURAL_UNITS on both sides."
+        ),
+        "remove_when": "same as CostCurve.vom_cost.",
+    },
+    ("MarketBidCost", "no_load_cost"): {
+        "reason": (
+            "Same required-with-default pattern as CostCurve.vom_cost. "
+            "Verified no runtime divergence: MarketBidCost(...) omitting "
+            "no_load_cost succeeds and passes check_required on both sides."
+        ),
+        "remove_when": "same as CostCurve.vom_cost.",
+    },
+    ("MarketBidCost", "shut_down"): {
+        "reason": (
+            "Same required-with-default pattern as CostCurve.vom_cost. "
+            "Verified no runtime divergence: MarketBidCost(...) omitting "
+            "shut_down succeeds and passes check_required on both sides."
+        ),
+        "remove_when": "same as CostCurve.vom_cost.",
+    },
+    ("RenewableGenerationCost", "curtailment_cost"): {
+        "reason": (
+            "The schema's own default for curtailment_cost omits power_units "
+            "(relying on CostCurve.power_units' own default), so Julia's "
+            "rendered constructor call (`CostCurve(; variable_cost_type=..., "
+            "value_curve=..., vom_cost=...)`) never mentions power_units in "
+            "source text either. parse_julia_expr evaluates only the keyword "
+            "arguments written in that source text — it does not re-resolve "
+            "CostCurve's own field default for a key the call omits — so the "
+            "parsed Julia value lacks power_units while Python's model_dump() "
+            "of the constructed instance includes every field. Verified no "
+            "runtime divergence: RenewableGenerationCost().curtailment_cost."
+            "power_units == 'NATURAL_UNITS' on both sides."
+        ),
+        "remove_when": (
+            "parse_julia_expr is taught to resolve a referenced type's own "
+            "field defaults for keys a nested constructor call omits (needs "
+            "the type-surface map threaded into the expression parser)."
+        ),
+    },
+}
+
+
 def compare(julia, python):
+    """Return `(problems, notes, shared)`.
+
+    `problems` entries are `(key, message)` pairs, `key = (type, field)` with
+    `field=None` for a whole-type divergence — the lookup key into
+    `EXEMPTIONS`. Splitting a multi-field divergence (e.g. a required-set
+    mismatch naming several fields) into one entry per field keeps each
+    exemption named at exactly the granularity the brief requires: a single
+    `type.field`, never a category.
+    """
     problems, notes = [], []
     shared = sorted(set(julia) & set(python))
 
     only_julia = sorted(set(julia) - set(python))
     only_python = sorted(set(python) - set(julia))
     for name in only_julia:
-        problems.append(f"{name}: present in Julia, absent in Python")
+        problems.append(
+            ((name, None), f"{name}: present in Julia, absent in Python")
+        )
     for name in only_python:
         # Pydantic exposes helper models (RootModel wrappers) Julia has no struct
         # for; report as a note so real gaps stay visible.
@@ -324,24 +448,32 @@ def compare(julia, python):
         j, p = julia[name], python[name]
         jf, pf = set(j["fields"]), set(p["fields"])
         for field in sorted(jf - pf):
-            problems.append(f"{name}.{field}: in Julia, missing from Python")
+            problems.append(
+                ((name, field), f"{name}.{field}: in Julia, missing from Python")
+            )
         for field in sorted(pf - jf):
-            problems.append(f"{name}.{field}: in Python, missing from Julia")
+            problems.append(
+                ((name, field), f"{name}.{field}: in Python, missing from Julia")
+            )
 
-        if j["required"] != p["required"]:
-            jonly = sorted(j["required"] - p["required"])
-            ponly = sorted(p["required"] - j["required"])
-            if jonly:
-                problems.append(f"{name}: required only in Julia: {jonly}")
-            if ponly:
-                problems.append(f"{name}: required only in Python: {ponly}")
+        for field in sorted(j["required"] - p["required"]):
+            problems.append(
+                ((name, field), f"{name}.{field}: required only in Julia")
+            )
+        for field in sorted(p["required"] - j["required"]):
+            problems.append(
+                ((name, field), f"{name}.{field}: required only in Python")
+            )
 
         for field in sorted(jf & pf):
             jkind = JULIA_KIND.get(j["fields"][field]["type"])
             pkind = p["fields"][field]["kind"]
             if jkind and pkind and jkind != pkind:
                 problems.append(
-                    f"{name}.{field}: type kind Julia={jkind} Python={pkind}"
+                    (
+                        (name, field),
+                        f"{name}.{field}: type kind Julia={jkind} Python={pkind}",
+                    )
                 )
             # A default on a field that both sides require is unreachable: omitting
             # the field is an error, not a fallback, so a difference there cannot
@@ -354,21 +486,30 @@ def compare(julia, python):
             pd = p["fields"][field]["default"]
             if jd != pd:
                 problems.append(
-                    f"{name}.{field}: default Julia={jd!r} Python={pd!r} "
-                    f"(optional both sides — an omitted field loads differently)"
+                    (
+                        (name, field),
+                        f"{name}.{field}: default Julia={jd!r} Python={pd!r} "
+                        f"(optional both sides — an omitted field loads differently)",
+                    )
                 )
 
         for field in sorted(set(j["enums"]) & set(p["enums"])):
             jv, pv = j["enums"][field], p["enums"][field]
             if sorted(jv) != sorted(pv):
                 problems.append(
-                    f"{name}.{field}: enum values differ "
-                    f"Julia={sorted(jv)} Python={sorted(pv)}"
+                    (
+                        (name, field),
+                        f"{name}.{field}: enum values differ "
+                        f"Julia={sorted(jv)} Python={sorted(pv)}",
+                    )
                 )
         for field in sorted(set(p["enums"]) - set(j["enums"])):
             problems.append(
-                f"{name}.{field}: Python constrains it to an enum, Julia does not "
-                f"validate it at all"
+                (
+                    (name, field),
+                    f"{name}.{field}: Python constrains it to an enum, Julia does "
+                    f"not validate it at all",
+                )
             )
     return problems, notes, shared
 
@@ -389,8 +530,11 @@ def main():
     print(f"Python models:  {len(python)}")
     print(f"Julia enums emitted as bare String aliases: {len(aliases)}\n")
 
-    problems, notes, shared = compare(julia, python)
+    all_problems, notes, shared = compare(julia, python)
     print(f"Compared {len(shared)} shared types.\n")
+
+    failures = [(key, msg) for key, msg in all_problems if key not in EXEMPTIONS]
+    exempted = [(key, msg) for key, msg in all_problems if key in EXEMPTIONS]
 
     if notes:
         print(f"NOTES ({len(notes)}) — not failures:")
@@ -400,14 +544,27 @@ def main():
             print(f"  ...and {len(notes) - 15} more")
         print()
 
-    if problems:
-        print(f"DIVERGENCES ({len(problems)}):")
-        for p in problems:
-            print(f"  {p}")
-        print(f"\n{len(problems)} divergence(s) would break bi-directional loading.")
+    if exempted:
+        print(f"EXEMPTIONS ({len(exempted)}) — named, not failures:")
+        for key, msg in exempted:
+            print(f"  {msg}")
+            print(f"    reason: {EXEMPTIONS[key]['reason']}")
+            print(f"    remove when: {EXEMPTIONS[key]['remove_when']}")
+        print()
+
+    if failures:
+        print(f"DIVERGENCES ({len(failures)}):")
+        for _, msg in failures:
+            print(f"  {msg}")
+        print(f"\n{len(failures)} divergence(s) would break bi-directional loading.")
         return 1
 
-    print("Surfaces agree: field sets, required fields, enum values, kinds, defaults.")
+    print(
+        f"Surfaces agree: field sets, required fields, enum values, kinds, "
+        f"defaults ({len(exempted)} named exemption(s) — see above)."
+        if exempted
+        else "Surfaces agree: field sets, required fields, enum values, kinds, defaults."
+    )
     return 0
 
 

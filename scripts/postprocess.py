@@ -42,8 +42,92 @@ def fix_thermal_generation_cost_start_up(content: str) -> tuple[str, bool]:
     return fixed, fixed != content
 
 
+INPUT_OUTPUT_CURVE_ZERO_DEFAULT = """{
+            "curve_type": "INPUT_OUTPUT",
+            "function_data": {
+                "function_type": "LINEAR",
+                "constant_term": 0,
+                "proportional_term": 0,
+            },
+            "input_at_zero": 0,
+        }"""
+
+# (unique description substring, field name, type) -> the JSON-literal default
+# that should replace the bare `None` datamodel-codegen emitted.
+MISSING_TYPE_LEVEL_DEFAULTS = {
+    "Linear or quadratic loss function with respect to the converter current.": (
+        "loss_function",
+        "InputOutputCurve",
+    ),
+    "Loss model coefficients. It accepts a linear model with a constant loss "
+    "and a proportional loss rate (MW of loss per MW of flow). It also "
+    "accepts a Piecewise loss, with N segments to specify different "
+    "proportional losses for different segments.": ("loss", "TwoTerminalLoss"),
+}
+
+
+def fix_missing_composite_defaults(content: str) -> tuple[str, bool]:
+    """Materialize a $ref field's type-level default when the property omits it.
+
+    `InputOutputCurve` and `TwoTerminalLoss` each carry their own top-level
+    `default` in the schema. Every *other* property that references them
+    bare (e.g. `TwoTerminalLCCLine.loss`, `CostCurve.vom_cost`) repeats that
+    default at the property level, so datamodel-codegen picks it up directly.
+    `InterconnectingConverter.loss_function` and `TwoTerminalGenericHVDCLine.loss`
+    are the two exceptions — they reference the type with no property-level
+    default. SiennaSchemas' spec bundler inlines a bare `$ref`'s target
+    schema (including its default) at the usage site, so the Julia side
+    (which reads the bundled spec) picks it up; datamodel-codegen resolves
+    `$ref`s from the unbundled spec and does not inherit a sibling-less
+    type's own default, so it falls back to `None`. This restores parity
+    with the value both the bundled spec and the Julia side already agree
+    on, without touching SiennaSchemas.
+    """
+    changed = False
+    for description, (field, type_name) in MISSING_TYPE_LEVEL_DEFAULTS.items():
+        pattern = re.compile(
+            rf'(    {re.escape(field)}: {re.escape(type_name)} \| None = Field\(\n)'
+            rf"(        None,\n)"
+            rf'(        description="{re.escape(description)}",\n    \))'
+        )
+        new_content, n = pattern.subn(
+            rf"\1        {INPUT_OUTPUT_CURVE_ZERO_DEFAULT},\n\3", content
+        )
+        if n:
+            content = new_content
+            changed = True
+    return content, changed
+
+
+def fix_costcurve_power_units_default(content: str) -> tuple[str, bool]:
+    """Restore `CostCurve.power_units`'s schema default, dropped by datamodel-codegen.
+
+    `CostCurve.power_units` is schema-`required` *and* schema-`default:
+    NATURAL_UNITS` (Core/common.json). Julia's `@kwdef` constructor honors
+    the field-level default regardless of the required-list, so omitting
+    `power_units` is harmless there. datamodel-codegen drops the default
+    entirely for this required-with-default enum $ref (unlike the sibling
+    `variable_cost_type`/`vom_cost` fields on the same model, which keep
+    theirs), so any literal that omits `power_units` — including
+    `CostCurve`'s own embedded defaults on `RenewableGenerationCost.
+    curtailment_cost`, `MarketBidCost.incremental_offer_curves`, et al. —
+    raises `ValidationError` on first use instead of falling back like
+    Julia does. Only `CostCurve` itself (not `FuelCurve`, whose schema
+    `power_units` has no sibling default) is affected.
+    """
+    pattern = re.compile(
+        r"(class CostCurve\(BaseModel\):\n)(    power_units: UnitSystem\n)"
+    )
+    new_content, n = pattern.subn(
+        r"\1    power_units: UnitSystem = UnitSystem.NATURAL_UNITS\n", content
+    )
+    return new_content, n > 0
+
+
 FIXES = [
     fix_thermal_generation_cost_start_up,
+    fix_missing_composite_defaults,
+    fix_costcurve_power_units_default,
 ]
 
 

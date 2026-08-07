@@ -423,7 +423,7 @@ class TwoTerminalLoss(RootModel[InputOutputCurve | IncrementalCurve]):
 
 
 class CostCurve(BaseModel):
-    power_units: UnitSystem
+    power_units: UnitSystem = UnitSystem.NATURAL_UNITS
     value_curve: ValueCurve
     variable_cost_type: Literal["COST"]
     vom_cost: InputOutputCurve = Field(

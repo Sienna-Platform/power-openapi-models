@@ -2044,7 +2044,15 @@ class TwoTerminalGenericHVDCLine(BaseModel):
         description="Minimum and maximum reactive power limits to the TO node. Units: MVAr.",
     )
     loss: TwoTerminalLoss | None = Field(
-        None,
+        {
+            "curve_type": "INPUT_OUTPUT",
+            "function_data": {
+                "function_type": "LINEAR",
+                "constant_term": 0,
+                "proportional_term": 0,
+            },
+            "input_at_zero": 0,
+        },
         description="Loss model coefficients. It accepts a linear model with a constant loss and a proportional loss rate (MW of loss per MW of flow). It also accepts a Piecewise loss, with N segments to specify different proportional losses for different segments.",
     )
     base_power: float = Field(
@@ -2557,7 +2565,15 @@ class InterconnectingConverter(BaseModel):
         100000000.0, description="Maximum stable dc current limits. Units: A."
     )
     loss_function: InputOutputCurve | None = Field(
-        None,
+        {
+            "curve_type": "INPUT_OUTPUT",
+            "function_data": {
+                "function_type": "LINEAR",
+                "constant_term": 0,
+                "proportional_term": 0,
+            },
+            "input_at_zero": 0,
+        },
         description="Linear or quadratic loss function with respect to the converter current.",
     )
     dc_control: VSCDCControlModes | None = Field(
