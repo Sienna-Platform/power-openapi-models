@@ -37,7 +37,6 @@ class QuadraticFunctionData(BaseModel):
 
 
 class UnitSystem(Enum):
-    SYSTEM_BASE = "SYSTEM_BASE"
     DEVICE_BASE = "DEVICE_BASE"
     NATURAL_UNITS = "NATURAL_UNITS"
 
@@ -64,16 +63,26 @@ class DbdPnts(BaseModel):
 
 
 class Feature(RootModel[dict[str, bool | int | str]]):
-    root: dict[str, bool | int | str] = Field(..., max_length=1, min_length=1)
+    root: dict[str, bool | int | str]
+
+
+class EnergyUnitBasis(Enum):
+    MWH = "MWH"
+    MWMIN = "MWMIN"
 
 
 class ImpedanceUnitBasis(Enum):
-    SYSTEM_BASE = "SYSTEM_BASE"
     NATURAL_UNITS = "NATURAL_UNITS"
+    DEVICE_BASE = "DEVICE_BASE"
 
 
 class AdmittanceUnitBasis(Enum):
-    SYSTEM_BASE = "SYSTEM_BASE"
+    NATURAL_UNITS = "NATURAL_UNITS"
+    DEVICE_MVAR = "DEVICE_MVAR"
+    DEVICE_BASE = "DEVICE_BASE"
+
+
+class ShuntAdmittanceUnitBasis(Enum):
     NATURAL_UNITS = "NATURAL_UNITS"
     DEVICE_MVAR = "DEVICE_MVAR"
 
@@ -226,6 +235,34 @@ class GeographicInfo(BaseModel):
     geo_json: dict[str, Any]
 
 
+class Role(Enum):
+    CT = "CT"
+    CA = "CA"
+
+
+class SupplementalAttributeAssociation(BaseModel):
+    attribute_id: int = Field(
+        ...,
+        description="ID of the supplemental attribute, or of the service, for a membership row.",
+    )
+    entity_id: int = Field(
+        ...,
+        description="ID of the component, or other entity, that the attribute describes or the service contains.",
+    )
+    attribute_type: str = Field(
+        ...,
+        description='Schema title of the referenced supplemental attribute or service (e.g. "EmissionsData", "GeographicInfo", "ThermalPowerPlant", "CombinedCycleBlock", "OnlineReserve"). A free-form string, not an enum: new attribute and service types are added elsewhere in this repo continuously, and a closed enum here would go stale.',
+    )
+    group_index: int | None = Field(
+        None,
+        description="Optional group number within the parent named by attribute_id: the shaft/penstock/PCC number for a ThermalPowerPlant, HydroPowerPlant, or RenewablePowerPlant row, the HRSG index for a CombinedCycleBlock row, or the exclusion group number for an exclusion grouping. Omitted for a plain supplemental attribute or a service membership, neither of which has a group to index.",
+    )
+    role: Role | None = Field(
+        None,
+        description="Optional role of entity_id within the parent named by attribute_id. Meaningful only for a CombinedCycleBlock row, where it is CT (combustion turbine) or CA (combustion-augmented steam); omitted for every other attribute_type.",
+    )
+
+
 class OwnerCategory(Enum):
     Component = "Component"
     SupplementalAttribute = "SupplementalAttribute"
@@ -275,6 +312,8 @@ class PollutantType(Enum):
     N2O = "N2O"
     NOX = "NOX"
     SO2 = "SO2"
+    CO = "CO"
+    VOC = "VOC"
     PM25 = "PM25"
     PM10 = "PM10"
     HG = "HG"
@@ -307,8 +346,8 @@ class PiecewiseLinearData(BaseModel):
 
 class AverageRateCurve(BaseModel):
     curve_type: Literal["AVERAGE_RATE"]
-    function_data: LinearFunctionData | QuadraticFunctionData | PiecewiseLinearData = (
-        Field(..., discriminator="function_type")
+    function_data: LinearFunctionData | PiecewiseStepData = Field(
+        ..., discriminator="function_type"
     )
     initial_input: float | None = None
     input_at_zero: float | None = None
@@ -356,6 +395,10 @@ class ValueCurve(RootModel[InputOutputCurve | IncrementalCurve | AverageRateCurv
 class FuelCurve(BaseModel):
     fuel_cost: str | float
     power_units: UnitSystem
+    startup_fuel_offtake: InputOutputCurve | None = Field(
+        None,
+        description="Fuel consumed during startup, as a curve in the unit's fuel units.",
+    )
     value_curve: ValueCurve
     variable_cost_type: Literal["FUEL"]
     vom_cost: InputOutputCurve
@@ -363,18 +406,19 @@ class FuelCurve(BaseModel):
 
 class TwoTerminalLoss(RootModel[InputOutputCurve | IncrementalCurve]):
     root: InputOutputCurve | IncrementalCurve = Field(
-        {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
-            },
-            "input_at_zero": 0,
-        },
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+                "input_at_zero": 0,
+            }
+        ),
         discriminator="curve_type",
         title="TwoTerminalLoss",
-        validate_default=True,
     )
 
 
@@ -382,7 +426,50 @@ class CostCurve(BaseModel):
     power_units: UnitSystem
     value_curve: ValueCurve
     variable_cost_type: Literal["COST"]
-    vom_cost: InputOutputCurve
+    vom_cost: InputOutputCurve = Field(
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+                "input_at_zero": 0,
+            }
+        )
+    )
+
+
+class RenewableGenerationCost(BaseModel):
+    cost_type: Literal["RENEWABLE"] = "RENEWABLE"
+    curtailment_cost: CostCurve | None = Field(
+        default_factory=lambda: CostCurve.model_validate(
+            {
+                "variable_cost_type": "COST",
+                "value_curve": {
+                    "curve_type": "INPUT_OUTPUT",
+                    "function_data": {
+                        "function_type": "LINEAR",
+                        "constant_term": 0,
+                        "proportional_term": 0,
+                    },
+                    "input_at_zero": 0,
+                },
+                "vom_cost": {
+                    "curve_type": "INPUT_OUTPUT",
+                    "function_data": {
+                        "function_type": "LINEAR",
+                        "constant_term": 0,
+                        "proportional_term": 0,
+                    },
+                    "input_at_zero": 0,
+                },
+            }
+        )
+    )
+    variable: CostCurve
+    fixed: float | None = 0.0
 
 
 class ProductionVariableCostCurve(RootModel[CostCurve | FuelCurve]):
@@ -416,66 +503,40 @@ class LoadCost(BaseModel):
     variable: CostCurve
 
 
-class RenewableGenerationCost(BaseModel):
-    cost_type: Literal["RENEWABLE"] = "RENEWABLE"
-    curtailment_cost: CostCurve | None = Field(
-        {
-            "variable_cost_type": "COST",
-            "value_curve": {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-                "input_at_zero": 0,
-            },
-            "vom_cost": {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-                "input_at_zero": 0,
-            },
-        },
-        validate_default=True,
-    )
-    variable: CostCurve
-    fixed: float | None = 0.0
-
-
-class ThermalGenerationCost(BaseModel):
-    cost_type: Literal["THERMAL"] = "THERMAL"
-    fixed: float = Field(
-        ...,
-        description="Fixed cost of keeping the unit online. For some cost represenations this field can be duplicative",
-    )
-    shut_down: float = Field(..., description="Cost to turn the unit off")
-    start_up: float | StartUpStages = Field(
-        ...,
-        description="Start-up cost can take linear or multi-stage cost",
-    )
-    variable: ProductionVariableCostCurve
-
-
-class ThermalRenewableGenerationCost(
-    RootModel[ThermalGenerationCost | RenewableGenerationCost]
-):
-    root: ThermalGenerationCost | RenewableGenerationCost = Field(
-        ..., discriminator="cost_type", title="ThermalRenewableGenerationCost"
-    )
-
-
 class MarketBidCost(BaseModel):
     cost_type: Literal["MARKET_BID"] = "MARKET_BID"
-    no_load_cost: InputOutputCurve = Field(..., description="No load cost.")
+    no_load_cost: InputOutputCurve = Field(
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+                "input_at_zero": 0,
+            }
+        ),
+        description="No load cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
+    )
     start_up: StartUpStages = Field(
         ...,
         description="Start-up cost at different stages of the thermal cycle (hot, warm, cold).",
     )
-    shut_down: InputOutputCurve = Field(..., description="Shut-down cost.")
+    shut_down: InputOutputCurve = Field(
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+                "input_at_zero": 0,
+            }
+        ),
+        description="Shut-down cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
+    )
     incremental_offer_curves: CostCurve = Field(
         ...,
         description="Sell offer curves data as a `CostCurve` of `PiecewiseIncrementalCurve`.",
@@ -496,7 +557,29 @@ class HydroGenerationCost(BaseModel):
     variable: ProductionVariableCostCurve
 
 
+class ThermalGenerationCost(BaseModel):
+    cost_type: Literal["THERMAL"] = "THERMAL"
+    fixed: float = Field(
+        ...,
+        description="Fixed cost of keeping the unit online. For some cost represenations this field can be duplicative",
+    )
+    shut_down: float = Field(..., description="Cost to turn the unit off")
+    start_up: float | StartUpStages = Field(
+        ...,
+        description="Start-up cost can take linear or multi-stage cost",
+    )
+    variable: ProductionVariableCostCurve
+
+
 class HydroStorageGenerationCost(RootModel[HydroGenerationCost | StorageCost]):
     root: HydroGenerationCost | StorageCost = Field(
         ..., discriminator="cost_type", title="HydroStorageGenerationCost"
+    )
+
+
+class GenericOperationCost(
+    RootModel[ThermalGenerationCost | RenewableGenerationCost | HydroGenerationCost]
+):
+    root: ThermalGenerationCost | RenewableGenerationCost | HydroGenerationCost = Field(
+        ..., discriminator="cost_type", title="GenericOperationCost"
     )
