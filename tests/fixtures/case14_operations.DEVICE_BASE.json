@@ -2120,7 +2120,7 @@
         "active_power_flow": 5.0,
         "parameter_units": "NATURAL_UNITS",
         "r": 2000.0,
-        "transfer_setpoint": 500.0,
+        "transfer_setpoint": 5.0,
         "dc_voltage_units": "NATURAL_UNITS",
         "scheduled_dc_voltage": 1.0,
         "rectifier_bridges": 0,
