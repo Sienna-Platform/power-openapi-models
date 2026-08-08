@@ -563,7 +563,7 @@
         "control_mode": "NML",
         "voltage_setpoint_units": "DEVICE_BASE",
         "voltage_setpoint": 1.0,
-        "max_shunt_current": 9999.0,
+        "max_shunt_current": 99.99,
         "reactive_power_required": 0.0,
         "max_reactive_power": 9999.0,
         "shunt_control_type": "STATCOM",
@@ -631,7 +631,7 @@
           "from": 0.0006,
           "to": 0.0006
         },
-        "rating": 755882.6105567585,
+        "rating": 7558.826105567585,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -655,7 +655,7 @@
           "from": 0.00115,
           "to": 0.00115
         },
-        "rating": 48361.428963218495,
+        "rating": 483.614289632185,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -679,7 +679,7 @@
           "from": 0.00098,
           "to": 0.00098
         },
-        "rating": 14755.207231536653,
+        "rating": 147.55207231536653,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -703,7 +703,7 @@
           "from": 0.00013,
           "to": 0.00013
         },
-        "rating": 22717.29530084371,
+        "rating": 227.1729530084371,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -727,7 +727,7 @@
           "from": 0.001575,
           "to": 0.001575
         },
-        "rating": 55499.94032513398,
+        "rating": 554.9994032513398,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -751,7 +751,7 @@
           "from": 0.00171,
           "to": 0.00171
         },
-        "rating": 14959.408636384827,
+        "rating": 149.59408636384828,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -775,7 +775,7 @@
           "from": 0.00012,
           "to": 0.00012
         },
-        "rating": 89847.23824683383,
+        "rating": 898.4723824683383,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -799,7 +799,7 @@
           "from": 0.002675,
           "to": 0.002675
         },
-        "rating": 8123.567379649153,
+        "rating": 81.23567379649153,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -823,7 +823,7 @@
           "from": 0.00367,
           "to": 0.00367
         },
-        "rating": 27810.68707969224,
+        "rating": 278.1068707969224,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -847,7 +847,7 @@
           "from": 0.00028,
           "to": 0.00028
         },
-        "rating": 2385.1084994058133,
+        "rating": 23.851084994058134,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -871,7 +871,7 @@
           "from": 0.0017,
           "to": 0.0017
         },
-        "rating": 16792.16994937519,
+        "rating": 167.9216994937519,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -895,7 +895,7 @@
           "from": 0.00175,
           "to": 0.00175
         },
-        "rating": 1604.5324162937216,
+        "rating": 16.045324162937217,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -919,7 +919,7 @@
           "from": 0.02817,
           "to": 0.02817
         },
-        "rating": 42929.4910726739,
+        "rating": 429.29491072673903,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -943,7 +943,7 @@
           "from": 0.00251,
           "to": 0.00251
         },
-        "rating": 4966.860129780371,
+        "rating": 49.668601297803704,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -967,7 +967,7 @@
           "from": 0.022,
           "to": 0.022
         },
-        "rating": 97265.07607563623,
+        "rating": 972.6507607563623,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -991,7 +991,7 @@
           "from": 0.001175,
           "to": 0.001175
         },
-        "rating": 14725.255592744421,
+        "rating": 147.2525559274442,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -1015,7 +1015,7 @@
           "from": 0.032,
           "to": 0.032
         },
-        "rating": 5980.88454692927,
+        "rating": 59.8088454692927,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -1039,7 +1039,7 @@
           "from": 0.0229,
           "to": 0.0229
         },
-        "rating": 22043.484147121977,
+        "rating": 220.43484147121978,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -1063,7 +1063,7 @@
           "from": 0.00278,
           "to": 0.00278
         },
-        "rating": 20786.940040991467,
+        "rating": 207.86940040991468,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -1087,7 +1087,7 @@
           "from": 0.0267,
           "to": 0.0267
         },
-        "rating": 2298.4544086538626,
+        "rating": 22.984544086538627,
         "angle_limits": {
           "max": 1.0472,
           "min": -1.0472
@@ -1114,14 +1114,14 @@
         "available": true,
         "bus": 3,
         "base_power": 100.0,
-        "constant_active_power": 200.0,
-        "constant_reactive_power": 500.0,
+        "constant_active_power": 2.0,
+        "constant_reactive_power": 5.0,
         "impedance_active_power": 0.0,
         "impedance_reactive_power": -0.0,
         "current_active_power": 0.0,
         "current_reactive_power": 0.0,
-        "max_constant_active_power": 200.0,
-        "max_constant_reactive_power": 500.0,
+        "max_constant_active_power": 2.0,
+        "max_constant_reactive_power": 5.0,
         "max_impedance_active_power": 0.0,
         "max_impedance_reactive_power": -0.0,
         "max_current_active_power": 0.0,
@@ -1134,17 +1134,17 @@
         "available": true,
         "bus": 4,
         "base_power": 100.0,
-        "constant_active_power": 200.0,
-        "constant_reactive_power": -350.0,
+        "constant_active_power": 2.0,
+        "constant_reactive_power": -3.5,
         "impedance_active_power": 0.0,
         "impedance_reactive_power": -0.0,
-        "current_active_power": 20.0,
+        "current_active_power": 0.2,
         "current_reactive_power": 0.0,
-        "max_constant_active_power": 200.0,
-        "max_constant_reactive_power": -350.0,
+        "max_constant_active_power": 2.0,
+        "max_constant_reactive_power": -3.5,
         "max_impedance_active_power": 0.0,
         "max_impedance_reactive_power": -0.0,
-        "max_current_active_power": 20.0,
+        "max_current_active_power": 0.2,
         "max_current_reactive_power": 0.0,
         "conformity": "CONFORMING"
       },
@@ -1154,14 +1154,14 @@
         "available": true,
         "bus": 5,
         "base_power": 100.0,
-        "constant_active_power": 105.0,
-        "constant_reactive_power": 65.0,
+        "constant_active_power": 1.05,
+        "constant_reactive_power": 0.65,
         "impedance_active_power": 0.0,
         "impedance_reactive_power": -0.0,
         "current_active_power": 0.0,
         "current_reactive_power": 0.0,
-        "max_constant_active_power": 105.0,
-        "max_constant_reactive_power": 65.0,
+        "max_constant_active_power": 1.05,
+        "max_constant_reactive_power": 0.65,
         "max_impedance_active_power": 0.0,
         "max_impedance_reactive_power": -0.0,
         "max_current_active_power": 0.0,
@@ -1174,14 +1174,14 @@
         "available": true,
         "bus": 6,
         "base_power": 100.0,
-        "constant_active_power": 500.0,
-        "constant_reactive_power": 180.0,
+        "constant_active_power": 5.0,
+        "constant_reactive_power": 1.8,
         "impedance_active_power": 0.0,
         "impedance_reactive_power": -0.0,
         "current_active_power": 0.0,
         "current_reactive_power": 0.0,
-        "max_constant_active_power": 500.0,
-        "max_constant_reactive_power": 180.0,
+        "max_constant_active_power": 5.0,
+        "max_constant_reactive_power": 1.8,
         "max_impedance_active_power": 0.0,
         "max_impedance_reactive_power": -0.0,
         "max_current_active_power": 0.0,
@@ -1194,14 +1194,14 @@
         "available": true,
         "bus": 7,
         "base_power": 100.0,
-        "constant_active_power": 500.0,
-        "constant_reactive_power": -350.0,
+        "constant_active_power": 5.0,
+        "constant_reactive_power": -3.5,
         "impedance_active_power": 0.0,
         "impedance_reactive_power": -0.0,
         "current_active_power": 0.0,
         "current_reactive_power": 0.0,
-        "max_constant_active_power": 500.0,
-        "max_constant_reactive_power": -350.0,
+        "max_constant_active_power": 5.0,
+        "max_constant_reactive_power": -3.5,
         "max_impedance_active_power": 0.0,
         "max_impedance_reactive_power": -0.0,
         "max_current_active_power": 0.0,
@@ -1214,14 +1214,14 @@
         "available": true,
         "bus": 8,
         "base_power": 100.0,
-        "constant_active_power": 80.0,
-        "constant_reactive_power": 20.0,
+        "constant_active_power": 0.8,
+        "constant_reactive_power": 0.2,
         "impedance_active_power": 0.0,
         "impedance_reactive_power": -0.0,
         "current_active_power": 0.0,
         "current_reactive_power": 0.0,
-        "max_constant_active_power": 80.0,
-        "max_constant_reactive_power": 20.0,
+        "max_constant_active_power": 0.8,
+        "max_constant_reactive_power": 0.2,
         "max_impedance_active_power": 0.0,
         "max_impedance_reactive_power": -0.0,
         "max_current_active_power": 0.0,
@@ -1234,14 +1234,14 @@
         "available": true,
         "bus": 11,
         "base_power": 100.0,
-        "constant_active_power": 300.0,
-        "constant_reactive_power": 100.0,
+        "constant_active_power": 3.0,
+        "constant_reactive_power": 1.0,
         "impedance_active_power": 0.0,
         "impedance_reactive_power": -0.0,
         "current_active_power": 0.0,
         "current_reactive_power": 0.0,
-        "max_constant_active_power": 300.0,
-        "max_constant_reactive_power": 100.0,
+        "max_constant_active_power": 3.0,
+        "max_constant_reactive_power": 1.0,
         "max_impedance_active_power": 0.0,
         "max_impedance_reactive_power": -0.0,
         "max_current_active_power": 0.0,
@@ -1254,14 +1254,14 @@
         "available": true,
         "bus": 12,
         "base_power": 100.0,
-        "constant_active_power": 100.0,
-        "constant_reactive_power": -500.0,
+        "constant_active_power": 1.0,
+        "constant_reactive_power": -5.0,
         "impedance_active_power": 0.0,
         "impedance_reactive_power": -0.0,
         "current_active_power": 0.0,
         "current_reactive_power": 0.0,
-        "max_constant_active_power": 100.0,
-        "max_constant_reactive_power": -500.0,
+        "max_constant_active_power": 1.0,
+        "max_constant_reactive_power": -5.0,
         "max_impedance_active_power": 0.0,
         "max_impedance_reactive_power": -0.0,
         "max_current_active_power": 0.0,
@@ -1274,14 +1274,14 @@
         "available": true,
         "bus": 12,
         "base_power": 100.0,
-        "constant_active_power": 150.0,
-        "constant_reactive_power": -500.0,
+        "constant_active_power": 1.5,
+        "constant_reactive_power": -5.0,
         "impedance_active_power": 0.0,
         "impedance_reactive_power": -0.0,
         "current_active_power": 0.0,
         "current_reactive_power": 0.0,
-        "max_constant_active_power": 150.0,
-        "max_constant_reactive_power": -500.0,
+        "max_constant_active_power": 1.5,
+        "max_constant_reactive_power": -5.0,
         "max_impedance_active_power": 0.0,
         "max_impedance_reactive_power": -0.0,
         "max_current_active_power": 0.0,
@@ -1294,14 +1294,14 @@
         "available": true,
         "bus": 13,
         "base_power": 100.0,
-        "constant_active_power": 250.0,
-        "constant_reactive_power": 100.0,
+        "constant_active_power": 2.5,
+        "constant_reactive_power": 1.0,
         "impedance_active_power": 0.0,
         "impedance_reactive_power": -0.0,
         "current_active_power": 0.0,
         "current_reactive_power": 0.0,
-        "max_constant_active_power": 250.0,
-        "max_constant_reactive_power": 100.0,
+        "max_constant_active_power": 2.5,
+        "max_constant_reactive_power": 1.0,
         "max_impedance_active_power": 0.0,
         "max_impedance_reactive_power": -0.0,
         "max_current_active_power": 0.0,
@@ -1314,14 +1314,14 @@
         "available": true,
         "bus": 14,
         "base_power": 100.0,
-        "constant_active_power": 325.0,
-        "constant_reactive_power": 23.0,
+        "constant_active_power": 3.25,
+        "constant_reactive_power": 0.23,
         "impedance_active_power": 0.0,
         "impedance_reactive_power": -0.0,
         "current_active_power": 0.0,
         "current_reactive_power": 0.0,
-        "max_constant_active_power": 325.0,
-        "max_constant_reactive_power": 23.0,
+        "max_constant_active_power": 3.25,
+        "max_constant_reactive_power": 0.23,
         "max_impedance_active_power": 0.0,
         "max_impedance_reactive_power": -0.0,
         "max_current_active_power": 0.0,
@@ -1334,14 +1334,14 @@
         "available": true,
         "bus": 15,
         "base_power": 100.0,
-        "constant_active_power": 250.0,
-        "constant_reactive_power": 100.0,
+        "constant_active_power": 2.5,
+        "constant_reactive_power": 1.0,
         "impedance_active_power": 0.0,
         "impedance_reactive_power": -0.0,
         "current_active_power": 0.0,
         "current_reactive_power": 0.0,
-        "max_constant_active_power": 250.0,
-        "max_constant_reactive_power": 100.0,
+        "max_constant_active_power": 2.5,
+        "max_constant_reactive_power": 1.0,
         "max_impedance_active_power": 0.0,
         "max_impedance_reactive_power": -0.0,
         "max_current_active_power": 0.0,
@@ -1354,14 +1354,14 @@
         "available": true,
         "bus": 16,
         "base_power": 100.0,
-        "constant_active_power": 500.0,
-        "constant_reactive_power": -250.0,
+        "constant_active_power": 5.0,
+        "constant_reactive_power": -2.5,
         "impedance_active_power": 0.0,
         "impedance_reactive_power": -0.0,
         "current_active_power": 0.0,
         "current_reactive_power": 0.0,
-        "max_constant_active_power": 500.0,
-        "max_constant_reactive_power": -250.0,
+        "max_constant_active_power": 5.0,
+        "max_constant_reactive_power": -2.5,
         "max_impedance_active_power": 0.0,
         "max_impedance_reactive_power": -0.0,
         "max_current_active_power": 0.0,
@@ -1436,20 +1436,20 @@
         "available": true,
         "status": true,
         "bus": 3,
-        "active_power": 2088.167,
-        "reactive_power": -2446.801,
-        "rating": 14140.721410168579,
+        "active_power": 20.88167,
+        "reactive_power": -24.46801,
+        "rating": 141.40721410168578,
         "active_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "reactive_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "ramp_limits": {
-          "down": 9999.0,
-          "up": 9999.0
+          "down": 99.99,
+          "up": 99.99
         },
         "operation_cost": {
           "cost_type": "THERMAL",
@@ -1491,20 +1491,20 @@
         "available": true,
         "status": true,
         "bus": 3,
-        "active_power": 1089.478,
-        "reactive_power": -1276.592,
-        "rating": 14140.721410168579,
+        "active_power": 10.89478,
+        "reactive_power": -12.765920000000001,
+        "rating": 141.40721410168578,
         "active_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "reactive_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "ramp_limits": {
-          "down": 9999.0,
-          "up": 9999.0
+          "down": 99.99,
+          "up": 99.99
         },
         "operation_cost": {
           "cost_type": "THERMAL",
@@ -1546,20 +1546,20 @@
         "available": true,
         "status": true,
         "bus": 4,
-        "active_power": 300.0,
-        "reactive_power": -50.0,
-        "rating": 14140.721410168579,
+        "active_power": 3.0,
+        "reactive_power": -0.5,
+        "rating": 141.40721410168578,
         "active_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "reactive_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "ramp_limits": {
-          "down": 9999.0,
-          "up": 9999.0
+          "down": 99.99,
+          "up": 99.99
         },
         "operation_cost": {
           "cost_type": "THERMAL",
@@ -1601,20 +1601,20 @@
         "available": true,
         "status": true,
         "bus": 8,
-        "active_power": 200.0,
-        "reactive_power": -50.0,
-        "rating": 14140.721410168579,
+        "active_power": 2.0,
+        "reactive_power": -0.5,
+        "rating": 141.40721410168578,
         "active_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "reactive_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "ramp_limits": {
-          "down": 9999.0,
-          "up": 9999.0
+          "down": 99.99,
+          "up": 99.99
         },
         "operation_cost": {
           "cost_type": "THERMAL",
@@ -1656,20 +1656,20 @@
         "available": true,
         "status": true,
         "bus": 10,
-        "active_power": 500.2730000000001,
-        "reactive_power": -4.997,
-        "rating": 14140.721410168579,
+        "active_power": 5.002730000000001,
+        "reactive_power": -0.04997,
+        "rating": 141.40721410168578,
         "active_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "reactive_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "ramp_limits": {
-          "down": 9999.0,
-          "up": 9999.0
+          "down": 99.99,
+          "up": 99.99
         },
         "operation_cost": {
           "cost_type": "THERMAL",
@@ -1711,20 +1711,20 @@
         "available": true,
         "status": true,
         "bus": 12,
-        "active_power": 300.0,
-        "reactive_power": 2708.623,
-        "rating": 14140.721410168579,
+        "active_power": 3.0,
+        "reactive_power": 27.08623,
+        "rating": 141.40721410168578,
         "active_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "reactive_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "ramp_limits": {
-          "down": 9999.0,
-          "up": 9999.0
+          "down": 99.99,
+          "up": 99.99
         },
         "operation_cost": {
           "cost_type": "THERMAL",
@@ -1766,20 +1766,20 @@
         "available": true,
         "status": true,
         "bus": 13,
-        "active_power": 90.0,
-        "reactive_power": 784.759,
-        "rating": 14140.721410168579,
+        "active_power": 0.9,
+        "reactive_power": 7.84759,
+        "rating": 141.40721410168578,
         "active_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "reactive_power_limits": {
-          "max": 9999.0,
-          "min": -9999.0
+          "max": 99.99,
+          "min": -99.99
         },
         "ramp_limits": {
-          "down": 9999.0,
-          "up": 9999.0
+          "down": 99.99,
+          "up": 99.99
         },
         "operation_cost": {
           "cost_type": "THERMAL",
@@ -1887,7 +1887,7 @@
           "min": 0.9
         },
         "number_of_tap_positions": 33,
-        "rating": 1.210002566077499e6,
+        "rating": 12100.025660774989,
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
@@ -1914,7 +1914,7 @@
           "min": 0.9
         },
         "number_of_tap_positions": 33,
-        "rating": 1.210002566077499e6,
+        "rating": 12100.025660774989,
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
@@ -1941,7 +1941,7 @@
           "min": 0.9
         },
         "number_of_tap_positions": 33,
-        "rating": 1.210002566077499e6,
+        "rating": 12100.025660774989,
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
@@ -1968,7 +1968,7 @@
           "min": 0.9
         },
         "number_of_tap_positions": 33,
-        "rating": 1.0e6,
+        "rating": 10000.0,
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
@@ -1995,7 +1995,7 @@
           "min": 0.9
         },
         "number_of_tap_positions": 33,
-        "rating": 1.0e6,
+        "rating": 10000.0,
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
@@ -2022,7 +2022,7 @@
           "min": 0.9
         },
         "number_of_tap_positions": 33,
-        "rating": 1.0e6,
+        "rating": 10000.0,
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
@@ -2049,7 +2049,7 @@
           "min": 0.9
         },
         "number_of_tap_positions": 33,
-        "rating": 1.0e6,
+        "rating": 10000.0,
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
@@ -2076,7 +2076,7 @@
           "min": 0.9
         },
         "number_of_tap_positions": 33,
-        "rating": 1.0e6,
+        "rating": 10000.0,
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
@@ -2103,7 +2103,7 @@
           "min": 0.9
         },
         "number_of_tap_positions": 33,
-        "rating": 1.0e6,
+        "rating": 10000.0,
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
@@ -2117,7 +2117,7 @@
         "name": "BUS 111-BUS 104-i_LINE       1",
         "available": true,
         "arc": 111,
-        "active_power_flow": 500.0,
+        "active_power_flow": 5.0,
         "parameter_units": "NATURAL_UNITS",
         "r": 2000.0,
         "transfer_setpoint": 500.0,

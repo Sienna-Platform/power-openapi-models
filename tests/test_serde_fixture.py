@@ -134,3 +134,31 @@ def test_device_base_spot_checks():
     bus = doc["components"]["ACBus"][0]
     assert bus["base_voltage"] == 138.0
     assert len(doc["supplemental_attribute_associations"]) == 9
+
+
+def test_device_base_actually_converts_from_natural_units():
+    """Regression for the gap this vendoring round fixed: the previously-vendored
+    DEVICE_BASE fixture was byte-identical to NATURAL_UNITS except for the
+    ``unit_system`` tag itself, so neither spot-check test above (which reads one
+    fixture at a time) would have caught a regression back to that state. A Line's
+    ``rating`` (ApparentPower, MVA, no per-field unit-basis discriminator) is
+    genuinely per-unit-on-own-``base_power`` in DEVICE_BASE: assert the documented
+    physical relationship directly, across every line, and that at least one
+    actually differs numerically.
+    """
+    natural = json.loads(
+        (FIXTURES_DIR / "case14_operations.NATURAL_UNITS.json").read_text()
+    )
+    device = json.loads(
+        (FIXTURES_DIR / "case14_operations.DEVICE_BASE.json").read_text()
+    )
+    natural_lines = {c["id"]: c for c in natural["components"]["Line"]}
+    device_lines = {c["id"]: c for c in device["components"]["Line"]}
+    assert natural_lines.keys() == device_lines.keys()
+    differed = 0
+    for id_, nat in natural_lines.items():
+        dev = device_lines[id_]
+        assert dev["rating"] == pytest.approx(nat["rating"] / nat["base_power"])
+        if dev["rating"] != nat["rating"]:
+            differed += 1
+    assert differed > 0
