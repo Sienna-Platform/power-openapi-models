@@ -1,0 +1,2988 @@
+{
+  "base_power": 100.0,
+  "components": {
+    "ACBus": [
+      {
+        "id": 3,
+        "number": 101,
+        "name": "BUS 101",
+        "available": true,
+        "bustype": "REF",
+        "angle": 0.0,
+        "magnitude": 1.0,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 138.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 4,
+        "number": 102,
+        "name": "BUS 102",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.005340707511102648,
+        "magnitude": 0.99896,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 138.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 5,
+        "number": 103,
+        "name": "BUS 103",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.03134262270731417,
+        "magnitude": 1.00307,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 138.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 6,
+        "number": 104,
+        "name": "BUS 104",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.05023581186015279,
+        "magnitude": 0.99365,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 138.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 7,
+        "number": 105,
+        "name": "BUS 105",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.05023581186015279,
+        "magnitude": 0.99365,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 138.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 8,
+        "number": 106,
+        "name": "BUS 106",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.05077162794051504,
+        "magnitude": 0.99394,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 230.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 9,
+        "number": 107,
+        "name": "BUS 107",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.049874528704989964,
+        "magnitude": 0.99476,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 65.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 10,
+        "number": 108,
+        "name": "BUS 108",
+        "available": true,
+        "bustype": "REF",
+        "angle": 0.20523850272976918,
+        "magnitude": 1.0,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 65.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 11,
+        "number": 109,
+        "name": "BUS 109",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.05096885014599041,
+        "magnitude": 0.99627,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 500.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 12,
+        "number": 110,
+        "name": "BUS 110",
+        "available": true,
+        "bustype": "PV",
+        "angle": -0.05223072319518231,
+        "magnitude": 1.0,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 230.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 13,
+        "number": 111,
+        "name": "BUS 111",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.05307197189464357,
+        "magnitude": 0.98996,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 230.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 14,
+        "number": 112,
+        "name": "BUS 112",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.05405633759276837,
+        "magnitude": 0.99941,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 230.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 15,
+        "number": 113,
+        "name": "BUS 113",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.05405633759276837,
+        "magnitude": 0.99941,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 230.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 16,
+        "number": 114,
+        "name": "BUS 114",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.054241342493479776,
+        "magnitude": 0.99959,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 500.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 17,
+        "number": 200,
+        "name": "BUS 200",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.053845152753277066,
+        "magnitude": 0.99965,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 500.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 18,
+        "number": 201,
+        "name": "BUS 201",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.054188982615919944,
+        "magnitude": 0.9992,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 500.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 19,
+        "number": 301,
+        "name": "BUS 301",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.05498136209632537,
+        "magnitude": 0.99912,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 500.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 20,
+        "number": 401,
+        "name": "BUS 401",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.0519863770999031,
+        "magnitude": 0.99889,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 500.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 21,
+        "number": 501,
+        "name": "BUS 501",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.05406157358052436,
+        "magnitude": 0.99894,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 500.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 22,
+        "number": 601,
+        "name": "BUS 601",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.05113640175418186,
+        "magnitude": 0.99662,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 500.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 23,
+        "number": 1001,
+        "name": "starbus_109_104_107_1",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.05035973023704439,
+        "magnitude": 0.99489,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 1.0,
+        "area": 2,
+        "load_zone": 1
+      },
+      {
+        "id": 24,
+        "number": 1002,
+        "name": "starbus_113_110_114_1",
+        "available": true,
+        "bustype": "PQ",
+        "angle": -0.05350830420764215,
+        "magnitude": 0.99967,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 1.0,
+        "area": 2,
+        "load_zone": 1
+      }
+    ],
+    "Arc": [
+      {
+        "id": 45,
+        "from_id": 3,
+        "to_id": 4
+      },
+      {
+        "id": 47,
+        "from_id": 3,
+        "to_id": 7
+      },
+      {
+        "id": 49,
+        "from_id": 4,
+        "to_id": 5
+      },
+      {
+        "id": 51,
+        "from_id": 4,
+        "to_id": 6
+      },
+      {
+        "id": 53,
+        "from_id": 4,
+        "to_id": 7
+      },
+      {
+        "id": 55,
+        "from_id": 5,
+        "to_id": 6
+      },
+      {
+        "id": 57,
+        "from_id": 8,
+        "to_id": 13
+      },
+      {
+        "id": 60,
+        "from_id": 8,
+        "to_id": 14
+      },
+      {
+        "id": 62,
+        "from_id": 9,
+        "to_id": 10
+      },
+      {
+        "id": 64,
+        "from_id": 11,
+        "to_id": 20
+      },
+      {
+        "id": 66,
+        "from_id": 11,
+        "to_id": 21
+      },
+      {
+        "id": 68,
+        "from_id": 11,
+        "to_id": 22
+      },
+      {
+        "id": 70,
+        "from_id": 12,
+        "to_id": 13
+      },
+      {
+        "id": 72,
+        "from_id": 16,
+        "to_id": 17
+      },
+      {
+        "id": 74,
+        "from_id": 16,
+        "to_id": 18
+      },
+      {
+        "id": 76,
+        "from_id": 16,
+        "to_id": 19
+      },
+      {
+        "id": 78,
+        "from_id": 17,
+        "to_id": 20
+      },
+      {
+        "id": 80,
+        "from_id": 18,
+        "to_id": 21
+      },
+      {
+        "id": 82,
+        "from_id": 19,
+        "to_id": 22
+      },
+      {
+        "id": 84,
+        "from_id": 11,
+        "to_id": 6
+      },
+      {
+        "id": 87,
+        "from_id": 8,
+        "to_id": 7
+      },
+      {
+        "id": 90,
+        "from_id": 12,
+        "to_id": 11
+      },
+      {
+        "id": 93,
+        "from_id": 11,
+        "to_id": 23
+      },
+      {
+        "id": 95,
+        "from_id": 6,
+        "to_id": 23
+      },
+      {
+        "id": 97,
+        "from_id": 9,
+        "to_id": 23
+      },
+      {
+        "id": 100,
+        "from_id": 15,
+        "to_id": 24
+      },
+      {
+        "id": 102,
+        "from_id": 12,
+        "to_id": 24
+      },
+      {
+        "id": 104,
+        "from_id": 16,
+        "to_id": 24
+      },
+      {
+        "id": 107,
+        "from_id": 6,
+        "to_id": 7
+      },
+      {
+        "id": 109,
+        "from_id": 14,
+        "to_id": 15
+      },
+      {
+        "id": 111,
+        "from_id": 13,
+        "to_id": 6
+      }
+    ],
+    "Area": [
+      {
+        "id": 2,
+        "name": "1",
+        "peak_active_power": 0.0,
+        "peak_reactive_power": 0.0,
+        "load_response": 0.0,
+        "base_power": 100.0
+      }
+    ],
+    "DiscreteControlledACBranch": [
+      {
+        "id": 108,
+        "name": "BUS 104-BUS 105-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 107,
+        "base_power": 100.0,
+        "r": -0.0,
+        "x": 0.0001,
+        "rating": 0.0,
+        "discrete_branch_type": "SWITCH",
+        "branch_status": "CLOSED",
+        "normal_branch_status": "CLOSED"
+      },
+      {
+        "id": 110,
+        "name": "BUS 112-BUS 113-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 109,
+        "base_power": 100.0,
+        "r": -0.0,
+        "x": 0.0001,
+        "rating": 0.0,
+        "discrete_branch_type": "BREAKER",
+        "branch_status": "CLOSED",
+        "normal_branch_status": "CLOSED"
+      }
+    ],
+    "FACTSControlDevice": [
+      {
+        "name": "108_FACTS      1",
+        "id": 119,
+        "available": true,
+        "bus": 10,
+        "control_mode": "NML",
+        "voltage_setpoint_units": "DEVICE_BASE",
+        "voltage_setpoint": 1.0,
+        "max_shunt_current": 9999.0,
+        "reactive_power_required": 0.0,
+        "max_reactive_power": 9999.0,
+        "shunt_control_type": "STATCOM",
+        "regulated_bus_number": 0
+      }
+    ],
+    "FixedAdmittance": [
+      {
+        "id": 113,
+        "name": "102-1",
+        "available": true,
+        "bus": 4,
+        "admittance_units": "DEVICE_MVAR",
+        "Y": {
+          "real": 0.5,
+          "imag": -3.0
+        }
+      },
+      {
+        "id": 114,
+        "name": "106-2",
+        "available": true,
+        "bus": 8,
+        "admittance_units": "DEVICE_MVAR",
+        "Y": {
+          "real": 0.8,
+          "imag": 0.3
+        }
+      },
+      {
+        "id": 115,
+        "name": "110-3",
+        "available": true,
+        "bus": 12,
+        "admittance_units": "DEVICE_MVAR",
+        "Y": {
+          "real": 0.2,
+          "imag": 4.0
+        }
+      },
+      {
+        "id": 116,
+        "name": "111-4",
+        "available": true,
+        "bus": 13,
+        "admittance_units": "DEVICE_MVAR",
+        "Y": {
+          "real": 1.0,
+          "imag": 2.0
+        }
+      }
+    ],
+    "Line": [
+      {
+        "id": 46,
+        "name": "BUS 101-BUS 102-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 45,
+        "r": 0.000125,
+        "x": 0.0001,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.0006,
+          "to": 0.0006
+        },
+        "rating": 755882.6105567585,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 48,
+        "name": "BUS 101-BUS 105-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 47,
+        "r": 0.0025,
+        "x": 0.0001,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.00115,
+          "to": 0.00115
+        },
+        "rating": 48361.428963218495,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 50,
+        "name": "BUS 102-BUS 103-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 49,
+        "r": 0.00128,
+        "x": 0.0081,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.00098,
+          "to": 0.00098
+        },
+        "rating": 14755.207231536653,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 52,
+        "name": "BUS 102-BUS 104-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 51,
+        "r": 0.0034,
+        "x": 0.0041,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.00013,
+          "to": 0.00013
+        },
+        "rating": 22717.29530084371,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 54,
+        "name": "BUS 102-BUS 105-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 53,
+        "r": 0.00188,
+        "x": 0.001104,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.001575,
+          "to": 0.001575
+        },
+        "rating": 55499.94032513398,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 56,
+        "name": "BUS 103-BUS 104-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 55,
+        "r": 0.00745,
+        "x": 0.00315,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.00171,
+          "to": 0.00171
+        },
+        "rating": 14959.408636384827,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 58,
+        "name": "BUS 106-BUS 111-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 57,
+        "r": 0.00134,
+        "x": 0.0001345,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.00012,
+          "to": 0.00012
+        },
+        "rating": 89847.23824683383,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 59,
+        "name": "BUS 106-BUS 111-i_2",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 57,
+        "r": 0.0125,
+        "x": 0.0081,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.002675,
+          "to": 0.002675
+        },
+        "rating": 8123.567379649153,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 61,
+        "name": "BUS 106-BUS 112-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 60,
+        "r": 0.001456,
+        "x": 0.0041,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.00367,
+          "to": 0.00367
+        },
+        "rating": 27810.68707969224,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 63,
+        "name": "BUS 107-BUS 108-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 62,
+        "r": 0.00798,
+        "x": 0.0501,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.00028,
+          "to": 0.00028
+        },
+        "rating": 2385.1084994058133,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 65,
+        "name": "BUS 109-BUS 401-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 64,
+        "r": 0.00123,
+        "x": 0.0071,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.0017,
+          "to": 0.0017
+        },
+        "rating": 16792.16994937519,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 67,
+        "name": "BUS 109-BUS 501-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 66,
+        "r": 0.0753,
+        "x": 0.0041,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.00175,
+          "to": 0.00175
+        },
+        "rating": 1604.5324162937216,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 69,
+        "name": "BUS 109-BUS 601-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 68,
+        "r": 0.00188,
+        "x": 0.0021,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.02817,
+          "to": 0.02817
+        },
+        "rating": 42929.4910726739,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 71,
+        "name": "BUS 110-BUS 111-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 70,
+        "r": 0.00356,
+        "x": 0.0241,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.00251,
+          "to": 0.00251
+        },
+        "rating": 4966.860129780371,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 73,
+        "name": "BUS 114-BUS 200-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 72,
+        "r": 0.00124,
+        "x": 0.0001,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.022,
+          "to": 0.022
+        },
+        "rating": 97265.07607563623,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 75,
+        "name": "BUS 114-BUS 201-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 74,
+        "r": 0.006443,
+        "x": 0.0051,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.001175,
+          "to": 0.001175
+        },
+        "rating": 14725.255592744421,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 77,
+        "name": "BUS 114-BUS 301-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 76,
+        "r": 0.0023,
+        "x": 0.0201,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.032,
+          "to": 0.032
+        },
+        "rating": 5980.88454692927,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 79,
+        "name": "BUS 200-BUS 401-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 78,
+        "r": 0.00453,
+        "x": 0.0031,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.0229,
+          "to": 0.0229
+        },
+        "rating": 22043.484147121977,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 81,
+        "name": "BUS 201-BUS 501-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 80,
+        "r": 0.005343,
+        "x": 0.00231,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.00278,
+          "to": 0.00278
+        },
+        "rating": 20786.940040991467,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      },
+      {
+        "id": 83,
+        "name": "BUS 301-BUS 601-i_1",
+        "available": true,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "arc": 82,
+        "r": 0.0523,
+        "x": 0.00601,
+        "base_power": 100.0,
+        "b": {
+          "from": 0.0267,
+          "to": 0.0267
+        },
+        "rating": 2298.4544086538626,
+        "angle_limits": {
+          "max": 1.0472,
+          "min": -1.0472
+        },
+        "g": {
+          "from": 0.0,
+          "to": 0.0
+        }
+      }
+    ],
+    "LoadZone": [
+      {
+        "id": 1,
+        "name": "1",
+        "peak_active_power": 3479.9999999999995,
+        "peak_reactive_power": -861.9999999999999,
+        "base_power": 100.0
+      }
+    ],
+    "StandardLoad": [
+      {
+        "id": 25,
+        "name": "load1011",
+        "available": true,
+        "bus": 3,
+        "base_power": 100.0,
+        "constant_active_power": 200.0,
+        "constant_reactive_power": 500.0,
+        "impedance_active_power": 0.0,
+        "impedance_reactive_power": -0.0,
+        "current_active_power": 0.0,
+        "current_reactive_power": 0.0,
+        "max_constant_active_power": 200.0,
+        "max_constant_reactive_power": 500.0,
+        "max_impedance_active_power": 0.0,
+        "max_impedance_reactive_power": -0.0,
+        "max_current_active_power": 0.0,
+        "max_current_reactive_power": 0.0,
+        "conformity": "CONFORMING"
+      },
+      {
+        "id": 26,
+        "name": "load1021",
+        "available": true,
+        "bus": 4,
+        "base_power": 100.0,
+        "constant_active_power": 200.0,
+        "constant_reactive_power": -350.0,
+        "impedance_active_power": 0.0,
+        "impedance_reactive_power": -0.0,
+        "current_active_power": 20.0,
+        "current_reactive_power": 0.0,
+        "max_constant_active_power": 200.0,
+        "max_constant_reactive_power": -350.0,
+        "max_impedance_active_power": 0.0,
+        "max_impedance_reactive_power": -0.0,
+        "max_current_active_power": 20.0,
+        "max_current_reactive_power": 0.0,
+        "conformity": "CONFORMING"
+      },
+      {
+        "id": 27,
+        "name": "load1031",
+        "available": true,
+        "bus": 5,
+        "base_power": 100.0,
+        "constant_active_power": 105.0,
+        "constant_reactive_power": 65.0,
+        "impedance_active_power": 0.0,
+        "impedance_reactive_power": -0.0,
+        "current_active_power": 0.0,
+        "current_reactive_power": 0.0,
+        "max_constant_active_power": 105.0,
+        "max_constant_reactive_power": 65.0,
+        "max_impedance_active_power": 0.0,
+        "max_impedance_reactive_power": -0.0,
+        "max_current_active_power": 0.0,
+        "max_current_reactive_power": 0.0,
+        "conformity": "CONFORMING"
+      },
+      {
+        "id": 28,
+        "name": "load1041",
+        "available": true,
+        "bus": 6,
+        "base_power": 100.0,
+        "constant_active_power": 500.0,
+        "constant_reactive_power": 180.0,
+        "impedance_active_power": 0.0,
+        "impedance_reactive_power": -0.0,
+        "current_active_power": 0.0,
+        "current_reactive_power": 0.0,
+        "max_constant_active_power": 500.0,
+        "max_constant_reactive_power": 180.0,
+        "max_impedance_active_power": 0.0,
+        "max_impedance_reactive_power": -0.0,
+        "max_current_active_power": 0.0,
+        "max_current_reactive_power": 0.0,
+        "conformity": "CONFORMING"
+      },
+      {
+        "id": 29,
+        "name": "load1051",
+        "available": true,
+        "bus": 7,
+        "base_power": 100.0,
+        "constant_active_power": 500.0,
+        "constant_reactive_power": -350.0,
+        "impedance_active_power": 0.0,
+        "impedance_reactive_power": -0.0,
+        "current_active_power": 0.0,
+        "current_reactive_power": 0.0,
+        "max_constant_active_power": 500.0,
+        "max_constant_reactive_power": -350.0,
+        "max_impedance_active_power": 0.0,
+        "max_impedance_reactive_power": -0.0,
+        "max_current_active_power": 0.0,
+        "max_current_reactive_power": 0.0,
+        "conformity": "CONFORMING"
+      },
+      {
+        "id": 30,
+        "name": "load1061",
+        "available": true,
+        "bus": 8,
+        "base_power": 100.0,
+        "constant_active_power": 80.0,
+        "constant_reactive_power": 20.0,
+        "impedance_active_power": 0.0,
+        "impedance_reactive_power": -0.0,
+        "current_active_power": 0.0,
+        "current_reactive_power": 0.0,
+        "max_constant_active_power": 80.0,
+        "max_constant_reactive_power": 20.0,
+        "max_impedance_active_power": 0.0,
+        "max_impedance_reactive_power": -0.0,
+        "max_current_active_power": 0.0,
+        "max_current_reactive_power": 0.0,
+        "conformity": "CONFORMING"
+      },
+      {
+        "id": 31,
+        "name": "load1091",
+        "available": true,
+        "bus": 11,
+        "base_power": 100.0,
+        "constant_active_power": 300.0,
+        "constant_reactive_power": 100.0,
+        "impedance_active_power": 0.0,
+        "impedance_reactive_power": -0.0,
+        "current_active_power": 0.0,
+        "current_reactive_power": 0.0,
+        "max_constant_active_power": 300.0,
+        "max_constant_reactive_power": 100.0,
+        "max_impedance_active_power": 0.0,
+        "max_impedance_reactive_power": -0.0,
+        "max_current_active_power": 0.0,
+        "max_current_reactive_power": 0.0,
+        "conformity": "CONFORMING"
+      },
+      {
+        "id": 32,
+        "name": "load1101",
+        "available": true,
+        "bus": 12,
+        "base_power": 100.0,
+        "constant_active_power": 100.0,
+        "constant_reactive_power": -500.0,
+        "impedance_active_power": 0.0,
+        "impedance_reactive_power": -0.0,
+        "current_active_power": 0.0,
+        "current_reactive_power": 0.0,
+        "max_constant_active_power": 100.0,
+        "max_constant_reactive_power": -500.0,
+        "max_impedance_active_power": 0.0,
+        "max_impedance_reactive_power": -0.0,
+        "max_current_active_power": 0.0,
+        "max_current_reactive_power": 0.0,
+        "conformity": "CONFORMING"
+      },
+      {
+        "id": 33,
+        "name": "load1102",
+        "available": true,
+        "bus": 12,
+        "base_power": 100.0,
+        "constant_active_power": 150.0,
+        "constant_reactive_power": -500.0,
+        "impedance_active_power": 0.0,
+        "impedance_reactive_power": -0.0,
+        "current_active_power": 0.0,
+        "current_reactive_power": 0.0,
+        "max_constant_active_power": 150.0,
+        "max_constant_reactive_power": -500.0,
+        "max_impedance_active_power": 0.0,
+        "max_impedance_reactive_power": -0.0,
+        "max_current_active_power": 0.0,
+        "max_current_reactive_power": 0.0,
+        "conformity": "CONFORMING"
+      },
+      {
+        "id": 34,
+        "name": "load1111",
+        "available": true,
+        "bus": 13,
+        "base_power": 100.0,
+        "constant_active_power": 250.0,
+        "constant_reactive_power": 100.0,
+        "impedance_active_power": 0.0,
+        "impedance_reactive_power": -0.0,
+        "current_active_power": 0.0,
+        "current_reactive_power": 0.0,
+        "max_constant_active_power": 250.0,
+        "max_constant_reactive_power": 100.0,
+        "max_impedance_active_power": 0.0,
+        "max_impedance_reactive_power": -0.0,
+        "max_current_active_power": 0.0,
+        "max_current_reactive_power": 0.0,
+        "conformity": "CONFORMING"
+      },
+      {
+        "id": 35,
+        "name": "load1121",
+        "available": true,
+        "bus": 14,
+        "base_power": 100.0,
+        "constant_active_power": 325.0,
+        "constant_reactive_power": 23.0,
+        "impedance_active_power": 0.0,
+        "impedance_reactive_power": -0.0,
+        "current_active_power": 0.0,
+        "current_reactive_power": 0.0,
+        "max_constant_active_power": 325.0,
+        "max_constant_reactive_power": 23.0,
+        "max_impedance_active_power": 0.0,
+        "max_impedance_reactive_power": -0.0,
+        "max_current_active_power": 0.0,
+        "max_current_reactive_power": 0.0,
+        "conformity": "CONFORMING"
+      },
+      {
+        "id": 36,
+        "name": "load1131",
+        "available": true,
+        "bus": 15,
+        "base_power": 100.0,
+        "constant_active_power": 250.0,
+        "constant_reactive_power": 100.0,
+        "impedance_active_power": 0.0,
+        "impedance_reactive_power": -0.0,
+        "current_active_power": 0.0,
+        "current_reactive_power": 0.0,
+        "max_constant_active_power": 250.0,
+        "max_constant_reactive_power": 100.0,
+        "max_impedance_active_power": 0.0,
+        "max_impedance_reactive_power": -0.0,
+        "max_current_active_power": 0.0,
+        "max_current_reactive_power": 0.0,
+        "conformity": "CONFORMING"
+      },
+      {
+        "id": 37,
+        "name": "load1141",
+        "available": true,
+        "bus": 16,
+        "base_power": 100.0,
+        "constant_active_power": 500.0,
+        "constant_reactive_power": -250.0,
+        "impedance_active_power": 0.0,
+        "impedance_reactive_power": -0.0,
+        "current_active_power": 0.0,
+        "current_reactive_power": 0.0,
+        "max_constant_active_power": 500.0,
+        "max_constant_reactive_power": -250.0,
+        "max_impedance_active_power": 0.0,
+        "max_impedance_reactive_power": -0.0,
+        "max_current_active_power": 0.0,
+        "max_current_reactive_power": 0.0,
+        "conformity": "CONFORMING"
+      }
+    ],
+    "SwitchedAdmittance": [
+      {
+        "id": 117,
+        "name": "101-1",
+        "available": true,
+        "bus": 3,
+        "admittance_units": "DEVICE_MVAR",
+        "Y": {
+          "real": 0.0,
+          "imag": 0.5
+        },
+        "initial_status": [
+          0
+        ],
+        "number_of_steps": [
+          5
+        ],
+        "Y_increase": [
+          {
+            "real": 0.0,
+            "imag": 1.0
+          }
+        ],
+        "admittance_limits": {
+          "max": 1.0,
+          "min": 1.0
+        },
+        "control_mode": "DISCRETE_VOLTAGE",
+        "regulated_bus_number": 0
+      },
+      {
+        "id": 118,
+        "name": "113-2",
+        "available": true,
+        "bus": 15,
+        "admittance_units": "DEVICE_MVAR",
+        "Y": {
+          "real": 0.0,
+          "imag": 0.1
+        },
+        "initial_status": [
+          0
+        ],
+        "number_of_steps": [
+          2
+        ],
+        "Y_increase": [
+          {
+            "real": 0.0,
+            "imag": 0.05
+          }
+        ],
+        "admittance_limits": {
+          "max": 1.0,
+          "min": 1.0
+        },
+        "control_mode": "DISCRETE_VOLTAGE",
+        "regulated_bus_number": 0
+      }
+    ],
+    "ThermalStandard": [
+      {
+        "id": 38,
+        "name": "generator-101-1",
+        "available": true,
+        "status": true,
+        "bus": 3,
+        "active_power": 2088.167,
+        "reactive_power": -2446.801,
+        "rating": 14140.721410168579,
+        "active_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "reactive_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "ramp_limits": {
+          "down": 9999.0,
+          "up": 9999.0
+        },
+        "operation_cost": {
+          "cost_type": "THERMAL",
+          "fixed": 0.0,
+          "shut_down": 0.0,
+          "start_up": 0.0,
+          "variable": {
+            "power_units": "DEVICE_BASE",
+            "value_curve": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "QUADRATIC",
+                "proportional_term": 1.0,
+                "quadratic_term": 0.0
+              }
+            },
+            "variable_cost_type": "COST",
+            "vom_cost": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 0.0
+              },
+              "input_at_zero": 0.0
+            }
+          }
+        },
+        "base_power": 100.0,
+        "must_run": false,
+        "prime_mover_type": "OT",
+        "fuel": "OTHER",
+        "time_at_status": 600000.0
+      },
+      {
+        "id": 39,
+        "name": "generator-101-2",
+        "available": true,
+        "status": true,
+        "bus": 3,
+        "active_power": 1089.478,
+        "reactive_power": -1276.592,
+        "rating": 14140.721410168579,
+        "active_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "reactive_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "ramp_limits": {
+          "down": 9999.0,
+          "up": 9999.0
+        },
+        "operation_cost": {
+          "cost_type": "THERMAL",
+          "fixed": 0.0,
+          "shut_down": 0.0,
+          "start_up": 0.0,
+          "variable": {
+            "power_units": "DEVICE_BASE",
+            "value_curve": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "QUADRATIC",
+                "proportional_term": 1.0,
+                "quadratic_term": 0.0
+              }
+            },
+            "variable_cost_type": "COST",
+            "vom_cost": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 0.0
+              },
+              "input_at_zero": 0.0
+            }
+          }
+        },
+        "base_power": 100.0,
+        "must_run": false,
+        "prime_mover_type": "OT",
+        "fuel": "OTHER",
+        "time_at_status": 600000.0
+      },
+      {
+        "id": 40,
+        "name": "generator-102-1",
+        "available": true,
+        "status": true,
+        "bus": 4,
+        "active_power": 300.0,
+        "reactive_power": -50.0,
+        "rating": 14140.721410168579,
+        "active_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "reactive_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "ramp_limits": {
+          "down": 9999.0,
+          "up": 9999.0
+        },
+        "operation_cost": {
+          "cost_type": "THERMAL",
+          "fixed": 0.0,
+          "shut_down": 0.0,
+          "start_up": 0.0,
+          "variable": {
+            "power_units": "DEVICE_BASE",
+            "value_curve": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "QUADRATIC",
+                "proportional_term": 1.0,
+                "quadratic_term": 0.0
+              }
+            },
+            "variable_cost_type": "COST",
+            "vom_cost": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 0.0
+              },
+              "input_at_zero": 0.0
+            }
+          }
+        },
+        "base_power": 100.0,
+        "must_run": false,
+        "prime_mover_type": "OT",
+        "fuel": "OTHER",
+        "time_at_status": 600000.0
+      },
+      {
+        "id": 41,
+        "name": "generator-106-1",
+        "available": true,
+        "status": true,
+        "bus": 8,
+        "active_power": 200.0,
+        "reactive_power": -50.0,
+        "rating": 14140.721410168579,
+        "active_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "reactive_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "ramp_limits": {
+          "down": 9999.0,
+          "up": 9999.0
+        },
+        "operation_cost": {
+          "cost_type": "THERMAL",
+          "fixed": 0.0,
+          "shut_down": 0.0,
+          "start_up": 0.0,
+          "variable": {
+            "power_units": "DEVICE_BASE",
+            "value_curve": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "QUADRATIC",
+                "proportional_term": 1.0,
+                "quadratic_term": 0.0
+              }
+            },
+            "variable_cost_type": "COST",
+            "vom_cost": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 0.0
+              },
+              "input_at_zero": 0.0
+            }
+          }
+        },
+        "base_power": 100.0,
+        "must_run": false,
+        "prime_mover_type": "OT",
+        "fuel": "OTHER",
+        "time_at_status": 600000.0
+      },
+      {
+        "id": 42,
+        "name": "generator-108-1",
+        "available": true,
+        "status": true,
+        "bus": 10,
+        "active_power": 500.2730000000001,
+        "reactive_power": -4.997,
+        "rating": 14140.721410168579,
+        "active_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "reactive_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "ramp_limits": {
+          "down": 9999.0,
+          "up": 9999.0
+        },
+        "operation_cost": {
+          "cost_type": "THERMAL",
+          "fixed": 0.0,
+          "shut_down": 0.0,
+          "start_up": 0.0,
+          "variable": {
+            "power_units": "DEVICE_BASE",
+            "value_curve": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "QUADRATIC",
+                "proportional_term": 1.0,
+                "quadratic_term": 0.0
+              }
+            },
+            "variable_cost_type": "COST",
+            "vom_cost": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 0.0
+              },
+              "input_at_zero": 0.0
+            }
+          }
+        },
+        "base_power": 100.0,
+        "must_run": false,
+        "prime_mover_type": "OT",
+        "fuel": "OTHER",
+        "time_at_status": 600000.0
+      },
+      {
+        "id": 43,
+        "name": "generator-110-1",
+        "available": true,
+        "status": true,
+        "bus": 12,
+        "active_power": 300.0,
+        "reactive_power": 2708.623,
+        "rating": 14140.721410168579,
+        "active_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "reactive_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "ramp_limits": {
+          "down": 9999.0,
+          "up": 9999.0
+        },
+        "operation_cost": {
+          "cost_type": "THERMAL",
+          "fixed": 0.0,
+          "shut_down": 0.0,
+          "start_up": 0.0,
+          "variable": {
+            "power_units": "DEVICE_BASE",
+            "value_curve": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "QUADRATIC",
+                "proportional_term": 1.0,
+                "quadratic_term": 0.0
+              }
+            },
+            "variable_cost_type": "COST",
+            "vom_cost": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 0.0
+              },
+              "input_at_zero": 0.0
+            }
+          }
+        },
+        "base_power": 100.0,
+        "must_run": false,
+        "prime_mover_type": "OT",
+        "fuel": "OTHER",
+        "time_at_status": 600000.0
+      },
+      {
+        "id": 44,
+        "name": "generator-111-1",
+        "available": true,
+        "status": true,
+        "bus": 13,
+        "active_power": 90.0,
+        "reactive_power": 784.759,
+        "rating": 14140.721410168579,
+        "active_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "reactive_power_limits": {
+          "max": 9999.0,
+          "min": -9999.0
+        },
+        "ramp_limits": {
+          "down": 9999.0,
+          "up": 9999.0
+        },
+        "operation_cost": {
+          "cost_type": "THERMAL",
+          "fixed": 0.0,
+          "shut_down": 0.0,
+          "start_up": 0.0,
+          "variable": {
+            "power_units": "DEVICE_BASE",
+            "value_curve": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "QUADRATIC",
+                "proportional_term": 1.0,
+                "quadratic_term": 0.0
+              }
+            },
+            "variable_cost_type": "COST",
+            "vom_cost": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 0.0
+              },
+              "input_at_zero": 0.0
+            }
+          }
+        },
+        "base_power": 100.0,
+        "must_run": false,
+        "prime_mover_type": "OT",
+        "fuel": "OTHER",
+        "time_at_status": 600000.0
+      }
+    ],
+    "ThreeWindingTransformer": [
+      {
+        "id": 99,
+        "name": "BUS 109-BUS 104-BUS 107-i_1",
+        "primary_circuit": 94,
+        "secondary_circuit": 96,
+        "tertiary_circuit": 98,
+        "star_bus": 23,
+        "parameter_units": "DEVICE_BASE",
+        "r_12": 0.0,
+        "x_12": 0.0002,
+        "r_23": 0.0,
+        "x_23": 0.0002,
+        "r_31": 0.0,
+        "x_31": 0.0002,
+        "base_power_12": 100.0,
+        "base_power_23": 100.0,
+        "base_power_31": 100.0,
+        "admittance_units": "DEVICE_BASE",
+        "magnetizing_shunt": {
+          "real": 0.0,
+          "imag": 0.0
+        },
+        "shunt_location": "PRIMARY"
+      },
+      {
+        "id": 106,
+        "name": "BUS 113-BUS 110-BUS 114-i_1",
+        "primary_circuit": 101,
+        "secondary_circuit": 103,
+        "tertiary_circuit": 105,
+        "star_bus": 24,
+        "parameter_units": "DEVICE_BASE",
+        "r_12": 0.0,
+        "x_12": 0.0002,
+        "r_23": 0.0,
+        "x_23": 0.0002,
+        "r_31": 0.0,
+        "x_31": 0.0002,
+        "base_power_12": 100.0,
+        "base_power_23": 100.0,
+        "base_power_31": 100.0,
+        "admittance_units": "DEVICE_BASE",
+        "magnetizing_shunt": {
+          "real": 0.0,
+          "imag": 0.0
+        },
+        "shunt_location": "PRIMARY"
+      }
+    ],
+    "TransformerCircuit": [
+      {
+        "id": 85,
+        "available": true,
+        "arc": 84,
+        "tap": 1.0,
+        "alpha": 0.0,
+        "parameter_units": "DEVICE_BASE",
+        "r": 0.0,
+        "x": 0.0001,
+        "control_objective": "FIXED",
+        "regulated_bus_number": 0,
+        "control_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "controlled_quantity_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "number_of_tap_positions": 33,
+        "rating": 1.210002566077499e6,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "base_power": 100.0,
+        "base_voltage_primary": 500.0,
+        "base_voltage_secondary": 138.0
+      },
+      {
+        "id": 88,
+        "available": true,
+        "arc": 87,
+        "tap": 1.0,
+        "alpha": 0.0,
+        "parameter_units": "DEVICE_BASE",
+        "r": 0.0,
+        "x": 0.0001,
+        "control_objective": "FIXED",
+        "regulated_bus_number": 0,
+        "control_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "controlled_quantity_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "number_of_tap_positions": 33,
+        "rating": 1.210002566077499e6,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "base_power": 100.0,
+        "base_voltage_primary": 230.0,
+        "base_voltage_secondary": 138.0
+      },
+      {
+        "id": 91,
+        "available": true,
+        "arc": 90,
+        "tap": 1.0,
+        "alpha": 0.0,
+        "parameter_units": "DEVICE_BASE",
+        "r": 0.0,
+        "x": 0.0001,
+        "control_objective": "FIXED",
+        "regulated_bus_number": 0,
+        "control_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "controlled_quantity_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "number_of_tap_positions": 33,
+        "rating": 1.210002566077499e6,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "base_power": 100.0,
+        "base_voltage_primary": 230.0,
+        "base_voltage_secondary": 500.0
+      },
+      {
+        "id": 94,
+        "available": true,
+        "arc": 93,
+        "tap": 1.0,
+        "alpha": 0.0,
+        "parameter_units": "DEVICE_BASE",
+        "r": 0.0,
+        "x": 0.0001,
+        "control_objective": "FIXED",
+        "regulated_bus_number": 0,
+        "control_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "controlled_quantity_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "number_of_tap_positions": 33,
+        "rating": 1.0e6,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "base_power": 100.0,
+        "base_voltage_primary": 500.0,
+        "base_voltage_secondary": 500.0
+      },
+      {
+        "id": 96,
+        "available": true,
+        "arc": 95,
+        "tap": 1.0,
+        "alpha": 0.0,
+        "parameter_units": "DEVICE_BASE",
+        "r": 0.0,
+        "x": 0.0001,
+        "control_objective": "FIXED",
+        "regulated_bus_number": 0,
+        "control_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "controlled_quantity_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "number_of_tap_positions": 33,
+        "rating": 1.0e6,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "base_power": 100.0,
+        "base_voltage_primary": 138.0,
+        "base_voltage_secondary": 138.0
+      },
+      {
+        "id": 98,
+        "available": true,
+        "arc": 97,
+        "tap": 1.0,
+        "alpha": 0.0,
+        "parameter_units": "DEVICE_BASE",
+        "r": 0.0,
+        "x": 0.0001,
+        "control_objective": "FIXED",
+        "regulated_bus_number": 0,
+        "control_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "controlled_quantity_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "number_of_tap_positions": 33,
+        "rating": 1.0e6,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "base_power": 100.0,
+        "base_voltage_primary": 65.0,
+        "base_voltage_secondary": 65.0
+      },
+      {
+        "id": 101,
+        "available": true,
+        "arc": 100,
+        "tap": 1.0,
+        "alpha": 0.0,
+        "parameter_units": "DEVICE_BASE",
+        "r": 0.0,
+        "x": 0.0001,
+        "control_objective": "FIXED",
+        "regulated_bus_number": 0,
+        "control_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "controlled_quantity_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "number_of_tap_positions": 33,
+        "rating": 1.0e6,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "base_power": 100.0,
+        "base_voltage_primary": 230.0,
+        "base_voltage_secondary": 230.0
+      },
+      {
+        "id": 103,
+        "available": true,
+        "arc": 102,
+        "tap": 1.0,
+        "alpha": 0.0,
+        "parameter_units": "DEVICE_BASE",
+        "r": 0.0,
+        "x": 0.0001,
+        "control_objective": "FIXED",
+        "regulated_bus_number": 0,
+        "control_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "controlled_quantity_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "number_of_tap_positions": 33,
+        "rating": 1.0e6,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "base_power": 100.0,
+        "base_voltage_primary": 230.0,
+        "base_voltage_secondary": 230.0
+      },
+      {
+        "id": 105,
+        "available": true,
+        "arc": 104,
+        "tap": 1.0,
+        "alpha": 0.0,
+        "parameter_units": "DEVICE_BASE",
+        "r": 0.0,
+        "x": 0.0001,
+        "control_objective": "FIXED",
+        "regulated_bus_number": 0,
+        "control_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "controlled_quantity_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "number_of_tap_positions": 33,
+        "rating": 1.0e6,
+        "active_power_flow": 0.0,
+        "reactive_power_flow": 0.0,
+        "base_power": 100.0,
+        "base_voltage_primary": 500.0,
+        "base_voltage_secondary": 500.0
+      }
+    ],
+    "TwoTerminalLCCLine": [
+      {
+        "id": 112,
+        "name": "BUS 111-BUS 104-i_LINE       1",
+        "available": true,
+        "arc": 111,
+        "active_power_flow": 500.0,
+        "parameter_units": "NATURAL_UNITS",
+        "r": 2000.0,
+        "transfer_setpoint": 500.0,
+        "dc_voltage_units": "NATURAL_UNITS",
+        "scheduled_dc_voltage": 1.0,
+        "rectifier_bridges": 0,
+        "rectifier_delay_angle_limits": {
+          "max": 1.5707963267948966,
+          "min": 0.08726646259971647
+        },
+        "rectifier_rc": 0.0,
+        "rectifier_xc": 0.0003364839319470699,
+        "rectifier_base_voltage": 230.0,
+        "inverter_bridges": 0,
+        "inverter_extinction_angle_limits": {
+          "max": 1.5707963267948966,
+          "min": 0.08726646259971647
+        },
+        "inverter_rc": 0.0,
+        "inverter_xc": 0.0003251417769376181,
+        "inverter_base_voltage": 230.0,
+        "power_mode": true,
+        "switch_mode_voltage": 0.0,
+        "compounding_resistance": 0.0,
+        "min_compounding_voltage": 0.0,
+        "rectifier_transformer_ratio": 1.0,
+        "rectifier_tap_setting": 0.51,
+        "rectifier_tap_limits": {
+          "max": 1.5,
+          "min": 0.51
+        },
+        "rectifier_tap_step": 0.00625,
+        "rectifier_delay_angle": 0.08726646259971647,
+        "rectifier_capacitor_reactance": 0.0,
+        "inverter_transformer_ratio": 1.0,
+        "inverter_tap_setting": 0.51,
+        "inverter_tap_limits": {
+          "max": 1.5,
+          "min": 0.51
+        },
+        "inverter_tap_step": 0.00625,
+        "inverter_extinction_angle": 0.08726646259971647,
+        "inverter_capacitor_reactance": 0.0,
+        "active_power_limits_from": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "active_power_limits_to": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "reactive_power_limits_from": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "reactive_power_limits_to": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "loss": {
+          "curve_type": "INPUT_OUTPUT",
+          "function_data": {
+            "constant_term": 0.0,
+            "function_type": "LINEAR",
+            "proportional_term": 0.0
+          }
+        },
+        "base_power": 100.0
+      }
+    ],
+    "TwoWindingTransformer": [
+      {
+        "id": 86,
+        "name": "BUS 109-BUS 104-i_1",
+        "circuit": 85,
+        "admittance_units": "DEVICE_BASE",
+        "magnetizing_shunt": {
+          "real": 0.0,
+          "imag": 0.0
+        },
+        "shunt_location": "PRIMARY"
+      },
+      {
+        "id": 89,
+        "name": "BUS 106-BUS 105-i_1",
+        "circuit": 88,
+        "admittance_units": "DEVICE_BASE",
+        "magnetizing_shunt": {
+          "real": 0.0,
+          "imag": 0.0
+        },
+        "shunt_location": "PRIMARY"
+      },
+      {
+        "id": 92,
+        "name": "BUS 110-BUS 109-i_1",
+        "circuit": 91,
+        "admittance_units": "DEVICE_BASE",
+        "magnetizing_shunt": {
+          "real": 0.0,
+          "imag": 0.0
+        },
+        "shunt_location": "PRIMARY"
+      }
+    ]
+  },
+  "ext": {
+    "106": {
+      "ANSTAR": -3.0658,
+      "CM": 1,
+      "COD1": 0,
+      "COD2": 0,
+      "COD3": 0,
+      "CONT1": 0,
+      "CONT2": 0,
+      "CONT3": 0,
+      "CW": 1,
+      "CZ": 1,
+      "MAG1": 0.0,
+      "MAG2": 0.0,
+      "NOMV1": 0.0,
+      "NOMV2": 0.0,
+      "NOMV3": 0.0,
+      "NTP1": 33.0,
+      "NTP2": 33.0,
+      "NTP3": 33.0,
+      "R1-2": 0.0,
+      "R2-3": 0.0,
+      "R3-1": 0.0,
+      "RATA1": 0.0,
+      "RATA2": 0.0,
+      "RATA3": 0.0,
+      "RATB1": 0.0,
+      "RATB2": 0.0,
+      "RATB3": 0.0,
+      "RATC1": 0.0,
+      "RATC2": 0.0,
+      "RATC3": 0.0,
+      "RMA1": 1.1,
+      "RMA2": 1.1,
+      "RMA3": 1.1,
+      "RMI1": 0.9,
+      "RMI2": 0.9,
+      "RMI3": 0.9,
+      "VMA1": 1.1,
+      "VMA2": 1.1,
+      "VMA3": 1.1,
+      "VMI1": 0.9,
+      "VMI2": 0.9,
+      "VMI3": 0.9,
+      "VMSTAR": 0.99967,
+      "WINDV1": 1.0,
+      "WINDV2": 1.0,
+      "WINDV3": 1.0,
+      "X1-2": 0.0002,
+      "X2-3": 0.0002,
+      "X3-1": 0.0002,
+      "psse_name": "TRAFO 3W 1  "
+    },
+    "112": {
+      "psse_name": "LINE       1"
+    },
+    "117": {
+      "ADJM": 0,
+      "RMIDNT": "            ",
+      "RMPCT": 100.0
+    },
+    "118": {
+      "ADJM": 0,
+      "RMIDNT": "            ",
+      "RMPCT": 100.0
+    },
+    "119": {
+      "J": 0,
+      "RMPCT": 100.0
+    },
+    "38": {
+      "GTAP": 1.0,
+      "IREG": 0,
+      "RMPCT": 100.0,
+      "WMOD": 0,
+      "WPF": 1.0,
+      "r": 0.0,
+      "rt": 0.0,
+      "x": 1.0,
+      "xt": 0.0
+    },
+    "39": {
+      "GTAP": 1.0,
+      "IREG": 0,
+      "RMPCT": 100.0,
+      "WMOD": 0,
+      "WPF": 1.0,
+      "r": 0.0,
+      "rt": 0.0,
+      "x": 1.0,
+      "xt": 0.0
+    },
+    "40": {
+      "GTAP": 1.0,
+      "IREG": 0,
+      "RMPCT": 100.0,
+      "WMOD": 0,
+      "WPF": 1.0,
+      "r": 0.0,
+      "rt": 0.0,
+      "x": 1.0,
+      "xt": 0.0
+    },
+    "41": {
+      "GTAP": 1.0,
+      "IREG": 0,
+      "RMPCT": 100.0,
+      "WMOD": 0,
+      "WPF": 1.0,
+      "r": 0.0,
+      "rt": 0.0,
+      "x": 1.0,
+      "xt": 0.0
+    },
+    "42": {
+      "GTAP": 1.0,
+      "IREG": 0,
+      "RMPCT": 100.0,
+      "WMOD": 0,
+      "WPF": 1.0,
+      "r": 0.0,
+      "rt": 0.0,
+      "x": 1.0,
+      "xt": 0.0
+    },
+    "43": {
+      "GTAP": 1.0,
+      "IREG": 0,
+      "RMPCT": 100.0,
+      "WMOD": 0,
+      "WPF": 1.0,
+      "r": 0.0,
+      "rt": 0.0,
+      "x": 1.0,
+      "xt": 0.0
+    },
+    "44": {
+      "GTAP": 1.0,
+      "IREG": 0,
+      "RMPCT": 100.0,
+      "WMOD": 0,
+      "WPF": 1.0,
+      "r": 0.0,
+      "rt": 0.0,
+      "x": 1.0,
+      "xt": 0.0
+    },
+    "46": {
+      "LEN": 0.0
+    },
+    "48": {
+      "LEN": 0.0
+    },
+    "50": {
+      "LEN": 0.0
+    },
+    "52": {
+      "LEN": 0.0
+    },
+    "54": {
+      "LEN": 0.0
+    },
+    "56": {
+      "LEN": 0.0
+    },
+    "58": {
+      "LEN": 0.0
+    },
+    "59": {
+      "LEN": 0.0
+    },
+    "61": {
+      "LEN": 0.0
+    },
+    "63": {
+      "LEN": 0.0
+    },
+    "65": {
+      "LEN": 0.0,
+      "from_multisection": true,
+      "multisection_psse_entry": {
+        "DUM1": 401,
+        "DUM2": 200,
+        "I": 109,
+        "ID": "&1",
+        "J": 114,
+        "MET": 2
+      }
+    },
+    "67": {
+      "LEN": 0.0,
+      "from_multisection": true,
+      "multisection_psse_entry": {
+        "DUM1": 501,
+        "DUM2": 201,
+        "I": 109,
+        "ID": "&2",
+        "J": 114,
+        "MET": 2
+      }
+    },
+    "69": {
+      "LEN": 0.0,
+      "from_multisection": true,
+      "multisection_psse_entry": {
+        "DUM1": 601,
+        "DUM2": 301,
+        "I": 109,
+        "ID": "&3",
+        "J": 114,
+        "MET": 2
+      }
+    },
+    "71": {
+      "LEN": 0.0
+    },
+    "73": {
+      "LEN": 0.0,
+      "from_multisection": true,
+      "multisection_psse_entry": {
+        "DUM1": 401,
+        "DUM2": 200,
+        "I": 109,
+        "ID": "&1",
+        "J": 114,
+        "MET": 2
+      }
+    },
+    "75": {
+      "LEN": 0.0,
+      "from_multisection": true,
+      "multisection_psse_entry": {
+        "DUM1": 501,
+        "DUM2": 201,
+        "I": 109,
+        "ID": "&2",
+        "J": 114,
+        "MET": 2
+      }
+    },
+    "77": {
+      "LEN": 0.0,
+      "from_multisection": true,
+      "multisection_psse_entry": {
+        "DUM1": 601,
+        "DUM2": 301,
+        "I": 109,
+        "ID": "&3",
+        "J": 114,
+        "MET": 2
+      }
+    },
+    "79": {
+      "LEN": 0.0,
+      "from_multisection": true,
+      "multisection_psse_entry": {
+        "DUM1": 401,
+        "DUM2": 200,
+        "I": 109,
+        "ID": "&1",
+        "J": 114,
+        "MET": 2
+      }
+    },
+    "81": {
+      "LEN": 0.0,
+      "from_multisection": true,
+      "multisection_psse_entry": {
+        "DUM1": 501,
+        "DUM2": 201,
+        "I": 109,
+        "ID": "&2",
+        "J": 114,
+        "MET": 2
+      }
+    },
+    "83": {
+      "LEN": 0.0,
+      "from_multisection": true,
+      "multisection_psse_entry": {
+        "DUM1": 601,
+        "DUM2": 301,
+        "I": 109,
+        "ID": "&3",
+        "J": 114,
+        "MET": 2
+      }
+    },
+    "86": {
+      "CM": 1,
+      "COD1": 0,
+      "CONT1": 0,
+      "CW": 1,
+      "CZ": 1,
+      "MAG1": 0.0,
+      "MAG2": 0.0,
+      "NOMV1": 0.0,
+      "NOMV2": 0.0,
+      "NTP1": 33.0,
+      "R1-2": 0.0,
+      "RMA1": 1.1,
+      "RMI1": 0.9,
+      "SBASE1-2": 100.0,
+      "WINDV1": 1.0,
+      "WINDV2": 1.0,
+      "X1-2": 0.0001,
+      "psse_name": "TRAFO 2W 3  "
+    },
+    "89": {
+      "CM": 1,
+      "COD1": 0,
+      "CONT1": 0,
+      "CW": 1,
+      "CZ": 1,
+      "MAG1": 0.0,
+      "MAG2": 0.0,
+      "NOMV1": 0.0,
+      "NOMV2": 0.0,
+      "NTP1": 33.0,
+      "R1-2": 0.0,
+      "RMA1": 1.1,
+      "RMI1": 0.9,
+      "SBASE1-2": 100.0,
+      "WINDV1": 1.0,
+      "WINDV2": 1.0,
+      "X1-2": 0.0001,
+      "psse_name": "TRAFO 2W 1  "
+    },
+    "92": {
+      "CM": 1,
+      "COD1": 0,
+      "CONT1": 0,
+      "CW": 1,
+      "CZ": 1,
+      "MAG1": 0.0,
+      "MAG2": 0.0,
+      "NOMV1": 0.0,
+      "NOMV2": 0.0,
+      "NTP1": 33.0,
+      "R1-2": 0.0,
+      "RMA1": 1.1,
+      "RMI1": 0.9,
+      "SBASE1-2": 100.0,
+      "WINDV1": 1.0,
+      "WINDV2": 1.0,
+      "X1-2": 0.0001,
+      "psse_name": "TRAFO 2W 2  "
+    },
+    "99": {
+      "ANSTAR": -2.8854,
+      "CM": 1,
+      "COD1": 0,
+      "COD2": 0,
+      "COD3": 0,
+      "CONT1": 0,
+      "CONT2": 0,
+      "CONT3": 0,
+      "CW": 1,
+      "CZ": 1,
+      "MAG1": 0.0,
+      "MAG2": 0.0,
+      "NOMV1": 0.0,
+      "NOMV2": 0.0,
+      "NOMV3": 0.0,
+      "NTP1": 33.0,
+      "NTP2": 33.0,
+      "NTP3": 33.0,
+      "R1-2": 0.0,
+      "R2-3": 0.0,
+      "R3-1": 0.0,
+      "RATA1": 0.0,
+      "RATA2": 0.0,
+      "RATA3": 0.0,
+      "RATB1": 0.0,
+      "RATB2": 0.0,
+      "RATB3": 0.0,
+      "RATC1": 0.0,
+      "RATC2": 0.0,
+      "RATC3": 0.0,
+      "RMA1": 1.1,
+      "RMA2": 1.1,
+      "RMA3": 1.1,
+      "RMI1": 0.9,
+      "RMI2": 0.9,
+      "RMI3": 0.9,
+      "VMA1": 1.1,
+      "VMA2": 1.1,
+      "VMA3": 1.1,
+      "VMI1": 0.9,
+      "VMI2": 0.9,
+      "VMI3": 0.9,
+      "VMSTAR": 0.99489,
+      "WINDV1": 1.0,
+      "WINDV2": 1.0,
+      "WINDV3": 1.0,
+      "X1-2": 0.0002,
+      "X2-3": 0.0002,
+      "X3-1": 0.0002,
+      "psse_name": "TRAFO 3W 2  "
+    }
+  },
+  "supplemental_attribute_associations": [
+    {
+      "attribute_id": 120,
+      "entity_id": 86,
+      "attribute_type": "ImpedanceCorrectionData"
+    },
+    {
+      "attribute_id": 121,
+      "entity_id": 89,
+      "attribute_type": "ImpedanceCorrectionData"
+    },
+    {
+      "attribute_id": 122,
+      "entity_id": 92,
+      "attribute_type": "ImpedanceCorrectionData"
+    },
+    {
+      "attribute_id": 123,
+      "entity_id": 99,
+      "attribute_type": "ImpedanceCorrectionData"
+    },
+    {
+      "attribute_id": 124,
+      "entity_id": 99,
+      "attribute_type": "ImpedanceCorrectionData"
+    },
+    {
+      "attribute_id": 125,
+      "entity_id": 99,
+      "attribute_type": "ImpedanceCorrectionData"
+    },
+    {
+      "attribute_id": 126,
+      "entity_id": 106,
+      "attribute_type": "ImpedanceCorrectionData"
+    },
+    {
+      "attribute_id": 124,
+      "entity_id": 106,
+      "attribute_type": "ImpedanceCorrectionData"
+    },
+    {
+      "attribute_id": 127,
+      "entity_id": 106,
+      "attribute_type": "ImpedanceCorrectionData"
+    }
+  ],
+  "supplemental_attributes": [
+    {
+      "id": 120,
+      "table_number": 4,
+      "impedance_correction_curve": {
+        "function_type": "PIECEWISE_LINEAR",
+        "points": [
+          {
+            "x": 0.88,
+            "y": 1.093
+          },
+          {
+            "x": 0.95,
+            "y": 1.03
+          },
+          {
+            "x": 1.0,
+            "y": 1.0
+          },
+          {
+            "x": 1.1,
+            "y": 0.95
+          },
+          {
+            "x": 1.17,
+            "y": 0.916
+          }
+        ]
+      },
+      "transformer_winding": "TR2W_WINDING",
+      "transformer_control_mode": "TAP_RATIO"
+    },
+    {
+      "id": 121,
+      "table_number": 7,
+      "impedance_correction_curve": {
+        "function_type": "PIECEWISE_LINEAR",
+        "points": [
+          {
+            "x": -45.0,
+            "y": 2.073
+          },
+          {
+            "x": 0.0,
+            "y": 1.0
+          },
+          {
+            "x": 45.0,
+            "y": 2.073
+          }
+        ]
+      },
+      "transformer_winding": "TR2W_WINDING",
+      "transformer_control_mode": "PHASE_SHIFT_ANGLE"
+    },
+    {
+      "id": 122,
+      "table_number": 3,
+      "impedance_correction_curve": {
+        "function_type": "PIECEWISE_LINEAR",
+        "points": [
+          {
+            "x": -24.1,
+            "y": 1.27
+          },
+          {
+            "x": -18.1,
+            "y": 1.166
+          },
+          {
+            "x": -12.2,
+            "y": 1.082
+          },
+          {
+            "x": -6.0,
+            "y": 1.061
+          },
+          {
+            "x": 0.0,
+            "y": 1.0
+          },
+          {
+            "x": 6.0,
+            "y": 1.061
+          },
+          {
+            "x": 12.2,
+            "y": 1.082
+          },
+          {
+            "x": 18.1,
+            "y": 1.166
+          },
+          {
+            "x": 24.1,
+            "y": 1.27
+          }
+        ]
+      },
+      "transformer_winding": "TR2W_WINDING",
+      "transformer_control_mode": "PHASE_SHIFT_ANGLE"
+    },
+    {
+      "id": 123,
+      "table_number": 1,
+      "impedance_correction_curve": {
+        "function_type": "PIECEWISE_LINEAR",
+        "points": [
+          {
+            "x": 0.88,
+            "y": 1.12
+          },
+          {
+            "x": 1.0,
+            "y": 1.0
+          },
+          {
+            "x": 1.02,
+            "y": 0.979
+          },
+          {
+            "x": 1.17,
+            "y": 0.895
+          }
+        ]
+      },
+      "transformer_winding": "PRIMARY_WINDING",
+      "transformer_control_mode": "TAP_RATIO"
+    },
+    {
+      "id": 124,
+      "table_number": 8,
+      "impedance_correction_curve": {
+        "function_type": "PIECEWISE_LINEAR",
+        "points": [
+          {
+            "x": -60.0,
+            "y": 1.5718
+          },
+          {
+            "x": -50.3,
+            "y": 1.4794
+          },
+          {
+            "x": -36.0,
+            "y": 1.3431
+          },
+          {
+            "x": -24.4,
+            "y": 1.2325
+          },
+          {
+            "x": -12.4,
+            "y": 1.1182
+          },
+          {
+            "x": 0.0,
+            "y": 1.0
+          },
+          {
+            "x": 12.4,
+            "y": 1.1182
+          },
+          {
+            "x": 24.4,
+            "y": 1.2325
+          },
+          {
+            "x": 36.0,
+            "y": 1.3431
+          },
+          {
+            "x": 50.3,
+            "y": 1.4794
+          },
+          {
+            "x": 60.0,
+            "y": 1.5718
+          }
+        ]
+      },
+      "transformer_winding": "SECONDARY_WINDING",
+      "transformer_control_mode": "PHASE_SHIFT_ANGLE"
+    },
+    {
+      "id": 125,
+      "table_number": 4,
+      "impedance_correction_curve": {
+        "function_type": "PIECEWISE_LINEAR",
+        "points": [
+          {
+            "x": 0.88,
+            "y": 1.093
+          },
+          {
+            "x": 0.95,
+            "y": 1.03
+          },
+          {
+            "x": 1.0,
+            "y": 1.0
+          },
+          {
+            "x": 1.1,
+            "y": 0.95
+          },
+          {
+            "x": 1.17,
+            "y": 0.916
+          }
+        ]
+      },
+      "transformer_winding": "TERTIARY_WINDING",
+      "transformer_control_mode": "TAP_RATIO"
+    },
+    {
+      "id": 126,
+      "table_number": 9,
+      "impedance_correction_curve": {
+        "function_type": "PIECEWISE_LINEAR",
+        "points": [
+          {
+            "x": -40.0,
+            "y": 1.4
+          },
+          {
+            "x": -30.0,
+            "y": 1.3
+          },
+          {
+            "x": -20.0,
+            "y": 1.2
+          },
+          {
+            "x": -10.0,
+            "y": 1.1
+          },
+          {
+            "x": 0.0,
+            "y": 1.0
+          },
+          {
+            "x": 10.0,
+            "y": 1.1
+          },
+          {
+            "x": 20.0,
+            "y": 1.2
+          },
+          {
+            "x": 30.0,
+            "y": 1.3
+          },
+          {
+            "x": 40.0,
+            "y": 1.4
+          }
+        ]
+      },
+      "transformer_winding": "PRIMARY_WINDING",
+      "transformer_control_mode": "PHASE_SHIFT_ANGLE"
+    },
+    {
+      "id": 127,
+      "table_number": 9,
+      "impedance_correction_curve": {
+        "function_type": "PIECEWISE_LINEAR",
+        "points": [
+          {
+            "x": -40.0,
+            "y": 1.4
+          },
+          {
+            "x": -30.0,
+            "y": 1.3
+          },
+          {
+            "x": -20.0,
+            "y": 1.2
+          },
+          {
+            "x": -10.0,
+            "y": 1.1
+          },
+          {
+            "x": 0.0,
+            "y": 1.0
+          },
+          {
+            "x": 10.0,
+            "y": 1.1
+          },
+          {
+            "x": 20.0,
+            "y": 1.2
+          },
+          {
+            "x": 30.0,
+            "y": 1.3
+          },
+          {
+            "x": 40.0,
+            "y": 1.4
+          }
+        ]
+      },
+      "transformer_winding": "TERTIARY_WINDING",
+      "transformer_control_mode": "PHASE_SHIFT_ANGLE"
+    }
+  ],
+  "time_series_associations": [],
+  "time_series_storage_file": null,
+  "unit_system": "DEVICE_BASE"
+}
