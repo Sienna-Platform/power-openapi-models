@@ -374,9 +374,10 @@ EXEMPTIONS = {
             "power_units is schema-required with a schema-default "
             "(NATURAL_UNITS). Same root cause as CostCurve.vom_cost: Julia's "
             "check_required still tests it for `=== nothing` even though its "
-            "kwdef default is never nothing; datamodel-codegen (after this "
-            "task's postprocess fix restoring the default) correctly drops "
-            "`required`. Verified no runtime divergence: CostCurve(...) "
+            "kwdef default is never nothing; datamodel-codegen (once "
+            "postprocess.py's fix_costcurve_power_units_default restores the "
+            "default) correctly drops `required`. Verified no runtime "
+            "divergence: CostCurve(...) "
             "omitting power_units resolves to NATURAL_UNITS on both sides."
         ),
         "remove_when": "same as CostCurve.vom_cost.",

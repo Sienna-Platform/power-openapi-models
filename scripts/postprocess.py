@@ -153,18 +153,19 @@ def warn_primitive_discriminators(content: str, path: Path) -> int:
     ):
         field_name = match.group(1)
         type_str = match.group(2)
-        if _has_primitive_in_union(type_str) and "discriminator=" in content[match.start():]:
-            # Check that the discriminator belongs to this Field() call
-            field_start = match.start()
-            paren_end = content.find(")", field_start)
-            field_text = content[field_start : paren_end + 1] if paren_end != -1 else ""
-            if "discriminator=" in field_text:
-                print(
-                    f"  WARNING: {path}:{field_name} — primitive in "
-                    f"discriminated union ({type_str})",
-                    file=sys.stderr,
-                )
-                warnings += 1
+        if not _has_primitive_in_union(type_str):
+            continue
+        # The discriminator must belong to this Field() call, not a later one.
+        paren_end = content.find(")", match.start())
+        if paren_end == -1:
+            continue
+        if "discriminator=" in content[match.start() : paren_end + 1]:
+            print(
+                f"  WARNING: {path}:{field_name} — primitive in "
+                f"discriminated union ({type_str})",
+                file=sys.stderr,
+            )
+            warnings += 1
     return warnings
 
 

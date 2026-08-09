@@ -1,10 +1,8 @@
 """Serde tests against real 14-bus operations documents.
 
 Fixtures are byte-identical copies of PowerFlowFileParser-emitted 14-bus
-documents vendored from SiennaSchemas' schema gap-assessment work
-(SiennaSchemas/.superpowers/sdd/2026-08-07-schemas-gap-assessment-and-modification-plan/fixtures/),
-kept in sync with a sibling Julia-side fixture test. Operations types only,
-no time series.
+documents vendored from SiennaSchemas, kept in sync with a sibling Julia-side
+fixture test. Operations types only, no time series.
 """
 
 import json
@@ -137,14 +135,14 @@ def test_device_base_spot_checks():
 
 
 def test_device_base_actually_converts_from_natural_units():
-    """Regression for the gap this vendoring round fixed: the previously-vendored
-    DEVICE_BASE fixture was byte-identical to NATURAL_UNITS except for the
-    ``unit_system`` tag itself, so neither spot-check test above (which reads one
-    fixture at a time) would have caught a regression back to that state. A Line's
+    """The two fixtures must differ in more than the ``unit_system`` tag.
+
+    Neither spot-check test above reads both fixtures, so a DEVICE_BASE fixture
+    that is a byte-identical copy of NATURAL_UNITS would pass them both. A Line's
     ``rating`` (ApparentPower, MVA, no per-field unit-basis discriminator) is
-    genuinely per-unit-on-own-``base_power`` in DEVICE_BASE: assert the documented
-    physical relationship directly, across every line, and that at least one
-    actually differs numerically.
+    genuinely per-unit-on-own-``base_power`` in DEVICE_BASE: assert that physical
+    relationship directly, across every line, and that at least one line actually
+    differs numerically.
     """
     natural = json.loads(
         (FIXTURES_DIR / "case14_operations.NATURAL_UNITS.json").read_text()
