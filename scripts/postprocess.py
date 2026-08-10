@@ -49,7 +49,6 @@ INPUT_OUTPUT_CURVE_ZERO_DEFAULT = """{
                 "constant_term": 0,
                 "proportional_term": 0,
             },
-            "input_at_zero": 0,
         }"""
 
 # (unique description substring, field name, type) -> the JSON-literal default

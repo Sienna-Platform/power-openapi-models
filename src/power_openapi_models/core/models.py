@@ -414,7 +414,6 @@ class TwoTerminalLoss(RootModel[InputOutputCurve | IncrementalCurve]):
                     "constant_term": 0,
                     "proportional_term": 0,
                 },
-                "input_at_zero": 0,
             }
         ),
         discriminator="curve_type",
@@ -435,7 +434,6 @@ class CostCurve(BaseModel):
                     "constant_term": 0,
                     "proportional_term": 0,
                 },
-                "input_at_zero": 0,
             }
         )
     )
@@ -454,7 +452,6 @@ class RenewableGenerationCost(BaseModel):
                         "constant_term": 0,
                         "proportional_term": 0,
                     },
-                    "input_at_zero": 0,
                 },
                 "vom_cost": {
                     "curve_type": "INPUT_OUTPUT",
@@ -463,7 +460,6 @@ class RenewableGenerationCost(BaseModel):
                         "constant_term": 0,
                         "proportional_term": 0,
                     },
-                    "input_at_zero": 0,
                 },
             }
         )
@@ -514,7 +510,6 @@ class MarketBidCost(BaseModel):
                     "constant_term": 0,
                     "proportional_term": 0,
                 },
-                "input_at_zero": 0,
             }
         ),
         description="No load cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
@@ -532,7 +527,6 @@ class MarketBidCost(BaseModel):
                     "constant_term": 0,
                     "proportional_term": 0,
                 },
-                "input_at_zero": 0,
             }
         ),
         description="Shut-down cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",

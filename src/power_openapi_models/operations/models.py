@@ -2051,7 +2051,6 @@ class TwoTerminalGenericHVDCLine(BaseModel):
                 "constant_term": 0,
                 "proportional_term": 0,
             },
-            "input_at_zero": 0,
         },
         description="Loss model coefficients. It accepts a linear model with a constant loss and a proportional loss rate (MW of loss per MW of flow). It also accepts a Piecewise loss, with N segments to specify different proportional losses for different segments.",
     )
@@ -2217,7 +2216,6 @@ class TwoTerminalLCCLine(BaseModel):
                 "constant_term": 0,
                 "proportional_term": 0,
             },
-            "input_at_zero": 0,
         },
         description="A generic loss model coefficients. It accepts a linear model with a constant loss and a proportional loss rate (MW of loss per MW of flow). It also accepts a Piecewise loss, with N segments to specify different proportional losses for different segments.",
     )
@@ -2292,7 +2290,6 @@ class TwoTerminalVSCLine(BaseModel):
                 "constant_term": 0,
                 "proportional_term": 0,
             },
-            "input_at_zero": 0,
         },
         description="Loss model coefficients in the `from` bus converter. It accepts a linear model or quadratic. Same converter data is used in both ends.",
     )
@@ -2347,7 +2344,6 @@ class TwoTerminalVSCLine(BaseModel):
                 "constant_term": 0,
                 "proportional_term": 0,
             },
-            "input_at_zero": 0,
         },
         description="Loss model coefficients in the `to` bus converter. It accepts a linear model or quadratic. Same converter data is used in both ends.",
     )
@@ -2572,7 +2568,6 @@ class InterconnectingConverter(BaseModel):
                 "constant_term": 0,
                 "proportional_term": 0,
             },
-            "input_at_zero": 0,
         },
         description="Linear or quadratic loss function with respect to the converter current.",
     )
