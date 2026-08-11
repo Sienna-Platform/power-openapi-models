@@ -567,7 +567,8 @@
         "reactive_power_required": 0.0,
         "max_reactive_power": 9999.0,
         "shunt_control_type": "STATCOM",
-        "regulated_bus_number": 0
+        "regulated_bus_number": 0,
+        "base_power": 100.0
       }
     ],
     "FixedAdmittance": [
@@ -580,7 +581,8 @@
         "Y": {
           "real": 0.5,
           "imag": -3.0
-        }
+        },
+        "base_power": 100.0
       },
       {
         "id": 114,
@@ -591,7 +593,8 @@
         "Y": {
           "real": 0.8,
           "imag": 0.3
-        }
+        },
+        "base_power": 100.0
       },
       {
         "id": 115,
@@ -602,7 +605,8 @@
         "Y": {
           "real": 0.2,
           "imag": 4.0
-        }
+        },
+        "base_power": 100.0
       },
       {
         "id": 116,
@@ -613,7 +617,8 @@
         "Y": {
           "real": 1.0,
           "imag": 2.0
-        }
+        },
+        "base_power": 100.0
       }
     ],
     "Line": [

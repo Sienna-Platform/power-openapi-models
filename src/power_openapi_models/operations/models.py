@@ -185,6 +185,26 @@ class AreaInterchange(BaseModel):
     )
 
 
+class Role(Enum):
+    CT = "CT"
+    CA = "CA"
+
+
+class CombinedCycleAssociation(BaseModel):
+    plant_id: int = Field(
+        ..., description="ID of the parent CombinedCycleBlock supplemental attribute"
+    )
+    entity_id: int = Field(..., description="ID of the CT or CA generating unit")
+    role: Role = Field(
+        ...,
+        description="Role of the entity within the combined cycle block (combustion turbine input or combustion-augmented steam output)",
+    )
+    hrsg_index: int = Field(
+        ...,
+        description="HRSG (heat recovery steam generator) index this unit is associated with",
+    )
+
+
 class CombinedCycleConfiguration(Enum):
     SingleShaftCombustionSteam = "SingleShaftCombustionSteam"
     SeparateShaftCombustionSteam = "SeparateShaftCombustionSteam"
@@ -1349,6 +1369,19 @@ class PlannedOutage(BaseModel):
     )
 
 
+class PlantAssociation(BaseModel):
+    plant_id: int = Field(
+        ..., description="ID of the parent plant supplemental attribute"
+    )
+    entity_id: int = Field(
+        ..., description="ID of the generating unit (entity) participating in the plant"
+    )
+    group_index: int = Field(
+        ...,
+        description="Group number within the plant (shaft, penstock, PCC, or exclusion group, depending on the parent plant's type)",
+    )
+
+
 class PowerLoad(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
@@ -1477,6 +1510,16 @@ class RenewableNonDispatch(BaseModel):
 class RenewablePowerPlant(BaseModel):
     id: int
     name: str = Field(..., description="Name of the renewable power plant")
+
+
+class ServiceAssociation(BaseModel):
+    service_id: int = Field(
+        ..., description="ID of the service the membership belongs to."
+    )
+    entity_id: int = Field(
+        ...,
+        description="ID of the contributing member: a Device, a Branch, or another Service.",
+    )
 
 
 class ShiftablePowerLoad(BaseModel):
