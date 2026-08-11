@@ -393,9 +393,7 @@ class EnergyReservoirStorage(BaseModel):
         ..., description="Base power of the unit for per unitization. Units: MVA."
     )
     operation_cost: StorageCost | MarketBidCost = Field(
-        ...,
-        description="Operating cost of storage. or MarketBidCost",
-        discriminator="cost_type",
+        ..., description="Operating cost of storage. or MarketBidCost"
     )
     conversion_factor: float | None = Field(
         1.0,
@@ -675,7 +673,6 @@ class HydroDispatch(BaseModel):
     operation_cost: HydroGenerationCost | MarketBidCost = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
-        discriminator="cost_type",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -759,7 +756,6 @@ class HydroPumpTurbine(BaseModel):
     operation_cost: HydroGenerationCost | MarketBidCost = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
-        discriminator="cost_type",
     )
     active_power_pump: float | None = Field(
         0.0,
@@ -895,7 +891,6 @@ class HydroTurbine(BaseModel):
     operation_cost: HydroGenerationCost | MarketBidCost = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
-        discriminator="cost_type",
     )
     powerhouse_elevation: float | None = Field(
         0.0,
@@ -992,9 +987,7 @@ class InterruptiblePowerLoad(BaseModel):
         ..., description="Base power of the unit for per unitization. Units: MVA."
     )
     operation_cost: LoadCost | MarketBidCost = Field(
-        ...,
-        description="Operational cost of interrupting load. or MarketBidCost",
-        discriminator="cost_type",
+        ..., description="Operational cost of interrupting load. or MarketBidCost"
     )
     conformity: LoadConformity | None = Field(
         "UNDEFINED",
@@ -1022,9 +1015,7 @@ class InterruptibleStandardLoad(BaseModel):
         ..., description="Base power of the load for per unitization. Units: MVA."
     )
     operation_cost: LoadCost | MarketBidCost = Field(
-        ...,
-        description="Operational cost of interrupting load. or MarketBidCost",
-        discriminator="cost_type",
+        ..., description="Operational cost of interrupting load. or MarketBidCost"
     )
     conformity: LoadConformity | None = Field(
         "UNDEFINED",
@@ -1282,7 +1273,7 @@ class OfflineReserve(BaseModel):
     )
     variable: CostCurve | None = Field(
         None,
-        description="Operating reserve demand curve. Omit when the reserve has no demand curve.",
+        description="Operating reserve demand curve, either static or time-series-backed. Time series values are carried via `time_series_associations` in the sidecar, never inline. Omit when the reserve has no demand curve.",
     )
     sustained_time: float | None = Field(
         60.0,
@@ -1321,7 +1312,7 @@ class OnlineReserve(BaseModel):
     )
     variable: CostCurve | None = Field(
         None,
-        description="Operating reserve demand curve. Omit when the reserve has no demand curve.",
+        description="Operating reserve demand curve, either static or time-series-backed. Time series values are carried via `time_series_associations` in the sidecar, never inline. Omit when the reserve has no demand curve.",
     )
     sustained_time: float | None = Field(
         60.0,
@@ -1429,9 +1420,7 @@ class RenewableDispatch(BaseModel):
         description="Power factor [0, 1] set-point, used in some production cost modeling and in load flow if the unit is connected to a `PQ` bus. Units: 1.",
     )
     operation_cost: RenewableGenerationCost | MarketBidCost = Field(
-        ...,
-        description="Operating cost of generation. or MarketBidCost",
-        discriminator="cost_type",
+        ..., description="Operating cost of generation. or MarketBidCost"
     )
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
@@ -1522,9 +1511,7 @@ class ShiftablePowerLoad(BaseModel):
         ..., description="Number of time periods over which load must be balanced."
     )
     operation_cost: LoadCost | MarketBidCost = Field(
-        ...,
-        description="Operational cost of interrupting load. or MarketBidCost",
-        discriminator="cost_type",
+        ..., description="Operational cost of interrupting load. or MarketBidCost"
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -1871,9 +1858,7 @@ class ThermalMultiStart(BaseModel):
         description="Number of start-up based on turbine temperature, where `1` = *hot*, `2` = *warm*, and `3` = *cold*.",
     )
     operation_cost: ThermalGenerationCost | MarketBidCost = Field(
-        ...,
-        description="Operating cost of generation. or MarketBidCost",
-        discriminator="cost_type",
+        ..., description="Operating cost of generation. or MarketBidCost"
     )
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
@@ -1934,9 +1919,7 @@ class ThermalStandard(BaseModel):
         None, description="Ramp up and ramp down limits. Units: MW/min."
     )
     operation_cost: ThermalGenerationCost | MarketBidCost = Field(
-        ...,
-        description="Operating cost of generation, or a MarketBidCost.",
-        discriminator="cost_type",
+        ..., description="Operating cost of generation, or a MarketBidCost."
     )
     base_power: float = Field(
         ...,
@@ -2517,6 +2500,10 @@ class GroupReserve(BaseModel):
     )
     requirement: float = Field(
         ..., description="The value of required reserves. Units: MW."
+    )
+    variable: CostCurve | None = Field(
+        None,
+        description="Operating reserve demand curve for the group, either static or time-series-backed. A group carrying a curve is elastic: its requirement is priced by the curve rather than enforced. Time series values are carried via `time_series_associations` in the sidecar, never inline. Omit when the group has no demand curve.",
     )
     reserve_direction: ReserveDirection = Field(
         ...,
