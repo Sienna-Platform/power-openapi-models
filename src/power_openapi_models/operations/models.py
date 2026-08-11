@@ -465,6 +465,10 @@ class FixedAdmittance(BaseModel):
         ...,
         description="Fixed admittance. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MVAr .",
     )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+    )
     dynamic_injector: int | None = Field(
         None,
         description="ID of the corresponding dynamic injection model for admittance, if any.",
@@ -2481,6 +2485,10 @@ class FACTSControlDevice(BaseModel):
     regulated_bus_number: int | None = Field(
         0,
         description="Bus whose voltage this device regulates; 0 means local (sending) bus (PSS/E FCREG). Units: 1.",
+    )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
     )
     dynamic_injector: int | None = Field(
         None,
