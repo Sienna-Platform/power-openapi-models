@@ -235,6 +235,39 @@ class GeographicInfo(BaseModel):
     geo_json: dict[str, Any]
 
 
+class DataSource(BaseModel):
+    id: int
+    organization: str | None = Field(
+        None,
+        description="Publishing organization, e.g. 'U.S. Energy Information Administration'.",
+    )
+    retrieved_at: AwareDatetime = Field(..., description="When the data was obtained.")
+    dataset: str | None = Field(
+        None,
+        description="Dataset identifier within the publishing organization, e.g. 'EIA-860 2023, Schedule 3'.",
+    )
+    url: str | None = Field(None, description="URL the data was retrieved from.")
+    version: str | None = Field(
+        None, description="Data version or vintage, e.g. '2023 final'."
+    )
+    published_at: AwareDatetime | None = Field(
+        None, description="When the source published the data; null if unknown."
+    )
+    confidence: str | None = Field(
+        None, description="Confidence qualifier, e.g. 'high', 'medium'."
+    )
+    recorded_by: str | None = Field(
+        None, description="User or agent that recorded the value."
+    )
+    fields: list[str] = Field(
+        ...,
+        description="Names of the component fields this provenance record applies to.",
+    )
+    extra: dict[str, str] | None = Field(
+        None, description="Additional string-valued provenance metadata."
+    )
+
+
 class SupplementalAttributeAssociation(BaseModel):
     attribute_id: int = Field(..., description="ID of the supplemental attribute.")
     entity_id: int = Field(
