@@ -6,8 +6,10 @@ from power_openapi_models.core.models import (
     ACBusType,
     AdmittanceUnitBasis,
     ComplexNumber,
+    CostCurve,
     EmissionBasis,
     EnergyUnit,
+    EnergyUnitBasis,
     FromTo,
     FromToToFrom,
     FunctionData,
@@ -25,6 +27,7 @@ from power_openapi_models.core.models import (
     PollutantType,
     PrimeMovers,
     RenewableGenerationCost,
+    ShuntAdmittanceUnitBasis,
     StartUpShutDown,
     StartUpStages,
     StorageCost,
@@ -41,8 +44,10 @@ from power_openapi_models.core.models import (
     ACBusType,
     AdmittanceUnitBasis,
     ComplexNumber,
+    CostCurve,
     EmissionBasis,
     EnergyUnit,
+    EnergyUnitBasis,
     FromTo,
     FromToToFrom,
     FunctionData,
@@ -60,6 +65,7 @@ from power_openapi_models.core.models import (
     PollutantType,
     PrimeMovers,
     RenewableGenerationCost,
+    ShuntAdmittanceUnitBasis,
     StartUpShutDown,
     StartUpStages,
     StorageCost,
@@ -127,8 +133,8 @@ class AGC(BaseModel):
 
 class Arc(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component.")
-    from_: int = Field(..., alias="from", description="ID of the initial bus.")
-    to: int = Field(..., description="ID of the terminal bus.")
+    from_id: int = Field(..., description="ID of the initial bus.")
+    to_id: int = Field(..., description="ID of the terminal bus.")
 
 
 class Area(BaseModel):
@@ -146,6 +152,10 @@ class Area(BaseModel):
     load_response: float | None = Field(
         0.0,
         description="Load-frequency damping parameter modeling how much the load in the area changes due to changes in frequency. Units: MW/Hz.",
+    )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
     )
 
 
@@ -168,6 +178,10 @@ class AreaInterchange(BaseModel):
     flow_limits: FromToToFrom = Field(
         ...,
         description="Max flow between the areas. It ignores lines and other branches totals. Units: MW.",
+    )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
     )
 
 
@@ -203,66 +217,6 @@ class CombinedCycleFractional(BaseModel):
     id: int
     name: str = Field(..., description="Name of the combined cycle fractional plant")
     configuration: CombinedCycleConfiguration
-
-
-class ReserveDirection(Enum):
-    UP = "UP"
-    DOWN = "DOWN"
-    SYMMETRIC = "SYMMETRIC"
-
-
-class ConstantReserveGroup(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    requirement: float = Field(
-        ..., description="The value of required reserves. Units: MW."
-    )
-    reserve_direction: ReserveDirection = Field(
-        ...,
-        description="Whether the reserve is an upward, downward, or symmetric reserve product.",
-    )
-
-
-class ConstantReserveNonSpinning(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    time_frame: float = Field(
-        ...,
-        description="The saturation time frame that a participating device must provide its reserve contribution. Units: min.",
-    )
-    requirement: float = Field(
-        ..., description="The value of required reserves. Units: MW."
-    )
-    sustained_time: float | None = Field(
-        3600.0,
-        description="The time reserve contribution must be sustained at a specified level. Units: s.",
-    )
-    max_output_fraction: float | None = Field(
-        1.0,
-        description="The maximum fraction of each device's output that can be assigned to the service.",
-    )
-    max_participation_factor: float | None = Field(
-        1.0,
-        description="The maximum portion [0, 1.0] of the reserve that can be contributed per device.",
-    )
-    deployed_fraction: float | None = Field(
-        0.0,
-        description="Fraction of service procurement that is assumed to be actually deployed. Most commonly, this is assumed to be either 0.0 or 1.0.",
-    )
 
 
 class DCBus(BaseModel):
@@ -333,8 +287,18 @@ class DiscreteControlledACBranch(BaseModel):
     arc: int = Field(
         ..., description="An `Arc` defining this line `from` a bus `to` another bus."
     )
-    r: float = Field(..., description="Resistance. Per-unit on system base. Units: pu.")
-    x: float = Field(..., description="Reactance. Per-unit on system base. Units: pu.")
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+    )
+    r: float = Field(
+        ...,
+        description="Resistance. Per-unit on `base_power`, which records the system base. Units: pu.",
+    )
+    x: float = Field(
+        ...,
+        description="Reactance. Per-unit on `base_power`, which records the system base. Units: pu.",
+    )
     rating: float = Field(
         ...,
         description="Thermal rating. Flow on the branch must be between -`rating` and `rating`. Units: MVA.",
@@ -404,7 +368,11 @@ class EnergyReservoirStorage(BaseModel):
     )
     storage_capacity: float = Field(
         ...,
-        description="Maximum storage capacity (can be in units of, e.g., MWh for batteries or liters for hydrogen). When in MWh, this value divided by base_power gives an approximate duration in hours, assuming unity power factor. Units: MWh.",
+        description="Maximum storage capacity (can be in units of, e.g., MWh for batteries or liters for hydrogen). Divided by base_power this gives an approximate duration, assuming unity power factor: in hours under MWH, in minutes under MWMIN. Units: per energy_units — MWH: MWh, MWMIN: MWmin .",
+    )
+    energy_units: EnergyUnitBasis | None = Field(
+        "MWH",
+        description="Unit basis for `storage_capacity`. MWH is the default interchange form; MWMIN records the same energy on the minutes basis used by operational durations.",
     )
     storage_level_limits: MinMax = Field(
         ...,
@@ -444,8 +412,10 @@ class EnergyReservoirStorage(BaseModel):
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
     )
-    operation_cost: StorageCost = Field(
-        ..., description="Operating cost of storage. or MarketBidCost"
+    operation_cost: StorageCost | MarketBidCost = Field(
+        ...,
+        description="Operating cost of storage. or MarketBidCost",
+        discriminator="cost_type",
     )
     conversion_factor: float | None = Field(
         1.0,
@@ -463,7 +433,7 @@ class EnergyReservoirStorage(BaseModel):
     )
     self_discharge: float | None = Field(
         0.0,
-        description="Self-discharge (leakage loss) as a fraction of the stored energy lost per hour (pu/hr of storage_capacity), modeled as E[t] = (1 - self_discharge * dt) * E[t-1]. Units: 1.",
+        description="Self-discharge (leakage loss) as a fraction of the stored energy lost per minute (pu/min of storage_capacity), modeled as E[t] = (1 - self_discharge * dt) * E[t-1]; dt must be on the same minutes basis. Units: 1/min.",
     )
     standing_loss: float | None = Field(
         0.0,
@@ -492,8 +462,8 @@ class ShuntControlType(Enum):
 
 
 class VoltageUnitBasis(Enum):
-    SYSTEM_BASE = "SYSTEM_BASE"
     NATURAL_UNITS = "NATURAL_UNITS"
+    DEVICE_BASE = "DEVICE_BASE"
 
 
 class FixedAdmittance(BaseModel):
@@ -509,13 +479,17 @@ class FixedAdmittance(BaseModel):
     bus: int = Field(
         ..., description="ID of the bus that this component is connected to."
     )
-    admittance_units: AdmittanceUnitBasis | None = Field(
+    admittance_units: ShuntAdmittanceUnitBasis | None = Field(
         "DEVICE_MVAR",
         description="Unit basis for the shunt admittance Y. DEVICE_MVAR is PSS/E RAW native (Mvar/MW at unity voltage).",
     )
     Y: ComplexNumber = Field(
         ...,
-        description="Fixed admittance. Per-unit on system base. Units: pu. Units: per admittance_units — SYSTEM_BASE: pu, NATURAL_UNITS: S, DEVICE_MVAR: MVAr .",
+        description="Fixed admittance. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MVAr .",
+    )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
     )
     dynamic_injector: int | None = Field(
         None,
@@ -530,6 +504,12 @@ class FixedForcedOutage(BaseModel):
         [],
         description="IDs of devices whose post-contingency state should be modeled when this outage occurs. Empty by default; semantics of an empty list are decided by the downstream consumer.",
     )
+
+
+class ReserveDirection(Enum):
+    UP = "UP"
+    DOWN = "DOWN"
+    SYMMETRIC = "SYMMETRIC"
 
 
 class GenericArcImpedance(BaseModel):
@@ -551,8 +531,7 @@ class GenericArcImpedance(BaseModel):
         description="Initial condition of reactive power flow on the line. Units: MVAr.",
     )
     max_flow: float = Field(
-        ...,
-        description="Maximum allowable flow on the generic impedance. Per-unit on system base. Units: pu.",
+        ..., description="Maximum allowable flow on the generic impedance. Units: MW."
     )
     arc: int = Field(
         ..., description="An `Arc` defining this line `from` a bus `to` another bus."
@@ -562,23 +541,29 @@ class GenericArcImpedance(BaseModel):
         description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
     )
     parameter_units: ImpedanceUnitBasis | None = Field(
-        "SYSTEM_BASE",
-        description="Unit basis for r and x. SYSTEM_BASE: per-unit on the system base. NATURAL_UNITS: physical ohms.",
+        "DEVICE_BASE",
+        description="Unit basis for r and x. DEVICE_BASE is per-unit on this component's base_power, which records the system base.",
     )
     r: float = Field(
         ...,
-        description="Resistance. Units: per parameter_units — SYSTEM_BASE: pu, NATURAL_UNITS: ohm .",
+        description="Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     x: float = Field(
         ...,
-        description="Reactance. Units: per parameter_units — SYSTEM_BASE: pu, NATURAL_UNITS: ohm .",
+        description="Reactance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
 
 
 class GeometricDistributionForcedOutage(BaseModel):
     id: int
-    mean_time_to_recovery: float | None = 0.0
-    outage_transition_probability: float | None = 0.0
+    mean_time_to_recovery: int | None = Field(
+        0,
+        description="Mean time elapsed between a failure and the return to service, as a whole number of minutes. Units: min.",
+    )
+    outage_transition_probability: float | None = Field(
+        0.0,
+        description="Probability of transitioning into a forced outage in one minute, the same time step `mean_time_to_recovery` is stated in.",
+    )
     monitored_components: list[int] | None = Field(
         [],
         description="IDs of devices whose post-contingency state should be modeled when this outage occurs. Empty by default; semantics of an empty list are decided by the downstream consumer.",
@@ -633,7 +618,7 @@ class HybridSystem(BaseModel):
     )
     interconnection_impedance: ComplexNumber | None = Field(
         None,
-        description="Impedance between the hybrid system and the grid interconnection. Per-unit on system base. Units: pu.",
+        description="Impedance between the hybrid system and the grid interconnection. Per-unit on `base_power`. Units: pu.",
     )
     interconnection_rating: float | None = Field(
         None,
@@ -698,7 +683,7 @@ class HydroDispatch(BaseModel):
         None, description="Ramp up and ramp down limits. Units: MW/min."
     )
     time_limits: UpDown | None = Field(
-        None, description="Minimum up and minimum down time limits. Units: h."
+        None, description="Minimum up and minimum down time limits. Units: min."
     )
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
@@ -708,12 +693,13 @@ class HydroDispatch(BaseModel):
         description="Initial commitment condition at the start of a simulation (`true` = on or `false` = off).",
     )
     time_at_status: float | None = Field(
-        10000.0,
-        description="Time the generator has been on or off, as indicated by `status`. default is psy const INFINITE_TIME = 1e4 Units: h.",
+        600000.0,
+        description="Time the generator has been on or off, as indicated by `status`. default is PowerSystems.jl's INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
     )
-    operation_cost: HydroGenerationCost = Field(
+    operation_cost: HydroGenerationCost | MarketBidCost = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
+        discriminator="cost_type",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -781,22 +767,23 @@ class HydroPumpTurbine(BaseModel):
     )
     time_limits: UpDown | None = Field(
         None,
-        description="Minimum up and minimum down time limits. in psy5 a required param with an option to be nothing Units: h.",
+        description="Minimum up and minimum down time limits. in psy5 a required param with an option to be nothing Units: min.",
     )
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
     )
     status: Status | None = Field(
         "OFF",
-        description="Initial Operating status of a pumped-storage hydro unit. See `PumpHydroStatus` for reference.",
+        description="Initial Operating status of a pumped-storage hydro unit. See `HydroPumpTurbineStatus` for reference.",
     )
     time_at_status: float | None = Field(
-        10000.0,
-        description="Time the generator has been on or off, as indicated by `status`. default is psy const INFINITE_TIME = 1e4 Units: h.",
+        600000.0,
+        description="Time the generator has been on or off, as indicated by `status`. default is PowerSystems.jl's INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
     )
-    operation_cost: HydroGenerationCost = Field(
+    operation_cost: HydroGenerationCost | MarketBidCost = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
+        discriminator="cost_type",
     )
     active_power_pump: float | None = Field(
         0.0,
@@ -807,15 +794,15 @@ class HydroPumpTurbine(BaseModel):
     )
     transition_time: TurbinePump | None = Field(
         {"turbine": 0.0, "pump": 0.0},
-        description="Transition time to switch into the specific mode. Units: h.",
+        description="Transition time to switch into the specific mode. Units: min.",
     )
     minimum_time: TurbinePump | None = Field(
         {"turbine": 0.0, "pump": 0.0},
-        description="Minimum operating time for the specific mode. Units: h.",
+        description="Minimum operating time for the specific mode. Units: min.",
     )
     travel_time: float | None = Field(
         None,
-        description="Downstream (from reservoir into turbine) travel time. Units: h.",
+        description="Downstream (from reservoir into turbine) travel time. Set to `null` if not applicable. Units: min.",
     )
     conversion_factor: float | None = Field(
         1.0,
@@ -929,9 +916,10 @@ class HydroTurbine(BaseModel):
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
     )
-    operation_cost: HydroGenerationCost = Field(
+    operation_cost: HydroGenerationCost | MarketBidCost = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
+        discriminator="cost_type",
     )
     powerhouse_elevation: float | None = Field(
         0.0,
@@ -941,7 +929,7 @@ class HydroTurbine(BaseModel):
         None, description="Ramp up and ramp down limits. Units: MW/min."
     )
     time_limits: UpDown | None = Field(
-        None, description="Minimum up and minimum down time limits. Units: h."
+        None, description="Minimum up and minimum down time limits. Units: min."
     )
     outflow_limits: MinMax | None = Field(
         None,
@@ -960,7 +948,7 @@ class HydroTurbine(BaseModel):
     )
     travel_time: float | None = Field(
         None,
-        description="Downstream (from reservoir into turbine) travel time. Units: h.",
+        description="Downstream (from reservoir into turbine) travel time. Set to `null` if not applicable. Units: min.",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -1027,8 +1015,10 @@ class InterruptiblePowerLoad(BaseModel):
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
     )
-    operation_cost: LoadCost = Field(
-        ..., description="Operational cost of interrupting load. or MarketBidCost"
+    operation_cost: LoadCost | MarketBidCost = Field(
+        ...,
+        description="Operational cost of interrupting load. or MarketBidCost",
+        discriminator="cost_type",
     )
     conformity: LoadConformity | None = Field(
         "UNDEFINED",
@@ -1055,8 +1045,10 @@ class InterruptibleStandardLoad(BaseModel):
     base_power: float = Field(
         ..., description="Base power of the load for per unitization. Units: MVA."
     )
-    operation_cost: LoadCost = Field(
-        ..., description="Operational cost of interrupting load. or MarketBidCost"
+    operation_cost: LoadCost | MarketBidCost = Field(
+        ...,
+        description="Operational cost of interrupting load. or MarketBidCost",
+        discriminator="cost_type",
     )
     conformity: LoadConformity | None = Field(
         "UNDEFINED",
@@ -1133,15 +1125,21 @@ class Line(BaseModel):
     arc: int = Field(
         ..., description="An `Arc` defining this line `from` a bus `to` another bus."
     )
-    r: float = Field(..., description="Resistance. Per-unit on system base. Units: pu.")
-    x: float = Field(..., description="Reactance. Per-unit on system base. Units: pu.")
+    r: float = Field(
+        ...,
+        description="Resistance. Per-unit on `base_power`, which records the system base. Units: pu.",
+    )
+    x: float = Field(
+        ...,
+        description="Reactance. Per-unit on `base_power`, which records the system base. Units: pu.",
+    )
     base_power: float = Field(
         ...,
         description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
     )
     b: FromTo | None = Field(
         None,
-        description="Shunt susceptance, specified both on the `from` and `to` ends of the line. These are commonly modeled with the same value. Per-unit on system base. Units: pu.",
+        description="Shunt susceptance, specified both on the `from` and `to` ends of the line. These are commonly modeled with the same value. Per-unit on `base_power`, which records the system base. Units: pu.",
     )
     rating: float = Field(
         ...,
@@ -1158,7 +1156,7 @@ class Line(BaseModel):
     )
     g: FromTo | None = Field(
         {"from": 0.0, "to": 0.0},
-        description="Shunt conductance, specified both on the `from` and `to` ends of the line. These are commonly modeled with the same value. Per-unit on system base. Units: pu.",
+        description="Shunt conductance, specified both on the `from` and `to` ends of the line. These are commonly modeled with the same value. Per-unit on `base_power`, which records the system base. Units: pu.",
     )
 
 
@@ -1173,6 +1171,10 @@ class LoadZone(BaseModel):
     )
     peak_reactive_power: float = Field(
         ..., description="Peak reactive power in the zone. Units: MVAr."
+    )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
     )
 
 
@@ -1197,15 +1199,21 @@ class MonitoredLine(BaseModel):
     arc: int = Field(
         ..., description="An `Arc` defining this line `from` a bus `to` another bus."
     )
-    r: float = Field(..., description="Resistance. Per-unit on system base. Units: pu.")
-    x: float = Field(..., description="Reactance. Per-unit on system base. Units: pu.")
+    r: float = Field(
+        ...,
+        description="Resistance. Per-unit on `base_power`, which records the system base. Units: pu.",
+    )
+    x: float = Field(
+        ...,
+        description="Reactance. Per-unit on `base_power`, which records the system base. Units: pu.",
+    )
     base_power: float = Field(
         ...,
         description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
     )
     b: FromTo = Field(
         ...,
-        description="Shunt susceptance, specified both on the `from` and `to` ends of the line. These are commonly modeled with the same value. Per-unit on system base. Units: pu.",
+        description="Shunt susceptance, specified both on the `from` and `to` ends of the line. These are commonly modeled with the same value. Per-unit on `base_power`, which records the system base. Units: pu.",
     )
     flow_limits: FromToToFrom = Field(
         ...,
@@ -1226,7 +1234,7 @@ class MonitoredLine(BaseModel):
     )
     g: FromTo | None = Field(
         {"from": 0.0, "to": 0.0},
-        description="Shunt conductance, specified both on the `from` and `to` ends of the line. These are commonly modeled with the same value. Per-unit on system base. Units: pu.",
+        description="Shunt conductance, specified both on the `from` and `to` ends of the line. These are commonly modeled with the same value. Per-unit on `base_power`, which records the system base. Units: pu.",
     )
 
 
@@ -1276,6 +1284,88 @@ class MotorLoad(BaseModel):
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
+    )
+
+
+class OfflineReserve(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+    )
+    time_frame: float = Field(
+        ...,
+        description="The saturation time frame to provide reserve contribution. Units: min.",
+    )
+    requirement: float | None = Field(
+        0.0, description="The value of required reserves. Units: MW."
+    )
+    variable: CostCurve | None = Field(
+        None,
+        description="Operating reserve demand curve, either static or time-series-backed. Time series values are carried via `time_series_associations` in the sidecar, never inline. Omit when the reserve has no demand curve.",
+    )
+    sustained_time: float | None = Field(
+        60.0,
+        description="The time reserve contribution must be sustained at a specified level. Units: min.",
+    )
+    max_output_fraction: float | None = Field(
+        1.0,
+        description="The maximum fraction of each device's output that can be assigned to the service.",
+    )
+    max_participation_factor: float | None = Field(
+        1.0,
+        description="The maximum portion [0, 1.0] of the reserve that can be contributed per device.",
+    )
+    deployed_fraction: float | None = Field(
+        0.0,
+        description="Fraction of service procurement that is assumed to be actually deployed. Most commonly, this is assumed to be either 0.0 or 1.0.",
+    )
+
+
+class OnlineReserve(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+    )
+    time_frame: float = Field(
+        ...,
+        description="The saturation time frame to provide reserve contribution. Units: min.",
+    )
+    requirement: float | None = Field(
+        0.0, description="The value of required reserves. Units: MW."
+    )
+    variable: CostCurve | None = Field(
+        None,
+        description="Operating reserve demand curve, either static or time-series-backed. Time series values are carried via `time_series_associations` in the sidecar, never inline. Omit when the reserve has no demand curve.",
+    )
+    sustained_time: float | None = Field(
+        60.0,
+        description="The time reserve contribution must be sustained at a specified level. Units: min.",
+    )
+    max_output_fraction: float | None = Field(
+        1.0,
+        description="The maximum fraction of each device's output that can be assigned to the service.",
+    )
+    max_participation_factor: float | None = Field(
+        1.0,
+        description="The maximum portion [0, 1.0] of the reserve that can be contributed per device.",
+    )
+    deployed_fraction: float | None = Field(
+        0.0,
+        description="Fraction of service procurement that is assumed to be actually deployed. Most commonly, this is assumed to be either 0.0 or 1.0.",
+    )
+    reserve_direction: ReserveDirection = Field(
+        ...,
+        description="Whether the reserve is an upward, downward, or symmetric reserve product.",
     )
 
 
@@ -1375,8 +1465,10 @@ class RenewableDispatch(BaseModel):
         ...,
         description="Power factor [0, 1] set-point, used in some production cost modeling and in load flow if the unit is connected to a `PQ` bus. Units: 1.",
     )
-    operation_cost: RenewableGenerationCost = Field(
-        ..., description="Operating cost of generation. or MarketBidCost"
+    operation_cost: RenewableGenerationCost | MarketBidCost = Field(
+        ...,
+        description="Operating cost of generation. or MarketBidCost",
+        discriminator="cost_type",
     )
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
@@ -1431,6 +1523,16 @@ class RenewablePowerPlant(BaseModel):
     name: str = Field(..., description="Name of the renewable power plant")
 
 
+class ServiceAssociation(BaseModel):
+    service_id: int = Field(
+        ..., description="ID of the service the membership belongs to."
+    )
+    entity_id: int = Field(
+        ...,
+        description="ID of the contributing member: a Device, a Branch, or another Service.",
+    )
+
+
 class ShiftablePowerLoad(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
@@ -1466,8 +1568,10 @@ class ShiftablePowerLoad(BaseModel):
     load_balance_time_horizon: int = Field(
         ..., description="Number of time periods over which load must be balanced."
     )
-    operation_cost: LoadCost = Field(
-        ..., description="Operational cost of interrupting load. or MarketBidCost"
+    operation_cost: LoadCost | MarketBidCost = Field(
+        ...,
+        description="Operational cost of interrupting load. or MarketBidCost",
+        discriminator="cost_type",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -1503,16 +1607,16 @@ class Source(BaseModel):
         description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: MVAr.",
     )
     parameter_units: ImpedanceUnitBasis | None = Field(
-        "SYSTEM_BASE",
+        "DEVICE_BASE",
         description="Unit basis for this source's impedance fields (R_th, X_th).",
     )
     R_th: float | None = Field(
         0.0,
-        description="Source Thevenin resistance. Per-unit on system base. Units: pu. Units: per parameter_units — SYSTEM_BASE: pu, NATURAL_UNITS: ohm .",
+        description="Source Thevenin resistance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     X_th: float | None = Field(
         0.0,
-        description="Source Thevenin reactance. Per-unit on system base. Units: pu. Units: per parameter_units — SYSTEM_BASE: pu, NATURAL_UNITS: ohm .",
+        description="Source Thevenin reactance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     internal_voltage: float | None = Field(
         1.0, description="Internal voltage. Units: pu."
@@ -1601,6 +1705,17 @@ class StandardLoad(BaseModel):
     )
 
 
+class Substation(BaseModel):
+    id: int
+    name: str = Field(..., description="Name of the substation")
+    number: int = Field(
+        ..., description="Substation number in the source power flow data"
+    )
+    grounding_resistance: float = Field(
+        ..., description="Substation grounding DC resistance. Units: ohm."
+    )
+
+
 class ControlMode1(Enum):
     UNDEFINED = "UNDEFINED"
     FIXED = "FIXED"
@@ -1624,13 +1739,13 @@ class SwitchedAdmittance(BaseModel):
     bus: int = Field(
         ..., description="ID of the bus that this component is connected to."
     )
-    admittance_units: AdmittanceUnitBasis | None = Field(
+    admittance_units: ShuntAdmittanceUnitBasis | None = Field(
         "DEVICE_MVAR",
         description="Unit basis for the shunt admittance Y. DEVICE_MVAR is PSS/E RAW native (Mvar/MW at unity voltage).",
     )
     Y: ComplexNumber = Field(
         ...,
-        description="Initial admittance at N = 0. Per-unit on system base. Units: pu. Units: per admittance_units — SYSTEM_BASE: pu, NATURAL_UNITS: S, DEVICE_MVAR: MVAr .",
+        description="Initial admittance at N = 0. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MVAr .",
     )
     initial_status: list[int] | None = Field(
         None,
@@ -1642,11 +1757,11 @@ class SwitchedAdmittance(BaseModel):
     )
     Y_increase: list[ComplexNumber] | None = Field(
         None,
-        description="Vector with admittance increment step for each adjustable shunt block. For example, `Y_increase[2]` is the complex admittance increment for each step at block 2. Per-unit on system base. Units: pu. Units: per admittance_units — SYSTEM_BASE: pu, NATURAL_UNITS: S, DEVICE_MVAR: MVAr .",
+        description="Vector with admittance increment step for each adjustable shunt block. For example, `Y_increase[2]` is the complex admittance increment for each step at block 2. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MVAr .",
     )
     admittance_limits: MinMax | None = Field(
         {"min": 1.0, "max": 1.0},
-        description="Shunt admittance limits for switched shunt model. Per-unit on system base. Units: pu. Units: per admittance_units — SYSTEM_BASE: pu, NATURAL_UNITS: S, DEVICE_MVAR: MVAr .",
+        description="Shunt admittance limits for switched shunt model. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MVAr .",
     )
     control_mode: ControlMode1 | None = Field(
         "FIXED", description="Switched-shunt control mode (PSS/E MODSW)."
@@ -1717,16 +1832,21 @@ class TModelHVDCLine(BaseModel):
     parameter_units: ImpedanceUnitBasis | None = Field(
         "NATURAL_UNITS", description="Unit basis for this line's impedance field (r)."
     )
+    base_current: float = Field(
+        ...,
+        description="Base current for per-unitization of this line's per-unit fields — this DC line per-unitizes against a current base, not a power base. Units: A.",
+    )
     r: float = Field(
         ...,
-        description="Total series resistance, split equally on both sides of the shunt capacitance. Per-unit on system base. Units: pu. Units: per parameter_units — SYSTEM_BASE: pu, NATURAL_UNITS: ohm .",
+        description="Total series resistance, split equally on both sides of the shunt capacitance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     l: float = Field(
         ...,
-        description="Total series inductance, split equally on both sides of the shunt capacitance. Per-unit on system base. Units: pu.",
+        description="Total series inductance, split equally on both sides of the shunt capacitance. Per-unit on this line's `base_current`. Units: pu.",
     )
     c: float = Field(
-        ..., description="Shunt capacitance. Per-unit on system base. Units: pu."
+        ...,
+        description="Shunt capacitance. Per-unit on this line's `base_current`. Units: pu.",
     )
     active_power_limits_from: MinMax = Field(
         ...,
@@ -1787,25 +1907,27 @@ class ThermalMultiStart(BaseModel):
         description="Power trajectory the unit will take during the start-up and shut-down ramp process. Units: MW.",
     )
     time_limits: UpDown | None = Field(
-        None, description="Minimum up and minimum down time limits. Units: h."
+        None, description="Minimum up and minimum down time limits. Units: min."
     )
     start_time_limits: StartUpStages | None = Field(
         None,
-        description="Time limits for start-up based on turbine temperature. Units: h.",
+        description="Time limits for start-up based on turbine temperature. Units: min.",
     )
     start_types: int = Field(
         ...,
         description="Number of start-up based on turbine temperature, where `1` = *hot*, `2` = *warm*, and `3` = *cold*.",
     )
-    operation_cost: ThermalGenerationCost = Field(
-        ..., description="Operating cost of generation. or MarketBidCost"
+    operation_cost: ThermalGenerationCost | MarketBidCost = Field(
+        ...,
+        description="Operating cost of generation. or MarketBidCost",
+        discriminator="cost_type",
     )
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
     )
     time_at_status: float | None = Field(
-        10000.0,
-        description="Time the generator has been on or off, as indicated by `status`. Units: h.",
+        600000.0,
+        description="Time the generator has been on or off, as indicated by `status`. Units: min.",
     )
     must_run: bool | None = Field(
         False, description="Set to `true` if the unit is must run."
@@ -1858,15 +1980,17 @@ class ThermalStandard(BaseModel):
     ramp_limits: UpDown | None = Field(
         None, description="Ramp up and ramp down limits. Units: MW/min."
     )
-    operation_cost: ThermalGenerationCost = Field(
-        ..., description="Operating cost of generation. or MarketBidCost"
+    operation_cost: ThermalGenerationCost | MarketBidCost = Field(
+        ...,
+        description="Operating cost of generation, or a MarketBidCost.",
+        discriminator="cost_type",
     )
     base_power: float = Field(
         ...,
         description="Base power of the unit for per unitization. Must be positive; a zero base would make per-unit conversion undefined. Units: MVA.",
     )
     time_limits: UpDown | None = Field(
-        None, description="Minimum up and minimum down time limits. Units: h."
+        None, description="Minimum up and minimum down time limits. Units: min."
     )
     must_run: bool | None = Field(
         False, description="Set to `true` if the unit is must run.", title="Must Run"
@@ -1878,8 +2002,8 @@ class ThermalStandard(BaseModel):
         "OTHER", description="Prime mover fuel according to EIA 923."
     )
     time_at_status: float | None = Field(
-        10000.0,
-        description="Time the generator has been on or off, as indicated by `status`. Units: h.",
+        600000.0,
+        description="Time the generator has been on or off, as indicated by `status`. Units: min.",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -1927,6 +2051,10 @@ class TransmissionInterface(BaseModel):
         None,
         description="Dictionary of the line `name`s in the interface and their direction of flow (1 or -1) relative to the flow of the interface.",
     )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+    )
 
 
 class TwoTerminalGenericHVDCLine(BaseModel):
@@ -1963,8 +2091,19 @@ class TwoTerminalGenericHVDCLine(BaseModel):
         description="Minimum and maximum reactive power limits to the TO node. Units: MVAr.",
     )
     loss: TwoTerminalLoss | None = Field(
-        None,
+        {
+            "curve_type": "INPUT_OUTPUT",
+            "function_data": {
+                "function_type": "LINEAR",
+                "constant_term": 0,
+                "proportional_term": 0,
+            },
+        },
         description="Loss model coefficients. It accepts a linear model with a constant loss and a proportional loss rate (MW of loss per MW of flow). It also accepts a Piecewise loss, with N segments to specify different proportional losses for different segments.",
+    )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
     )
 
 
@@ -1992,7 +2131,7 @@ class TwoTerminalLCCLine(BaseModel):
     )
     r: float = Field(
         ...,
-        description="Series resistance of the DC line. Per-unit on system base. Units: pu. Units: per parameter_units — SYSTEM_BASE: pu, NATURAL_UNITS: ohm .",
+        description="Series resistance of the DC line. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     transfer_setpoint: float = Field(
         ...,
@@ -2000,11 +2139,11 @@ class TwoTerminalLCCLine(BaseModel):
     )
     dc_voltage_units: VoltageUnitBasis | None = Field(
         "NATURAL_UNITS",
-        description="Unit basis for the DC voltage fields (scheduled_dc_voltage, switch_mode_voltage, min_compounding_voltage). SYSTEM_BASE: per-unit on the bus base voltage. NATURAL_UNITS: kV.",
+        description="Unit basis for the DC voltage fields (scheduled_dc_voltage, switch_mode_voltage, min_compounding_voltage).",
     )
     scheduled_dc_voltage: float = Field(
         ...,
-        description="Scheduled compounded DC voltage. By default this parameter is the scheduled DC voltage in the inverter bus. This parameter must not be specified in per-unit. Units: kV. Units: per dc_voltage_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV .",
+        description="Scheduled compounded DC voltage. By default this parameter is the scheduled DC voltage in the inverter bus. This parameter must not be specified in per-unit. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu .",
     )
     rectifier_bridges: int = Field(
         ..., description="Number of bridges in series in the rectifier side."
@@ -2015,11 +2154,11 @@ class TwoTerminalLCCLine(BaseModel):
     )
     rectifier_rc: float = Field(
         ...,
-        description="Rectifier commutating transformer resistance per bridge. Per-unit on system base. Units: pu. Units: per parameter_units — SYSTEM_BASE: pu, NATURAL_UNITS: ohm .",
+        description="Rectifier commutating transformer resistance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     rectifier_xc: float = Field(
         ...,
-        description="Rectifier commutating transformer reactance per bridge. Per-unit on system base. Units: pu. Units: per parameter_units — SYSTEM_BASE: pu, NATURAL_UNITS: ohm .",
+        description="Rectifier commutating transformer reactance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     rectifier_base_voltage: float = Field(
         ..., description="Rectifier primary base AC voltage, entered in kV. Units: kV."
@@ -2033,11 +2172,11 @@ class TwoTerminalLCCLine(BaseModel):
     )
     inverter_rc: float = Field(
         ...,
-        description="Inverter commutating transformer resistance per bridge. Per-unit on system base. Units: pu. Units: per parameter_units — SYSTEM_BASE: pu, NATURAL_UNITS: ohm .",
+        description="Inverter commutating transformer resistance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     inverter_xc: float = Field(
         ...,
-        description="Inverter commutating transformer reactance per bridge. Per-unit on system base. Units: pu. Units: per parameter_units — SYSTEM_BASE: pu, NATURAL_UNITS: ohm .",
+        description="Inverter commutating transformer reactance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     inverter_base_voltage: float = Field(
         ..., description="Inverter primary base AC voltage, entered in kV. Units: kV."
@@ -2048,15 +2187,15 @@ class TwoTerminalLCCLine(BaseModel):
     )
     switch_mode_voltage: float | None = Field(
         0.0,
-        description="Mode switch DC voltage. This parameter must not be added in per-unit. If LCC line is in power mode control, and DC voltage falls below this value, the line switch to current mode control. Units: kV. Units: per dc_voltage_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV .",
+        description="Mode switch DC voltage. This parameter must not be added in per-unit. If LCC line is in power mode control, and DC voltage falls below this value, the line switch to current mode control. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu .",
     )
     compounding_resistance: float | None = Field(
         0.0,
-        description="Compounding Resistance. This parameter is for control of the DC voltage in the rectifier or inverter end. For inverter DC voltage control, the parameter is set to zero; for rectifier DC voltage control, the parameter is set to the DC line resistance; otherwise, set to a fraction of the DC line resistance. Per-unit on system base. Units: pu. Units: per parameter_units — SYSTEM_BASE: pu, NATURAL_UNITS: ohm .",
+        description="Compounding Resistance. This parameter is for control of the DC voltage in the rectifier or inverter end. For inverter DC voltage control, the parameter is set to zero; for rectifier DC voltage control, the parameter is set to the DC line resistance; otherwise, set to a fraction of the DC line resistance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     min_compounding_voltage: float | None = Field(
         0.0,
-        description="Minimum compounded voltage. This parameter must not be added in per-unit. Only used in constant gamma operation (gamma_min = gamma_max), and the AC transformer is used to control the DC voltage. Units: kV. Units: per dc_voltage_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV .",
+        description="Minimum compounded voltage. This parameter must not be added in per-unit. Only used in constant gamma operation (gamma_min = gamma_max), and the AC transformer is used to control the DC voltage. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu .",
     )
     rectifier_transformer_ratio: float | None = Field(
         1.0,
@@ -2077,7 +2216,7 @@ class TwoTerminalLCCLine(BaseModel):
     )
     rectifier_capacitor_reactance: float | None = Field(
         0.0,
-        description="Commutating rectifier capacitor reactance magnitude per bridge. Per-unit on system base. Units: pu. Units: per parameter_units — SYSTEM_BASE: pu, NATURAL_UNITS: ohm .",
+        description="Commutating rectifier capacitor reactance magnitude per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     inverter_transformer_ratio: float | None = Field(
         1.0,
@@ -2098,7 +2237,7 @@ class TwoTerminalLCCLine(BaseModel):
     )
     inverter_capacitor_reactance: float | None = Field(
         0.0,
-        description="Commutating inverter capacitor reactance magnitude per bridge. Per-unit on system base. Units: pu. Units: per parameter_units — SYSTEM_BASE: pu, NATURAL_UNITS: ohm .",
+        description="Commutating inverter capacitor reactance magnitude per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     active_power_limits_from: MinMax | None = Field(
         {"min": 0.0, "max": 0.0},
@@ -2124,9 +2263,12 @@ class TwoTerminalLCCLine(BaseModel):
                 "constant_term": 0,
                 "proportional_term": 0,
             },
-            "input_at_zero": 0,
         },
         description="A generic loss model coefficients. It accepts a linear model with a constant loss and a proportional loss rate (MW of loss per MW of flow). It also accepts a Piecewise loss, with N segments to specify different proportional losses for different segments.",
+    )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
     )
 
 
@@ -2163,7 +2305,7 @@ class TwoTerminalVSCLine(BaseModel):
     )
     g: float | None = Field(
         0.0,
-        description="Series conductance of the DC line. Per-unit on system base. Units: pu. Units: per admittance_units — SYSTEM_BASE: pu, NATURAL_UNITS: S, DEVICE_MVAR: MW .",
+        description="Series conductance of the DC line. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MW, DEVICE_BASE: pu .",
     )
     dc_current: float | None = Field(
         0.0,
@@ -2181,11 +2323,11 @@ class TwoTerminalVSCLine(BaseModel):
     )
     dc_setpoint_from: float | None = Field(
         0.0,
-        description="Converter DC setpoint in the `from` bus converter. When `dc_control_from` regulates DC voltage this number is the DC voltage on the DC side of the converter; when it controls DC power this value is the power demand in MW, if positive the converter is supplying power to the AC network at the `from` bus; if negative, the converter is withdrawing power from the AC network at the `from` bus. Units: per dc_control_from — DC_POWER: MW, DC_VOLTAGE: (per voltage_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV), DC_VOLTAGE_DROOP: (per voltage_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV) .",
+        description="Converter DC setpoint in the `from` bus converter. When `dc_control_from` regulates DC voltage this number is the DC voltage on the DC side of the converter; when it controls DC power this value is the power demand in MW, if positive the converter is supplying power to the AC network at the `from` bus; if negative, the converter is withdrawing power from the AC network at the `from` bus. Units: per dc_control_from — DC_POWER: MW, DC_VOLTAGE: (per voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu), DC_VOLTAGE_DROOP: (per voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu) .",
     )
     ac_setpoint_from: float | None = Field(
         1.0,
-        description="Converter AC setpoint in the `from` bus converter. When `ac_control_from` regulates AC voltage this number is the AC voltage on the AC side of the converter; when it controls reactive power this value is the power factor setpoint. Units: per ac_control_from — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per voltage_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV) .",
+        description="Converter AC setpoint in the `from` bus converter. When `ac_control_from` regulates AC voltage this number is the AC voltage on the AC side of the converter; when it controls reactive power this value is the power factor setpoint. Units: per ac_control_from — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu) .",
     )
     converter_loss_from: InputOutputCurve | None = Field(
         {
@@ -2195,7 +2337,6 @@ class TwoTerminalVSCLine(BaseModel):
                 "constant_term": 0,
                 "proportional_term": 0,
             },
-            "input_at_zero": 0,
         },
         description="Loss model coefficients in the `from` bus converter. It accepts a linear model or quadratic. Same converter data is used in both ends.",
     )
@@ -2214,12 +2355,11 @@ class TwoTerminalVSCLine(BaseModel):
         description="Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.",
     )
     voltage_units: VoltageUnitBasis | None = Field(
-        "NATURAL_UNITS",
-        description="Unit basis for the DC bus voltage limits. SYSTEM_BASE: per-unit on the bus base voltage. NATURAL_UNITS: kV.",
+        "NATURAL_UNITS", description="Unit basis for the DC bus voltage limits."
     )
     voltage_limits_from: MinMax | None = Field(
         {"min": 0.0, "max": 999.9},
-        description="Limits on the Voltage at the DC `from` Bus in kV. The DC base voltage is the `dc_setpoint` of the converter with `dc_voltage_control` enabled; exactly one converter must control the DC voltage. Units: kV. Units: per voltage_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV .",
+        description="Limits on the Voltage at the DC `from` Bus in kV. The DC base voltage is the `dc_setpoint` of the converter with `dc_voltage_control` enabled; exactly one converter must control the DC voltage. Units: kV. Units: per voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu .",
     )
     dc_voltage_droop_from: float | None = Field(
         0.0,
@@ -2237,11 +2377,11 @@ class TwoTerminalVSCLine(BaseModel):
     )
     dc_setpoint_to: float | None = Field(
         0.0,
-        description="Converter DC setpoint in the `to` bus converter. When `dc_control_to` regulates DC voltage this number is the DC voltage on the DC side of the converter; when it controls DC power this value is the power demand in MW, if positive the converter is supplying power to the AC network at the `to` bus; if negative, the converter is withdrawing power from the AC network at the `to` bus. Units: per dc_control_to — DC_POWER: MW, DC_VOLTAGE: (per voltage_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV), DC_VOLTAGE_DROOP: (per voltage_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV) .",
+        description="Converter DC setpoint in the `to` bus converter. When `dc_control_to` regulates DC voltage this number is the DC voltage on the DC side of the converter; when it controls DC power this value is the power demand in MW, if positive the converter is supplying power to the AC network at the `to` bus; if negative, the converter is withdrawing power from the AC network at the `to` bus. Units: per dc_control_to — DC_POWER: MW, DC_VOLTAGE: (per voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu), DC_VOLTAGE_DROOP: (per voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu) .",
     )
     ac_setpoint_to: float | None = Field(
         1.0,
-        description="Converter AC setpoint in the `to` bus converter. When `ac_control_to` regulates AC voltage this number is the AC voltage on the AC side of the converter; when it controls reactive power this value is the power factor setpoint. Units: per ac_control_to — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per voltage_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV) .",
+        description="Converter AC setpoint in the `to` bus converter. When `ac_control_to` regulates AC voltage this number is the AC voltage on the AC side of the converter; when it controls reactive power this value is the power factor setpoint. Units: per ac_control_to — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu) .",
     )
     converter_loss_to: InputOutputCurve | None = Field(
         {
@@ -2251,7 +2391,6 @@ class TwoTerminalVSCLine(BaseModel):
                 "constant_term": 0,
                 "proportional_term": 0,
             },
-            "input_at_zero": 0,
         },
         description="Loss model coefficients in the `to` bus converter. It accepts a linear model or quadratic. Same converter data is used in both ends.",
     )
@@ -2271,7 +2410,7 @@ class TwoTerminalVSCLine(BaseModel):
     )
     voltage_limits_to: MinMax | None = Field(
         {"min": 0.0, "max": 999.9},
-        description="Limits on the Voltage at the DC `to` Bus in kV. The DC base voltage is the `dc_setpoint` of the converter with `dc_voltage_control` enabled; exactly one converter must control the DC voltage. Units: kV. Units: per voltage_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV .",
+        description="Limits on the Voltage at the DC `to` Bus in kV. The DC base voltage is the `dc_setpoint` of the converter with `dc_voltage_control` enabled; exactly one converter must control the DC voltage. Units: kV. Units: per voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu .",
     )
     dc_voltage_droop_to: float | None = Field(
         0.0,
@@ -2297,6 +2436,10 @@ class TwoTerminalVSCLine(BaseModel):
         100.0,
         description="Percent of the total Mvar required to hold the voltage at the bus regulated by the `to` converter that is contributed by this converter. Units: 1.",
     )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+    )
 
 
 class TwoWindingTransformerShuntLocation(Enum):
@@ -2305,127 +2448,12 @@ class TwoWindingTransformerShuntLocation(Enum):
     SPLIT = "SPLIT"
 
 
-class VariableReserve(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    time_frame: float = Field(
-        ...,
-        description="The saturation time frame to provide reserve contribution. Units: min.",
-    )
-    requirement: float = Field(
-        ...,
-        description="The required quantity of the product, which should be scaled by a time series. Units: MW.",
-    )
-    sustained_time: float | None = Field(
-        3600.0,
-        description="The time reserve contribution must be sustained at a specified level. Units: s.",
-    )
-    max_output_fraction: float | None = Field(
-        1.0,
-        description="The maximum fraction of each device's output that can be assigned to the service.",
-    )
-    max_participation_factor: float | None = Field(
-        1.0,
-        description="The maximum portion [0, 1.0] of the reserve that can be contributed per device.",
-    )
-    deployed_fraction: float | None = Field(
-        0.0,
-        description="Fraction of service procurement that is assumed to be actually deployed. Most commonly, this is assumed to be either 0.0 or 1.0.",
-    )
-    reserve_direction: ReserveDirection = Field(
-        ...,
-        description="Whether the reserve is an upward, downward, or symmetric reserve product.",
-    )
-
-
-class VariableReserveNonSpinning(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    time_frame: float = Field(
-        ...,
-        description="The saturation time frame to provide reserve contribution. Units: min.",
-    )
-    requirement: float = Field(
-        ...,
-        description="The required quantity of the product, which should be scaled by a time series. Units: MW.",
-    )
-    sustained_time: float | None = Field(
-        14400.0,
-        description="The time reserve contribution must be sustained at a specified level. Units: s.",
-    )
-    max_output_fraction: float | None = Field(
-        1.0,
-        description="The maximum fraction of each device's output that can be assigned to the service.",
-    )
-    max_participation_factor: float | None = Field(
-        1.0,
-        description="The maximum portion [0, 1.0] of the reserve that can be contributed per device.",
-    )
-    deployed_fraction: float | None = Field(
-        0.0,
-        description="Fraction of service procurement that is assumed to be actually deployed. Most commonly, this is assumed to be either 0.0 or 1.0.",
-    )
-
-
 class CombinedCycleBlock(BaseModel):
     id: int
     name: str = Field(..., description="Name of the combined cycle block")
     configuration: CombinedCycleConfiguration
     heat_recovery_to_steam_factor: float | None = Field(
         0.0, description="Factor for heat recovery to steam conversion"
-    )
-
-
-class ConstantReserve(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    time_frame: float = Field(
-        ...,
-        description="The saturation time frame to provide reserve contribution. Units: min.",
-    )
-    requirement: float = Field(
-        ..., description="The value of required reserves. Units: MW."
-    )
-    sustained_time: float | None = Field(
-        3600.0,
-        description="The time reserve contribution must be sustained at a specified level. Units: s.",
-    )
-    max_output_fraction: float | None = Field(
-        1.0,
-        description="The maximum fraction of each device's output that can be assigned to the service.",
-    )
-    max_participation_factor: float | None = Field(
-        1.0,
-        description="The maximum portion [0, 1.0] of the reserve that can be contributed per device.",
-    )
-    deployed_fraction: float | None = Field(
-        0.0,
-        description="Fraction of service procurement that is assumed to be actually deployed. Most commonly, this is assumed to be either 0.0 or 1.0.",
-    )
-    reserve_direction: ReserveDirection = Field(
-        ...,
-        description="Whether the reserve is an upward, downward, or symmetric reserve product.",
     )
 
 
@@ -2491,12 +2519,12 @@ class FACTSControlDevice(BaseModel):
         description="Control mode. Used to describe the behavior of the control device. in psy5 a required param with an option to be nothing",
     )
     voltage_setpoint_units: VoltageUnitBasis | None = Field(
-        "SYSTEM_BASE",
-        description="Unit basis for voltage_setpoint. SYSTEM_BASE (pu) is PSS/E RAW native (VSET).",
+        "DEVICE_BASE",
+        description="Unit basis for voltage_setpoint. DEVICE_BASE (pu on the bus base voltage) is PSS/E RAW native (VSET).",
     )
     voltage_setpoint: float = Field(
         ...,
-        description="Voltage setpoint at the sending end bus in kV, it has to be a `PV` bus. Units: kV. Units: per voltage_setpoint_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV .",
+        description="Voltage setpoint at the sending end bus in kV, it has to be a `PV` bus. Units: kV. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, DEVICE_BASE: pu .",
     )
     max_shunt_current: float = Field(
         ...,
@@ -2518,9 +2546,36 @@ class FACTSControlDevice(BaseModel):
         0,
         description="Bus whose voltage this device regulates; 0 means local (sending) bus (PSS/E FCREG). Units: 1.",
     )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+    )
     dynamic_injector: int | None = Field(
         None,
         description="ID of the corresponding dynamic injection model for FACTS control device, if any.",
+    )
+
+
+class GroupReserve(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+    )
+    requirement: float = Field(
+        ..., description="The value of required reserves. Units: MW."
+    )
+    variable: CostCurve | None = Field(
+        None,
+        description="Operating reserve demand curve for the group, either static or time-series-backed. A group carrying a curve is elastic: its requirement is priced by the curve rather than enforced. Time series values are carried via `time_series_associations` in the sidecar, never inline. Omit when the group has no demand curve.",
+    )
+    reserve_direction: ReserveDirection = Field(
+        ...,
+        description="Whether the reserve is an upward, downward, or symmetric reserve product.",
     )
 
 
@@ -2561,7 +2616,14 @@ class InterconnectingConverter(BaseModel):
         100000000.0, description="Maximum stable dc current limits. Units: A."
     )
     loss_function: InputOutputCurve | None = Field(
-        None,
+        {
+            "curve_type": "INPUT_OUTPUT",
+            "function_data": {
+                "function_type": "LINEAR",
+                "constant_term": 0,
+                "proportional_term": 0,
+            },
+        },
         description="Linear or quadratic loss function with respect to the converter current.",
     )
     dc_control: VSCDCControlModes | None = Field(
@@ -2571,15 +2633,15 @@ class InterconnectingConverter(BaseModel):
         "AC_REACTIVE_POWER", description="AC-side control mode of the converter."
     )
     voltage_setpoint_units: VoltageUnitBasis | None = Field(
-        "SYSTEM_BASE", description="Unit basis for the DC/AC voltage setpoints."
+        "DEVICE_BASE", description="Unit basis for the DC/AC voltage setpoints."
     )
     dc_setpoint: float | None = Field(
         0.0,
-        description="DC-voltage target (when `dc_control` regulates DC voltage) or active-power order (otherwise). Units: per dc_control — DC_POWER: MW, DC_VOLTAGE: (per voltage_setpoint_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV), DC_VOLTAGE_DROOP: (per voltage_setpoint_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV) .",
+        description="DC-voltage target (when `dc_control` regulates DC voltage) or active-power order (otherwise). Units: per dc_control — DC_POWER: MW, DC_VOLTAGE: (per voltage_setpoint_units — NATURAL_UNITS: kV, DEVICE_BASE: pu), DC_VOLTAGE_DROOP: (per voltage_setpoint_units — NATURAL_UNITS: kV, DEVICE_BASE: pu) .",
     )
     ac_setpoint: float | None = Field(
         1.0,
-        description="AC-voltage magnitude target (when `ac_control` regulates AC voltage) or power factor setpoint (otherwise). Units: per ac_control — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per voltage_setpoint_units — SYSTEM_BASE: pu, NATURAL_UNITS: kV) .",
+        description="AC-voltage magnitude target (when `ac_control` regulates AC voltage) or power factor setpoint (otherwise). Units: per ac_control — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per voltage_setpoint_units — NATURAL_UNITS: kV, DEVICE_BASE: pu) .",
     )
     dc_voltage_droop: float | None = Field(
         0.0,
@@ -2628,29 +2690,33 @@ class ThreeWindingTransformer(BaseModel):
         ...,
         description="Star (hidden) Bus that this component (equivalent model) is connected to.",
     )
+    parameter_units: ImpedanceUnitBasis | None = Field(
+        "DEVICE_BASE",
+        description="Unit basis for the pairwise measured impedance fields (r_12, x_12, r_23, x_23, r_31, x_31). PSS/E supplies a single CZ flag for the whole three-winding transformer record, so one basis governs all three winding pairs.",
+    )
     r_12: float | None = Field(
         None,
-        description="Measured resistance in pu (device base on `base_power_12`), referenced to the primary winding's base voltage, from primary to secondary windings (R1-2 with CZ = 1 in PSS/E). Units: pu.",
+        description="Measured resistance, referenced to the primary winding's base voltage, from primary to secondary windings (R1-2 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     x_12: float | None = Field(
         None,
-        description="Measured reactance in pu (device base on `base_power_12`), referenced to the primary winding's base voltage, from primary to secondary windings (X1-2 with CZ = 1 in PSS/E). Units: pu.",
+        description="Measured reactance, referenced to the primary winding's base voltage, from primary to secondary windings (X1-2 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     r_23: float | None = Field(
         None,
-        description="Measured resistance in pu (device base on `base_power_23`), referenced to the secondary winding's base voltage, from secondary to tertiary windings (R2-3 with CZ = 1 in PSS/E). Units: pu.",
+        description="Measured resistance, referenced to the secondary winding's base voltage, from secondary to tertiary windings (R2-3 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     x_23: float | None = Field(
         None,
-        description="Measured reactance in pu (device base on `base_power_23`), referenced to the secondary winding's base voltage, from secondary to tertiary windings (X2-3 with CZ = 1 in PSS/E). Units: pu.",
+        description="Measured reactance, referenced to the secondary winding's base voltage, from secondary to tertiary windings (X2-3 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     r_31: float | None = Field(
         None,
-        description="Measured resistance in pu (device base on `base_power_31`), referenced to the tertiary winding's base voltage, from tertiary to primary windings (R3-1 with CZ = 1 in PSS/E). Units: pu.",
+        description="Measured resistance, referenced to the tertiary winding's base voltage, from tertiary to primary windings (R3-1 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     x_31: float | None = Field(
         None,
-        description="Measured reactance in pu (device base on `base_power_31`), referenced to the tertiary winding's base voltage, from tertiary to primary windings (X3-1 with CZ = 1 in PSS/E). Units: pu.",
+        description="Measured reactance, referenced to the tertiary winding's base voltage, from tertiary to primary windings (X3-1 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
     )
     base_power_12: float | None = Field(
         None,
@@ -2664,9 +2730,12 @@ class ThreeWindingTransformer(BaseModel):
         None,
         description="Base power for per unitization for tertiary-primary windings. Units: MVA.",
     )
+    admittance_units: AdmittanceUnitBasis | None = Field(
+        "DEVICE_BASE", description="Unit basis for the magnetizing_shunt admittance."
+    )
     magnetizing_shunt: ComplexNumber | None = Field(
         {"real": 0.0, "imag": 0.0},
-        description="Magnetizing shunt admittance in pu (device base on the primary circuit's `base_power`) referenced to the primary circuit's base voltage. Units: pu.",
+        description="Magnetizing shunt admittance referenced to the primary circuit's base voltage. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MVAr, DEVICE_BASE: pu .",
     )
     shunt_location: ThreeWindingTransformerShuntLocation | None = Field(
         "PRIMARY",
@@ -2691,8 +2760,18 @@ class TransformerCircuit(BaseModel):
         0.0,
         description="Initial condition of phase shift across this circuit. Units: rad.",
     )
-    r: float | None = Field(0.0, description="Circuit resistance. Units: pu.")
-    x: float | None = Field(0.0, description="Circuit reactance. Units: pu.")
+    parameter_units: ImpedanceUnitBasis | None = Field(
+        "DEVICE_BASE",
+        description="Unit basis for this circuit's impedance fields (r, x).",
+    )
+    r: float | None = Field(
+        0.0,
+        description="Circuit resistance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+    )
+    x: float | None = Field(
+        0.0,
+        description="Circuit reactance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+    )
     control_objective: TransformerControlObjective | None = Field(
         "UNDEFINED",
         description="Tap-changer / phase-shifter control objective (PSS/E COD). `UNDEFINED` means this circuit has no control block.",
@@ -2749,9 +2828,12 @@ class TwoWindingTransformer(BaseModel):
         ...,
         description="The `TransformerCircuit` carrying this transformer's series electrical data.",
     )
+    admittance_units: AdmittanceUnitBasis | None = Field(
+        "DEVICE_BASE", description="Unit basis for the magnetizing_shunt admittance."
+    )
     magnetizing_shunt: ComplexNumber | None = Field(
         {"real": 0.0, "imag": 0.0},
-        description="Magnetizing shunt admittance in pu (device base on the circuit's `base_power`) referenced to the circuit's `base_voltage_primary`. Units: pu.",
+        description="Magnetizing shunt admittance referenced to the circuit's `base_voltage_primary`. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MVAr, DEVICE_BASE: pu .",
     )
     shunt_location: TwoWindingTransformerShuntLocation | None = Field(
         "PRIMARY",

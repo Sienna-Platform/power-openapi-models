@@ -37,7 +37,6 @@ class QuadraticFunctionData(BaseModel):
 
 
 class UnitSystem(Enum):
-    SYSTEM_BASE = "SYSTEM_BASE"
     DEVICE_BASE = "DEVICE_BASE"
     NATURAL_UNITS = "NATURAL_UNITS"
 
@@ -67,13 +66,23 @@ class Feature(RootModel[dict[str, bool | int | str]]):
     root: dict[str, bool | int | str] = Field(..., max_length=1, min_length=1)
 
 
+class EnergyUnitBasis(Enum):
+    MWH = "MWH"
+    MWMIN = "MWMIN"
+
+
 class ImpedanceUnitBasis(Enum):
-    SYSTEM_BASE = "SYSTEM_BASE"
     NATURAL_UNITS = "NATURAL_UNITS"
+    DEVICE_BASE = "DEVICE_BASE"
 
 
 class AdmittanceUnitBasis(Enum):
-    SYSTEM_BASE = "SYSTEM_BASE"
+    NATURAL_UNITS = "NATURAL_UNITS"
+    DEVICE_MVAR = "DEVICE_MVAR"
+    DEVICE_BASE = "DEVICE_BASE"
+
+
+class ShuntAdmittanceUnitBasis(Enum):
     NATURAL_UNITS = "NATURAL_UNITS"
     DEVICE_MVAR = "DEVICE_MVAR"
 
@@ -190,7 +199,7 @@ class ThermalFuels(Enum):
     PROPANE = "PROPANE"
     SYNTHESIS_GAS_PETROLEUM_COKE = "SYNTHESIS_GAS_PETROLEUM_COKE"
     WASTE_OIL = "WASTE_OIL"
-    BLASTE_FURNACE_GAS = "BLASTE_FURNACE_GAS"
+    BLAST_FURNACE_GAS = "BLAST_FURNACE_GAS"
     NATURAL_GAS = "NATURAL_GAS"
     OTHER_GAS = "OTHER_GAS"
     AG_BYPRODUCT = "AG_BYPRODUCT"
@@ -202,10 +211,10 @@ class ThermalFuels(Enum):
     BLACK_LIQUOR = "BLACK_LIQUOR"
     WOOD_WASTE_LIQUIDS = "WOOD_WASTE_LIQUIDS"
     LANDFILL_GAS = "LANDFILL_GAS"
-    OTHEHR_BIOMASS_GAS = "OTHEHR_BIOMASS_GAS"
+    OTHER_BIOMASS_GAS = "OTHER_BIOMASS_GAS"
     NUCLEAR = "NUCLEAR"
     WASTE_HEAT = "WASTE_HEAT"
-    TIREDERIVED_FUEL = "TIREDERIVED_FUEL"
+    TIRE_DERIVED_FUEL = "TIRE_DERIVED_FUEL"
     COAL = "COAL"
     GEOTHERMAL = "GEOTHERMAL"
     OTHER = "OTHER"
@@ -224,6 +233,50 @@ class UpDown(BaseModel):
 class GeographicInfo(BaseModel):
     id: int
     geo_json: dict[str, Any]
+
+
+class DataSource(BaseModel):
+    id: int
+    organization: str | None = Field(
+        None,
+        description="Publishing organization, e.g. 'U.S. Energy Information Administration'.",
+    )
+    retrieved_at: AwareDatetime = Field(..., description="When the data was obtained.")
+    dataset: str | None = Field(
+        None,
+        description="Dataset identifier within the publishing organization, e.g. 'EIA-860 2023, Schedule 3'.",
+    )
+    url: str | None = Field(None, description="URL the data was retrieved from.")
+    version: str | None = Field(
+        None, description="Data version or vintage, e.g. '2023 final'."
+    )
+    published_at: AwareDatetime | None = Field(
+        None, description="When the source published the data; null if unknown."
+    )
+    confidence: str | None = Field(
+        None, description="Confidence qualifier, e.g. 'high', 'medium'."
+    )
+    recorded_by: str | None = Field(
+        None, description="User or agent that recorded the value."
+    )
+    fields: list[str] = Field(
+        ...,
+        description="Names of the component fields this provenance record applies to.",
+    )
+    extra: dict[str, str] | None = Field(
+        None, description="Additional string-valued provenance metadata."
+    )
+
+
+class SupplementalAttributeAssociation(BaseModel):
+    attribute_id: int = Field(..., description="ID of the supplemental attribute.")
+    entity_id: int = Field(
+        ..., description="ID of the component the attribute describes."
+    )
+    attribute_type: str = Field(
+        ...,
+        description='Schema title of the referenced supplemental attribute (e.g. "EmissionsData", "GeographicInfo"). A free-form string, not an enum: new attribute types are added elsewhere in this repo continuously, and a closed enum here would go stale.',
+    )
 
 
 class OwnerCategory(Enum):
@@ -275,6 +328,8 @@ class PollutantType(Enum):
     N2O = "N2O"
     NOX = "NOX"
     SO2 = "SO2"
+    CO = "CO"
+    VOC = "VOC"
     PM25 = "PM25"
     PM10 = "PM10"
     HG = "HG"
@@ -307,8 +362,8 @@ class PiecewiseLinearData(BaseModel):
 
 class AverageRateCurve(BaseModel):
     curve_type: Literal["AVERAGE_RATE"]
-    function_data: LinearFunctionData | QuadraticFunctionData | PiecewiseLinearData = (
-        Field(..., discriminator="function_type")
+    function_data: LinearFunctionData | PiecewiseStepData = Field(
+        ..., discriminator="function_type"
     )
     initial_input: float | None = None
     input_at_zero: float | None = None
@@ -356,6 +411,10 @@ class ValueCurve(RootModel[InputOutputCurve | IncrementalCurve | AverageRateCurv
 class FuelCurve(BaseModel):
     fuel_cost: str | float
     power_units: UnitSystem
+    startup_fuel_offtake: InputOutputCurve | None = Field(
+        None,
+        description="Fuel consumed during startup, as a curve in the unit's fuel units.",
+    )
     value_curve: ValueCurve
     variable_cost_type: Literal["FUEL"]
     vom_cost: InputOutputCurve
@@ -363,26 +422,66 @@ class FuelCurve(BaseModel):
 
 class TwoTerminalLoss(RootModel[InputOutputCurve | IncrementalCurve]):
     root: InputOutputCurve | IncrementalCurve = Field(
-        {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
-            },
-            "input_at_zero": 0,
-        },
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
         discriminator="curve_type",
         title="TwoTerminalLoss",
-        validate_default=True,
     )
 
 
 class CostCurve(BaseModel):
-    power_units: UnitSystem
+    power_units: UnitSystem = UnitSystem.NATURAL_UNITS
     value_curve: ValueCurve
     variable_cost_type: Literal["COST"]
-    vom_cost: InputOutputCurve
+    vom_cost: InputOutputCurve = Field(
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        )
+    )
+
+
+class RenewableGenerationCost(BaseModel):
+    cost_type: Literal["RENEWABLE"] = "RENEWABLE"
+    curtailment_cost: CostCurve | None = Field(
+        default_factory=lambda: CostCurve.model_validate(
+            {
+                "variable_cost_type": "COST",
+                "value_curve": {
+                    "curve_type": "INPUT_OUTPUT",
+                    "function_data": {
+                        "function_type": "LINEAR",
+                        "constant_term": 0,
+                        "proportional_term": 0,
+                    },
+                },
+                "vom_cost": {
+                    "curve_type": "INPUT_OUTPUT",
+                    "function_data": {
+                        "function_type": "LINEAR",
+                        "constant_term": 0,
+                        "proportional_term": 0,
+                    },
+                },
+            }
+        )
+    )
+    variable: CostCurve
+    fixed: float | None = 0.0
 
 
 class ProductionVariableCostCurve(RootModel[CostCurve | FuelCurve]):
@@ -416,66 +515,38 @@ class LoadCost(BaseModel):
     variable: CostCurve
 
 
-class RenewableGenerationCost(BaseModel):
-    cost_type: Literal["RENEWABLE"] = "RENEWABLE"
-    curtailment_cost: CostCurve | None = Field(
-        {
-            "variable_cost_type": "COST",
-            "value_curve": {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-                "input_at_zero": 0,
-            },
-            "vom_cost": {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-                "input_at_zero": 0,
-            },
-        },
-        validate_default=True,
-    )
-    variable: CostCurve
-    fixed: float | None = 0.0
-
-
-class ThermalGenerationCost(BaseModel):
-    cost_type: Literal["THERMAL"] = "THERMAL"
-    fixed: float = Field(
-        ...,
-        description="Fixed cost of keeping the unit online. For some cost represenations this field can be duplicative",
-    )
-    shut_down: float = Field(..., description="Cost to turn the unit off")
-    start_up: float | StartUpStages = Field(
-        ...,
-        description="Start-up cost can take linear or multi-stage cost",
-    )
-    variable: ProductionVariableCostCurve
-
-
-class ThermalRenewableGenerationCost(
-    RootModel[ThermalGenerationCost | RenewableGenerationCost]
-):
-    root: ThermalGenerationCost | RenewableGenerationCost = Field(
-        ..., discriminator="cost_type", title="ThermalRenewableGenerationCost"
-    )
-
-
 class MarketBidCost(BaseModel):
     cost_type: Literal["MARKET_BID"] = "MARKET_BID"
-    no_load_cost: InputOutputCurve = Field(..., description="No load cost.")
+    no_load_cost: InputOutputCurve = Field(
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
+        description="No load cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
+    )
     start_up: StartUpStages = Field(
         ...,
         description="Start-up cost at different stages of the thermal cycle (hot, warm, cold).",
     )
-    shut_down: InputOutputCurve = Field(..., description="Shut-down cost.")
+    shut_down: InputOutputCurve = Field(
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
+        description="Shut-down cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
+    )
     incremental_offer_curves: CostCurve = Field(
         ...,
         description="Sell offer curves data as a `CostCurve` of `PiecewiseIncrementalCurve`.",
@@ -496,7 +567,29 @@ class HydroGenerationCost(BaseModel):
     variable: ProductionVariableCostCurve
 
 
+class ThermalGenerationCost(BaseModel):
+    cost_type: Literal["THERMAL"] = "THERMAL"
+    fixed: float = Field(
+        ...,
+        description="Fixed cost of keeping the unit online. For some cost represenations this field can be duplicative",
+    )
+    shut_down: float = Field(..., description="Cost to turn the unit off")
+    start_up: float | StartUpStages = Field(
+        ...,
+        description="Start-up cost can take linear or multi-stage cost",
+    )
+    variable: ProductionVariableCostCurve
+
+
 class HydroStorageGenerationCost(RootModel[HydroGenerationCost | StorageCost]):
     root: HydroGenerationCost | StorageCost = Field(
         ..., discriminator="cost_type", title="HydroStorageGenerationCost"
+    )
+
+
+class GenericOperationCost(
+    RootModel[ThermalGenerationCost | RenewableGenerationCost | HydroGenerationCost]
+):
+    root: ThermalGenerationCost | RenewableGenerationCost | HydroGenerationCost = Field(
+        ..., discriminator="cost_type", title="GenericOperationCost"
     )
