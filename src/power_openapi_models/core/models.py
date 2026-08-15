@@ -63,7 +63,7 @@ class DbdPnts(BaseModel):
 
 
 class Feature(RootModel[dict[str, bool | int | str]]):
-    root: dict[str, bool | int | str] = Field(..., max_length=1, min_length=1)
+    root: dict[str, bool | int | str]
 
 
 class EnergyUnitBasis(Enum):
@@ -199,7 +199,7 @@ class ThermalFuels(Enum):
     PROPANE = "PROPANE"
     SYNTHESIS_GAS_PETROLEUM_COKE = "SYNTHESIS_GAS_PETROLEUM_COKE"
     WASTE_OIL = "WASTE_OIL"
-    BLASTE_FURNACE_GAS = "BLASTE_FURNACE_GAS"
+    BLAST_FURNACE_GAS = "BLAST_FURNACE_GAS"
     NATURAL_GAS = "NATURAL_GAS"
     OTHER_GAS = "OTHER_GAS"
     AG_BYPRODUCT = "AG_BYPRODUCT"
@@ -211,10 +211,10 @@ class ThermalFuels(Enum):
     BLACK_LIQUOR = "BLACK_LIQUOR"
     WOOD_WASTE_LIQUIDS = "WOOD_WASTE_LIQUIDS"
     LANDFILL_GAS = "LANDFILL_GAS"
-    OTHEHR_BIOMASS_GAS = "OTHEHR_BIOMASS_GAS"
+    OTHER_BIOMASS_GAS = "OTHER_BIOMASS_GAS"
     NUCLEAR = "NUCLEAR"
     WASTE_HEAT = "WASTE_HEAT"
-    TIREDERIVED_FUEL = "TIREDERIVED_FUEL"
+    TIRE_DERIVED_FUEL = "TIRE_DERIVED_FUEL"
     COAL = "COAL"
     GEOTHERMAL = "GEOTHERMAL"
     OTHER = "OTHER"
@@ -422,17 +422,18 @@ class FuelCurve(BaseModel):
 
 class TwoTerminalLoss(RootModel[InputOutputCurve | IncrementalCurve]):
     root: InputOutputCurve | IncrementalCurve = Field(
-        {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
-            },
-        },
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
         discriminator="curve_type",
         title="TwoTerminalLoss",
-        validate_default=True,
     )
 
 
@@ -440,32 +441,44 @@ class CostCurve(BaseModel):
     power_units: UnitSystem = UnitSystem.NATURAL_UNITS
     value_curve: ValueCurve
     variable_cost_type: Literal["COST"]
-    vom_cost: InputOutputCurve
+    vom_cost: InputOutputCurve = Field(
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        )
+    )
 
 
 class RenewableGenerationCost(BaseModel):
     cost_type: Literal["RENEWABLE"] = "RENEWABLE"
     curtailment_cost: CostCurve | None = Field(
-        {
-            "variable_cost_type": "COST",
-            "value_curve": {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
+        default_factory=lambda: CostCurve.model_validate(
+            {
+                "variable_cost_type": "COST",
+                "value_curve": {
+                    "curve_type": "INPUT_OUTPUT",
+                    "function_data": {
+                        "function_type": "LINEAR",
+                        "constant_term": 0,
+                        "proportional_term": 0,
+                    },
                 },
-            },
-            "vom_cost": {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
+                "vom_cost": {
+                    "curve_type": "INPUT_OUTPUT",
+                    "function_data": {
+                        "function_type": "LINEAR",
+                        "constant_term": 0,
+                        "proportional_term": 0,
+                    },
                 },
-            },
-        },
-        validate_default=True,
+            }
+        )
     )
     variable: CostCurve
     fixed: float | None = 0.0
@@ -505,7 +518,16 @@ class LoadCost(BaseModel):
 class MarketBidCost(BaseModel):
     cost_type: Literal["MARKET_BID"] = "MARKET_BID"
     no_load_cost: InputOutputCurve = Field(
-        ...,
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
         description="No load cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     start_up: StartUpStages = Field(
@@ -513,7 +535,16 @@ class MarketBidCost(BaseModel):
         description="Start-up cost at different stages of the thermal cycle (hot, warm, cold).",
     )
     shut_down: InputOutputCurve = Field(
-        ...,
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
         description="Shut-down cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     incremental_offer_curves: CostCurve = Field(
@@ -544,7 +575,8 @@ class ThermalGenerationCost(BaseModel):
     )
     shut_down: float = Field(..., description="Cost to turn the unit off")
     start_up: float | StartUpStages = Field(
-        ..., description="Start-up cost can take linear or multi-stage cost"
+        ...,
+        description="Start-up cost can take linear or multi-stage cost",
     )
     variable: ProductionVariableCostCurve
 
