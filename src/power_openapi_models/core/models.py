@@ -63,7 +63,7 @@ class DbdPnts(BaseModel):
 
 
 class Feature(RootModel[dict[str, bool | int | str]]):
-    root: dict[str, bool | int | str]
+    root: dict[str, bool | int | str] = Field(..., max_length=1, min_length=1)
 
 
 class EnergyUnitBasis(Enum):

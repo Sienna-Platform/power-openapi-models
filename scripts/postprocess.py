@@ -123,10 +123,33 @@ def fix_costcurve_power_units_default(content: str) -> tuple[str, bool]:
     return new_content, n > 0
 
 
+def fix_feature_property_count(content: str) -> tuple[str, bool]:
+    """Restore `Feature`'s exactly-one-property constraint, dropped by datamodel-codegen.
+
+    `Core/common.json` declares `Feature` with `minProperties: 1` and
+    `maxProperties: 1` — a feature is a single key/value pair, and the
+    one-entry rule is the whole point of the type. datamodel-codegen emits
+    the `RootModel[dict[...]]` without either bound, so an empty or
+    multi-entry dict validates. Verified dropped by 0.52, 0.54, and 0.55
+    alike, so this is a longstanding gap rather than a version regression.
+    """
+    pattern = re.compile(
+        r"(class Feature\(RootModel\[dict\[str, bool \| int \| str\]\]\):\n)"
+        r"(    root: dict\[str, bool \| int \| str\]\n)"
+    )
+    new_content, n = pattern.subn(
+        r"\1    root: dict[str, bool | int | str] = "
+        r"Field(..., max_length=1, min_length=1)\n",
+        content,
+    )
+    return new_content, n > 0
+
+
 FIXES = [
     fix_thermal_generation_cost_start_up,
     fix_missing_composite_defaults,
     fix_costcurve_power_units_default,
+    fix_feature_property_count,
 ]
 
 
