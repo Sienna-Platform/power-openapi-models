@@ -40,6 +40,9 @@ REQUIRED_ENVELOPE_KEYS = {
     "components",
     "supplemental_attributes",
     "supplemental_attribute_associations",
+    "plant_associations",
+    "combined_cycle_associations",
+    "service_associations",
     "time_series_associations",
     "time_series_storage_file",
 }
@@ -161,6 +164,7 @@ def selftest(registry, out_dir):
         name="SHUNT102",
         available=True,
         bus=2,
+        base_power=100.0,
         Y=core.ComplexNumber(real=0.5, imag=-3.0),
     )
     document = {
@@ -176,6 +180,9 @@ def selftest(registry, out_dir):
                 attribute_id=1, entity_id=2, attribute_type="GeographicInfo"
             ).model_dump(mode="json", by_alias=True)
         ],
+        "plant_associations": [],
+        "combined_cycle_associations": [],
+        "service_associations": [],
         "time_series_associations": [],
         "time_series_storage_file": None,
     }
