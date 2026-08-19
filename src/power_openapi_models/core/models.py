@@ -36,7 +36,7 @@ class QuadraticFunctionData(BaseModel):
 
 
 class UnitSystem(Enum):
-    DEVICE_BASE = "DEVICE_BASE"
+    COMPONENT_BASE = "COMPONENT_BASE"
     NATURAL_UNITS = "NATURAL_UNITS"
 
 
@@ -61,10 +61,6 @@ class DbdPnts(BaseModel):
     dbd2: float | None = None
 
 
-class Feature(RootModel[dict[str, bool | int | str]]):
-    root: dict[str, bool | int | str] = Field(..., max_length=1, min_length=1)
-
-
 class EnergyUnitBasis(Enum):
     MWH = "MWH"
     MWMIN = "MWMIN"
@@ -72,18 +68,18 @@ class EnergyUnitBasis(Enum):
 
 class ImpedanceUnitBasis(Enum):
     NATURAL_UNITS = "NATURAL_UNITS"
-    DEVICE_BASE = "DEVICE_BASE"
+    COMPONENT_BASE = "COMPONENT_BASE"
 
 
 class AdmittanceUnitBasis(Enum):
     NATURAL_UNITS = "NATURAL_UNITS"
-    DEVICE_MVAR = "DEVICE_MVAR"
-    DEVICE_BASE = "DEVICE_BASE"
+    COMPONENT_MVAR = "COMPONENT_MVAR"
+    COMPONENT_BASE = "COMPONENT_BASE"
 
 
 class ShuntAdmittanceUnitBasis(Enum):
     NATURAL_UNITS = "NATURAL_UNITS"
-    DEVICE_MVAR = "DEVICE_MVAR"
+    COMPONENT_MVAR = "COMPONENT_MVAR"
 
 
 class FdbdPnts(BaseModel):
@@ -275,53 +271,6 @@ class SupplementalAttributeAssociation(BaseModel):
     attribute_type: str = Field(
         ...,
         description='Schema title of the referenced supplemental attribute (e.g. "EmissionsData", "GeographicInfo"). A free-form string, not an enum: new attribute types are added elsewhere in this repo continuously, and a closed enum here would go stale.',
-    )
-
-
-class OwnerCategory(Enum):
-    Component = "Component"
-    SupplementalAttribute = "SupplementalAttribute"
-
-
-class TimeSeriesAssociation(BaseModel):
-    id: int
-    time_series_type: str
-    initial_timestamp: AwareDatetime
-    resolution: str = Field(..., description="ISO 8601 duration (e.g., PT1H, PT5M).")
-    horizon: str | None = Field(
-        None, description="ISO 8601 duration for forecast horizon."
-    )
-    interval: str | None = Field(
-        None, description="ISO 8601 duration for forecast interval."
-    )
-    window_count: int | None = None
-    length: int | None = None
-    name: str = Field(..., description="Time series name (e.g., max_active_power).")
-    owner_id: int = Field(..., description="ID of the owning component.")
-    owner_type: str = Field(..., description="Type name of the owning component.")
-    owner_category: OwnerCategory = Field(
-        ..., description="Whether the owner is component or supplemental attribute"
-    )
-    features: list[Feature]
-    element_type: str | None = Field(
-        None,
-        description="Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value *means* and how it is laid out; the physical dtype of the bytes is derived from it rather than recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label — the writing package derives it from the array.",
-    )
-    units: str | None = Field(
-        None,
-        description="Unit string for the series values; must be a unit from the Core/units.json vocabulary allowed for `quantity_kind`. Absent when the series declares no unit, and meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless.",
-    )
-    quantity_kind: str | None = Field(
-        None,
-        description="Kind of physical quantity the values measure; must be a `quantity_types` name from the Core/units.json vocabulary (e.g. ActivePower, ReactivePower, ElectricalEnergy). Not an enum here because Core/units.json is the single source of truth for the vocabulary and duplicating it would give it two homes. It is coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity type can. It is also the only record of what the values measure when `unit_system` is a per-unit basis and they are therefore dimensionless.",
-    )
-    unit_system: UnitSystem | None = Field(
-        None,
-        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a DEVICE_BASE series back to natural units needs the owning component's base_power — as with every other per-unit quantity, system-base data records its base there and rides as DEVICE_BASE. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS: a series that never declared a basis must not be read as though someone had said its values were natural.",
-    )
-    application_data: str | None = Field(
-        None,
-        description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. This is a property of the association, not the component-level `ext` that the PSY parity allowlist drops as an infra field. Element typing does *not* belong here — that is `element_type`, which this layer owns and validates.",
     )
 
 

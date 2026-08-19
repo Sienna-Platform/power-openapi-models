@@ -31,6 +31,11 @@ generate:
 	  --input $(SCHEMA_DIR)/openapi-dynamics.json \
 	  --output $(PKG_DIR)/dynamics/models.py
 
+	@echo "==> Generating timeseries"
+	$(CODEGEN) $(CORE_REF) \
+	  --input $(SCHEMA_DIR)/openapi-timeseries.json \
+	  --output $(PKG_DIR)/timeseries/models.py
+
 	@echo "==> Post-processing"
 	python scripts/postprocess.py
 

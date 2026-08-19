@@ -561,7 +561,7 @@
         "available": true,
         "bus": 10,
         "control_mode": "NML",
-        "voltage_setpoint_units": "DEVICE_BASE",
+        "voltage_setpoint_units": "COMPONENT_BASE",
         "voltage_setpoint": 1.0,
         "max_shunt_current": 9999.0,
         "reactive_power_required": 0.0,
@@ -577,7 +577,7 @@
         "name": "102-1",
         "available": true,
         "bus": 4,
-        "admittance_units": "DEVICE_MVAR",
+        "admittance_units": "COMPONENT_MVAR",
         "Y": {
           "real": 0.5,
           "imag": -3.0
@@ -589,7 +589,7 @@
         "name": "106-2",
         "available": true,
         "bus": 8,
-        "admittance_units": "DEVICE_MVAR",
+        "admittance_units": "COMPONENT_MVAR",
         "Y": {
           "real": 0.8,
           "imag": 0.3
@@ -601,7 +601,7 @@
         "name": "110-3",
         "available": true,
         "bus": 12,
-        "admittance_units": "DEVICE_MVAR",
+        "admittance_units": "COMPONENT_MVAR",
         "Y": {
           "real": 0.2,
           "imag": 4.0
@@ -613,7 +613,7 @@
         "name": "111-4",
         "available": true,
         "bus": 13,
-        "admittance_units": "DEVICE_MVAR",
+        "admittance_units": "COMPONENT_MVAR",
         "Y": {
           "real": 1.0,
           "imag": 2.0
@@ -1380,7 +1380,7 @@
         "name": "101-1",
         "available": true,
         "bus": 3,
-        "admittance_units": "DEVICE_MVAR",
+        "admittance_units": "COMPONENT_MVAR",
         "Y": {
           "real": 0.0,
           "imag": 0.5
@@ -1409,7 +1409,7 @@
         "name": "113-2",
         "available": true,
         "bus": 15,
-        "admittance_units": "DEVICE_MVAR",
+        "admittance_units": "COMPONENT_MVAR",
         "Y": {
           "real": 0.0,
           "imag": 0.1
@@ -1462,7 +1462,7 @@
           "shut_down": 0.0,
           "start_up": 0.0,
           "variable": {
-            "power_units": "DEVICE_BASE",
+            "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
               "function_data": {
@@ -1517,7 +1517,7 @@
           "shut_down": 0.0,
           "start_up": 0.0,
           "variable": {
-            "power_units": "DEVICE_BASE",
+            "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
               "function_data": {
@@ -1572,7 +1572,7 @@
           "shut_down": 0.0,
           "start_up": 0.0,
           "variable": {
-            "power_units": "DEVICE_BASE",
+            "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
               "function_data": {
@@ -1627,7 +1627,7 @@
           "shut_down": 0.0,
           "start_up": 0.0,
           "variable": {
-            "power_units": "DEVICE_BASE",
+            "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
               "function_data": {
@@ -1682,7 +1682,7 @@
           "shut_down": 0.0,
           "start_up": 0.0,
           "variable": {
-            "power_units": "DEVICE_BASE",
+            "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
               "function_data": {
@@ -1737,7 +1737,7 @@
           "shut_down": 0.0,
           "start_up": 0.0,
           "variable": {
-            "power_units": "DEVICE_BASE",
+            "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
               "function_data": {
@@ -1792,7 +1792,7 @@
           "shut_down": 0.0,
           "start_up": 0.0,
           "variable": {
-            "power_units": "DEVICE_BASE",
+            "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
               "function_data": {
@@ -1829,7 +1829,7 @@
         "secondary_circuit": 96,
         "tertiary_circuit": 98,
         "star_bus": 23,
-        "parameter_units": "DEVICE_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "r_12": 0.0,
         "x_12": 0.0002,
         "r_23": 0.0,
@@ -1839,7 +1839,7 @@
         "base_power_12": 100.0,
         "base_power_23": 100.0,
         "base_power_31": 100.0,
-        "admittance_units": "DEVICE_BASE",
+        "admittance_units": "COMPONENT_BASE",
         "magnetizing_shunt": {
           "real": 0.0,
           "imag": 0.0
@@ -1853,7 +1853,7 @@
         "secondary_circuit": 103,
         "tertiary_circuit": 105,
         "star_bus": 24,
-        "parameter_units": "DEVICE_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "r_12": 0.0,
         "x_12": 0.0002,
         "r_23": 0.0,
@@ -1863,7 +1863,7 @@
         "base_power_12": 100.0,
         "base_power_23": 100.0,
         "base_power_31": 100.0,
-        "admittance_units": "DEVICE_BASE",
+        "admittance_units": "COMPONENT_BASE",
         "magnetizing_shunt": {
           "real": 0.0,
           "imag": 0.0
@@ -1878,7 +1878,7 @@
         "arc": 84,
         "tap": 1.0,
         "alpha": 0.0,
-        "parameter_units": "DEVICE_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
@@ -1905,7 +1905,7 @@
         "arc": 87,
         "tap": 1.0,
         "alpha": 0.0,
-        "parameter_units": "DEVICE_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
@@ -1932,7 +1932,7 @@
         "arc": 90,
         "tap": 1.0,
         "alpha": 0.0,
-        "parameter_units": "DEVICE_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
@@ -1959,7 +1959,7 @@
         "arc": 93,
         "tap": 1.0,
         "alpha": 0.0,
-        "parameter_units": "DEVICE_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
@@ -1986,7 +1986,7 @@
         "arc": 95,
         "tap": 1.0,
         "alpha": 0.0,
-        "parameter_units": "DEVICE_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
@@ -2013,7 +2013,7 @@
         "arc": 97,
         "tap": 1.0,
         "alpha": 0.0,
-        "parameter_units": "DEVICE_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
@@ -2040,7 +2040,7 @@
         "arc": 100,
         "tap": 1.0,
         "alpha": 0.0,
-        "parameter_units": "DEVICE_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
@@ -2067,7 +2067,7 @@
         "arc": 102,
         "tap": 1.0,
         "alpha": 0.0,
-        "parameter_units": "DEVICE_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
@@ -2094,7 +2094,7 @@
         "arc": 104,
         "tap": 1.0,
         "alpha": 0.0,
-        "parameter_units": "DEVICE_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
@@ -2198,7 +2198,7 @@
         "id": 86,
         "name": "BUS 109-BUS 104-i_1",
         "circuit": 85,
-        "admittance_units": "DEVICE_BASE",
+        "admittance_units": "COMPONENT_BASE",
         "magnetizing_shunt": {
           "real": 0.0,
           "imag": 0.0
@@ -2209,7 +2209,7 @@
         "id": 89,
         "name": "BUS 106-BUS 105-i_1",
         "circuit": 88,
-        "admittance_units": "DEVICE_BASE",
+        "admittance_units": "COMPONENT_BASE",
         "magnetizing_shunt": {
           "real": 0.0,
           "imag": 0.0
@@ -2220,7 +2220,7 @@
         "id": 92,
         "name": "BUS 110-BUS 109-i_1",
         "circuit": 91,
-        "admittance_units": "DEVICE_BASE",
+        "admittance_units": "COMPONENT_BASE",
         "magnetizing_shunt": {
           "real": 0.0,
           "imag": 0.0

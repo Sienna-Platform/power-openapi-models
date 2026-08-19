@@ -461,7 +461,7 @@ class ShuntControlType(Enum):
 
 class VoltageUnitBasis(Enum):
     NATURAL_UNITS = "NATURAL_UNITS"
-    DEVICE_BASE = "DEVICE_BASE"
+    COMPONENT_BASE = "COMPONENT_BASE"
 
 
 class FixedAdmittance(BaseModel):
@@ -478,12 +478,12 @@ class FixedAdmittance(BaseModel):
         ..., description="ID of the bus that this component is connected to."
     )
     admittance_units: ShuntAdmittanceUnitBasis | None = Field(
-        "DEVICE_MVAR",
-        description="Unit basis for the shunt admittance Y. DEVICE_MVAR is PSS/E RAW native (Mvar/MW at unity voltage).",
+        "COMPONENT_MVAR",
+        description="Unit basis for the shunt admittance Y. COMPONENT_MVAR is PSS/E RAW native (Mvar/MW at unity voltage).",
     )
     Y: ComplexNumber = Field(
         ...,
-        description="Fixed admittance. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MVAr .",
+        description="Fixed admittance. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
     )
     base_power: float = Field(
         ...,
@@ -539,16 +539,16 @@ class GenericArcImpedance(BaseModel):
         description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
     )
     parameter_units: ImpedanceUnitBasis | None = Field(
-        "DEVICE_BASE",
-        description="Unit basis for r and x. DEVICE_BASE is per-unit on this component's base_power, which records the system base.",
+        "COMPONENT_BASE",
+        description="Unit basis for r and x. COMPONENT_BASE is per-unit on this component's base_power, which records the system base.",
     )
     r: float = Field(
         ...,
-        description="Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     x: float = Field(
         ...,
-        description="Reactance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
 
 
@@ -1594,16 +1594,16 @@ class Source(BaseModel):
         description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: MVAr.",
     )
     parameter_units: ImpedanceUnitBasis | None = Field(
-        "DEVICE_BASE",
+        "COMPONENT_BASE",
         description="Unit basis for this source's impedance fields (R_th, X_th).",
     )
     R_th: float | None = Field(
         0.0,
-        description="Source Thevenin resistance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Source Thevenin resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     X_th: float | None = Field(
         0.0,
-        description="Source Thevenin reactance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Source Thevenin reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     internal_voltage: float | None = Field(
         1.0, description="Internal voltage. Units: pu."
@@ -1727,12 +1727,12 @@ class SwitchedAdmittance(BaseModel):
         ..., description="ID of the bus that this component is connected to."
     )
     admittance_units: ShuntAdmittanceUnitBasis | None = Field(
-        "DEVICE_MVAR",
-        description="Unit basis for the shunt admittance Y. DEVICE_MVAR is PSS/E RAW native (Mvar/MW at unity voltage).",
+        "COMPONENT_MVAR",
+        description="Unit basis for the shunt admittance Y. COMPONENT_MVAR is PSS/E RAW native (Mvar/MW at unity voltage).",
     )
     Y: ComplexNumber = Field(
         ...,
-        description="Initial admittance at N = 0. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MVAr .",
+        description="Initial admittance at N = 0. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
     )
     initial_status: list[int] | None = Field(
         None,
@@ -1744,11 +1744,11 @@ class SwitchedAdmittance(BaseModel):
     )
     Y_increase: list[ComplexNumber] | None = Field(
         None,
-        description="Vector with admittance increment step for each adjustable shunt block. For example, `Y_increase[2]` is the complex admittance increment for each step at block 2. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MVAr .",
+        description="Vector with admittance increment step for each adjustable shunt block. For example, `Y_increase[2]` is the complex admittance increment for each step at block 2. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
     )
     admittance_limits: MinMax | None = Field(
         {"min": 1.0, "max": 1.0},
-        description="Shunt admittance limits for switched shunt model. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MVAr .",
+        description="Shunt admittance limits for switched shunt model. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
     )
     control_mode: ControlMode1 | None = Field(
         "FIXED", description="Switched-shunt control mode (PSS/E MODSW)."
@@ -1825,7 +1825,7 @@ class TModelHVDCLine(BaseModel):
     )
     r: float = Field(
         ...,
-        description="Total series resistance, split equally on both sides of the shunt capacitance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Total series resistance, split equally on both sides of the shunt capacitance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     l: float = Field(
         ...,
@@ -2114,7 +2114,7 @@ class TwoTerminalLCCLine(BaseModel):
     )
     r: float = Field(
         ...,
-        description="Series resistance of the DC line. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Series resistance of the DC line. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     transfer_setpoint: float = Field(
         ...,
@@ -2126,7 +2126,7 @@ class TwoTerminalLCCLine(BaseModel):
     )
     scheduled_dc_voltage: float = Field(
         ...,
-        description="Scheduled compounded DC voltage. By default this parameter is the scheduled DC voltage in the inverter bus. This parameter must not be specified in per-unit. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu .",
+        description="Scheduled compounded DC voltage. By default this parameter is the scheduled DC voltage in the inverter bus. This parameter must not be specified in per-unit. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
     )
     rectifier_bridges: int = Field(
         ..., description="Number of bridges in series in the rectifier side."
@@ -2137,11 +2137,11 @@ class TwoTerminalLCCLine(BaseModel):
     )
     rectifier_rc: float = Field(
         ...,
-        description="Rectifier commutating transformer resistance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Rectifier commutating transformer resistance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     rectifier_xc: float = Field(
         ...,
-        description="Rectifier commutating transformer reactance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Rectifier commutating transformer reactance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     rectifier_base_voltage: float = Field(
         ..., description="Rectifier primary base AC voltage, entered in kV. Units: kV."
@@ -2155,11 +2155,11 @@ class TwoTerminalLCCLine(BaseModel):
     )
     inverter_rc: float = Field(
         ...,
-        description="Inverter commutating transformer resistance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Inverter commutating transformer resistance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     inverter_xc: float = Field(
         ...,
-        description="Inverter commutating transformer reactance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Inverter commutating transformer reactance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     inverter_base_voltage: float = Field(
         ..., description="Inverter primary base AC voltage, entered in kV. Units: kV."
@@ -2170,15 +2170,15 @@ class TwoTerminalLCCLine(BaseModel):
     )
     switch_mode_voltage: float | None = Field(
         0.0,
-        description="Mode switch DC voltage. This parameter must not be added in per-unit. If LCC line is in power mode control, and DC voltage falls below this value, the line switch to current mode control. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu .",
+        description="Mode switch DC voltage. This parameter must not be added in per-unit. If LCC line is in power mode control, and DC voltage falls below this value, the line switch to current mode control. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
     )
     compounding_resistance: float | None = Field(
         0.0,
-        description="Compounding Resistance. This parameter is for control of the DC voltage in the rectifier or inverter end. For inverter DC voltage control, the parameter is set to zero; for rectifier DC voltage control, the parameter is set to the DC line resistance; otherwise, set to a fraction of the DC line resistance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Compounding Resistance. This parameter is for control of the DC voltage in the rectifier or inverter end. For inverter DC voltage control, the parameter is set to zero; for rectifier DC voltage control, the parameter is set to the DC line resistance; otherwise, set to a fraction of the DC line resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     min_compounding_voltage: float | None = Field(
         0.0,
-        description="Minimum compounded voltage. This parameter must not be added in per-unit. Only used in constant gamma operation (gamma_min = gamma_max), and the AC transformer is used to control the DC voltage. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu .",
+        description="Minimum compounded voltage. This parameter must not be added in per-unit. Only used in constant gamma operation (gamma_min = gamma_max), and the AC transformer is used to control the DC voltage. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
     )
     rectifier_transformer_ratio: float | None = Field(
         1.0,
@@ -2199,7 +2199,7 @@ class TwoTerminalLCCLine(BaseModel):
     )
     rectifier_capacitor_reactance: float | None = Field(
         0.0,
-        description="Commutating rectifier capacitor reactance magnitude per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Commutating rectifier capacitor reactance magnitude per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     inverter_transformer_ratio: float | None = Field(
         1.0,
@@ -2220,7 +2220,7 @@ class TwoTerminalLCCLine(BaseModel):
     )
     inverter_capacitor_reactance: float | None = Field(
         0.0,
-        description="Commutating inverter capacitor reactance magnitude per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Commutating inverter capacitor reactance magnitude per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     active_power_limits_from: MinMax | None = Field(
         {"min": 0.0, "max": 0.0},
@@ -2288,7 +2288,7 @@ class TwoTerminalVSCLine(BaseModel):
     )
     g: float | None = Field(
         0.0,
-        description="Series conductance of the DC line. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MW, DEVICE_BASE: pu .",
+        description="Series conductance of the DC line. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MW, COMPONENT_BASE: pu .",
     )
     dc_current: float | None = Field(
         0.0,
@@ -2310,11 +2310,11 @@ class TwoTerminalVSCLine(BaseModel):
     )
     dc_setpoint_from: float | None = Field(
         0.0,
-        description="Converter DC setpoint in the `from` bus converter. When `dc_control_from` regulates DC voltage this number is the DC voltage on the DC side of the converter; when it controls DC power this value is the power demand in MW, if positive the converter is supplying power to the AC network at the `from` bus; if negative, the converter is withdrawing power from the AC network at the `from` bus. Units: per dc_control_from — DC_POWER: MW, DC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu), DC_VOLTAGE_DROOP: (per setpoint_voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu) .",
+        description="Converter DC setpoint in the `from` bus converter. When `dc_control_from` regulates DC voltage this number is the DC voltage on the DC side of the converter; when it controls DC power this value is the power demand in MW, if positive the converter is supplying power to the AC network at the `from` bus; if negative, the converter is withdrawing power from the AC network at the `from` bus. Units: per dc_control_from — DC_POWER: MW, DC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu), DC_VOLTAGE_DROOP: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .",
     )
     ac_setpoint_from: float | None = Field(
         1.0,
-        description="Converter AC setpoint in the `from` bus converter. When `ac_control_from` regulates AC voltage this number is the AC voltage on the AC side of the converter; when it controls reactive power this value is the power factor setpoint. Units: per ac_control_from — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu) .",
+        description="Converter AC setpoint in the `from` bus converter. When `ac_control_from` regulates AC voltage this number is the AC voltage on the AC side of the converter; when it controls reactive power this value is the power factor setpoint. Units: per ac_control_from — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .",
     )
     converter_loss_from: InputOutputCurve | None = Field(
         {
@@ -2347,7 +2347,7 @@ class TwoTerminalVSCLine(BaseModel):
     )
     voltage_limits_from: MinMax | None = Field(
         {"min": 0.0, "max": 999.9},
-        description="Limits on the Voltage at the DC `from` Bus in kV. The DC base voltage is the `dc_setpoint` of the converter with `dc_voltage_control` enabled; exactly one converter must control the DC voltage. Units: kV. Units: per voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu .",
+        description="Limits on the Voltage at the DC `from` Bus in kV. The DC base voltage is the `dc_setpoint` of the converter with `dc_voltage_control` enabled; exactly one converter must control the DC voltage. Units: kV. Units: per voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
     )
     dc_voltage_droop_from: float | None = Field(
         0.0,
@@ -2365,11 +2365,11 @@ class TwoTerminalVSCLine(BaseModel):
     )
     dc_setpoint_to: float | None = Field(
         0.0,
-        description="Converter DC setpoint in the `to` bus converter. When `dc_control_to` regulates DC voltage this number is the DC voltage on the DC side of the converter; when it controls DC power this value is the power demand in MW, if positive the converter is supplying power to the AC network at the `to` bus; if negative, the converter is withdrawing power from the AC network at the `to` bus. Units: per dc_control_to — DC_POWER: MW, DC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu), DC_VOLTAGE_DROOP: (per setpoint_voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu) .",
+        description="Converter DC setpoint in the `to` bus converter. When `dc_control_to` regulates DC voltage this number is the DC voltage on the DC side of the converter; when it controls DC power this value is the power demand in MW, if positive the converter is supplying power to the AC network at the `to` bus; if negative, the converter is withdrawing power from the AC network at the `to` bus. Units: per dc_control_to — DC_POWER: MW, DC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu), DC_VOLTAGE_DROOP: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .",
     )
     ac_setpoint_to: float | None = Field(
         1.0,
-        description="Converter AC setpoint in the `to` bus converter. When `ac_control_to` regulates AC voltage this number is the AC voltage on the AC side of the converter; when it controls reactive power this value is the power factor setpoint. Units: per ac_control_to — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu) .",
+        description="Converter AC setpoint in the `to` bus converter. When `ac_control_to` regulates AC voltage this number is the AC voltage on the AC side of the converter; when it controls reactive power this value is the power factor setpoint. Units: per ac_control_to — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .",
     )
     converter_loss_to: InputOutputCurve | None = Field(
         {
@@ -2398,7 +2398,7 @@ class TwoTerminalVSCLine(BaseModel):
     )
     voltage_limits_to: MinMax | None = Field(
         {"min": 0.0, "max": 999.9},
-        description="Limits on the Voltage at the DC `to` Bus in kV. The DC base voltage is the `dc_setpoint` of the converter with `dc_voltage_control` enabled; exactly one converter must control the DC voltage. Units: kV. Units: per voltage_units — NATURAL_UNITS: kV, DEVICE_BASE: pu .",
+        description="Limits on the Voltage at the DC `to` Bus in kV. The DC base voltage is the `dc_setpoint` of the converter with `dc_voltage_control` enabled; exactly one converter must control the DC voltage. Units: kV. Units: per voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
     )
     dc_voltage_droop_to: float | None = Field(
         0.0,
@@ -2507,12 +2507,12 @@ class FACTSControlDevice(BaseModel):
         description="Control mode. Used to describe the behavior of the control device. in psy5 a required param with an option to be nothing",
     )
     voltage_setpoint_units: VoltageUnitBasis | None = Field(
-        "DEVICE_BASE",
-        description="Unit basis for voltage_setpoint. DEVICE_BASE (pu on the bus base voltage) is PSS/E RAW native (VSET).",
+        "COMPONENT_BASE",
+        description="Unit basis for voltage_setpoint. COMPONENT_BASE (pu on the bus base voltage) is PSS/E RAW native (VSET).",
     )
     voltage_setpoint: float = Field(
         ...,
-        description="Voltage setpoint at the sending end bus in kV, it has to be a `PV` bus. Units: kV. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, DEVICE_BASE: pu .",
+        description="Voltage setpoint at the sending end bus in kV, it has to be a `PV` bus. Units: kV. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
     )
     max_shunt_current: float = Field(
         ...,
@@ -2621,15 +2621,15 @@ class InterconnectingConverter(BaseModel):
         "AC_REACTIVE_POWER", description="AC-side control mode of the converter."
     )
     voltage_setpoint_units: VoltageUnitBasis | None = Field(
-        "DEVICE_BASE", description="Unit basis for the DC/AC voltage setpoints."
+        "COMPONENT_BASE", description="Unit basis for the DC/AC voltage setpoints."
     )
     dc_setpoint: float | None = Field(
         0.0,
-        description="DC-voltage target (when `dc_control` regulates DC voltage) or active-power order (otherwise). Units: per dc_control — DC_POWER: MW, DC_VOLTAGE: (per voltage_setpoint_units — NATURAL_UNITS: kV, DEVICE_BASE: pu), DC_VOLTAGE_DROOP: (per voltage_setpoint_units — NATURAL_UNITS: kV, DEVICE_BASE: pu) .",
+        description="DC-voltage target (when `dc_control` regulates DC voltage) or active-power order (otherwise). Units: per dc_control — DC_POWER: MW, DC_VOLTAGE: (per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu), DC_VOLTAGE_DROOP: (per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .",
     )
     ac_setpoint: float | None = Field(
         1.0,
-        description="AC-voltage magnitude target (when `ac_control` regulates AC voltage) or power factor setpoint (otherwise). Units: per ac_control — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per voltage_setpoint_units — NATURAL_UNITS: kV, DEVICE_BASE: pu) .",
+        description="AC-voltage magnitude target (when `ac_control` regulates AC voltage) or power factor setpoint (otherwise). Units: per ac_control — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .",
     )
     dc_voltage_droop: float | None = Field(
         0.0,
@@ -2679,32 +2679,32 @@ class ThreeWindingTransformer(BaseModel):
         description="Star (hidden) Bus that this component (equivalent model) is connected to.",
     )
     parameter_units: ImpedanceUnitBasis | None = Field(
-        "DEVICE_BASE",
+        "COMPONENT_BASE",
         description="Unit basis for the pairwise measured impedance fields (r_12, x_12, r_23, x_23, r_31, x_31). PSS/E supplies a single CZ flag for the whole three-winding transformer record, so one basis governs all three winding pairs.",
     )
     r_12: float | None = Field(
         None,
-        description="Measured resistance, referenced to the primary winding's base voltage, from primary to secondary windings (R1-2 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Measured resistance, referenced to the primary winding's base voltage, from primary to secondary windings (R1-2 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     x_12: float | None = Field(
         None,
-        description="Measured reactance, referenced to the primary winding's base voltage, from primary to secondary windings (X1-2 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Measured reactance, referenced to the primary winding's base voltage, from primary to secondary windings (X1-2 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     r_23: float | None = Field(
         None,
-        description="Measured resistance, referenced to the secondary winding's base voltage, from secondary to tertiary windings (R2-3 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Measured resistance, referenced to the secondary winding's base voltage, from secondary to tertiary windings (R2-3 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     x_23: float | None = Field(
         None,
-        description="Measured reactance, referenced to the secondary winding's base voltage, from secondary to tertiary windings (X2-3 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Measured reactance, referenced to the secondary winding's base voltage, from secondary to tertiary windings (X2-3 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     r_31: float | None = Field(
         None,
-        description="Measured resistance, referenced to the tertiary winding's base voltage, from tertiary to primary windings (R3-1 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Measured resistance, referenced to the tertiary winding's base voltage, from tertiary to primary windings (R3-1 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     x_31: float | None = Field(
         None,
-        description="Measured reactance, referenced to the tertiary winding's base voltage, from tertiary to primary windings (X3-1 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Measured reactance, referenced to the tertiary winding's base voltage, from tertiary to primary windings (X3-1 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     base_power_12: float | None = Field(
         None,
@@ -2719,11 +2719,11 @@ class ThreeWindingTransformer(BaseModel):
         description="Base power for per unitization for tertiary-primary windings. Units: MVA.",
     )
     admittance_units: AdmittanceUnitBasis | None = Field(
-        "DEVICE_BASE", description="Unit basis for the magnetizing_shunt admittance."
+        "COMPONENT_BASE", description="Unit basis for the magnetizing_shunt admittance."
     )
     magnetizing_shunt: ComplexNumber | None = Field(
         {"real": 0.0, "imag": 0.0},
-        description="Magnetizing shunt admittance referenced to the primary circuit's base voltage. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MVAr, DEVICE_BASE: pu .",
+        description="Magnetizing shunt admittance referenced to the primary circuit's base voltage. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr, COMPONENT_BASE: pu .",
     )
     shunt_location: ThreeWindingTransformerShuntLocation | None = Field(
         "PRIMARY",
@@ -2749,16 +2749,16 @@ class TransformerCircuit(BaseModel):
         description="Initial condition of phase shift across this circuit. Units: rad.",
     )
     parameter_units: ImpedanceUnitBasis | None = Field(
-        "DEVICE_BASE",
+        "COMPONENT_BASE",
         description="Unit basis for this circuit's impedance fields (r, x).",
     )
     r: float | None = Field(
         0.0,
-        description="Circuit resistance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Circuit resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     x: float | None = Field(
         0.0,
-        description="Circuit reactance. Units: per parameter_units — NATURAL_UNITS: ohm, DEVICE_BASE: pu .",
+        description="Circuit reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     control_objective: TransformerControlObjective | None = Field(
         "UNDEFINED",
@@ -2817,11 +2817,11 @@ class TwoWindingTransformer(BaseModel):
         description="The `TransformerCircuit` carrying this transformer's series electrical data.",
     )
     admittance_units: AdmittanceUnitBasis | None = Field(
-        "DEVICE_BASE", description="Unit basis for the magnetizing_shunt admittance."
+        "COMPONENT_BASE", description="Unit basis for the magnetizing_shunt admittance."
     )
     magnetizing_shunt: ComplexNumber | None = Field(
         {"real": 0.0, "imag": 0.0},
-        description="Magnetizing shunt admittance referenced to the circuit's `base_voltage_primary`. Units: per admittance_units — NATURAL_UNITS: S, DEVICE_MVAR: MVAr, DEVICE_BASE: pu .",
+        description="Magnetizing shunt admittance referenced to the circuit's `base_voltage_primary`. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr, COMPONENT_BASE: pu .",
     )
     shunt_location: TwoWindingTransformerShuntLocation | None = Field(
         "PRIMARY",
