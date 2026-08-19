@@ -5,7 +5,6 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Literal
 from pydantic import AwareDatetime, BaseModel, Field, RootModel
-from uuid import UUID
 
 
 class ACBusType(Enum):
@@ -286,10 +285,6 @@ class OwnerCategory(Enum):
 
 class TimeSeriesAssociation(BaseModel):
     id: int
-    time_series_uuid: UUID = Field(
-        ...,
-        description="UUID of the time series data. May reference inline data or an external store (e.g., HDF5).",
-    )
     time_series_type: str
     initial_timestamp: AwareDatetime
     resolution: str = Field(..., description="ISO 8601 duration (e.g., PT1H, PT5M).")
@@ -308,16 +303,25 @@ class TimeSeriesAssociation(BaseModel):
         ..., description="Whether the owner is component or supplemental attribute"
     )
     features: list[Feature]
-    scaling_factor_multiplier: str | None = Field(
+    element_type: str | None = Field(
         None,
-        description="Dot-encoded function name like PowerSystems.get_max_active_power.",
-    )
-    metadata_uuid: UUID = Field(
-        ..., description="Usually unique for each association, but not necessarily"
+        description="Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value *means* and how it is laid out; the physical dtype of the bytes is derived from it rather than recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label — the writing package derives it from the array.",
     )
     units: str | None = Field(
         None,
-        description="Unit string for the series values; must be a unit from the Core/units.json vocabulary for the series' quantity type.",
+        description="Unit string for the series values; must be a unit from the Core/units.json vocabulary allowed for `quantity_kind`. Absent when the series declares no unit, and meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless.",
+    )
+    quantity_kind: str | None = Field(
+        None,
+        description="Kind of physical quantity the values measure; must be a `quantity_types` name from the Core/units.json vocabulary (e.g. ActivePower, ReactivePower, ElectricalEnergy). Not an enum here because Core/units.json is the single source of truth for the vocabulary and duplicating it would give it two homes. It is coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity type can. It is also the only record of what the values measure when `unit_system` is a per-unit basis and they are therefore dimensionless.",
+    )
+    unit_system: UnitSystem | None = Field(
+        None,
+        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a DEVICE_BASE series back to natural units needs the owning component's base_power — as with every other per-unit quantity, system-base data records its base there and rides as DEVICE_BASE. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS: a series that never declared a basis must not be read as though someone had said its values were natural.",
+    )
+    application_data: str | None = Field(
+        None,
+        description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. This is a property of the association, not the component-level `ext` that the PSY parity allowlist drops as an infra field. Element typing does *not* belong here — that is `element_type`, which this layer owns and validates.",
     )
 
 
@@ -422,18 +426,17 @@ class FuelCurve(BaseModel):
 
 class TwoTerminalLoss(RootModel[InputOutputCurve | IncrementalCurve]):
     root: InputOutputCurve | IncrementalCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-            }
-        ),
+        {
+            "curve_type": "INPUT_OUTPUT",
+            "function_data": {
+                "function_type": "LINEAR",
+                "constant_term": 0,
+                "proportional_term": 0,
+            },
+        },
         discriminator="curve_type",
         title="TwoTerminalLoss",
+        validate_default=True,
     )
 
 
@@ -441,44 +444,32 @@ class CostCurve(BaseModel):
     power_units: UnitSystem = UnitSystem.NATURAL_UNITS
     value_curve: ValueCurve
     variable_cost_type: Literal["COST"]
-    vom_cost: InputOutputCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
+    vom_cost: InputOutputCurve
+
+
+class RenewableGenerationCost(BaseModel):
+    cost_type: Literal["RENEWABLE"] = "RENEWABLE"
+    curtailment_cost: CostCurve | None = Field(
+        {
+            "variable_cost_type": "COST",
+            "value_curve": {
                 "curve_type": "INPUT_OUTPUT",
                 "function_data": {
                     "function_type": "LINEAR",
                     "constant_term": 0,
                     "proportional_term": 0,
                 },
-            }
-        )
-    )
-
-
-class RenewableGenerationCost(BaseModel):
-    cost_type: Literal["RENEWABLE"] = "RENEWABLE"
-    curtailment_cost: CostCurve | None = Field(
-        default_factory=lambda: CostCurve.model_validate(
-            {
-                "variable_cost_type": "COST",
-                "value_curve": {
-                    "curve_type": "INPUT_OUTPUT",
-                    "function_data": {
-                        "function_type": "LINEAR",
-                        "constant_term": 0,
-                        "proportional_term": 0,
-                    },
+            },
+            "vom_cost": {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
                 },
-                "vom_cost": {
-                    "curve_type": "INPUT_OUTPUT",
-                    "function_data": {
-                        "function_type": "LINEAR",
-                        "constant_term": 0,
-                        "proportional_term": 0,
-                    },
-                },
-            }
-        )
+            },
+        },
+        validate_default=True,
     )
     variable: CostCurve
     fixed: float | None = 0.0
@@ -518,16 +509,7 @@ class LoadCost(BaseModel):
 class MarketBidCost(BaseModel):
     cost_type: Literal["MARKET_BID"] = "MARKET_BID"
     no_load_cost: InputOutputCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-            }
-        ),
+        ...,
         description="No load cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     start_up: StartUpStages = Field(
@@ -535,16 +517,7 @@ class MarketBidCost(BaseModel):
         description="Start-up cost at different stages of the thermal cycle (hot, warm, cold).",
     )
     shut_down: InputOutputCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-            }
-        ),
+        ...,
         description="Shut-down cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     incremental_offer_curves: CostCurve = Field(
@@ -575,8 +548,7 @@ class ThermalGenerationCost(BaseModel):
     )
     shut_down: float = Field(..., description="Cost to turn the unit off")
     start_up: float | StartUpStages = Field(
-        ...,
-        description="Start-up cost can take linear or multi-stage cost",
+        ..., description="Start-up cost can take linear or multi-stage cost"
     )
     variable: ProductionVariableCostCurve
 
