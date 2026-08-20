@@ -264,10 +264,14 @@ class DataSource(BaseModel):
 
 
 class SupplementalAttributeAssociation(BaseModel):
-    attribute_id: int = Field(..., description="ID of the supplemental attribute.")
-    entity_id: int = Field(
+    component_id: int = Field(
         ..., description="ID of the component the attribute describes."
     )
+    component_type: str = Field(
+        ...,
+        description="Type name of the component the attribute describes. A denormalized label matching the relational mirror's column, used for filtering; not part of the row's identity, which is the `(component_id, attribute_id)` pair.",
+    )
+    attribute_id: int = Field(..., description="ID of the supplemental attribute.")
     attribute_type: str = Field(
         ...,
         description='Schema title of the referenced supplemental attribute (e.g. "EmissionsData", "GeographicInfo"). A free-form string, not an enum: new attribute types are added elsewhere in this repo continuously, and a closed enum here would go stale.',
@@ -375,17 +379,18 @@ class FuelCurve(BaseModel):
 
 class TwoTerminalLoss(RootModel[InputOutputCurve | IncrementalCurve]):
     root: InputOutputCurve | IncrementalCurve = Field(
-        {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
-            },
-        },
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
         discriminator="curve_type",
         title="TwoTerminalLoss",
-        validate_default=True,
     )
 
 
@@ -393,32 +398,44 @@ class CostCurve(BaseModel):
     power_units: UnitSystem = UnitSystem.NATURAL_UNITS
     value_curve: ValueCurve
     variable_cost_type: Literal["COST"]
-    vom_cost: InputOutputCurve
+    vom_cost: InputOutputCurve = Field(
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        )
+    )
 
 
 class RenewableGenerationCost(BaseModel):
     cost_type: Literal["RENEWABLE"] = "RENEWABLE"
     curtailment_cost: CostCurve | None = Field(
-        {
-            "variable_cost_type": "COST",
-            "value_curve": {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
+        default_factory=lambda: CostCurve.model_validate(
+            {
+                "variable_cost_type": "COST",
+                "value_curve": {
+                    "curve_type": "INPUT_OUTPUT",
+                    "function_data": {
+                        "function_type": "LINEAR",
+                        "constant_term": 0,
+                        "proportional_term": 0,
+                    },
                 },
-            },
-            "vom_cost": {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
+                "vom_cost": {
+                    "curve_type": "INPUT_OUTPUT",
+                    "function_data": {
+                        "function_type": "LINEAR",
+                        "constant_term": 0,
+                        "proportional_term": 0,
+                    },
                 },
-            },
-        },
-        validate_default=True,
+            }
+        )
     )
     variable: CostCurve
     fixed: float | None = 0.0
@@ -458,7 +475,16 @@ class LoadCost(BaseModel):
 class MarketBidCost(BaseModel):
     cost_type: Literal["MARKET_BID"] = "MARKET_BID"
     no_load_cost: InputOutputCurve = Field(
-        ...,
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
         description="No load cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     start_up: StartUpStages = Field(
@@ -466,7 +492,16 @@ class MarketBidCost(BaseModel):
         description="Start-up cost at different stages of the thermal cycle (hot, warm, cold).",
     )
     shut_down: InputOutputCurve = Field(
-        ...,
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
         description="Shut-down cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     incremental_offer_curves: CostCurve = Field(
@@ -497,7 +532,8 @@ class ThermalGenerationCost(BaseModel):
     )
     shut_down: float = Field(..., description="Cost to turn the unit off")
     start_up: float | StartUpStages = Field(
-        ..., description="Start-up cost can take linear or multi-stage cost"
+        ...,
+        description="Start-up cost can take linear or multi-stage cost",
     )
     variable: ProductionVariableCostCurve
 

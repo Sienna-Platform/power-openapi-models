@@ -17,7 +17,7 @@ class OwnerCategory(Enum):
 class TimeSeriesFeatureValue(RootModel[int | float | bool | str]):
     root: int | float | bool | str = Field(
         ...,
-        description="One feature value. Four kinds, matching infrastore's FeatureValue: int, float, bool, str. `anyOf` rather than `oneOf` is required, not stylistic: JSON Schema's `integer` is a subset of `number`, so an integer instance matches both branches and `oneOf` — which demands exactly one match — would reject every integer feature. A float feature is compared and hashed by its bit pattern rather than by IEEE comparison, so 0.0 and -0.0 are two different series; NaN and negative zero are rejected on write because the catalog cannot store either faithfully.",
+        description="One feature value. Four kinds, matching the backing store's feature-value type: int, float, bool, str. `anyOf` rather than `oneOf` is required, not stylistic: JSON Schema's `integer` is a subset of `number`, so an integer instance matches both branches and `oneOf` — which demands exactly one match — would reject every integer feature. A float feature is compared and hashed by its bit pattern rather than by IEEE comparison, so 0.0 and -0.0 are two different series; NaN and negative zero are rejected on write because the catalog cannot store either faithfully.",
         title="TimeSeriesFeatureValue",
     )
 
@@ -45,7 +45,7 @@ class UnitSystem1(RootModel[UnitSystem]):
 class TimeSeriesFeatures(RootModel[dict[str, TimeSeriesFeatureValue]]):
     root: dict[str, TimeSeriesFeatureValue] = Field(
         ...,
-        description="User-defined key/value tags forming part of a series' identity. A map, matching infrastore's Features (a BTreeMap whose sort order is load-bearing, because the hash of the feature map keys the catalog's uniqueness index). The excluded property names each already name a field of a time series or of the tuple that addresses one: consumers routinely spread a feature map into keyword arguments, where a feature called `name` or `resolution` would shadow the real field and silently change what a query means. The comparison is exact and case-sensitive — `resolution` is reserved, `Resolution` is not.",
+        description="User-defined key/value tags forming part of a series' identity. A map, matching the backing store's feature-map type (a BTreeMap whose sort order is load-bearing, because the hash of the feature map keys the catalog's uniqueness index). The excluded property names each already name a field of a time series or of the tuple that addresses one: consumers routinely spread a feature map into keyword arguments, where a feature called `name` or `resolution` would shadow the real field and silently change what a query means. The comparison is exact and case-sensitive — `resolution` is reserved, `Resolution` is not.",
         title="TimeSeriesFeatures",
     )
 
@@ -53,11 +53,11 @@ class TimeSeriesFeatures(RootModel[dict[str, TimeSeriesFeatureValue]]):
 class NonSequentialTimeSeries(BaseModel):
     id: int = Field(
         ...,
-        description="Surrogate primary key of the association row (`id INTEGER PRIMARY KEY` in infrastore's catalog). Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
+        description="Surrogate primary key of the association row, the store's catalog row. Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
     )
     owner_id: int = Field(
         ...,
-        description="ID of the owning component or supplemental attribute. Component and supplemental-attribute id streams are independent, so `owner_category` is what disambiguates an `owner_id` reused across the two.",
+        description="ID of the owning component or supplemental attribute. The producing data layer allocates both from one id stream, so an `owner_id` never collides across the two categories; `owner_category` remains required because the store's catalog contract still supports independent streams from other producers, and it is still the store's disambiguator.",
     )
     owner_type: str = Field(
         ...,
@@ -80,7 +80,7 @@ class NonSequentialTimeSeries(BaseModel):
     )
     address: str = Field(
         ...,
-        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; in Sienna, infrastore resolves it. This layer records where the values are, never the values.",
+        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; the backing time-series store resolves it. This layer records where the values are, never the values.",
     )
     element_type: ElementType = Field(
         ...,
@@ -92,7 +92,7 @@ class NonSequentialTimeSeries(BaseModel):
     )
     units: str | None = Field(
         None,
-        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless.",
+        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
     )
     quantity_kind: str | None = Field(
         None,
@@ -119,11 +119,11 @@ class NonSequentialTimeSeries(BaseModel):
 class Deterministic(BaseModel):
     id: int = Field(
         ...,
-        description="Surrogate primary key of the association row (`id INTEGER PRIMARY KEY` in infrastore's catalog). Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
+        description="Surrogate primary key of the association row, the store's catalog row. Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
     )
     owner_id: int = Field(
         ...,
-        description="ID of the owning component or supplemental attribute. Component and supplemental-attribute id streams are independent, so `owner_category` is what disambiguates an `owner_id` reused across the two.",
+        description="ID of the owning component or supplemental attribute. The producing data layer allocates both from one id stream, so an `owner_id` never collides across the two categories; `owner_category` remains required because the store's catalog contract still supports independent streams from other producers, and it is still the store's disambiguator.",
     )
     owner_type: str = Field(
         ...,
@@ -146,7 +146,7 @@ class Deterministic(BaseModel):
     )
     address: str = Field(
         ...,
-        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; in Sienna, infrastore resolves it. This layer records where the values are, never the values.",
+        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; the backing time-series store resolves it. This layer records where the values are, never the values.",
     )
     element_type: ElementType = Field(
         ...,
@@ -158,7 +158,7 @@ class Deterministic(BaseModel):
     )
     units: str | None = Field(
         None,
-        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless.",
+        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
     )
     quantity_kind: str | None = Field(
         None,
@@ -200,11 +200,11 @@ class Deterministic(BaseModel):
 class DeterministicSingleTimeSeries(BaseModel):
     id: int = Field(
         ...,
-        description="Surrogate primary key of the association row (`id INTEGER PRIMARY KEY` in infrastore's catalog). Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
+        description="Surrogate primary key of the association row, the store's catalog row. Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
     )
     owner_id: int = Field(
         ...,
-        description="ID of the owning component or supplemental attribute. Component and supplemental-attribute id streams are independent, so `owner_category` is what disambiguates an `owner_id` reused across the two.",
+        description="ID of the owning component or supplemental attribute. The producing data layer allocates both from one id stream, so an `owner_id` never collides across the two categories; `owner_category` remains required because the store's catalog contract still supports independent streams from other producers, and it is still the store's disambiguator.",
     )
     owner_type: str = Field(
         ...,
@@ -227,7 +227,7 @@ class DeterministicSingleTimeSeries(BaseModel):
     )
     address: str = Field(
         ...,
-        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; in Sienna, infrastore resolves it. This layer records where the values are, never the values.",
+        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; the backing time-series store resolves it. This layer records where the values are, never the values.",
     )
     element_type: ElementType = Field(
         ...,
@@ -239,7 +239,7 @@ class DeterministicSingleTimeSeries(BaseModel):
     )
     units: str | None = Field(
         None,
-        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless.",
+        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
     )
     quantity_kind: str | None = Field(
         None,
@@ -281,11 +281,11 @@ class DeterministicSingleTimeSeries(BaseModel):
 class Probabilistic(BaseModel):
     id: int = Field(
         ...,
-        description="Surrogate primary key of the association row (`id INTEGER PRIMARY KEY` in infrastore's catalog). Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
+        description="Surrogate primary key of the association row, the store's catalog row. Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
     )
     owner_id: int = Field(
         ...,
-        description="ID of the owning component or supplemental attribute. Component and supplemental-attribute id streams are independent, so `owner_category` is what disambiguates an `owner_id` reused across the two.",
+        description="ID of the owning component or supplemental attribute. The producing data layer allocates both from one id stream, so an `owner_id` never collides across the two categories; `owner_category` remains required because the store's catalog contract still supports independent streams from other producers, and it is still the store's disambiguator.",
     )
     owner_type: str = Field(
         ...,
@@ -308,7 +308,7 @@ class Probabilistic(BaseModel):
     )
     address: str = Field(
         ...,
-        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; in Sienna, infrastore resolves it. This layer records where the values are, never the values.",
+        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; the backing time-series store resolves it. This layer records where the values are, never the values.",
     )
     element_type: ElementType = Field(
         ...,
@@ -320,7 +320,7 @@ class Probabilistic(BaseModel):
     )
     units: str | None = Field(
         None,
-        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless.",
+        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
     )
     quantity_kind: str | None = Field(
         None,
@@ -367,11 +367,11 @@ class Probabilistic(BaseModel):
 class Scenarios(BaseModel):
     id: int = Field(
         ...,
-        description="Surrogate primary key of the association row (`id INTEGER PRIMARY KEY` in infrastore's catalog). Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
+        description="Surrogate primary key of the association row, the store's catalog row. Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
     )
     owner_id: int = Field(
         ...,
-        description="ID of the owning component or supplemental attribute. Component and supplemental-attribute id streams are independent, so `owner_category` is what disambiguates an `owner_id` reused across the two.",
+        description="ID of the owning component or supplemental attribute. The producing data layer allocates both from one id stream, so an `owner_id` never collides across the two categories; `owner_category` remains required because the store's catalog contract still supports independent streams from other producers, and it is still the store's disambiguator.",
     )
     owner_type: str = Field(
         ...,
@@ -394,7 +394,7 @@ class Scenarios(BaseModel):
     )
     address: str = Field(
         ...,
-        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; in Sienna, infrastore resolves it. This layer records where the values are, never the values.",
+        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; the backing time-series store resolves it. This layer records where the values are, never the values.",
     )
     element_type: ElementType = Field(
         ...,
@@ -406,7 +406,7 @@ class Scenarios(BaseModel):
     )
     units: str | None = Field(
         None,
-        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless.",
+        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
     )
     quantity_kind: str | None = Field(
         None,
@@ -445,18 +445,18 @@ class Scenarios(BaseModel):
     )
     scenario_count: conint(ge=1) = Field(
         ...,
-        description="Number of scenarios, one per leading axis entry of the stored array. infrastore's catalog has no column for this and reads it off the array's shape; it is recorded explicitly here because this layer carries no array.",
+        description="Number of scenarios, one per leading axis entry of the stored array. The store's catalog has no column for this and reads it off the array's shape; it is recorded explicitly here because this layer carries no array.",
     )
 
 
 class SingleTimeSeries(BaseModel):
     id: int = Field(
         ...,
-        description="Surrogate primary key of the association row (`id INTEGER PRIMARY KEY` in infrastore's catalog). Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
+        description="Surrogate primary key of the association row, the store's catalog row. Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
     )
     owner_id: int = Field(
         ...,
-        description="ID of the owning component or supplemental attribute. Component and supplemental-attribute id streams are independent, so `owner_category` is what disambiguates an `owner_id` reused across the two.",
+        description="ID of the owning component or supplemental attribute. The producing data layer allocates both from one id stream, so an `owner_id` never collides across the two categories; `owner_category` remains required because the store's catalog contract still supports independent streams from other producers, and it is still the store's disambiguator.",
     )
     owner_type: str = Field(
         ...,
@@ -479,7 +479,7 @@ class SingleTimeSeries(BaseModel):
     )
     address: str = Field(
         ...,
-        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; in Sienna, infrastore resolves it. This layer records where the values are, never the values.",
+        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; the backing time-series store resolves it. This layer records where the values are, never the values.",
     )
     element_type: ElementType = Field(
         ...,
@@ -491,7 +491,7 @@ class SingleTimeSeries(BaseModel):
     )
     units: str | None = Field(
         None,
-        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless.",
+        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
     )
     quantity_kind: str | None = Field(
         None,
@@ -511,7 +511,7 @@ class SingleTimeSeries(BaseModel):
     )
     initial_timestamp: AwareDatetime = Field(
         ...,
-        description="First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. Stored as an RFC3339 string and keeps nanoseconds, so a grid may be millisecond-spaced while being nanosecond-offset in its phase.",
+        description="First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. An RFC3339 string with at most 3 fractional-second digits: the store's floor is one millisecond, matching Julia's millisecond-precision DateTime.",
     )
     resolution: Period = Field(
         ...,
@@ -539,7 +539,7 @@ class TimeSeriesAssociation(
         | Scenarios
     ) = Field(
         ...,
-        description="Metadata linking one time series to the component or supplemental attribute that owns it — the JSON form of a row in infrastore's `time_series_associations` catalog table. A closed set of six types owned by InfrastructureSystems: two static (SingleTimeSeries on a regular grid, NonSequentialTimeSeries on explicit irregular timestamps) and four forecasts. The type decides which timing fields the row carries, which is why each is its own schema rather than one row with everything nullable.\n\nDense values never appear here. `address` names the store that holds them; content hashes (data_hash, features_hash, timestamps_hash) are store-internal and deliberately absent.",
+        description="Metadata linking one time series to the component or supplemental attribute that owns it — the JSON form of a row in the store's `time_series_associations` catalog table. A closed set of six canonical types owned by the data layer: two static (SingleTimeSeries on a regular grid, NonSequentialTimeSeries on explicit irregular timestamps) and four forecasts. The type decides which timing fields the row carries, which is why each is its own schema rather than one row with everything nullable.\n\nDense values never appear here. `address` names the store that holds them; content hashes (data_hash, features_hash, timestamps_hash) are store-internal and deliberately absent.",
         discriminator="time_series_type",
         title="TimeSeriesAssociation",
     )
