@@ -694,7 +694,7 @@ class HydroDispatch(BaseModel):
     )
     time_at_status: float | None = Field(
         600000.0,
-        description="Time the generator has been on or off, as indicated by `status`. default is PowerSystems.jl's INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
+        description="Time the generator has been on or off, as indicated by `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
     )
     operation_cost: HydroGenerationCost | MarketBidCost = Field(
         ...,
@@ -778,7 +778,7 @@ class HydroPumpTurbine(BaseModel):
     )
     time_at_status: float | None = Field(
         600000.0,
-        description="Time the generator has been on or off, as indicated by `status`. default is PowerSystems.jl's INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
+        description="Time the generator has been on or off, as indicated by `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
     )
     operation_cost: HydroGenerationCost | MarketBidCost = Field(
         ...,
