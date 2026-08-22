@@ -74,7 +74,7 @@ def _diff(before, after, path=""):
     return out
 
 
-@pytest.fixture(params=["NATURAL_UNITS", "DEVICE_BASE"])
+@pytest.fixture(params=["NATURAL_UNITS", "COMPONENT_BASE"])
 def fixture_doc(request):
     path = FIXTURES_DIR / f"case14_operations.{request.param}.json"
     return json.loads(path.read_text())
@@ -125,37 +125,37 @@ def test_natural_units_spot_checks():
     assert len(doc["supplemental_attribute_associations"]) == 9
 
 
-def test_device_base_spot_checks():
-    doc = json.loads((FIXTURES_DIR / "case14_operations.DEVICE_BASE.json").read_text())
+def test_component_base_spot_checks():
+    doc = json.loads((FIXTURES_DIR / "case14_operations.COMPONENT_BASE.json").read_text())
     assert doc["base_power"] == 100.0
-    assert doc["unit_system"] == "DEVICE_BASE"
+    assert doc["unit_system"] == "COMPONENT_BASE"
     bus = doc["components"]["ACBus"][0]
     assert bus["base_voltage"] == 138.0
     assert len(doc["supplemental_attribute_associations"]) == 9
 
 
-def test_device_base_actually_converts_from_natural_units():
+def test_component_base_actually_converts_from_natural_units():
     """The two fixtures must differ in more than the ``unit_system`` tag.
 
-    Neither spot-check test above reads both fixtures, so a DEVICE_BASE fixture
+    Neither spot-check test above reads both fixtures, so a COMPONENT_BASE fixture
     that is a byte-identical copy of NATURAL_UNITS would pass them both. A Line's
     ``rating`` (ApparentPower, MVA, no per-field unit-basis discriminator) is
-    genuinely per-unit-on-own-``base_power`` in DEVICE_BASE: assert that physical
+    genuinely per-unit-on-own-``base_power`` in COMPONENT_BASE: assert that physical
     relationship directly, across every line, and that at least one line actually
     differs numerically.
     """
     natural = json.loads(
         (FIXTURES_DIR / "case14_operations.NATURAL_UNITS.json").read_text()
     )
-    device = json.loads(
-        (FIXTURES_DIR / "case14_operations.DEVICE_BASE.json").read_text()
+    component = json.loads(
+        (FIXTURES_DIR / "case14_operations.COMPONENT_BASE.json").read_text()
     )
     natural_lines = {c["id"]: c for c in natural["components"]["Line"]}
-    device_lines = {c["id"]: c for c in device["components"]["Line"]}
-    assert natural_lines.keys() == device_lines.keys()
+    component_lines = {c["id"]: c for c in component["components"]["Line"]}
+    assert natural_lines.keys() == component_lines.keys()
     differed = 0
     for id_, nat in natural_lines.items():
-        dev = device_lines[id_]
+        dev = component_lines[id_]
         assert dev["rating"] == pytest.approx(nat["rating"] / nat["base_power"])
         if dev["rating"] != nat["rating"]:
             differed += 1

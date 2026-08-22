@@ -5,7 +5,6 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Literal
 from pydantic import AwareDatetime, BaseModel, Field, RootModel
-from uuid import UUID
 
 
 class ACBusType(Enum):
@@ -37,7 +36,7 @@ class QuadraticFunctionData(BaseModel):
 
 
 class UnitSystem(Enum):
-    DEVICE_BASE = "DEVICE_BASE"
+    COMPONENT_BASE = "COMPONENT_BASE"
     NATURAL_UNITS = "NATURAL_UNITS"
 
 
@@ -62,10 +61,6 @@ class DbdPnts(BaseModel):
     dbd2: float | None = None
 
 
-class Feature(RootModel[dict[str, bool | int | str]]):
-    root: dict[str, bool | int | str] = Field(..., max_length=1, min_length=1)
-
-
 class EnergyUnitBasis(Enum):
     MWH = "MWH"
     MWMIN = "MWMIN"
@@ -73,18 +68,18 @@ class EnergyUnitBasis(Enum):
 
 class ImpedanceUnitBasis(Enum):
     NATURAL_UNITS = "NATURAL_UNITS"
-    DEVICE_BASE = "DEVICE_BASE"
+    COMPONENT_BASE = "COMPONENT_BASE"
 
 
 class AdmittanceUnitBasis(Enum):
     NATURAL_UNITS = "NATURAL_UNITS"
-    DEVICE_MVAR = "DEVICE_MVAR"
-    DEVICE_BASE = "DEVICE_BASE"
+    COMPONENT_MVAR = "COMPONENT_MVAR"
+    COMPONENT_BASE = "COMPONENT_BASE"
 
 
 class ShuntAdmittanceUnitBasis(Enum):
     NATURAL_UNITS = "NATURAL_UNITS"
-    DEVICE_MVAR = "DEVICE_MVAR"
+    COMPONENT_MVAR = "COMPONENT_MVAR"
 
 
 class FdbdPnts(BaseModel):
@@ -269,55 +264,17 @@ class DataSource(BaseModel):
 
 
 class SupplementalAttributeAssociation(BaseModel):
-    attribute_id: int = Field(..., description="ID of the supplemental attribute.")
-    entity_id: int = Field(
+    component_id: int = Field(
         ..., description="ID of the component the attribute describes."
     )
+    component_type: str = Field(
+        ...,
+        description="Type name of the component the attribute describes. A denormalized label matching the relational mirror's column, used for filtering; not part of the row's identity, which is the `(component_id, attribute_id)` pair.",
+    )
+    attribute_id: int = Field(..., description="ID of the supplemental attribute.")
     attribute_type: str = Field(
         ...,
         description='Schema title of the referenced supplemental attribute (e.g. "EmissionsData", "GeographicInfo"). A free-form string, not an enum: new attribute types are added elsewhere in this repo continuously, and a closed enum here would go stale.',
-    )
-
-
-class OwnerCategory(Enum):
-    Component = "Component"
-    SupplementalAttribute = "SupplementalAttribute"
-
-
-class TimeSeriesAssociation(BaseModel):
-    id: int
-    time_series_uuid: UUID = Field(
-        ...,
-        description="UUID of the time series data. May reference inline data or an external store (e.g., HDF5).",
-    )
-    time_series_type: str
-    initial_timestamp: AwareDatetime
-    resolution: str = Field(..., description="ISO 8601 duration (e.g., PT1H, PT5M).")
-    horizon: str | None = Field(
-        None, description="ISO 8601 duration for forecast horizon."
-    )
-    interval: str | None = Field(
-        None, description="ISO 8601 duration for forecast interval."
-    )
-    window_count: int | None = None
-    length: int | None = None
-    name: str = Field(..., description="Time series name (e.g., max_active_power).")
-    owner_id: int = Field(..., description="ID of the owning component.")
-    owner_type: str = Field(..., description="Type name of the owning component.")
-    owner_category: OwnerCategory = Field(
-        ..., description="Whether the owner is component or supplemental attribute"
-    )
-    features: list[Feature]
-    scaling_factor_multiplier: str | None = Field(
-        None,
-        description="Dot-encoded function name like PowerSystems.get_max_active_power.",
-    )
-    metadata_uuid: UUID = Field(
-        ..., description="Usually unique for each association, but not necessarily"
-    )
-    units: str | None = Field(
-        None,
-        description="Unit string for the series values; must be a unit from the Core/units.json vocabulary for the series' quantity type.",
     )
 
 
