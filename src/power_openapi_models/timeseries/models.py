@@ -3,10 +3,14 @@
 
 from __future__ import annotations
 from power_openapi_models.core.models import UnitSystem
-from enum import Enum
 from pydantic import AwareDatetime, BaseModel, Field, RootModel, conint
+from enum import Enum
 from power_openapi_models.core.models import UnitSystem
 from typing import Literal
+
+
+class ArrayShapeItem(RootModel[conint(ge=0)]):
+    root: conint(ge=0)
 
 
 class OwnerCategory(Enum):
@@ -27,6 +31,14 @@ class ElementType(RootModel[str]):
         ...,
         description="Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `u32`, `u16`, `u8`, `i16`, `i8`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value means and how it is laid out; the physical dtype of the bytes derives from it rather than being recorded separately. `linear_function` occupies 2 slots, `quadratic_function` 3; the two piecewise kinds are ragged, with the used count in the row's leading element.",
         title="ElementType",
+    )
+
+
+class TimeReference(RootModel[str]):
+    root: str = Field(
+        ...,
+        description="How a series' timestamps were spelled, recorded so a read hands back what the write declared instead of relabelling every series UTC. Four forms share one string, and are unambiguous because a zone name that would read as either literal or as an offset is rejected: `utc`; `zoneless` for a wall clock, which names no instant; a fixed UTC offset (`-07:00`, `+0530`, `+05`); or an IANA zone name (`America/Denver`). Only the name's shape is checked here — whether a zone exists is a tz-database question, and the store records the name either way. A spelling, not a grid: it does not change what a calendar `resolution` steps on, and a series on a local-clock grid is a NonSequentialTimeSeries. Descriptive, so two series differing only in it are duplicates rather than distinct series, but not inert — a query's bounds must match the series' spelling, and the zoneless series form their own group.",
+        title="TimeReference",
     )
 
 
@@ -51,9 +63,9 @@ class TimeSeriesFeatures(RootModel[dict[str, TimeSeriesFeatureValue]]):
 
 
 class NonSequentialTimeSeries(BaseModel):
-    id: int = Field(
+    association_id: int = Field(
         ...,
-        description="Surrogate primary key of the association row, the store's catalog row. Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
+        description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
     )
     owner_id: int = Field(
         ...,
@@ -78,9 +90,13 @@ class NonSequentialTimeSeries(BaseModel):
         ...,
         description="User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected.",
     )
-    address: str = Field(
+    uri: str = Field(
         ...,
-        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; the backing time-series store resolves it. This layer records where the values are, never the values.",
+        description="Locator for the dense data, unique within one store. No required format — typically a file path or an HDF5 dataset path; the backing store decides what it means and resolves it (infrastore uses its content hash as this value). Never parsed or interpreted here. This layer records where the values are, never the values.",
+    )
+    data_hash: str | None = Field(
+        None,
+        description="Content hash of the stored array: SHA-256, hex-encoded. Optional — not every producer computes it.",
     )
     element_type: ElementType = Field(
         ...,
@@ -89,6 +105,11 @@ class NonSequentialTimeSeries(BaseModel):
     element_shape: list[conint(ge=0)] = Field(
         ...,
         description="Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
+    )
+    array_shape: list[ArrayShapeItem] | None = Field(
+        None,
+        description="Full native shape of the stored array, in the order the store holds it: the first axis is the array's length and the trailing axes end with `element_shape`. Static types are `[length, *element_shape]`; a deterministic forecast stacks windows as `[horizon_count, count, *element_shape]`; probabilistic and scenarios forecasts add a percentile or scenario axis in front of that. Optional, and redundant for the static types, where it is exactly `[length] + element_shape`. It earns its place on the forecasts, whose array layout is a convention the producing package owns rather than a rule this layer enforces, so the stored geometry cannot be reconstructed from `horizon`, `count`, `percentiles`, and `scenario_count` alone. A consumer that has it should prefer it; one that does not falls back to those fields, which is exact for the static types and a best effort for the forecasts.",
+        min_length=1,
     )
     units: str | None = Field(
         None,
@@ -101,6 +122,10 @@ class NonSequentialTimeSeries(BaseModel):
     unit_system: UnitSystem | None = Field(
         None,
         description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+    )
+    time_reference: TimeReference | None = Field(
+        None,
+        description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
     component_field: str | None = Field(
         None,
@@ -117,9 +142,9 @@ class NonSequentialTimeSeries(BaseModel):
 
 
 class Deterministic(BaseModel):
-    id: int = Field(
+    association_id: int = Field(
         ...,
-        description="Surrogate primary key of the association row, the store's catalog row. Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
+        description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
     )
     owner_id: int = Field(
         ...,
@@ -144,9 +169,13 @@ class Deterministic(BaseModel):
         ...,
         description="User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected.",
     )
-    address: str = Field(
+    uri: str = Field(
         ...,
-        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; the backing time-series store resolves it. This layer records where the values are, never the values.",
+        description="Locator for the dense data, unique within one store. No required format — typically a file path or an HDF5 dataset path; the backing store decides what it means and resolves it (infrastore uses its content hash as this value). Never parsed or interpreted here. This layer records where the values are, never the values.",
+    )
+    data_hash: str | None = Field(
+        None,
+        description="Content hash of the stored array: SHA-256, hex-encoded. Optional — not every producer computes it.",
     )
     element_type: ElementType = Field(
         ...,
@@ -155,6 +184,11 @@ class Deterministic(BaseModel):
     element_shape: list[conint(ge=0)] = Field(
         ...,
         description="Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
+    )
+    array_shape: list[ArrayShapeItem] | None = Field(
+        None,
+        description="Full native shape of the stored array, in the order the store holds it: the first axis is the array's length and the trailing axes end with `element_shape`. Static types are `[length, *element_shape]`; a deterministic forecast stacks windows as `[horizon_count, count, *element_shape]`; probabilistic and scenarios forecasts add a percentile or scenario axis in front of that. Optional, and redundant for the static types, where it is exactly `[length] + element_shape`. It earns its place on the forecasts, whose array layout is a convention the producing package owns rather than a rule this layer enforces, so the stored geometry cannot be reconstructed from `horizon`, `count`, `percentiles`, and `scenario_count` alone. A consumer that has it should prefer it; one that does not falls back to those fields, which is exact for the static types and a best effort for the forecasts.",
+        min_length=1,
     )
     units: str | None = Field(
         None,
@@ -167,6 +201,10 @@ class Deterministic(BaseModel):
     unit_system: UnitSystem | None = Field(
         None,
         description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+    )
+    time_reference: TimeReference | None = Field(
+        None,
+        description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
     component_field: str | None = Field(
         None,
@@ -198,9 +236,9 @@ class Deterministic(BaseModel):
 
 
 class DeterministicSingleTimeSeries(BaseModel):
-    id: int = Field(
+    association_id: int = Field(
         ...,
-        description="Surrogate primary key of the association row, the store's catalog row. Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
+        description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
     )
     owner_id: int = Field(
         ...,
@@ -225,9 +263,13 @@ class DeterministicSingleTimeSeries(BaseModel):
         ...,
         description="User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected.",
     )
-    address: str = Field(
+    uri: str = Field(
         ...,
-        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; the backing time-series store resolves it. This layer records where the values are, never the values.",
+        description="Locator for the dense data, unique within one store. No required format — typically a file path or an HDF5 dataset path; the backing store decides what it means and resolves it (infrastore uses its content hash as this value). Never parsed or interpreted here. This layer records where the values are, never the values.",
+    )
+    data_hash: str | None = Field(
+        None,
+        description="Content hash of the stored array: SHA-256, hex-encoded. Optional — not every producer computes it.",
     )
     element_type: ElementType = Field(
         ...,
@@ -236,6 +278,11 @@ class DeterministicSingleTimeSeries(BaseModel):
     element_shape: list[conint(ge=0)] = Field(
         ...,
         description="Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
+    )
+    array_shape: list[ArrayShapeItem] | None = Field(
+        None,
+        description="Full native shape of the stored array, in the order the store holds it: the first axis is the array's length and the trailing axes end with `element_shape`. Static types are `[length, *element_shape]`; a deterministic forecast stacks windows as `[horizon_count, count, *element_shape]`; probabilistic and scenarios forecasts add a percentile or scenario axis in front of that. Optional, and redundant for the static types, where it is exactly `[length] + element_shape`. It earns its place on the forecasts, whose array layout is a convention the producing package owns rather than a rule this layer enforces, so the stored geometry cannot be reconstructed from `horizon`, `count`, `percentiles`, and `scenario_count` alone. A consumer that has it should prefer it; one that does not falls back to those fields, which is exact for the static types and a best effort for the forecasts.",
+        min_length=1,
     )
     units: str | None = Field(
         None,
@@ -248,6 +295,10 @@ class DeterministicSingleTimeSeries(BaseModel):
     unit_system: UnitSystem | None = Field(
         None,
         description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+    )
+    time_reference: TimeReference | None = Field(
+        None,
+        description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
     component_field: str | None = Field(
         None,
@@ -279,9 +330,9 @@ class DeterministicSingleTimeSeries(BaseModel):
 
 
 class Probabilistic(BaseModel):
-    id: int = Field(
+    association_id: int = Field(
         ...,
-        description="Surrogate primary key of the association row, the store's catalog row. Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
+        description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
     )
     owner_id: int = Field(
         ...,
@@ -306,9 +357,13 @@ class Probabilistic(BaseModel):
         ...,
         description="User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected.",
     )
-    address: str = Field(
+    uri: str = Field(
         ...,
-        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; the backing time-series store resolves it. This layer records where the values are, never the values.",
+        description="Locator for the dense data, unique within one store. No required format — typically a file path or an HDF5 dataset path; the backing store decides what it means and resolves it (infrastore uses its content hash as this value). Never parsed or interpreted here. This layer records where the values are, never the values.",
+    )
+    data_hash: str | None = Field(
+        None,
+        description="Content hash of the stored array: SHA-256, hex-encoded. Optional — not every producer computes it.",
     )
     element_type: ElementType = Field(
         ...,
@@ -317,6 +372,11 @@ class Probabilistic(BaseModel):
     element_shape: list[conint(ge=0)] = Field(
         ...,
         description="Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
+    )
+    array_shape: list[ArrayShapeItem] | None = Field(
+        None,
+        description="Full native shape of the stored array, in the order the store holds it: the first axis is the array's length and the trailing axes end with `element_shape`. Static types are `[length, *element_shape]`; a deterministic forecast stacks windows as `[horizon_count, count, *element_shape]`; probabilistic and scenarios forecasts add a percentile or scenario axis in front of that. Optional, and redundant for the static types, where it is exactly `[length] + element_shape`. It earns its place on the forecasts, whose array layout is a convention the producing package owns rather than a rule this layer enforces, so the stored geometry cannot be reconstructed from `horizon`, `count`, `percentiles`, and `scenario_count` alone. A consumer that has it should prefer it; one that does not falls back to those fields, which is exact for the static types and a best effort for the forecasts.",
+        min_length=1,
     )
     units: str | None = Field(
         None,
@@ -329,6 +389,10 @@ class Probabilistic(BaseModel):
     unit_system: UnitSystem | None = Field(
         None,
         description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+    )
+    time_reference: TimeReference | None = Field(
+        None,
+        description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
     component_field: str | None = Field(
         None,
@@ -365,9 +429,9 @@ class Probabilistic(BaseModel):
 
 
 class Scenarios(BaseModel):
-    id: int = Field(
+    association_id: int = Field(
         ...,
-        description="Surrogate primary key of the association row, the store's catalog row. Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
+        description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
     )
     owner_id: int = Field(
         ...,
@@ -392,9 +456,13 @@ class Scenarios(BaseModel):
         ...,
         description="User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected.",
     )
-    address: str = Field(
+    uri: str = Field(
         ...,
-        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; the backing time-series store resolves it. This layer records where the values are, never the values.",
+        description="Locator for the dense data, unique within one store. No required format — typically a file path or an HDF5 dataset path; the backing store decides what it means and resolves it (infrastore uses its content hash as this value). Never parsed or interpreted here. This layer records where the values are, never the values.",
+    )
+    data_hash: str | None = Field(
+        None,
+        description="Content hash of the stored array: SHA-256, hex-encoded. Optional — not every producer computes it.",
     )
     element_type: ElementType = Field(
         ...,
@@ -403,6 +471,11 @@ class Scenarios(BaseModel):
     element_shape: list[conint(ge=0)] = Field(
         ...,
         description="Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
+    )
+    array_shape: list[ArrayShapeItem] | None = Field(
+        None,
+        description="Full native shape of the stored array, in the order the store holds it: the first axis is the array's length and the trailing axes end with `element_shape`. Static types are `[length, *element_shape]`; a deterministic forecast stacks windows as `[horizon_count, count, *element_shape]`; probabilistic and scenarios forecasts add a percentile or scenario axis in front of that. Optional, and redundant for the static types, where it is exactly `[length] + element_shape`. It earns its place on the forecasts, whose array layout is a convention the producing package owns rather than a rule this layer enforces, so the stored geometry cannot be reconstructed from `horizon`, `count`, `percentiles`, and `scenario_count` alone. A consumer that has it should prefer it; one that does not falls back to those fields, which is exact for the static types and a best effort for the forecasts.",
+        min_length=1,
     )
     units: str | None = Field(
         None,
@@ -415,6 +488,10 @@ class Scenarios(BaseModel):
     unit_system: UnitSystem | None = Field(
         None,
         description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+    )
+    time_reference: TimeReference | None = Field(
+        None,
+        description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
     component_field: str | None = Field(
         None,
@@ -450,9 +527,9 @@ class Scenarios(BaseModel):
 
 
 class SingleTimeSeries(BaseModel):
-    id: int = Field(
+    association_id: int = Field(
         ...,
-        description="Surrogate primary key of the association row, the store's catalog row. Not part of the uniqueness tuple, which is (owner_id, owner_category, time_series_type, name, resolution, interval, features).",
+        description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
     )
     owner_id: int = Field(
         ...,
@@ -477,9 +554,13 @@ class SingleTimeSeries(BaseModel):
         ...,
         description="User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected.",
     )
-    address: str = Field(
+    uri: str = Field(
         ...,
-        description="Opaque locator for the dense data. Never parsed or interpreted here — the owner of the store decides what it means; the backing time-series store resolves it. This layer records where the values are, never the values.",
+        description="Locator for the dense data, unique within one store. No required format — typically a file path or an HDF5 dataset path; the backing store decides what it means and resolves it (infrastore uses its content hash as this value). Never parsed or interpreted here. This layer records where the values are, never the values.",
+    )
+    data_hash: str | None = Field(
+        None,
+        description="Content hash of the stored array: SHA-256, hex-encoded. Optional — not every producer computes it.",
     )
     element_type: ElementType = Field(
         ...,
@@ -488,6 +569,11 @@ class SingleTimeSeries(BaseModel):
     element_shape: list[conint(ge=0)] = Field(
         ...,
         description="Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
+    )
+    array_shape: list[ArrayShapeItem] | None = Field(
+        None,
+        description="Full native shape of the stored array, in the order the store holds it: the first axis is the array's length and the trailing axes end with `element_shape`. Static types are `[length, *element_shape]`; a deterministic forecast stacks windows as `[horizon_count, count, *element_shape]`; probabilistic and scenarios forecasts add a percentile or scenario axis in front of that. Optional, and redundant for the static types, where it is exactly `[length] + element_shape`. It earns its place on the forecasts, whose array layout is a convention the producing package owns rather than a rule this layer enforces, so the stored geometry cannot be reconstructed from `horizon`, `count`, `percentiles`, and `scenario_count` alone. A consumer that has it should prefer it; one that does not falls back to those fields, which is exact for the static types and a best effort for the forecasts.",
+        min_length=1,
     )
     units: str | None = Field(
         None,
@@ -500,6 +586,10 @@ class SingleTimeSeries(BaseModel):
     unit_system: UnitSystem | None = Field(
         None,
         description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+    )
+    time_reference: TimeReference | None = Field(
+        None,
+        description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
     component_field: str | None = Field(
         None,
@@ -539,7 +629,7 @@ class TimeSeriesAssociation(
         | Scenarios
     ) = Field(
         ...,
-        description="Metadata linking one time series to the component or supplemental attribute that owns it — the JSON form of a row in the store's `time_series_associations` catalog table. A closed set of six canonical types owned by the data layer: two static (SingleTimeSeries on a regular grid, NonSequentialTimeSeries on explicit irregular timestamps) and four forecasts. The type decides which timing fields the row carries, which is why each is its own schema rather than one row with everything nullable.\n\nDense values never appear here. `address` names the store that holds them; content hashes (data_hash, features_hash, timestamps_hash) are store-internal and deliberately absent.",
+        description="Metadata linking one time series to the component or supplemental attribute that owns it — the JSON form of a row in the store's `time_series_associations` catalog table. A closed set of six canonical types owned by the data layer: two static (SingleTimeSeries on a regular grid, NonSequentialTimeSeries on explicit irregular timestamps) and four forecasts. The type decides which timing fields the row carries, which is why each is its own schema rather than one row with everything nullable.\n\nDense values never appear here. `uri` names the store location that holds them; `data_hash` optionally carries a content hash of that array. Other content hashes (features_hash, timestamps_hash) remain store-internal and deliberately absent.",
         discriminator="time_series_type",
         title="TimeSeriesAssociation",
     )

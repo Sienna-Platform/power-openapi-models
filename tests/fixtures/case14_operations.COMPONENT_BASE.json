@@ -1,5 +1,5 @@
 {
-  "base_power": 100.0,
+  "combined_cycle_associations": [],
   "components": {
     "ACBus": [
       {
@@ -519,7 +519,8 @@
         "peak_active_power": 0.0,
         "peak_reactive_power": 0.0,
         "load_response": 0.0,
-        "base_power": 100.0
+        "base_power": 100.0,
+        "power_units": "COMPONENT_BASE"
       }
     ],
     "DiscreteControlledACBranch": [
@@ -531,6 +532,7 @@
         "reactive_power_flow": 0.0,
         "arc": 107,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "r": -0.0,
         "x": 0.0001,
         "rating": 0.0,
@@ -546,6 +548,7 @@
         "reactive_power_flow": 0.0,
         "arc": 109,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "r": -0.0,
         "x": 0.0001,
         "rating": 0.0,
@@ -568,7 +571,8 @@
         "max_reactive_power": 9999.0,
         "shunt_control_type": "STATCOM",
         "regulated_bus_number": 0,
-        "base_power": 100.0
+        "base_power": 100.0,
+        "power_units": "COMPONENT_BASE"
       }
     ],
     "FixedAdmittance": [
@@ -579,8 +583,8 @@
         "bus": 4,
         "admittance_units": "COMPONENT_MVAR",
         "Y": {
-          "real": 0.5,
-          "imag": -3.0
+          "real": 50.0,
+          "imag": -300.0
         },
         "base_power": 100.0
       },
@@ -591,8 +595,8 @@
         "bus": 8,
         "admittance_units": "COMPONENT_MVAR",
         "Y": {
-          "real": 0.8,
-          "imag": 0.3
+          "real": 80.0,
+          "imag": 30.0
         },
         "base_power": 100.0
       },
@@ -603,8 +607,8 @@
         "bus": 12,
         "admittance_units": "COMPONENT_MVAR",
         "Y": {
-          "real": 0.2,
-          "imag": 4.0
+          "real": 20.0,
+          "imag": 400.0
         },
         "base_power": 100.0
       },
@@ -615,8 +619,8 @@
         "bus": 13,
         "admittance_units": "COMPONENT_MVAR",
         "Y": {
-          "real": 1.0,
-          "imag": 2.0
+          "real": 100.0,
+          "imag": 200.0
         },
         "base_power": 100.0
       }
@@ -632,6 +636,8 @@
         "r": 0.000125,
         "x": 0.0001,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.0006,
           "to": 0.0006
@@ -656,6 +662,8 @@
         "r": 0.0025,
         "x": 0.0001,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.00115,
           "to": 0.00115
@@ -680,6 +688,8 @@
         "r": 0.00128,
         "x": 0.0081,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.00098,
           "to": 0.00098
@@ -704,6 +714,8 @@
         "r": 0.0034,
         "x": 0.0041,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.00013,
           "to": 0.00013
@@ -728,6 +740,8 @@
         "r": 0.00188,
         "x": 0.001104,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.001575,
           "to": 0.001575
@@ -752,6 +766,8 @@
         "r": 0.00745,
         "x": 0.00315,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.00171,
           "to": 0.00171
@@ -776,6 +792,8 @@
         "r": 0.00134,
         "x": 0.0001345,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.00012,
           "to": 0.00012
@@ -800,6 +818,8 @@
         "r": 0.0125,
         "x": 0.0081,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.002675,
           "to": 0.002675
@@ -824,6 +844,8 @@
         "r": 0.001456,
         "x": 0.0041,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.00367,
           "to": 0.00367
@@ -848,6 +870,8 @@
         "r": 0.00798,
         "x": 0.0501,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.00028,
           "to": 0.00028
@@ -872,6 +896,8 @@
         "r": 0.00123,
         "x": 0.0071,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.0017,
           "to": 0.0017
@@ -896,6 +922,8 @@
         "r": 0.0753,
         "x": 0.0041,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.00175,
           "to": 0.00175
@@ -920,6 +948,8 @@
         "r": 0.00188,
         "x": 0.0021,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.02817,
           "to": 0.02817
@@ -944,6 +974,8 @@
         "r": 0.00356,
         "x": 0.0241,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.00251,
           "to": 0.00251
@@ -968,6 +1000,8 @@
         "r": 0.00124,
         "x": 0.0001,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.022,
           "to": 0.022
@@ -992,6 +1026,8 @@
         "r": 0.006443,
         "x": 0.0051,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.001175,
           "to": 0.001175
@@ -1016,6 +1052,8 @@
         "r": 0.0023,
         "x": 0.0201,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.032,
           "to": 0.032
@@ -1040,6 +1078,8 @@
         "r": 0.00453,
         "x": 0.0031,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.0229,
           "to": 0.0229
@@ -1064,6 +1104,8 @@
         "r": 0.005343,
         "x": 0.00231,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.00278,
           "to": 0.00278
@@ -1088,6 +1130,8 @@
         "r": 0.0523,
         "x": 0.00601,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "parameter_units": "COMPONENT_BASE",
         "b": {
           "from": 0.0267,
           "to": 0.0267
@@ -1109,7 +1153,8 @@
         "name": "1",
         "peak_active_power": 3479.9999999999995,
         "peak_reactive_power": -861.9999999999999,
-        "base_power": 100.0
+        "base_power": 100.0,
+        "power_units": "COMPONENT_BASE"
       }
     ],
     "StandardLoad": [
@@ -1119,6 +1164,7 @@
         "available": true,
         "bus": 3,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "constant_active_power": 2.0,
         "constant_reactive_power": 5.0,
         "impedance_active_power": 0.0,
@@ -1139,6 +1185,7 @@
         "available": true,
         "bus": 4,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "constant_active_power": 2.0,
         "constant_reactive_power": -3.5,
         "impedance_active_power": 0.0,
@@ -1159,6 +1206,7 @@
         "available": true,
         "bus": 5,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "constant_active_power": 1.05,
         "constant_reactive_power": 0.65,
         "impedance_active_power": 0.0,
@@ -1179,6 +1227,7 @@
         "available": true,
         "bus": 6,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "constant_active_power": 5.0,
         "constant_reactive_power": 1.8,
         "impedance_active_power": 0.0,
@@ -1199,6 +1248,7 @@
         "available": true,
         "bus": 7,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "constant_active_power": 5.0,
         "constant_reactive_power": -3.5,
         "impedance_active_power": 0.0,
@@ -1219,6 +1269,7 @@
         "available": true,
         "bus": 8,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "constant_active_power": 0.8,
         "constant_reactive_power": 0.2,
         "impedance_active_power": 0.0,
@@ -1239,6 +1290,7 @@
         "available": true,
         "bus": 11,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "constant_active_power": 3.0,
         "constant_reactive_power": 1.0,
         "impedance_active_power": 0.0,
@@ -1259,6 +1311,7 @@
         "available": true,
         "bus": 12,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "constant_active_power": 1.0,
         "constant_reactive_power": -5.0,
         "impedance_active_power": 0.0,
@@ -1279,6 +1332,7 @@
         "available": true,
         "bus": 12,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "constant_active_power": 1.5,
         "constant_reactive_power": -5.0,
         "impedance_active_power": 0.0,
@@ -1299,6 +1353,7 @@
         "available": true,
         "bus": 13,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "constant_active_power": 2.5,
         "constant_reactive_power": 1.0,
         "impedance_active_power": 0.0,
@@ -1319,6 +1374,7 @@
         "available": true,
         "bus": 14,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "constant_active_power": 3.25,
         "constant_reactive_power": 0.23,
         "impedance_active_power": 0.0,
@@ -1339,6 +1395,7 @@
         "available": true,
         "bus": 15,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "constant_active_power": 2.5,
         "constant_reactive_power": 1.0,
         "impedance_active_power": 0.0,
@@ -1359,6 +1416,7 @@
         "available": true,
         "bus": 16,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "constant_active_power": 5.0,
         "constant_reactive_power": -2.5,
         "impedance_active_power": 0.0,
@@ -1383,7 +1441,7 @@
         "admittance_units": "COMPONENT_MVAR",
         "Y": {
           "real": 0.0,
-          "imag": 0.5
+          "imag": 50.0
         },
         "initial_status": [
           0
@@ -1394,7 +1452,7 @@
         "Y_increase": [
           {
             "real": 0.0,
-            "imag": 1.0
+            "imag": 100.0
           }
         ],
         "admittance_limits": {
@@ -1412,7 +1470,7 @@
         "admittance_units": "COMPONENT_MVAR",
         "Y": {
           "real": 0.0,
-          "imag": 0.1
+          "imag": 10.0
         },
         "initial_status": [
           0
@@ -1423,7 +1481,7 @@
         "Y_increase": [
           {
             "real": 0.0,
-            "imag": 0.05
+            "imag": 5.0
           }
         ],
         "admittance_limits": {
@@ -1461,7 +1519,7 @@
           "fixed": 0.0,
           "shut_down": 0.0,
           "start_up": 0.0,
-          "variable": {
+          "variable_operation_cost": {
             "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
@@ -1479,12 +1537,12 @@
                 "constant_term": 0.0,
                 "function_type": "LINEAR",
                 "proportional_term": 0.0
-              },
-              "input_at_zero": 0.0
+              }
             }
           }
         },
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
@@ -1516,7 +1574,7 @@
           "fixed": 0.0,
           "shut_down": 0.0,
           "start_up": 0.0,
-          "variable": {
+          "variable_operation_cost": {
             "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
@@ -1534,12 +1592,12 @@
                 "constant_term": 0.0,
                 "function_type": "LINEAR",
                 "proportional_term": 0.0
-              },
-              "input_at_zero": 0.0
+              }
             }
           }
         },
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
@@ -1571,7 +1629,7 @@
           "fixed": 0.0,
           "shut_down": 0.0,
           "start_up": 0.0,
-          "variable": {
+          "variable_operation_cost": {
             "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
@@ -1589,12 +1647,12 @@
                 "constant_term": 0.0,
                 "function_type": "LINEAR",
                 "proportional_term": 0.0
-              },
-              "input_at_zero": 0.0
+              }
             }
           }
         },
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
@@ -1626,7 +1684,7 @@
           "fixed": 0.0,
           "shut_down": 0.0,
           "start_up": 0.0,
-          "variable": {
+          "variable_operation_cost": {
             "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
@@ -1644,12 +1702,12 @@
                 "constant_term": 0.0,
                 "function_type": "LINEAR",
                 "proportional_term": 0.0
-              },
-              "input_at_zero": 0.0
+              }
             }
           }
         },
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
@@ -1681,7 +1739,7 @@
           "fixed": 0.0,
           "shut_down": 0.0,
           "start_up": 0.0,
-          "variable": {
+          "variable_operation_cost": {
             "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
@@ -1699,12 +1757,12 @@
                 "constant_term": 0.0,
                 "function_type": "LINEAR",
                 "proportional_term": 0.0
-              },
-              "input_at_zero": 0.0
+              }
             }
           }
         },
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
@@ -1736,7 +1794,7 @@
           "fixed": 0.0,
           "shut_down": 0.0,
           "start_up": 0.0,
-          "variable": {
+          "variable_operation_cost": {
             "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
@@ -1754,12 +1812,12 @@
                 "constant_term": 0.0,
                 "function_type": "LINEAR",
                 "proportional_term": 0.0
-              },
-              "input_at_zero": 0.0
+              }
             }
           }
         },
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
@@ -1791,7 +1849,7 @@
           "fixed": 0.0,
           "shut_down": 0.0,
           "start_up": 0.0,
-          "variable": {
+          "variable_operation_cost": {
             "power_units": "COMPONENT_BASE",
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
@@ -1809,12 +1867,12 @@
                 "constant_term": 0.0,
                 "function_type": "LINEAR",
                 "proportional_term": 0.0
-              },
-              "input_at_zero": 0.0
+              }
             }
           }
         },
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
@@ -1896,6 +1954,7 @@
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "base_voltage_primary": 500.0,
         "base_voltage_secondary": 138.0
       },
@@ -1923,6 +1982,7 @@
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "base_voltage_primary": 230.0,
         "base_voltage_secondary": 138.0
       },
@@ -1950,6 +2010,7 @@
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "base_voltage_primary": 230.0,
         "base_voltage_secondary": 500.0
       },
@@ -1977,6 +2038,7 @@
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "base_voltage_primary": 500.0,
         "base_voltage_secondary": 500.0
       },
@@ -2004,6 +2066,7 @@
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "base_voltage_primary": 138.0,
         "base_voltage_secondary": 138.0
       },
@@ -2031,6 +2094,7 @@
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "base_voltage_primary": 65.0,
         "base_voltage_secondary": 65.0
       },
@@ -2058,6 +2122,7 @@
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "base_voltage_primary": 230.0,
         "base_voltage_secondary": 230.0
       },
@@ -2085,6 +2150,7 @@
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "base_voltage_primary": 230.0,
         "base_voltage_secondary": 230.0
       },
@@ -2112,6 +2178,7 @@
         "active_power_flow": 0.0,
         "reactive_power_flow": 0.0,
         "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
         "base_voltage_primary": 500.0,
         "base_voltage_secondary": 500.0
       }
@@ -2190,7 +2257,8 @@
             "proportional_term": 0.0
           }
         },
-        "base_power": 100.0
+        "base_power": 100.0,
+        "power_units": "COMPONENT_BASE"
       }
     ],
     "TwoWindingTransformer": [
@@ -2630,50 +2698,61 @@
       "psse_name": "TRAFO 3W 2  "
     }
   },
+  "plant_associations": [],
+  "service_associations": [],
   "supplemental_attribute_associations": [
     {
+      "component_id": 86,
+      "component_type": "TwoWindingTransformer",
       "attribute_id": 120,
-      "entity_id": 86,
       "attribute_type": "ImpedanceCorrectionData"
     },
     {
+      "component_id": 89,
+      "component_type": "TwoWindingTransformer",
       "attribute_id": 121,
-      "entity_id": 89,
       "attribute_type": "ImpedanceCorrectionData"
     },
     {
+      "component_id": 92,
+      "component_type": "TwoWindingTransformer",
       "attribute_id": 122,
-      "entity_id": 92,
       "attribute_type": "ImpedanceCorrectionData"
     },
     {
+      "component_id": 99,
+      "component_type": "ThreeWindingTransformer",
       "attribute_id": 123,
-      "entity_id": 99,
       "attribute_type": "ImpedanceCorrectionData"
     },
     {
+      "component_id": 99,
+      "component_type": "ThreeWindingTransformer",
       "attribute_id": 124,
-      "entity_id": 99,
       "attribute_type": "ImpedanceCorrectionData"
     },
     {
+      "component_id": 99,
+      "component_type": "ThreeWindingTransformer",
       "attribute_id": 125,
-      "entity_id": 99,
       "attribute_type": "ImpedanceCorrectionData"
     },
     {
+      "component_id": 106,
+      "component_type": "ThreeWindingTransformer",
       "attribute_id": 126,
-      "entity_id": 106,
       "attribute_type": "ImpedanceCorrectionData"
     },
     {
+      "component_id": 106,
+      "component_type": "ThreeWindingTransformer",
       "attribute_id": 124,
-      "entity_id": 106,
       "attribute_type": "ImpedanceCorrectionData"
     },
     {
+      "component_id": 106,
+      "component_type": "ThreeWindingTransformer",
       "attribute_id": 127,
-      "entity_id": 106,
       "attribute_type": "ImpedanceCorrectionData"
     }
   ],
@@ -2989,5 +3068,5 @@
   ],
   "time_series_associations": [],
   "time_series_storage_file": null,
-  "unit_system": "COMPONENT_BASE"
+  "trading_hub_associations": []
 }

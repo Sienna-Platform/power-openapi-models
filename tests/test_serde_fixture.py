@@ -18,16 +18,25 @@ EXPECTED_COMPONENT_COUNT = 119
 
 # Mirrors Core/SystemDocument.json's `required`/optional keys
 # (see scripts/check_json_compat.py, which this test's comparison logic follows).
+# No document-level `base_power`/`unit_system`: each component carries its own
+# `power_units` instead (only on types with a power-family field).
 REQUIRED_ENVELOPE_KEYS = {
-    "base_power",
-    "unit_system",
     "components",
     "supplemental_attributes",
     "supplemental_attribute_associations",
+    "plant_associations",
+    "combined_cycle_associations",
+    "service_associations",
     "time_series_associations",
     "time_series_storage_file",
 }
-OPTIONAL_ENVELOPE_KEYS = {"ext", "name", "description", "frequency"}
+OPTIONAL_ENVELOPE_KEYS = {
+    "ext",
+    "name",
+    "description",
+    "frequency",
+    "trading_hub_associations",
+}
 ENVELOPE_KEYS = REQUIRED_ENVELOPE_KEYS | OPTIONAL_ENVELOPE_KEYS
 
 
@@ -118,24 +127,28 @@ def test_natural_units_spot_checks():
     doc = json.loads(
         (FIXTURES_DIR / "case14_operations.NATURAL_UNITS.json").read_text()
     )
-    assert doc["base_power"] == 100.0
-    assert doc["unit_system"] == "NATURAL_UNITS"
     bus = doc["components"]["ACBus"][0]
     assert bus["base_voltage"] == 138.0
+    assert "power_units" not in bus  # no power-family field on ACBus
+    thermal = doc["components"]["ThermalStandard"][0]
+    assert thermal["power_units"] == "NATURAL_UNITS"
     assert len(doc["supplemental_attribute_associations"]) == 9
 
 
 def test_component_base_spot_checks():
-    doc = json.loads((FIXTURES_DIR / "case14_operations.COMPONENT_BASE.json").read_text())
-    assert doc["base_power"] == 100.0
-    assert doc["unit_system"] == "COMPONENT_BASE"
+    doc = json.loads(
+        (FIXTURES_DIR / "case14_operations.COMPONENT_BASE.json").read_text()
+    )
     bus = doc["components"]["ACBus"][0]
     assert bus["base_voltage"] == 138.0
+    assert "power_units" not in bus  # no power-family field on ACBus
+    thermal = doc["components"]["ThermalStandard"][0]
+    assert thermal["power_units"] == "COMPONENT_BASE"
     assert len(doc["supplemental_attribute_associations"]) == 9
 
 
 def test_component_base_actually_converts_from_natural_units():
-    """The two fixtures must differ in more than the ``unit_system`` tag.
+    """The two fixtures must differ in more than each component's ``power_units`` tag.
 
     Neither spot-check test above reads both fixtures, so a COMPONENT_BASE fixture
     that is a byte-identical copy of NATURAL_UNITS would pass them both. A Line's
