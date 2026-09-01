@@ -16,7 +16,7 @@ statically.
 The other five association arrays (`supplemental_attribute_associations`,
 `plant_associations`, `combined_cycle_associations`, `service_associations`,
 `trading_hub_associations`) and `time_series_associations` all have generated classes
-(`core.models.SupplementalAttributeAssociation`, `operations.models.{PlantAssociation,
+(`infrastructure_core.models.SupplementalAttributeAssociation`, `operations.models.{PlantAssociation,
 CombinedCycleAssociation,ServiceAssociation,TradingHubAssociation}`,
 `timeseries.models.TimeSeriesAssociation`), so those fields are typed with them — imported
 defensively, so this module still degrades to `list[dict]` rather than failing to import
@@ -31,7 +31,9 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 try:
-    from power_openapi_models.core.models import SupplementalAttributeAssociation
+    from power_openapi_models.infrastructure_core.models import (
+        SupplementalAttributeAssociation,
+    )
 except ImportError:
     SupplementalAttributeAssociation = dict
 

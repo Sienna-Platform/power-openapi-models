@@ -7,24 +7,37 @@ CODEGEN := datamodel-codegen --input-file-type openapi \
 	--use-enum-values-in-discriminator \
 	--disable-timestamp
 CORE_REF := --external-ref-mapping "Core/common.json=power_openapi_models.core.models"
-MERGED_CORE_SPEC := generated/openapi-core-merged.json
 
 .PHONY: generate generate-docker clean validate
 
 generate:
-	@# SiennaSchemas splits its purely-administrative/association schemas (SupplementalAttribute-
-	@# Association, GeographicInfo, DataSource, the shared MinMax/InOut/UpDown/... value types)
-	@# into a separate `infrastructure-core` bundle -- see openapi-config-infrastructure-core.json
-	@# and scripts/check_layering.py there. No datamodel-codegen equivalent of the Julia side's
-	@# per-type file copy (reorganize.jl) exists, since datamodel-codegen emits one models.py per
-	@# input spec rather than one file per type, so the two selectors' schemas are unioned into
-	@# one temp spec first and core/models.py is generated from that in a single pass.
-	@echo "==> Merging core + infrastructure-core specs"
-	python3 scripts/merge_core_spec.py $(SCHEMA_DIR) $(MERGED_CORE_SPEC)
+	@# infrastructure_core is its own subpackage, generated straight from
+	@# openapi-infrastructure-core.json -- see SiennaSchemas' six-package
+	@# contract (openapi-config-infrastructure-core.json, scripts/check_layering.py
+	@# there). It has no dependencies of its own, so no ref mapping is needed.
+	@echo "==> Generating infrastructure_core"
+	$(CODEGEN) --allow-remote-refs \
+	  --input $(SCHEMA_DIR)/openapi-infrastructure-core.json \
+	  --output $(PKG_DIR)/infrastructure_core/models.py
 
+	@# core is generated straight from openapi-core.json, no merge. Its own
+	@# schema graph still reaches into Core/common.json for several of
+	@# infrastructure_core's 20 types (UnitSystem, the function-data family,
+	@# XY_Coords, ...) -- common.json is the $defs home for BOTH selectors,
+	@# and datamodel-codegen's --external-ref-mapping keys on a $ref's *file
+	@# path*, not the individual $def, so mapping that file wholesale to
+	@# power_openapi_models.infrastructure_core.models would misroute core's
+	@# own types (CostCurve, StartUp, CurveStyle, ...) that live in the same
+	@# file but aren't part of infrastructure_core's selection. There is no
+	@# per-$def mapping in this datamodel-codegen version, so core is
+	@# generated with no ref mapping at all: it locally redefines whichever
+	@# of the 20 infrastructure_core types its own schema graph reaches, and
+	@# scripts/postprocess.py rewrites those duplicate class bodies into
+	@# imports afterward -- failing loudly if a body it finds in both files
+	@# ever differs -- so nothing is defined twice in the committed output.
 	@echo "==> Generating core"
 	$(CODEGEN) --allow-remote-refs \
-	  --input $(MERGED_CORE_SPEC) \
+	  --input $(SCHEMA_DIR)/openapi-core.json \
 	  --output $(PKG_DIR)/core/models.py
 
 	@echo "==> Generating operations"
@@ -57,7 +70,7 @@ generate-docker:
 	  $(CODEGEN_IMAGE)
 
 clean:
-	rm -f $(PKG_DIR)/*/models.py $(MERGED_CORE_SPEC)
+	rm -f $(PKG_DIR)/*/models.py
 
 validate:
 	python -c "import power_openapi_models; print('Import OK')"

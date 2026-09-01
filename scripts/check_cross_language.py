@@ -44,7 +44,27 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_JULIA = REPO_ROOT / ".." / "PowerOpenAPIModels"
-DOMAINS = ("core", "operations", "investments", "dynamics")
+# Python domain -> its Julia package counterpart's name (the package directory is
+# that name plus ".jl", under --julia). infrastructure_core and timeseries close a
+# known gap: both were missing from this comparison entirely, so timeseries types
+# (Deterministic, SingleTimeSeries, ...) never got checked cross-language. The
+# Julia name for timeseries is being changed to InfrastructureTimeSeriesOpenAPIModels
+# in a parallel restructure of the Julia repo -- see _julia_package_dir, the single
+# place a name here turns into a directory, so that rename only has to be edited once.
+DOMAINS = {
+    "infrastructure_core": "InfrastructureCoreOpenAPIModels",
+    "core": "PowerCoreOpenAPIModels",
+    "operations": "PowerOperationsOpenAPIModels",
+    "investments": "PowerInvestmentsOpenAPIModels",
+    "dynamics": "PowerDynamicsOpenAPIModels",
+    "timeseries": "InfrastructureTimeSeriesOpenAPIModels",
+}
+
+
+def _julia_package_dir(julia_root, package_name):
+    """The generated Julia package directory a DOMAINS entry names."""
+    return Path(julia_root) / f"{package_name}.jl"
+
 
 # Julia scalar -> the JSON kind it serializes as, for comparing against pydantic.
 JULIA_KIND = {
@@ -111,7 +131,13 @@ def parse_julia_model(text):
     for m in re.finditer(
         r'validate_param\(name, "\w+", :enum, val, \[(.*?)\]\)', text, re.DOTALL
     ):
-        values = re.findall(r'"([^"]*)"', m.group(1))
+        # Reuse the same expression parser as defaults: an allowed-value list
+        # is either quoted strings (`["MARKET_BID"]`) or bare integers
+        # (`[0, 1, 2]`), and a naive quoted-string extraction silently drops
+        # the latter instead of raising.
+        values = [
+            parse_julia_expr(v) for v in _split_top_level(m.group(1), ",") if v.strip()
+        ]
         # The enclosing `if name === Symbol("field")` names the field.
         prefix = text[: m.start()]
         field = re.findall(r'if name === Symbol\("(\w+)"\)', prefix)
@@ -524,6 +550,23 @@ def main():
     if not julia_root.is_dir():
         print(f"Julia package tree not found: {julia_root}")
         return 2
+
+    print("Julia package directories (per DOMAINS entry):")
+    missing_domains = []
+    for domain, package in DOMAINS.items():
+        if _julia_package_dir(julia_root, package).is_dir():
+            status = "found"
+        else:
+            status = "NOT FOUND"
+            missing_domains.append(domain)
+        print(f"  {domain:20s} -> {package}.jl: {status}")
+    if missing_domains:
+        print(
+            "  NOTE: a missing directory means that domain's Julia structs are "
+            "absent from the comparison below (reported as ONLY-IN-PYTHON, not a "
+            "real divergence) until its package lands on the Julia side."
+        )
+    print()
 
     julia, aliases = load_julia_surface(julia_root)
     python = load_python_surface()
