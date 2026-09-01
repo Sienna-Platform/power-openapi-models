@@ -10,12 +10,105 @@ about them without attempting an automatic fix.
 """
 
 import re
+import subprocess
 import sys
 from pathlib import Path
 
 PKG_DIR = Path(__file__).parent.parent / "src" / "power_openapi_models"
 
 PRIMITIVES = {"float", "int", "str", "bool"}
+
+CORE_MODELS = PKG_DIR / "core" / "models.py"
+INFRASTRUCTURE_CORE_MODELS = PKG_DIR / "infrastructure_core" / "models.py"
+INFRASTRUCTURE_CORE_IMPORT = "power_openapi_models.infrastructure_core.models"
+
+
+# ---------------------------------------------------------------------------
+# core / infrastructure_core de-duplication
+# ---------------------------------------------------------------------------
+
+
+def _class_blocks(content: str) -> dict[str, str]:
+    """Map class name -> its full source text, from `class Name(` up to (but not
+    including) the next top-level `class` or end of file. A class header can
+    span several lines (e.g. `class FunctionData(\\n    RootModel[...]\\n):`),
+    so this locates blocks by the start of consecutive top-level `class `
+    lines rather than requiring the header to close on one line.
+    """
+    starts = [
+        (m.start(), m.group(1))
+        for m in re.finditer(r"^class (\w+)\(", content, re.MULTILINE)
+    ]
+    blocks = {}
+    for i, (start, name) in enumerate(starts):
+        end = starts[i + 1][0] if i + 1 < len(starts) else len(content)
+        blocks[name] = content[start:end].strip()
+    return blocks
+
+
+def dedupe_core_against_infrastructure_core() -> bool:
+    """Rewrite core/models.py's duplicate infrastructure_core class definitions
+    into imports.
+
+    core/models.py is generated from openapi-core.json alone, with no ref
+    mapping (see the Makefile comment): its own schema graph reaches into
+    Core/common.json for several of infrastructure_core's 20 types (UnitSystem,
+    the function-data family, XY_Coords, ...), and datamodel-codegen's
+    --external-ref-mapping keys on a $ref's *file path*, not the individual
+    $def -- common.json is the $defs home for BOTH selectors, so mapping it
+    wholesale to infrastructure_core.models would misroute core's own types
+    (CostCurve, StartUp, CurveStyle, ...) that live in the same file but
+    aren't part of infrastructure_core's selection. There is no per-$def
+    mapping in this datamodel-codegen version, so core locally redefines
+    whichever of the 20 types its own schema graph reaches; this rewrites
+    each such definition into an import once its body is verified identical
+    to infrastructure_core's, and fails loudly on a mismatch instead of
+    silently picking a side.
+
+    Every one of infrastructure_core's 20 types is imported into core.models
+    regardless of whether core's own generation happened to redefine it --
+    PowerCore depends on InfrastructureCore (SiennaSchemas' six-package
+    contract), and existing consumers/tests import types such as MinMax and
+    SupplementalAttributeAssociation from `power_openapi_models.core.models`
+    directly; re-exporting the full surface keeps that working.
+    """
+    if not INFRASTRUCTURE_CORE_MODELS.exists() or not CORE_MODELS.exists():
+        return False
+
+    infra_blocks = _class_blocks(INFRASTRUCTURE_CORE_MODELS.read_text())
+    content = CORE_MODELS.read_text()
+    core_blocks = _class_blocks(content)
+
+    for name, infra_block in infra_blocks.items():
+        core_block = core_blocks.get(name)
+        if core_block is None:
+            continue
+        if core_block != infra_block:
+            raise SystemExit(
+                f"postprocess.py: core/models.py and infrastructure_core/models.py "
+                f"both define {name} but their bodies differ -- refusing to guess "
+                "which one wins.\n"
+                f"--- core/models.py ---\n{core_block}\n"
+                f"--- infrastructure_core/models.py ---\n{infra_block}"
+            )
+        content = content.replace(core_block, "", 1)
+
+    content = re.sub(r"\n{3,}", "\n\n\n", content)
+
+    import_block = (
+        f"from {INFRASTRUCTURE_CORE_IMPORT} import (\n"
+        + "".join(f"    {name},\n" for name in sorted(infra_blocks))
+        + ")\n"
+    )
+    if import_block not in content:
+        header_end = re.search(r"^class \w+\(", content, re.MULTILINE).start()
+        content = content[:header_end] + import_block + "\n\n" + content[header_end:]
+
+    CORE_MODELS.write_text(content)
+    subprocess.run(
+        ["ruff", "format", str(CORE_MODELS)], check=True, capture_output=True
+    )
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -202,6 +295,9 @@ WARNINGS = [
 
 
 def main() -> None:
+    if dedupe_core_against_infrastructure_core():
+        print(f"  De-duplicated: {CORE_MODELS} against {INFRASTRUCTURE_CORE_MODELS}")
+
     warnings = 0
     for models_file in sorted(PKG_DIR.glob("*/models.py")):
         content = models_file.read_text()

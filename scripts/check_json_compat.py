@@ -35,8 +35,6 @@ DEFAULT_INPUT = REPO_ROOT / ".." / "PowerFlowFileParser.jl" / "inspection_output
 DOMAINS = ("core", "operations", "investments", "dynamics")
 # Mirrors Core/SystemDocument.json's `required` list.
 REQUIRED_ENVELOPE_KEYS = {
-    "base_power",
-    "unit_system",
     "components",
     "supplemental_attributes",
     "supplemental_attribute_associations",
@@ -47,7 +45,13 @@ REQUIRED_ENVELOPE_KEYS = {
     "time_series_storage_file",
 }
 # Properties the schema declares but does not require (absent is valid, not a gap).
-OPTIONAL_ENVELOPE_KEYS = {"ext", "name", "description", "frequency"}
+OPTIONAL_ENVELOPE_KEYS = {
+    "ext",
+    "name",
+    "description",
+    "frequency",
+    "trading_hub_associations",
+}
 ENVELOPE_KEYS = REQUIRED_ENVELOPE_KEYS | OPTIONAL_ENVELOPE_KEYS
 
 
@@ -127,7 +131,13 @@ def check_document(path, registry):
                 first = str(exc).splitlines()
                 messages.append(f"{type_name}[{i}] rejected: {' | '.join(first[:3])}")
                 continue
-            rebuilt.append(model.model_dump(mode="json", by_alias=True))
+            # exclude_unset: an omitted optional field must stay omitted in the
+            # round-trip, not get materialized to its schema default. A truly
+            # required field (no pydantic default) already failed model_validate
+            # above if missing, so this can't hide a genuine required-field drop.
+            rebuilt.append(
+                model.model_dump(mode="json", by_alias=True, exclude_unset=True)
+            )
             total += 1
         validated[type_name] = rebuilt
 
@@ -168,8 +178,6 @@ def selftest(registry, out_dir):
         Y=core.ComplexNumber(real=0.5, imag=-3.0),
     )
     document = {
-        "base_power": 100.0,
-        "unit_system": "NATURAL_UNITS",
         "components": {
             "ACBus": [b.model_dump(mode="json", by_alias=True) for b in buses],
             "FixedAdmittance": [shunt.model_dump(mode="json", by_alias=True)],
@@ -177,7 +185,10 @@ def selftest(registry, out_dir):
         "supplemental_attributes": [],
         "supplemental_attribute_associations": [
             core.SupplementalAttributeAssociation(
-                attribute_id=1, entity_id=2, attribute_type="GeographicInfo"
+                component_id=2,
+                component_type="ACBus",
+                attribute_id=1,
+                attribute_type="GeographicInfo",
             ).model_dump(mode="json", by_alias=True)
         ],
         "plant_associations": [],
@@ -195,10 +206,16 @@ def selftest(registry, out_dir):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", default=str(DEFAULT_INPUT),
-                        help="directory of OpenAPI JSON documents (default: PFFP inspection_output)")
-    parser.add_argument("--skip-selftest", action="store_true",
-                        help="only check documents found in --input")
+    parser.add_argument(
+        "--input",
+        default=str(DEFAULT_INPUT),
+        help="directory of OpenAPI JSON documents (default: PFFP inspection_output)",
+    )
+    parser.add_argument(
+        "--skip-selftest",
+        action="store_true",
+        help="only check documents found in --input",
+    )
     args = parser.parse_args()
 
     registry = load_domains()
@@ -221,16 +238,21 @@ def main():
     if not in_dir.is_dir():
         print(f"Input directory not found: {in_dir}")
         print("Generate documents first:")
-        print("  cd ../PowerFlowFileParser.jl && julia --project scripts/inspect_14bus_json.jl")
+        print(
+            "  cd ../PowerFlowFileParser.jl && julia --project scripts/inspect_14bus_json.jl"
+        )
         return 1 if failures else 0
 
     docs = sorted(
-        p for p in in_dir.glob("*.json")
+        p
+        for p in in_dir.glob("*.json")
         if not p.name.endswith((".roundtrip.json", ".pm.json"))
         and p.name != "python_authored_selftest.json"
     )
     if not docs:
-        print(f"No OpenAPI documents in {in_dir} (looked for *.json, excluding *.pm.json)")
+        print(
+            f"No OpenAPI documents in {in_dir} (looked for *.json, excluding *.pm.json)"
+        )
         return 1 if failures else 0
 
     for path in docs:

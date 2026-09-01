@@ -12,7 +12,6 @@ from power_openapi_models.core.models import (
     RenewableGenerationCost,
     StorageCost,
     StorageTech,
-    TechnologyFinancialData,
     ThermalFuels,
     UpDown,
     ValueCurve,
@@ -28,7 +27,6 @@ from power_openapi_models.core.models import (
     RenewableGenerationCost,
     StorageCost,
     StorageTech,
-    TechnologyFinancialData,
     ThermalFuels,
     UpDown,
     ValueCurve,
@@ -59,38 +57,25 @@ class AggregateRetrofitPotential(BaseModel):
     )
 
 
-class AggregateTransportTechnology(BaseModel):
-    id: int = Field(..., description="ID for individual component.")
-    name: str = Field(..., description="Name of the component.")
-    available: bool = Field(
+class TechnologyFinancialData(BaseModel):
+    capital_recovery_period: int = Field(
         ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`).",
+        description="Period over which capital costs are recovered for net present value calculations. Units: yr.",
     )
-    power_systems_type: str = Field(
-        ..., description="Corresponding type to be used in PCM modeling."
+    technology_base_year: int = Field(
+        ..., description="Base year for technology cost data used in NPV calculations."
     )
-    start_region: int = Field(..., description="Start region for transport technology.")
-    end_region: int = Field(..., description="End region for transport technology.")
-    capacity_limits: MinMax | None = Field(
-        None, description="Allowable capacity for a transmission line. Units: MW."
+    debt_fraction: float = Field(
+        ..., description="Fraction of capital costs financed through debt. Units: 1."
     )
-    capital_costs: ValueCurve | None = Field(
-        None,
-        description="Cost of adding new capacity to the nodal transmission line. Units: USD/MW.",
+    debt_rate: float = Field(
+        ..., description="Interest rate on debt financing. Units: 1."
     )
-    line_loss: float | None = Field(
-        None, description="Transmission loss for each transport technology. Units: 1."
+    return_on_equity: float = Field(
+        ..., description="Required rate of return on equity financing. Units: 1."
     )
-    unit_size: float | None = Field(
-        None,
-        description="Used for integer investment decisions. Represents the rating capacity of individual new lines. Units: MW.",
-    )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
-    )
-    financial_data: TechnologyFinancialData = Field(
-        ...,
-        description="Struct containing relevant financial information for a technology.",
+    tax_rate: float = Field(
+        ..., description="Tax rate applied to equity returns. Units: 1."
     )
 
 
@@ -709,29 +694,6 @@ class SupplyTechnology(BaseModel):
     )
 
 
-class TechnologyFinancialDataModel(BaseModel):
-    id: int = Field(..., description="ID for individual component.")
-    capital_recovery_period: int = Field(
-        ...,
-        description="Period over which capital costs are recovered for net present value calculations. Units: yr.",
-    )
-    technology_base_year: int = Field(
-        ..., description="Base year for technology cost data used in NPV calculations."
-    )
-    debt_fraction: float = Field(
-        ..., description="Fraction of capital costs financed through debt. Units: 1."
-    )
-    debt_rate: float = Field(
-        ..., description="Interest rate on debt financing. Units: 1."
-    )
-    return_on_equity: float = Field(
-        ..., description="Required rate of return on equity financing. Units: 1."
-    )
-    tax_rate: float = Field(
-        ..., description="Tax rate applied to equity returns. Units: 1."
-    )
-
-
 class TopologyMapping(BaseModel):
     id: int = Field(..., description="ID for individual component.")
     buses: list[str] | None = Field(
@@ -743,3 +705,38 @@ class TopologyMapping(BaseModel):
 class Zone(BaseModel):
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
+
+
+class AggregateTransportTechnology(BaseModel):
+    id: int = Field(..., description="ID for individual component.")
+    name: str = Field(..., description="Name of the component.")
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`).",
+    )
+    power_systems_type: str = Field(
+        ..., description="Corresponding type to be used in PCM modeling."
+    )
+    start_region: int = Field(..., description="Start region for transport technology.")
+    end_region: int = Field(..., description="End region for transport technology.")
+    capacity_limits: MinMax | None = Field(
+        None, description="Allowable capacity for a transmission line. Units: MW."
+    )
+    capital_costs: ValueCurve | None = Field(
+        None,
+        description="Cost of adding new capacity to the nodal transmission line. Units: USD/MW.",
+    )
+    line_loss: float | None = Field(
+        None, description="Transmission loss for each transport technology. Units: 1."
+    )
+    unit_size: float | None = Field(
+        None,
+        description="Used for integer investment decisions. Represents the rating capacity of individual new lines. Units: MW.",
+    )
+    requirements: list[int] | None = Field(
+        [], description="List of requirement IDs associated with the component."
+    )
+    financial_data: TechnologyFinancialData = Field(
+        ...,
+        description="Struct containing relevant financial information for a technology.",
+    )

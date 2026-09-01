@@ -2,9 +2,33 @@
 #   filename:  openapi-core.json
 
 from __future__ import annotations
-from enum import Enum
-from typing import Any, Literal
-from pydantic import AwareDatetime, BaseModel, Field, RootModel
+from enum import Enum, IntEnum
+from typing import Literal
+from pydantic import BaseModel, Field, RootModel
+
+
+from power_openapi_models.infrastructure_core.models import (
+    ComplexNumber,
+    DataSource,
+    FromTo,
+    FromToToFrom,
+    FunctionData,
+    GeographicInfo,
+    InOut,
+    LinearFunctionData,
+    MinMax,
+    PiecewiseLinearData,
+    PiecewiseStepData,
+    QuadraticFunctionData,
+    SupplementalAttributeAssociation,
+    TimeSeriesLinearFunctionData,
+    TimeSeriesPiecewiseLinearData,
+    TimeSeriesPiecewiseStepData,
+    TimeSeriesQuadraticFunctionData,
+    UnitSystem,
+    UpDown,
+    XYCoords,
+)
 
 
 class ACBusType(Enum):
@@ -15,45 +39,17 @@ class ACBusType(Enum):
     SLACK = "SLACK"
 
 
+class CurveStyle(IntEnum):
+    integer_0 = 0
+    integer_1 = 1
+    integer_2 = 2
+
+
 class StartUpStages(BaseModel):
     startup_stages_type: Literal["STAGES"] = "STAGES"
     cold: float
     hot: float
     warm: float
-
-
-class LinearFunctionData(BaseModel):
-    constant_term: float
-    function_type: Literal["LINEAR"]
-    proportional_term: float
-
-
-class QuadraticFunctionData(BaseModel):
-    constant_term: float
-    function_type: Literal["QUADRATIC"]
-    proportional_term: float
-    quadratic_term: float
-
-
-class UnitSystem(Enum):
-    COMPONENT_BASE = "COMPONENT_BASE"
-    NATURAL_UNITS = "NATURAL_UNITS"
-
-
-class XYCoords(BaseModel):
-    x: float
-    y: float
-
-
-class PiecewiseStepData(BaseModel):
-    function_type: Literal["PIECEWISE_STEP"]
-    x_coords: list[float]
-    y_coords: list[float]
-
-
-class ComplexNumber(BaseModel):
-    real: float | None = None
-    imag: float | None = None
 
 
 class DbdPnts(BaseModel):
@@ -87,16 +83,6 @@ class FdbdPnts(BaseModel):
     fdbd2: float | None = None
 
 
-class FromTo(BaseModel):
-    from_: float | None = Field(None, alias="from", title="From")
-    to: float | None = Field(None, title="To")
-
-
-class FromToToFrom(BaseModel):
-    from_to: float | None = Field(None, title="FromTo")
-    to_from: float | None = Field(None, title="ToFrom")
-
-
 class HydroReservoirCost(BaseModel):
     cost_type: Literal["HYDRO_RES"] = "HYDRO_RES"
     level_shortage_cost: float | None = 0.0
@@ -107,16 +93,6 @@ class HydroReservoirCost(BaseModel):
 class StartUp(BaseModel):
     charge: float | None = None
     discharge: float | None = None
-
-
-class InOut(BaseModel):
-    in_: float | None = Field(None, alias="in")
-    out: float | None = None
-
-
-class MinMax(BaseModel):
-    max: float | None = Field(None, title="Max")
-    min: float | None = Field(None, title="Min")
 
 
 class PrimeMovers(Enum):
@@ -169,15 +145,6 @@ class StorageTech(Enum):
     OTHER_THERM = "OTHER_THERM"
 
 
-class TechnologyFinancialData(BaseModel):
-    capital_recovery_period: int | None = None
-    technology_base_year: int | None = None
-    debt_fraction: float | None = None
-    debt_rate: float | None = None
-    return_on_equity: float | None = None
-    tax_rate: float | None = None
-
-
 class ThermalFuels(Enum):
     ANTHRACITE_COAL = "ANTHRACITE_COAL"
     BITUMINOUS_COAL = "BITUMINOUS_COAL"
@@ -220,64 +187,6 @@ class TurbinePump(BaseModel):
     pump: float
 
 
-class UpDown(BaseModel):
-    down: float = Field(..., title="Down")
-    up: float = Field(..., title="Up")
-
-
-class GeographicInfo(BaseModel):
-    id: int
-    geo_json: dict[str, Any]
-
-
-class DataSource(BaseModel):
-    id: int
-    organization: str | None = Field(
-        None,
-        description="Publishing organization, e.g. 'U.S. Energy Information Administration'.",
-    )
-    retrieved_at: AwareDatetime = Field(..., description="When the data was obtained.")
-    dataset: str | None = Field(
-        None,
-        description="Dataset identifier within the publishing organization, e.g. 'EIA-860 2023, Schedule 3'.",
-    )
-    url: str | None = Field(None, description="URL the data was retrieved from.")
-    version: str | None = Field(
-        None, description="Data version or vintage, e.g. '2023 final'."
-    )
-    published_at: AwareDatetime | None = Field(
-        None, description="When the source published the data; null if unknown."
-    )
-    confidence: str | None = Field(
-        None, description="Confidence qualifier, e.g. 'high', 'medium'."
-    )
-    recorded_by: str | None = Field(
-        None, description="User or agent that recorded the value."
-    )
-    fields: list[str] = Field(
-        ...,
-        description="Names of the component fields this provenance record applies to.",
-    )
-    extra: dict[str, str] | None = Field(
-        None, description="Additional string-valued provenance metadata."
-    )
-
-
-class SupplementalAttributeAssociation(BaseModel):
-    component_id: int = Field(
-        ..., description="ID of the component the attribute describes."
-    )
-    component_type: str = Field(
-        ...,
-        description="Type name of the component the attribute describes. A denormalized label matching the relational mirror's column, used for filtering; not part of the row's identity, which is the `(component_id, attribute_id)` pair.",
-    )
-    attribute_id: int = Field(..., description="ID of the supplemental attribute.")
-    attribute_type: str = Field(
-        ...,
-        description='Schema title of the referenced supplemental attribute (e.g. "EmissionsData", "GeographicInfo"). A free-form string, not an enum: new attribute types are added elsewhere in this repo continuously, and a closed enum here would go stale.',
-    )
-
-
 class PollutantType(Enum):
     CO2 = "CO2"
     CO2E = "CO2E"
@@ -312,11 +221,6 @@ class EnergyUnit(Enum):
     MWH = "MWH"
 
 
-class PiecewiseLinearData(BaseModel):
-    function_type: Literal["PIECEWISE_LINEAR"]
-    points: list[XYCoords]
-
-
 class AverageRateCurve(BaseModel):
     curve_type: Literal["AVERAGE_RATE"]
     function_data: LinearFunctionData | PiecewiseStepData = Field(
@@ -335,22 +239,6 @@ class IncrementalCurve(BaseModel):
     input_at_zero: float | None = None
 
 
-class FunctionData(
-    RootModel[
-        LinearFunctionData
-        | QuadraticFunctionData
-        | PiecewiseLinearData
-        | PiecewiseStepData
-    ]
-):
-    root: (
-        LinearFunctionData
-        | QuadraticFunctionData
-        | PiecewiseLinearData
-        | PiecewiseStepData
-    ) = Field(..., discriminator="function_type", title="FunctionData")
-
-
 class InputOutputCurve(BaseModel):
     curve_type: Literal["INPUT_OUTPUT"]
     function_data: QuadraticFunctionData | LinearFunctionData | PiecewiseLinearData = (
@@ -359,14 +247,101 @@ class InputOutputCurve(BaseModel):
     input_at_zero: float | None = None
 
 
-class ValueCurve(RootModel[InputOutputCurve | IncrementalCurve | AverageRateCurve]):
-    root: InputOutputCurve | IncrementalCurve | AverageRateCurve = Field(
-        ..., discriminator="curve_type", title="ValueCurve"
+class TimeSeriesAverageRateCurve(BaseModel):
+    curve_type: Literal["TIME_SERIES_AVERAGE_RATE"]
+    function_data: FunctionData = Field(
+        ...,
+        description="Only TIME_SERIES_LINEAR or TIME_SERIES_PIECEWISE_STEP is admissible here; all other FunctionData variants, static or time-series-backed, are rejected by the consuming constructor.",
+    )
+    initial_input_association_id: int | None = Field(
+        None,
+        description="Store-minted id of the time series supplying the initial input value, or null.",
+    )
+    input_at_zero_association_id: int | None = Field(
+        None,
+        description="Store-minted id of the time series supplying the input at zero output, or null.",
+    )
+
+
+class TimeSeriesIncrementalCurve(BaseModel):
+    curve_type: Literal["TIME_SERIES_INCREMENTAL"]
+    function_data: FunctionData = Field(
+        ...,
+        description="Only TIME_SERIES_LINEAR or TIME_SERIES_PIECEWISE_STEP is admissible here; all other FunctionData variants, static or time-series-backed, are rejected by the consuming constructor.",
+    )
+    initial_input_association_id: int | None = Field(
+        None,
+        description="Store-minted id of the time series supplying the initial input value, or null.",
+    )
+    input_at_zero_association_id: int | None = Field(
+        None,
+        description="Store-minted id of the time series supplying the input at zero output, or null.",
+    )
+
+
+class TimeSeriesInputOutputCurve(BaseModel):
+    curve_type: Literal["TIME_SERIES_INPUT_OUTPUT"]
+    function_data: FunctionData = Field(
+        ...,
+        description="Only TIME_SERIES_LINEAR, TIME_SERIES_QUADRATIC, or TIME_SERIES_PIECEWISE_LINEAR is admissible here; the static variants and TIME_SERIES_PIECEWISE_STEP are invalid and rejected by the consuming constructor.",
+    )
+    input_at_zero: float | None = Field(
+        None,
+        description="Optional explicit input value at zero output. A number here, unlike the incremental and average-rate variants, where it is a time series reference.",
+    )
+
+
+class TwoTerminalLoss(RootModel[InputOutputCurve | IncrementalCurve]):
+    root: InputOutputCurve | IncrementalCurve = Field(
+        {
+            "curve_type": "INPUT_OUTPUT",
+            "function_data": {
+                "function_type": "LINEAR",
+                "constant_term": 0,
+                "proportional_term": 0,
+            },
+        },
+        description="Loss model of a two-terminal HVDC line as a function of flow, selected by `curve_type`. It accepts a linear model with a constant loss and a proportional loss rate (MW of loss per MW of flow), or a piecewise model giving different proportional losses on different flow segments.",
+        discriminator="curve_type",
+        title="TwoTerminalLoss",
+        validate_default=True,
+    )
+
+
+class ValueCurve(
+    RootModel[
+        InputOutputCurve
+        | IncrementalCurve
+        | AverageRateCurve
+        | TimeSeriesInputOutputCurve
+        | TimeSeriesIncrementalCurve
+        | TimeSeriesAverageRateCurve
+    ]
+):
+    root: (
+        InputOutputCurve
+        | IncrementalCurve
+        | AverageRateCurve
+        | TimeSeriesInputOutputCurve
+        | TimeSeriesIncrementalCurve
+        | TimeSeriesAverageRateCurve
+    ) = Field(
+        ...,
+        description="A cost or fuel curve: function data plus a declaration of how to read its y axis. `INPUT_OUTPUT` reads y as the total `f(x)`, `INCREMENTAL` as the marginal rate `f'(x)`, and `AVERAGE_RATE` as the average `f(x)/x`; the three can express the same underlying function and are inter-convertible given `initial_input`. The `TIME_SERIES_*` variants are the time-varying equivalents. Which form to use follows the data source: bid stacks are incremental, total cost tables input-output, efficiency tables average rate.",
+        discriminator="curve_type",
+        title="ValueCurve",
     )
 
 
 class FuelCurve(BaseModel):
-    fuel_cost: str | float
+    fuel_cost: float | None = Field(
+        None,
+        description="Fixed fuel cost per unit of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
+    )
+    fuel_cost_time_series: int | None = Field(
+        None,
+        description="Store-minted id of the fuel-cost time series association, or null when fuel_cost carries a fixed value. Exactly one of the two is set.",
+    )
     power_units: UnitSystem
     startup_fuel_offtake: InputOutputCurve | None = Field(
         None,
@@ -377,73 +352,47 @@ class FuelCurve(BaseModel):
     vom_cost: InputOutputCurve
 
 
-class TwoTerminalLoss(RootModel[InputOutputCurve | IncrementalCurve]):
-    root: InputOutputCurve | IncrementalCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-            }
-        ),
-        discriminator="curve_type",
-        title="TwoTerminalLoss",
-    )
-
-
 class CostCurve(BaseModel):
     power_units: UnitSystem = UnitSystem.NATURAL_UNITS
     value_curve: ValueCurve
     variable_cost_type: Literal["COST"]
-    vom_cost: InputOutputCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-            }
-        )
-    )
+    vom_cost: InputOutputCurve
 
 
 class RenewableGenerationCost(BaseModel):
     cost_type: Literal["RENEWABLE"] = "RENEWABLE"
     curtailment_cost: CostCurve | None = Field(
-        default_factory=lambda: CostCurve.model_validate(
-            {
-                "variable_cost_type": "COST",
-                "value_curve": {
-                    "curve_type": "INPUT_OUTPUT",
-                    "function_data": {
-                        "function_type": "LINEAR",
-                        "constant_term": 0,
-                        "proportional_term": 0,
-                    },
+        {
+            "variable_cost_type": "COST",
+            "value_curve": {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
                 },
-                "vom_cost": {
-                    "curve_type": "INPUT_OUTPUT",
-                    "function_data": {
-                        "function_type": "LINEAR",
-                        "constant_term": 0,
-                        "proportional_term": 0,
-                    },
+            },
+            "vom_cost": {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
                 },
-            }
-        )
+            },
+        },
+        validate_default=True,
     )
-    variable: CostCurve
+    variable_operation_cost: CostCurve
     fixed: float | None = 0.0
 
 
 class ProductionVariableCostCurve(RootModel[CostCurve | FuelCurve]):
     root: CostCurve | FuelCurve = Field(
-        ..., discriminator="variable_cost_type", title="ProductionVariableCostCurve"
+        ...,
+        description="Variable production cost of a device, selected by `variable_cost_type` between a curve denominated directly in currency (`COST`) and one denominated in fuel with a separate fuel price (`FUEL`).",
+        discriminator="variable_cost_type",
+        title="ProductionVariableCostCurve",
     )
 
 
@@ -462,46 +411,95 @@ class ImportExportCost(BaseModel):
     cost_type: Literal["IMPORTEXPORT"] = "IMPORTEXPORT"
     import_offer_curves: CostCurve | None = None
     export_offer_curves: CostCurve | None = None
-    energy_import_weekly_limit: float
-    energy_export_weekly_limit: float
+    energy_import_weekly_limit: float = Field(
+        ...,
+        description="Weekly limit on imported energy, in MWh. MWh is the only representation: neither producers nor consumers rescale it by a system base. Units: MWh.",
+    )
+    energy_export_weekly_limit: float = Field(
+        ...,
+        description="Weekly limit on exported energy, in MWh. MWh is the only representation: neither producers nor consumers rescale it by a system base. Units: MWh.",
+    )
+
+
+class ImportExportTimeSeriesCost(BaseModel):
+    cost_type: Literal["IMPORT_EXPORT_TIME_SERIES"]
+    import_offer_curves: CostCurve = Field(
+        ...,
+        description="Import price curves whose value curve admits only the TIME_SERIES_INCREMENTAL variant; any other variant is rejected by the consuming constructor.",
+    )
+    export_offer_curves: CostCurve = Field(
+        ...,
+        description="Export price curves whose value curve admits only the TIME_SERIES_INCREMENTAL variant; any other variant is rejected by the consuming constructor.",
+    )
+    energy_import_weekly_limit: float = Field(
+        ...,
+        description="Weekly limit on imported energy, in MWh. MWh is the only representation: neither producers nor consumers rescale it by a system base. Units: MWh.",
+    )
+    energy_export_weekly_limit: float = Field(
+        ...,
+        description="Weekly limit on exported energy, in MWh. MWh is the only representation: neither producers nor consumers rescale it by a system base. Units: MWh.",
+    )
+    ancillary_service_offers: list[int]
 
 
 class LoadCost(BaseModel):
     cost_type: Literal["LOAD"] = "LOAD"
     fixed: float | None = 0.0
-    variable: CostCurve
+    variable_operation_cost: CostCurve
+
+
+class MarketBidTimeSeriesCost(BaseModel):
+    cost_type: Literal["MARKET_BID_TIME_SERIES"]
+    minimum_energy_offer: TimeSeriesInputOutputCurve = Field(
+        ...,
+        description="Minimum-energy offer: cost to operate at minimum stable level, in $/MWh at the curve's minimum power, stored as submitted. $/h sources convert at parse (MEO = no-load cost / P_min). Time-series-backed linear curve; only the TIME_SERIES_LINEAR function-data variant is admissible here — the consuming constructor rejects any other.",
+    )
+    start_up_association_id: int = Field(
+        ...,
+        description="Store-minted id of a time series of three-stage (hot, warm, cold) start-up costs.",
+    )
+    shut_down: TimeSeriesInputOutputCurve = Field(
+        ...,
+        description="Shut-down cost as a time-series-backed linear curve. Only the TIME_SERIES_LINEAR function-data variant is admissible here; the consuming constructor rejects any other.",
+    )
+    incremental_offer_curves: CostCurve = Field(
+        ...,
+        description="Sell offer curves whose value curve is a time-series-backed piecewise incremental curve. Only the TIME_SERIES_INCREMENTAL variant is admissible here; any other variant is rejected by the consuming constructor.",
+    )
+    decremental_offer_curves: CostCurve = Field(
+        ...,
+        description="Buy offer curves whose value curve is a time-series-backed piecewise incremental curve. Only the TIME_SERIES_INCREMENTAL variant is admissible here; any other variant is rejected by the consuming constructor.",
+    )
+    ancillary_service_offers: list[int] = Field(
+        ...,
+        description="IDs of the ancillary service components that this bid offers into.",
+    )
+    incremental_slope: bool | None = Field(
+        False,
+        description="Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
+    )
+    decremental_slope: bool | None = Field(
+        False,
+        description="Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
+    )
+    curve_style: CurveStyle | None = Field(
+        0,
+        description="Curve-clearing style for the bid: 0 = CURVE (ordinary divisible price-setting curve, default); 1 = FIXED (clears as one indivisible all-or-nothing package over its period); 2 = VARIABLE (divisible quantity, block-priced, cannot set the settlement-point price). Corresponds to ERCOT's DAM PriceCurve curveStyle field (CURVE/FIXED/VARIABLE). A non-zero value is mutually exclusive with incremental_slope/decremental_slope.",
+    )
 
 
 class MarketBidCost(BaseModel):
     cost_type: Literal["MARKET_BID"] = "MARKET_BID"
-    no_load_cost: InputOutputCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-            }
-        ),
-        description="No load cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
+    minimum_energy_offer: InputOutputCurve = Field(
+        ...,
+        description="Minimum-energy offer: cost to operate at minimum stable level, in $/MWh at the curve's minimum power, stored as submitted. $/h sources convert at parse (MEO = no-load cost / P_min). Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     start_up: StartUpStages = Field(
         ...,
         description="Start-up cost at different stages of the thermal cycle (hot, warm, cold).",
     )
     shut_down: InputOutputCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-            }
-        ),
+        ...,
         description="Shut-down cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     incremental_offer_curves: CostCurve = Field(
@@ -516,12 +514,24 @@ class MarketBidCost(BaseModel):
         ...,
         description="IDs of the ancillary service components that this market bid offers into.",
     )
+    incremental_slope: bool | None = Field(
+        False,
+        description="Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
+    )
+    decremental_slope: bool | None = Field(
+        False,
+        description="Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
+    )
+    curve_style: CurveStyle | None = Field(
+        0,
+        description="Curve-clearing style for the bid: 0 = CURVE (ordinary divisible price-setting curve, default); 1 = FIXED (clears as one indivisible all-or-nothing package over its period); 2 = VARIABLE (divisible quantity, block-priced, cannot set the settlement-point price). Corresponds to ERCOT's DAM PriceCurve curveStyle field (CURVE/FIXED/VARIABLE). A non-zero value is mutually exclusive with incremental_slope/decremental_slope.",
+    )
 
 
 class HydroGenerationCost(BaseModel):
     cost_type: Literal["HYDRO_GEN"] = "HYDRO_GEN"
     fixed: float | None = 0.0
-    variable: ProductionVariableCostCurve
+    variable_operation_cost: ProductionVariableCostCurve
 
 
 class ThermalGenerationCost(BaseModel):
@@ -532,15 +542,17 @@ class ThermalGenerationCost(BaseModel):
     )
     shut_down: float = Field(..., description="Cost to turn the unit off")
     start_up: float | StartUpStages = Field(
-        ...,
-        description="Start-up cost can take linear or multi-stage cost",
+        ..., description="Start-up cost can take linear or multi-stage cost"
     )
-    variable: ProductionVariableCostCurve
+    variable_operation_cost: ProductionVariableCostCurve
 
 
 class HydroStorageGenerationCost(RootModel[HydroGenerationCost | StorageCost]):
     root: HydroGenerationCost | StorageCost = Field(
-        ..., discriminator="cost_type", title="HydroStorageGenerationCost"
+        ...,
+        description="Operating cost of hydro generation with storage, selected by `cost_type` between the hydro generation (`HYDRO_GEN`) and storage (`STORAGE`) cost representations.",
+        discriminator="cost_type",
+        title="HydroStorageGenerationCost",
     )
 
 
@@ -548,5 +560,8 @@ class GenericOperationCost(
     RootModel[ThermalGenerationCost | RenewableGenerationCost | HydroGenerationCost]
 ):
     root: ThermalGenerationCost | RenewableGenerationCost | HydroGenerationCost = Field(
-        ..., discriminator="cost_type", title="GenericOperationCost"
+        ...,
+        description="Operating cost of a generation technology, selected by `cost_type` among the thermal (`THERMAL`), renewable (`RENEWABLE`), and hydro (`HYDRO_GEN`) generation cost representations.",
+        discriminator="cost_type",
+        title="GenericOperationCost",
     )
