@@ -568,7 +568,7 @@
         "voltage_setpoint": 1.0,
         "max_shunt_current": 99.99,
         "reactive_power_required": 0.0,
-        "max_reactive_power": 9999.0,
+        "max_reactive_power": 99.99,
         "shunt_control_type": "STATCOM",
         "regulated_bus_number": 0,
         "base_power": 100.0,

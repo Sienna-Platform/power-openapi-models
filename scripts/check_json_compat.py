@@ -45,7 +45,13 @@ REQUIRED_ENVELOPE_KEYS = {
     "time_series_storage_file",
 }
 # Properties the schema declares but does not require (absent is valid, not a gap).
-OPTIONAL_ENVELOPE_KEYS = {"ext", "name", "description", "frequency"}
+OPTIONAL_ENVELOPE_KEYS = {
+    "ext",
+    "name",
+    "description",
+    "frequency",
+    "trading_hub_associations",
+}
 ENVELOPE_KEYS = REQUIRED_ENVELOPE_KEYS | OPTIONAL_ENVELOPE_KEYS
 
 
@@ -125,7 +131,13 @@ def check_document(path, registry):
                 first = str(exc).splitlines()
                 messages.append(f"{type_name}[{i}] rejected: {' | '.join(first[:3])}")
                 continue
-            rebuilt.append(model.model_dump(mode="json", by_alias=True))
+            # exclude_unset: an omitted optional field must stay omitted in the
+            # round-trip, not get materialized to its schema default. A truly
+            # required field (no pydantic default) already failed model_validate
+            # above if missing, so this can't hide a genuine required-field drop.
+            rebuilt.append(
+                model.model_dump(mode="json", by_alias=True, exclude_unset=True)
+            )
             total += 1
         validated[type_name] = rebuilt
 

@@ -2882,7 +2882,7 @@ class FACTSControlDevice(BaseModel):
     )
     max_reactive_power: float | None = Field(
         9999.0,
-        description="Independent maximum reactive power ceiling; the device reactive limit is min(the current/susceptance law on max_shunt_current, this value). Non-binding at the 9999.0 default.",
+        description="Independent maximum reactive power ceiling; the device reactive limit is min(the current/susceptance law on max_shunt_current, this value). Non-binding at the 9999.0 default. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
     shunt_control_type: ShuntControlType | None = Field(
         "STATCOM",
