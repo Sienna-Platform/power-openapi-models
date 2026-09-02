@@ -785,115 +785,12 @@ class Status(Enum):
     OFF = "OFF"
 
 
-class HydroPumpTurbine(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
-    active_power: float = Field(
-        ...,
-        description="Initial active power set point of the turbine unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    reactive_power: float = Field(
-        ...,
-        description="Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    rating: float = Field(
-        ...,
-        description="Maximum AC side output power rating of the unit. Not to be confused with base_power. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-    )
-    active_power_limits: MinMax = Field(
-        ...,
-        description="Minimum and maximum stable active power levels for the turbine. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    reactive_power_limits: MinMax | None = Field(
-        None,
-        description="Minimum and maximum reactive power limits. Set to `null` if not applicable. in psy5 a required param with an option to be nothing Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    active_power_limits_pump: MinMax = Field(
-        ...,
-        description="Minimum and maximum stable active power levels for the pump. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    outflow_limits: MinMax | None = Field(
-        None,
-        description="Turbine/Pump outflow limits. Set to `null` if not applicable. in psy5 a required param with an option to be nothing Units: m3/s.",
-    )
-    powerhouse_elevation: float = Field(
-        ...,
-        description="Height level above the sea level of the powerhouse on which the turbine is installed. Units: m.",
-    )
-    ramp_limits: UpDown | None = Field(
-        None,
-        description="Ramp up and ramp down limits. in psy5 a required param with an option to be nothing Units: per power_units — NATURAL_UNITS: MW/min, COMPONENT_BASE: pu/min .",
-    )
-    time_limits: UpDown | None = Field(
-        None,
-        description="Minimum up and minimum down time limits. in psy5 a required param with an option to be nothing Units: min.",
-    )
-    base_power: float = Field(
-        ..., description="Base power of the unit for per unitization. Units: MVA."
-    )
-    power_units: UnitSystem = Field(
-        ...,
-        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
-    )
-    status: Status | None = Field(
-        "OFF",
-        description="Initial Operating status of a pumped-storage hydro unit. See `HydroPumpTurbineStatus` for reference.",
-    )
-    time_at_status: float | None = Field(
-        600000.0,
-        description="Time the generator has been on or off, as indicated by `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
-    )
-    operation_cost: (
-        HydroGenerationCost
-        | MarketBidCost
-        | MarketBidTimeSeriesCost
-        | ImportExportTimeSeriesCost
-    ) = Field(
-        ...,
-        description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
-    )
-    active_power_pump: float | None = Field(
-        0.0,
-        description="Initial active power set point of the pump unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    efficiency: TurbinePump | None = Field(
-        {"turbine": 1.0, "pump": 1.0}, description="Turbine/Pump efficiency [0, 1.0]."
-    )
-    transition_time: TurbinePump | None = Field(
-        {"turbine": 0.0, "pump": 0.0},
-        description="Transition time to switch into the specific mode. Units: min.",
-    )
-    minimum_time: TurbinePump | None = Field(
-        {"turbine": 0.0, "pump": 0.0},
-        description="Minimum operating time for the specific mode. Units: min.",
-    )
-    travel_time: float | None = Field(
-        None,
-        description="Downstream (from reservoir into turbine) travel time. Set to `null` if not applicable. Units: min.",
-    )
-    conversion_factor: float | None = Field(
-        1.0,
-        description="Conversion factor from flow/volume to energy: m^3 -> p.u-hr. Units: 1.",
-    )
-    must_run: bool | None = Field(
-        False, description="Whether the unit must run (i.e., cannot be curtailed)."
-    )
-    prime_mover_type: PrimeMovers | None = Field(
-        "PS", description="Prime mover technology according to EIA 923."
-    )
-    dynamic_injector: int | None = Field(
-        None, description="ID of the corresponding dynamic injection device, if any."
-    )
+class CommitmentModes(Enum):
+    UNCOMMITTED = "UNCOMMITTED"
+    COMMITTED = "COMMITTED"
+    SELF_SCHEDULED = "SELF_SCHEDULED"
+    RELIABILITY = "RELIABILITY"
+    MUST_RUN = "MUST_RUN"
 
 
 class LevelDataType(Enum):
@@ -2070,91 +1967,11 @@ class TModelHVDCLine(BaseModel):
     )
 
 
-class ThermalMultiStart(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    status: bool = Field(
-        ...,
-        description="Initial commitment condition at the start of a simulation (`true` = on or `false` = off).",
-    )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
-    active_power: float = Field(
-        ...,
-        description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    reactive_power: float = Field(
-        ...,
-        description="Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    rating: float = Field(
-        ...,
-        description="Maximum AC side output power rating of the unit. Not to be confused with base_power. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-    )
-    prime_mover_type: PrimeMovers = Field(
-        ..., description="Prime mover technology according to EIA 923."
-    )
-    fuel: ThermalFuels = Field(
-        ..., description="Prime mover fuel according to EIA 923."
-    )
-    active_power_limits: MinMax = Field(
-        ...,
-        description="Minimum and maximum stable active power levels. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    reactive_power_limits: MinMax | None = Field(
-        None,
-        description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    ramp_limits: UpDown | None = Field(
-        None,
-        description="Ramp up and ramp down limits. Units: per power_units — NATURAL_UNITS: MW/min, COMPONENT_BASE: pu/min .",
-    )
-    power_trajectory: StartUpShutDown | None = Field(
-        None,
-        description="Power trajectory the unit will take during the start-up and shut-down ramp process. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    time_limits: UpDown | None = Field(
-        None, description="Minimum up and minimum down time limits. Units: min."
-    )
-    start_time_limits: StartUpStages | None = Field(
-        None,
-        description="Time limits for start-up based on turbine temperature. Units: min.",
-    )
-    start_types: int = Field(
-        ...,
-        description="Number of start-up based on turbine temperature, where `1` = *hot*, `2` = *warm*, and `3` = *cold*.",
-    )
-    operation_cost: (
-        ThermalGenerationCost
-        | MarketBidCost
-        | MarketBidTimeSeriesCost
-        | ImportExportTimeSeriesCost
-    ) = Field(..., description="Operating cost of generation. or MarketBidCost")
-    base_power: float = Field(
-        ..., description="Base power of the unit for per unitization. Units: MVA."
-    )
-    power_units: UnitSystem = Field(
-        ...,
-        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
-    )
-    time_at_status: float | None = Field(
-        600000.0,
-        description="Time the generator has been on or off, as indicated by `status`. Units: min.",
-    )
-    must_run: bool | None = Field(
-        False, description="Set to `true` if the unit is must run."
-    )
-    dynamic_injector: int | None = Field(
-        None, description="ID of the corresponding dynamic injection device, if any."
-    )
+class OperationalStates(Enum):
+    OFFLINE = "OFFLINE"
+    STARTUP = "STARTUP"
+    ONLINE = "ONLINE"
+    SHUTDOWN = "SHUTDOWN"
 
 
 class ThermalPowerPlant(BaseModel):
@@ -2172,9 +1989,11 @@ class ThermalStandard(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    status: bool = Field(
-        ...,
-        description="Initial commitment condition at the start of a simulation (`true` = on or `false` = off).",
+    status: OperationalStates = Field(
+        ..., description="Operating state of the unit at the start of a simulation."
+    )
+    commitment_mode: CommitmentModes | None = Field(
+        "COMMITTED", description="Commitment mode of the unit."
     )
     bus: int = Field(
         ..., description="ID of the bus that this component is connected to."
@@ -2220,9 +2039,6 @@ class ThermalStandard(BaseModel):
     time_limits: UpDown | None = Field(
         None, description="Minimum up and minimum down time limits. Units: min."
     )
-    must_run: bool | None = Field(
-        False, description="Set to `true` if the unit is must run.", title="Must Run"
-    )
     prime_mover_type: PrimeMovers | None = Field(
         "OT", description="Prime mover technology according to EIA 923."
     )
@@ -2231,7 +2047,7 @@ class ThermalStandard(BaseModel):
     )
     time_at_status: float | None = Field(
         600000.0,
-        description="Time the generator has been on or off, as indicated by `status`. Units: min.",
+        description="Time the generator has been in its current status. Units: min.",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -2929,6 +2745,117 @@ class GroupReserve(BaseModel):
     )
 
 
+class HydroPumpTurbine(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+    )
+    bus: int = Field(
+        ..., description="ID of the bus that this component is connected to."
+    )
+    active_power: float = Field(
+        ...,
+        description="Initial active power set point of the turbine unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    reactive_power: float = Field(
+        ...,
+        description="Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    rating: float = Field(
+        ...,
+        description="Maximum AC side output power rating of the unit. Not to be confused with base_power. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    active_power_limits: MinMax = Field(
+        ...,
+        description="Minimum and maximum stable active power levels for the turbine. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    reactive_power_limits: MinMax | None = Field(
+        None,
+        description="Minimum and maximum reactive power limits. Set to `null` if not applicable. in psy5 a required param with an option to be nothing Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    active_power_limits_pump: MinMax = Field(
+        ...,
+        description="Minimum and maximum stable active power levels for the pump. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    outflow_limits: MinMax | None = Field(
+        None,
+        description="Turbine/Pump outflow limits. Set to `null` if not applicable. in psy5 a required param with an option to be nothing Units: m3/s.",
+    )
+    powerhouse_elevation: float = Field(
+        ...,
+        description="Height level above the sea level of the powerhouse on which the turbine is installed. Units: m.",
+    )
+    ramp_limits: UpDown | None = Field(
+        None,
+        description="Ramp up and ramp down limits. in psy5 a required param with an option to be nothing Units: per power_units — NATURAL_UNITS: MW/min, COMPONENT_BASE: pu/min .",
+    )
+    time_limits: UpDown | None = Field(
+        None,
+        description="Minimum up and minimum down time limits. in psy5 a required param with an option to be nothing Units: min.",
+    )
+    base_power: float = Field(
+        ..., description="Base power of the unit for per unitization. Units: MVA."
+    )
+    power_units: UnitSystem = Field(
+        ...,
+        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
+    )
+    status: Status | None = Field(
+        "OFF",
+        description="Initial Operating status of a pumped-storage hydro unit. See `HydroPumpTurbineStatus` for reference.",
+    )
+    time_at_status: float | None = Field(
+        600000.0,
+        description="Time the generator has been on or off, as indicated by `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
+    )
+    operation_cost: (
+        HydroGenerationCost
+        | MarketBidCost
+        | MarketBidTimeSeriesCost
+        | ImportExportTimeSeriesCost
+    ) = Field(
+        ...,
+        description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
+    )
+    active_power_pump: float | None = Field(
+        0.0,
+        description="Initial active power set point of the pump unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    efficiency: TurbinePump | None = Field(
+        {"turbine": 1.0, "pump": 1.0}, description="Turbine/Pump efficiency [0, 1.0]."
+    )
+    transition_time: TurbinePump | None = Field(
+        {"turbine": 0.0, "pump": 0.0},
+        description="Transition time to switch into the specific mode. Units: min.",
+    )
+    minimum_time: TurbinePump | None = Field(
+        {"turbine": 0.0, "pump": 0.0},
+        description="Minimum operating time for the specific mode. Units: min.",
+    )
+    travel_time: float | None = Field(
+        None,
+        description="Downstream (from reservoir into turbine) travel time. Set to `null` if not applicable. Units: min.",
+    )
+    conversion_factor: float | None = Field(
+        1.0,
+        description="Conversion factor from flow/volume to energy: m^3 -> p.u-hr. Units: 1.",
+    )
+    commitment_mode: CommitmentModes | None = Field(
+        "COMMITTED", description="Commitment mode of the unit."
+    )
+    prime_mover_type: PrimeMovers | None = Field(
+        "PS", description="Prime mover technology according to EIA 923."
+    )
+    dynamic_injector: int | None = Field(
+        None, description="ID of the corresponding dynamic injection device, if any."
+    )
+
+
 class InterconnectingConverter(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
@@ -3019,6 +2946,92 @@ class InterconnectingConverter(BaseModel):
     voltage_limits: MinMax | None = Field(
         {"min": 0.0, "max": 999.9},
         description="Limits on the voltage at the DC bus in per unit. Units: pu.",
+    )
+    dynamic_injector: int | None = Field(
+        None, description="ID of the corresponding dynamic injection device, if any."
+    )
+
+
+class ThermalMultiStart(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+    )
+    status: OperationalStates = Field(
+        ..., description="Operating state of the unit at the start of a simulation."
+    )
+    commitment_mode: CommitmentModes | None = Field(
+        "COMMITTED", description="Commitment mode of the unit."
+    )
+    bus: int = Field(
+        ..., description="ID of the bus that this component is connected to."
+    )
+    active_power: float = Field(
+        ...,
+        description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    reactive_power: float = Field(
+        ...,
+        description="Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    rating: float = Field(
+        ...,
+        description="Maximum AC side output power rating of the unit. Not to be confused with base_power. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    prime_mover_type: PrimeMovers = Field(
+        ..., description="Prime mover technology according to EIA 923."
+    )
+    fuel: ThermalFuels = Field(
+        ..., description="Prime mover fuel according to EIA 923."
+    )
+    active_power_limits: MinMax = Field(
+        ...,
+        description="Minimum and maximum stable active power levels. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    reactive_power_limits: MinMax | None = Field(
+        None,
+        description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    ramp_limits: UpDown | None = Field(
+        None,
+        description="Ramp up and ramp down limits. Units: per power_units — NATURAL_UNITS: MW/min, COMPONENT_BASE: pu/min .",
+    )
+    power_trajectory: StartUpShutDown | None = Field(
+        None,
+        description="Power trajectory the unit will take during the start-up and shut-down ramp process. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    time_limits: UpDown | None = Field(
+        None, description="Minimum up and minimum down time limits. Units: min."
+    )
+    start_time_limits: StartUpStages | None = Field(
+        None,
+        description="Time limits for start-up based on turbine temperature. Units: min.",
+    )
+    start_types: int = Field(
+        ...,
+        description="Number of start-up based on turbine temperature, where `1` = *hot*, `2` = *warm*, and `3` = *cold*.",
+    )
+    operation_cost: (
+        ThermalGenerationCost
+        | MarketBidCost
+        | MarketBidTimeSeriesCost
+        | ImportExportTimeSeriesCost
+    ) = Field(..., description="Operating cost of generation. or MarketBidCost")
+    base_power: float = Field(
+        ..., description="Base power of the unit for per unitization. Units: MVA."
+    )
+    power_units: UnitSystem = Field(
+        ...,
+        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
+    )
+    time_at_status: float | None = Field(
+        600000.0,
+        description="Time the generator has been in its current status. Units: min.",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
