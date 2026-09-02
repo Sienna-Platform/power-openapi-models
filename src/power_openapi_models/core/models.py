@@ -293,18 +293,19 @@ class TimeSeriesInputOutputCurve(BaseModel):
 
 class TwoTerminalLoss(RootModel[InputOutputCurve | IncrementalCurve]):
     root: InputOutputCurve | IncrementalCurve = Field(
-        {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
-            },
-        },
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
         description="Loss model of a two-terminal HVDC line as a function of flow, selected by `curve_type`. It accepts a linear model with a constant loss and a proportional loss rate (MW of loss per MW of flow), or a piecewise model giving different proportional losses on different flow segments.",
         discriminator="curve_type",
         title="TwoTerminalLoss",
-        validate_default=True,
     )
 
 
@@ -356,32 +357,44 @@ class CostCurve(BaseModel):
     power_units: UnitSystem = UnitSystem.NATURAL_UNITS
     value_curve: ValueCurve
     variable_cost_type: Literal["COST"]
-    vom_cost: InputOutputCurve
+    vom_cost: InputOutputCurve = Field(
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        )
+    )
 
 
 class RenewableGenerationCost(BaseModel):
     cost_type: Literal["RENEWABLE"] = "RENEWABLE"
     curtailment_cost: CostCurve | None = Field(
-        {
-            "variable_cost_type": "COST",
-            "value_curve": {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
+        default_factory=lambda: CostCurve.model_validate(
+            {
+                "variable_cost_type": "COST",
+                "value_curve": {
+                    "curve_type": "INPUT_OUTPUT",
+                    "function_data": {
+                        "function_type": "LINEAR",
+                        "constant_term": 0,
+                        "proportional_term": 0,
+                    },
                 },
-            },
-            "vom_cost": {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
+                "vom_cost": {
+                    "curve_type": "INPUT_OUTPUT",
+                    "function_data": {
+                        "function_type": "LINEAR",
+                        "constant_term": 0,
+                        "proportional_term": 0,
+                    },
                 },
-            },
-        },
-        validate_default=True,
+            }
+        )
     )
     variable_operation_cost: CostCurve
     fixed: float | None = 0.0
@@ -491,7 +504,16 @@ class MarketBidTimeSeriesCost(BaseModel):
 class MarketBidCost(BaseModel):
     cost_type: Literal["MARKET_BID"] = "MARKET_BID"
     minimum_energy_offer: InputOutputCurve = Field(
-        ...,
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
         description="Minimum-energy offer: cost to operate at minimum stable level, in $/MWh at the curve's minimum power, stored as submitted. $/h sources convert at parse (MEO = no-load cost / P_min). Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     start_up: StartUpStages = Field(
@@ -499,7 +521,16 @@ class MarketBidCost(BaseModel):
         description="Start-up cost at different stages of the thermal cycle (hot, warm, cold).",
     )
     shut_down: InputOutputCurve = Field(
-        ...,
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
         description="Shut-down cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     incremental_offer_curves: CostCurve = Field(
@@ -542,7 +573,8 @@ class ThermalGenerationCost(BaseModel):
     )
     shut_down: float = Field(..., description="Cost to turn the unit off")
     start_up: float | StartUpStages = Field(
-        ..., description="Start-up cost can take linear or multi-stage cost"
+        ...,
+        description="Start-up cost can take linear or multi-stage cost",
     )
     variable_operation_cost: ProductionVariableCostCurve
 

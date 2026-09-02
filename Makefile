@@ -1,6 +1,11 @@
 SCHEMA_DIR ?= ../SiennaSchemas
 CODEGEN_IMAGE ?= ghcr.io/sienna-platform/power-openapi-models/codegen:latest
 PKG_DIR := src/power_openapi_models
+# `--allow-remote-refs` (previously passed to the infrastructure_core and core
+# invocations below) does not exist in datamodel-code-generator 0.55.0 (the Dockerfile's
+# pin) and fails immediately: "unrecognized arguments: --allow-remote-refs". Confirmed
+# generation of every domain still resolves same-filesystem external $refs correctly
+# without it.
 CODEGEN := datamodel-codegen --input-file-type openapi \
 	--output-model-type pydantic_v2.BaseModel \
 	--formatters ruff-format \
@@ -16,7 +21,7 @@ generate:
 	@# contract (openapi-config-infrastructure-core.json, scripts/check_layering.py
 	@# there). It has no dependencies of its own, so no ref mapping is needed.
 	@echo "==> Generating infrastructure_core"
-	$(CODEGEN) --allow-remote-refs \
+	$(CODEGEN) \
 	  --input $(SCHEMA_DIR)/openapi-infrastructure-core.json \
 	  --output $(PKG_DIR)/infrastructure_core/models.py
 
@@ -36,7 +41,7 @@ generate:
 	@# imports afterward -- failing loudly if a body it finds in both files
 	@# ever differs -- so nothing is defined twice in the committed output.
 	@echo "==> Generating core"
-	$(CODEGEN) --allow-remote-refs \
+	$(CODEGEN) \
 	  --input $(SCHEMA_DIR)/openapi-core.json \
 	  --output $(PKG_DIR)/core/models.py
 

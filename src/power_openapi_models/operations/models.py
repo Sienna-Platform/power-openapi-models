@@ -462,7 +462,11 @@ class EnergyReservoirStorage(BaseModel):
         | MarketBidCost
         | MarketBidTimeSeriesCost
         | ImportExportTimeSeriesCost
-    ) = Field(..., description="Operating cost of storage. or MarketBidCost")
+    ) = Field(
+        ...,
+        description="Operating cost of storage. or MarketBidCost",
+        discriminator="cost_type",
+    )
     conversion_factor: float | None = Field(
         1.0,
         description="Conversion factor of `storage_capacity` to MWh, if different than 1.0. For example, X MWh/liter hydrogen. Units: 1.",
@@ -768,6 +772,7 @@ class HydroDispatch(BaseModel):
     ) = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
+        discriminator="cost_type",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -837,7 +842,7 @@ class HydroReservoir(BaseModel):
     upstream_reservoirs: list[int] | None = None
     operation_cost: (
         HydroReservoirCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
-    )
+    ) = Field(..., discriminator="cost_type")
     evaporative_loss: float | None = Field(
         0.0,
         description="Standing loss from evaporation as a fraction of the reservoir's stored volume/energy lost per hour. Units: 1.",
@@ -906,6 +911,7 @@ class HydroTurbine(BaseModel):
     ) = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
+        discriminator="cost_type",
     )
     powerhouse_elevation: float | None = Field(
         0.0,
@@ -1012,7 +1018,9 @@ class InterruptiblePowerLoad(BaseModel):
     operation_cost: (
         LoadCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
     ) = Field(
-        ..., description="Operational cost of interrupting load. or MarketBidCost"
+        ...,
+        description="Operational cost of interrupting load. or MarketBidCost",
+        discriminator="cost_type",
     )
     conformity: LoadConformity | None = Field(
         "UNDEFINED",
@@ -1046,7 +1054,9 @@ class InterruptibleStandardLoad(BaseModel):
     operation_cost: (
         LoadCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
     ) = Field(
-        ..., description="Operational cost of interrupting load. or MarketBidCost"
+        ...,
+        description="Operational cost of interrupting load. or MarketBidCost",
+        discriminator="cost_type",
     )
     conformity: LoadConformity | None = Field(
         "UNDEFINED",
@@ -1447,6 +1457,7 @@ class PointToPointBid(BaseModel):
     spread_bid: MarketBidCost | MarketBidTimeSeriesCost = Field(
         ...,
         description="Willingness-to-pay curve on the to-minus-from price spread, as an offer-curve operating cost (incremental side only).",
+        discriminator="cost_type",
     )
     price_limits: MinMax = Field(
         ..., description="Tariff bid-price bounds on the spread. Units: USD/MWh."
@@ -1543,7 +1554,11 @@ class RenewableDispatch(BaseModel):
         | MarketBidCost
         | MarketBidTimeSeriesCost
         | ImportExportTimeSeriesCost
-    ) = Field(..., description="Operating cost of generation. or MarketBidCost")
+    ) = Field(
+        ...,
+        description="Operating cost of generation. or MarketBidCost",
+        discriminator="cost_type",
+    )
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
     )
@@ -1661,7 +1676,9 @@ class ShiftablePowerLoad(BaseModel):
     operation_cost: (
         LoadCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
     ) = Field(
-        ..., description="Operational cost of interrupting load. or MarketBidCost"
+        ...,
+        description="Operational cost of interrupting load. or MarketBidCost",
+        discriminator="cost_type",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -1726,6 +1743,7 @@ class Source(BaseModel):
     ) = Field(
         ...,
         description="Cost of importing and exporting power at the source. or MarketBidCost",
+        discriminator="cost_type",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -2027,7 +2045,11 @@ class ThermalStandard(BaseModel):
         | MarketBidCost
         | MarketBidTimeSeriesCost
         | ImportExportTimeSeriesCost
-    ) = Field(..., description="Operating cost of generation, or a MarketBidCost.")
+    ) = Field(
+        ...,
+        description="Operating cost of generation, or a MarketBidCost.",
+        discriminator="cost_type",
+    )
     base_power: float = Field(
         ...,
         description="Base power of the unit for per unitization. Must be positive; a zero base would make per-unit conversion undefined. Units: MVA.",
@@ -2561,7 +2583,9 @@ class VirtualParticipant(BaseModel):
         description="Maximum envelope for the decremental (demand) side. Units: MW.",
     )
     operation_cost: MarketBidCost | MarketBidTimeSeriesCost = Field(
-        ..., description="Bid curves as an offer-curve operating cost."
+        ...,
+        description="Bid curves as an offer-curve operating cost.",
+        discriminator="cost_type",
     )
 
 
@@ -2821,6 +2845,7 @@ class HydroPumpTurbine(BaseModel):
     ) = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
+        discriminator="cost_type",
     )
     active_power_pump: float | None = Field(
         0.0,
@@ -3021,7 +3046,11 @@ class ThermalMultiStart(BaseModel):
         | MarketBidCost
         | MarketBidTimeSeriesCost
         | ImportExportTimeSeriesCost
-    ) = Field(..., description="Operating cost of generation. or MarketBidCost")
+    ) = Field(
+        ...,
+        description="Operating cost of generation. or MarketBidCost",
+        discriminator="cost_type",
+    )
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
     )
