@@ -17,20 +17,6 @@ from power_openapi_models.core.models import (
     ValueCurve,
 )
 from pydantic import BaseModel, Field
-from power_openapi_models.core.models import (
-    ACBusType,
-    GenericOperationCost,
-    InOut,
-    MinMax,
-    PrimeMovers,
-    ProductionVariableCostCurve,
-    RenewableGenerationCost,
-    StorageCost,
-    StorageTech,
-    ThermalFuels,
-    UpDown,
-    ValueCurve,
-)
 
 
 class AggregateRetirementPotential(BaseModel):

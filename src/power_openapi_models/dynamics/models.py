@@ -4,7 +4,6 @@
 from __future__ import annotations
 from power_openapi_models.core.models import DbdPnts, FdbdPnts, MinMax
 from pydantic import BaseModel, Field
-from power_openapi_models.core.models import DbdPnts, FdbdPnts, MinMax
 
 
 class ActiveRenewableControllerAB(BaseModel):

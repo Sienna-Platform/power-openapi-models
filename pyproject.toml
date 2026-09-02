@@ -21,3 +21,9 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff.lint]
+# E741 (ambiguous variable name): the generated models are field-for-field with
+# SiennaSchemas' power-system quantities, which use standard electrical-engineering
+# single-letter names (e.g. `l` for inductance) -- not something to rename away from.
+ignore = ["E741"]

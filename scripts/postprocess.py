@@ -95,14 +95,22 @@ def dedupe_core_against_infrastructure_core() -> bool:
 
     content = re.sub(r"\n{3,}", "\n\n\n", content)
 
+    names = sorted(infra_blocks)
     import_block = (
         f"from {INFRASTRUCTURE_CORE_IMPORT} import (\n"
-        + "".join(f"    {name},\n" for name in sorted(infra_blocks))
+        + "".join(f"    {name},\n" for name in names)
         + ")\n"
     )
     if import_block not in content:
         header_end = re.search(r"^class \w+\(", content, re.MULTILINE).start()
         content = content[:header_end] + import_block + "\n\n" + content[header_end:]
+    # Nothing in this file references these names directly -- they exist purely to
+    # re-export infrastructure_core's surface through core.models (see the docstring
+    # above). Without __all__ naming them, _ruff_fix_imports()'s F401 pass reads that as
+    # "unused import" and deletes the whole block.
+    all_decl = "__all__ = [\n" + "".join(f'    "{name}",\n' for name in names) + "]\n"
+    if all_decl not in content:
+        content = content.replace(import_block, import_block + "\n" + all_decl, 1)
 
     CORE_MODELS.write_text(content)
     subprocess.run(
@@ -294,6 +302,26 @@ WARNINGS = [
 # ---------------------------------------------------------------------------
 
 
+def _ruff_fix_imports(path: Path) -> None:
+    """Auto-fix F401 (unused import) / F811 (redefined-while-unused import).
+
+    datamodel-codegen emits one import statement per $ref resolved, with no
+    dedup pass of its own: a type referenced from several properties in the
+    same file, or re-exported by dedupe_core_against_infrastructure_core()
+    above while a per-property import of the same name already exists, ends
+    up imported more than once. `--formatters ruff-format` (passed to every
+    codegen invocation) only reformats; it does not remove or merge imports,
+    which is a `ruff check --fix` job, not a `ruff format` one. Restricted to
+    these two codes rather than every default-enabled rule so this never
+    silently starts rewriting something else `ruff check` gains later.
+    """
+    subprocess.run(
+        ["ruff", "check", "--fix", "--select", "F401,F811", str(path)],
+        check=True,
+        capture_output=True,
+    )
+
+
 def main() -> None:
     if dedupe_core_against_infrastructure_core():
         print(f"  De-duplicated: {CORE_MODELS} against {INFRASTRUCTURE_CORE_MODELS}")
@@ -307,6 +335,8 @@ def main() -> None:
             if changed:
                 models_file.write_text(content)
                 print(f"  Fixed ({fix.__name__}): {models_file}")
+
+        _ruff_fix_imports(models_file)
 
         for warn in WARNINGS:
             warnings += warn(content, models_file)

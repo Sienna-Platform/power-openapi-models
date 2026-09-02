@@ -5,7 +5,6 @@ from __future__ import annotations
 from power_openapi_models.core.models import UnitSystem
 from pydantic import AwareDatetime, BaseModel, Field, RootModel, conint
 from enum import Enum
-from power_openapi_models.core.models import UnitSystem
 from typing import Literal
 
 
