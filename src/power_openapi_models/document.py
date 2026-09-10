@@ -15,12 +15,14 @@ statically.
 
 The other five association arrays (`supplemental_attribute_associations`,
 `plant_associations`, `combined_cycle_associations`, `service_associations`,
-`trading_hub_associations`) and `time_series_associations` all have generated classes
-(`infrastructure_core.models.SupplementalAttributeAssociation`, `operations.models.{PlantAssociation,
-CombinedCycleAssociation,ServiceAssociation,TradingHubAssociation}`,
-`timeseries.models.TimeSeriesAssociation`), so those fields are typed with them — imported
-defensively, so this module still degrades to `list[dict]` rather than failing to import
-if a future regeneration ever drops one of these again.
+`trading_hub_associations`) and `time_series_associations` all have generated
+classes (`infrastructure_core.models.SupplementalAttributeAssociation`,
+`operations.models.{PlantAssociation, CombinedCycleAssociation,
+ServiceAssociation, TradingHubAssociation}`,
+`timeseries.models.TimeSeriesAssociation`), so those fields are typed with
+them — imported defensively, so this module still degrades to `list[dict]`
+rather than failing to import if a future regeneration ever drops one of
+these again.
 """
 
 from __future__ import annotations
@@ -45,9 +47,7 @@ try:
         TradingHubAssociation,
     )
 except ImportError:
-    CombinedCycleAssociation = PlantAssociation = ServiceAssociation = (
-        TradingHubAssociation
-    ) = dict
+    CombinedCycleAssociation = PlantAssociation = ServiceAssociation = TradingHubAssociation = dict
 
 try:
     from power_openapi_models.timeseries.models import TimeSeriesAssociation
@@ -67,9 +67,7 @@ class SystemDocument(BaseModel):
     description: str | None = Field(
         None, description="Optional free-text description of the system."
     )
-    frequency: float | None = Field(
-        None, gt=0, description="Nominal system frequency. Units: Hz."
-    )
+    frequency: float | None = Field(None, gt=0, description="Nominal system frequency. Units: Hz.")
     components: dict[str, list[dict]] = Field(
         ...,
         description="Components grouped by type name, e.g. "
@@ -129,14 +127,10 @@ def read_document(path: str | Path) -> SystemDocument:
     return SystemDocument.model_validate_json(Path(path).read_text())
 
 
-def write_document(
-    doc: SystemDocument, path: str | Path, *, indent: int | None = 2
-) -> None:
+def write_document(doc: SystemDocument, path: str | Path, *, indent: int | None = 2) -> None:
     """Write `doc` to `path` as JSON, with `components` keys sorted for
     deterministic output — the schema requires the same.
     """
     data = doc.model_dump(mode="json")
-    data["components"] = {
-        key: data["components"][key] for key in sorted(data["components"])
-    }
+    data["components"] = {key: data["components"][key] for key in sorted(data["components"])}
     Path(path).write_text(json.dumps(data, indent=indent))

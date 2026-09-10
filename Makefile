@@ -13,7 +13,7 @@ CODEGEN := datamodel-codegen --input-file-type openapi \
 	--disable-timestamp
 CORE_REF := --external-ref-mapping "Core/common.json=power_openapi_models.core.models"
 
-.PHONY: generate generate-docker clean validate
+.PHONY: generate generate-docker clean validate lint typecheck check
 
 generate:
 	@# infrastructure_core is its own subpackage, generated straight from
@@ -66,7 +66,11 @@ generate:
 	  --output $(PKG_DIR)/timeseries/models.py
 
 	@echo "==> Post-processing"
-	python scripts/postprocess.py
+	python3 scripts/postprocess.py
+
+	@# Keep the packaged copy of .schema-version in sync so
+	@# power_openapi_models.__schema_version__ never goes stale after a regen.
+	cp .schema-version $(PKG_DIR)/_schema_version.txt
 
 generate-docker:
 	docker run --rm \
@@ -78,5 +82,20 @@ clean:
 	rm -f $(PKG_DIR)/*/models.py
 
 validate:
-	python -c "import power_openapi_models; print('Import OK')"
+	python3 -c "import power_openapi_models; print('Import OK')"
 	pytest tests/ -v
+
+lint:
+	ruff check .
+	ruff format --check .
+
+typecheck:
+	@# scripts/check_typecompleteness.py runs `pyright --verifytypes` itself
+	@# (with PYTHONPATH=src -- an editable install alone does not let
+	@# --verifytypes find a src/-layout package) and enforces a completeness
+	@# floor explicitly, rather than trusting pyright's raw exit code: that
+	@# exit code reflects whether any diagnostic was printed, not whether the
+	@# score cleared a bar, so it is not on its own an honest gate.
+	python3 scripts/check_typecompleteness.py
+
+check: lint typecheck validate

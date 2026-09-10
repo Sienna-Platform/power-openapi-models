@@ -1,29 +1,78 @@
 [build-system]
-requires = ["setuptools>=68.0", "setuptools-scm>=8.0"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "power-openapi-models"
 version = "0.1.0"
-description = "Auto-generated Python models from Power System JSON Schemas"
-license = { file = "LICENSE" }
+description = "Typed Python models for the Sienna power system data format"
+readme = "README.md"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
+authors = [{ name = "Sienna Platform" }]
+keywords = [
+    "power-systems",
+    "energy",
+    "openapi",
+    "pydantic",
+    "sienna",
+    "time-series",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
 dependencies = [
     "pydantic>=2.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/Sienna-Platform/power-openapi-models"
+Repository = "https://github.com/Sienna-Platform/power-openapi-models"
+Issues = "https://github.com/Sienna-Platform/power-openapi-models/issues"
+Changelog = "https://github.com/Sienna-Platform/power-openapi-models/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
 dev = [
-    "ruff",
-    "pytest",
+    "ruff>=0.6",
+    "pytest>=8",
+    "pyright>=1.1.380",
     "datamodel-code-generator",
+    "build",
+    "twine",
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+power_openapi_models = ["py.typed", "_schema_version.txt"]
+
+[tool.ruff]
+line-length = 100
+# models.py files are generated; their formatting is the generator's business.
+extend-exclude = ["src/power_openapi_models/*/models.py"]
+
 [tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W"]
 # E741 (ambiguous variable name): the generated models are field-for-field with
 # SiennaSchemas' power-system quantities, which use standard electrical-engineering
 # single-letter names (e.g. `l` for inductance) -- not something to rename away from.
 ignore = ["E741"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+
+[tool.pyright]
+include = ["src"]
+extraPaths = ["src"]
+pythonVersion = "3.10"

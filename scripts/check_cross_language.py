@@ -105,9 +105,7 @@ def parse_julia_model(text):
         # while a $ref-typed field is emitted untyped, with the type in a
         # trailing comment, so it must be read from there:
         #     voltage_limits = nothing # spec type: Union{ Nothing, MinMax }
-        m = re.match(
-            r"\s*(\w+)::Union\{Nothing,\s*(.+?)\}\s*(?:=\s*(.+?))?\s*$", line
-        )
+        m = re.match(r"\s*(\w+)::Union\{Nothing,\s*(.+?)\}\s*(?:=\s*(.+?))?\s*$", line)
         if m is not None:
             field, jtype, default = m.group(1), m.group(2).strip(), m.group(3)
         else:
@@ -124,20 +122,14 @@ def parse_julia_model(text):
                 default = None
         fields[field] = {"type": jtype, "default": default}
 
-    required = set(
-        re.findall(r"o\.(\w+) === nothing && \(return false\)", text)
-    )
+    required = set(re.findall(r"o\.(\w+) === nothing && \(return false\)", text))
     enums = {}
-    for m in re.finditer(
-        r'validate_param\(name, "\w+", :enum, val, \[(.*?)\]\)', text, re.DOTALL
-    ):
+    for m in re.finditer(r'validate_param\(name, "\w+", :enum, val, \[(.*?)\]\)', text, re.DOTALL):
         # Reuse the same expression parser as defaults: an allowed-value list
         # is either quoted strings (`["MARKET_BID"]`) or bare integers
         # (`[0, 1, 2]`), and a naive quoted-string extraction silently drops
         # the latter instead of raising.
-        values = [
-            parse_julia_expr(v) for v in _split_top_level(m.group(1), ",") if v.strip()
-        ]
+        values = [parse_julia_expr(v) for v in _split_top_level(m.group(1), ",") if v.strip()]
         # The enclosing `if name === Symbol("field")` names the field.
         prefix = text[: m.start()]
         field = re.findall(r'if name === Symbol\("(\w+)"\)', prefix)
@@ -463,9 +455,7 @@ def compare(julia, python):
     only_julia = sorted(set(julia) - set(python))
     only_python = sorted(set(python) - set(julia))
     for name in only_julia:
-        problems.append(
-            ((name, None), f"{name}: present in Julia, absent in Python")
-        )
+        problems.append(((name, None), f"{name}: present in Julia, absent in Python"))
     for name in only_python:
         # Pydantic exposes helper models (RootModel wrappers) Julia has no struct
         # for; report as a note so real gaps stay visible.
@@ -475,22 +465,14 @@ def compare(julia, python):
         j, p = julia[name], python[name]
         jf, pf = set(j["fields"]), set(p["fields"])
         for field in sorted(jf - pf):
-            problems.append(
-                ((name, field), f"{name}.{field}: in Julia, missing from Python")
-            )
+            problems.append(((name, field), f"{name}.{field}: in Julia, missing from Python"))
         for field in sorted(pf - jf):
-            problems.append(
-                ((name, field), f"{name}.{field}: in Python, missing from Julia")
-            )
+            problems.append(((name, field), f"{name}.{field}: in Python, missing from Julia"))
 
         for field in sorted(j["required"] - p["required"]):
-            problems.append(
-                ((name, field), f"{name}.{field}: required only in Julia")
-            )
+            problems.append(((name, field), f"{name}.{field}: required only in Julia"))
         for field in sorted(p["required"] - j["required"]):
-            problems.append(
-                ((name, field), f"{name}.{field}: required only in Python")
-            )
+            problems.append(((name, field), f"{name}.{field}: required only in Python"))
 
         for field in sorted(jf & pf):
             jkind = JULIA_KIND.get(j["fields"][field]["type"])

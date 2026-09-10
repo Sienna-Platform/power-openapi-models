@@ -1,0 +1,48 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        include:
+          - os: macos-latest
+            python-version: "3.12"
+          - os: windows-latest
+            python-version: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python3 -m pip install --upgrade pip
+      - run: python3 -m pip install -e ".[dev]"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: pytest tests/ -q
+      # Makes the py.typed marker honest. A marker over an incomplete
+      # annotation surface tells every downstream type checker something
+      # false. scripts/check_typecompleteness.py runs pyright --verifytypes
+      # itself (with PYTHONPATH=src -- an editable install alone does not
+      # let --verifytypes find a src/-layout package) and enforces a
+      # completeness floor explicitly: pyright's raw exit code reflects
+      # whether it printed any diagnostic, not whether the score cleared a
+      # bar, so it is not on its own an honest gate.
+      - run: python3 scripts/check_typecompleteness.py
+      - run: python3 -m build
+      - run: python3 -m twine check dist/*
