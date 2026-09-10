@@ -76,7 +76,7 @@ def _diff(before, after, path=""):
         if len(before) != len(after):
             out.append(f"length {path}: {len(before)} -> {len(after)}")
         else:
-            for i, (b, a) in enumerate(zip(before, after)):
+            for i, (b, a) in enumerate(zip(before, after, strict=True)):
                 out.extend(_diff(b, a, f"{path}[{i}]"))
     elif before != after:
         out.append(f"changed {path}: {before!r} -> {after!r}")
@@ -116,17 +116,14 @@ def test_roundtrip_no_field_drift(fixture_doc):
     for type_name, entries in fixture_doc["components"].items():
         cls = registry[type_name]
         rebuilt[type_name] = [
-            cls.model_validate(entry).model_dump(mode="json", by_alias=True)
-            for entry in entries
+            cls.model_validate(entry).model_dump(mode="json", by_alias=True) for entry in entries
         ]
     diffs = _diff(_strip_none(fixture_doc["components"]), _strip_none(rebuilt))
     assert not diffs, "\n".join(diffs[:20])
 
 
 def test_natural_units_spot_checks():
-    doc = json.loads(
-        (FIXTURES_DIR / "case14_operations.NATURAL_UNITS.json").read_text()
-    )
+    doc = json.loads((FIXTURES_DIR / "case14_operations.NATURAL_UNITS.json").read_text())
     bus = doc["components"]["ACBus"][0]
     assert bus["base_voltage"] == 138.0
     assert "power_units" not in bus  # no power-family field on ACBus
@@ -136,9 +133,7 @@ def test_natural_units_spot_checks():
 
 
 def test_component_base_spot_checks():
-    doc = json.loads(
-        (FIXTURES_DIR / "case14_operations.COMPONENT_BASE.json").read_text()
-    )
+    doc = json.loads((FIXTURES_DIR / "case14_operations.COMPONENT_BASE.json").read_text())
     bus = doc["components"]["ACBus"][0]
     assert bus["base_voltage"] == 138.0
     assert "power_units" not in bus  # no power-family field on ACBus
@@ -157,12 +152,8 @@ def test_component_base_actually_converts_from_natural_units():
     relationship directly, across every line, and that at least one line actually
     differs numerically.
     """
-    natural = json.loads(
-        (FIXTURES_DIR / "case14_operations.NATURAL_UNITS.json").read_text()
-    )
-    component = json.loads(
-        (FIXTURES_DIR / "case14_operations.COMPONENT_BASE.json").read_text()
-    )
+    natural = json.loads((FIXTURES_DIR / "case14_operations.NATURAL_UNITS.json").read_text())
+    component = json.loads((FIXTURES_DIR / "case14_operations.COMPONENT_BASE.json").read_text())
     natural_lines = {c["id"]: c for c in natural["components"]["Line"]}
     component_lines = {c["id"]: c for c in component["components"]["Line"]}
     assert natural_lines.keys() == component_lines.keys()

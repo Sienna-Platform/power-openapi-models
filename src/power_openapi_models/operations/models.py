@@ -3,12 +3,9 @@
 
 from __future__ import annotations
 from power_openapi_models.core.models import (
-    ACBusType,
     AdmittanceUnitBasis,
     ComplexNumber,
     CostCurve,
-    EmissionBasis,
-    EnergyUnit,
     EnergyUnitBasis,
     FromTo,
     FromToToFrom,
@@ -19,14 +16,12 @@ from power_openapi_models.core.models import (
     ImportExportCost,
     ImportExportTimeSeriesCost,
     InOut,
-    InputOutputCurve,
     LoadCost,
+    LossCurve,
     MarketBidCost,
     MarketBidTimeSeriesCost,
-    MassUnit,
     MinMax,
     PiecewiseLinearData,
-    PollutantType,
     PrimeMovers,
     RenewableGenerationCost,
     ShuntAdmittanceUnitBasis,
@@ -37,45 +32,11 @@ from power_openapi_models.core.models import (
     ThermalFuels,
     ThermalGenerationCost,
     TurbinePump,
-    TwoTerminalLoss,
     UnitSystem,
     UpDown,
-    ValueCurve,
 )
 from pydantic import BaseModel, Field
 from enum import Enum
-
-
-class ACBus(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    number: int = Field(
-        ..., description="A unique bus identification number (positive integer)."
-    )
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations. This field should not be confused with the ISOLATED enum value.",
-    )
-    bustype: ACBusType | None = Field(
-        None,
-        description="Used to describe the connectivity and behavior of this bus. in psy5 a required param with an option to be nothing",
-    )
-    angle: float | None = Field(None, description="Angle of the bus. Units: rad.")
-    magnitude: float | None = Field(
-        None, description="Voltage as a multiple of `base_voltage`. Units: pu."
-    )
-    voltage_limits: MinMax | None = Field(
-        None,
-        description="Limits on the voltage variation as multiples of `base_voltage`. Units: pu.",
-    )
-    base_voltage: float | None = Field(None, description="The base voltage. Units: kV.")
-    area: int | None = Field(None, description="ID of the area containing the bus.")
-    load_zone: int | None = Field(
-        None, description="ID of the load zone containing the bus."
-    )
 
 
 class AGC(BaseModel):
@@ -95,40 +56,6 @@ class AGC(BaseModel):
     delta_t: float = Field(..., description="PID Discretization period. Units: s.")
     area: int | None = Field(None, description="ID of the area controlled by the AGC.")
     initial_ace: float | None = Field(0.0, description="Initial condition for ACE.")
-
-
-class Arc(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    from_id: int = Field(..., description="ID of the initial bus.")
-    to_id: int = Field(..., description="ID of the terminal bus.")
-
-
-class Area(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    peak_active_power: float | None = Field(
-        0.0,
-        description="Peak active power in the area. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    peak_reactive_power: float | None = Field(
-        0.0,
-        description="Peak reactive power in the area. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    load_response: float | None = Field(
-        0.0,
-        description="Load-frequency damping parameter modeling how much the load in the area changes due to changes in frequency. Units: MW/Hz.",
-    )
-    base_power: float = Field(
-        ...,
-        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
-    )
-    power_units: UnitSystem = Field(
-        ...,
-        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
-    )
 
 
 class AreaInterchange(BaseModel):
@@ -196,8 +123,7 @@ class CombinedCycleAssociation(BaseModel):
         description="Role of the entity within the combined cycle block (combustion turbine input or combustion-augmented steam output)",
     )
     hrsg_index: int = Field(
-        ...,
-        description="HRSG (heat recovery steam generator) index this unit is associated with",
+        ..., description="HRSG (heat recovery steam generator) index this unit is associated with"
     )
 
 
@@ -213,37 +139,6 @@ class CombinedCycleFractional(BaseModel):
     id: int
     name: str = Field(..., description="Name of the combined cycle fractional plant")
     configuration: CombinedCycleConfiguration
-
-
-class DCBus(BaseModel):
-    area: int | None = Field(None, description="ID of the area containing the DC bus.")
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    base_voltage: float | None = Field(
-        None,
-        description="The base voltage. in psy5 a required param with an option to be nothing Units: kV.",
-    )
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    load_zone: int | None = Field(
-        None, description="ID of the load zone containing the DC bus."
-    )
-    magnitude: float | None = Field(
-        None,
-        description="Voltage as a multiple of `base_voltage`. in psy5 a required param with an option to be nothing Units: pu.",
-    )
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    number: float = Field(
-        ..., description="A unique bus identification number (positive integer)."
-    )
-    voltage_limits: MinMax | None = Field(
-        None,
-        description="Limits on the voltage variation as multiples of `base_voltage`. in psy5 a required param with an option to be nothing Units: pu.",
-    )
 
 
 class DiscreteBranchType(Enum):
@@ -280,9 +175,7 @@ class DiscreteControlledACBranch(BaseModel):
         ...,
         description="Initial condition of reactive power flow on the line. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
-    arc: int = Field(
-        ..., description="An `Arc` defining this line `from` a bus `to` another bus."
-    )
+    arc: int = Field(..., description="An `Arc` defining this line `from` a bus `to` another bus.")
     base_power: float = Field(
         ...,
         description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
@@ -306,45 +199,10 @@ class DiscreteControlledACBranch(BaseModel):
     discrete_branch_type: DiscreteBranchType | None = Field(
         "OTHER", description="Type of discrete control."
     )
-    branch_status: BranchStatus | None = Field(
-        "CLOSED", description="Open or Close status."
-    )
+    branch_status: BranchStatus | None = Field("CLOSED", description="Open or Close status.")
     normal_branch_status: NormalBranchStatus | None = Field(
         "CLOSED", description="Normal (as-designed) open or close status of the device."
     )
-
-
-class EmissionsData(BaseModel):
-    id: int
-    name: str = Field(..., description="Identifier for this emissions attribute")
-    pollutant: PollutantType = Field(
-        ...,
-        description="Pollutant identity (CO2, CO2E, CH4, N2O, NOX, SO2, PM25, PM10, HG, HAP, CUSTOM)",
-    )
-    emission_rate: ValueCurve = Field(
-        ...,
-        description="Emission rate as a ValueCurve, typically an IncrementalCurve with LinearFunctionData (constant or linearly varying rate) or PiecewiseStepData (piecewise step rates). Rates must be non-negative and finite.",
-    )
-    basis: EmissionBasis = Field(
-        ...,
-        description="FUEL_INPUT (mass per unit of heat input) or POWER_OUTPUT (mass per unit of electrical output)",
-    )
-    start_up_adder: float | None = Field(
-        0.0,
-        description="Per-start emission pulse, in mass_unit. Must be finite and non-negative. Units: per mass_unit — KG: kg, LB: lb, SHORT_TON: ston, METRIC_TON: t .",
-    )
-    mass_unit: MassUnit | None = Field(
-        "KG", description="Mass unit of the emission rate numerator"
-    )
-    energy_unit: EnergyUnit = Field(
-        ...,
-        description="Energy unit for the rate denominator. Must be MMBTU or GJ when basis is FUEL_INPUT, and MWH when basis is POWER_OUTPUT.",
-    )
-    gwp: float | None = Field(
-        1.0,
-        description="GWP100 multiplier for CO2-equivalent reporting. Must be finite and non-negative. Units: 1.",
-    )
-    available: bool | None = Field(True, description="Whether this attribute is active")
 
 
 class EnergyReservoirStorage(BaseModel):
@@ -357,9 +215,7 @@ class EnergyReservoirStorage(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     prime_mover_type: PrimeMovers = Field(
         ..., description="Prime mover technology according to EIA 923."
     )
@@ -418,15 +274,8 @@ class EnergyReservoirStorage(BaseModel):
         description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
     )
     operation_cost: (
-        StorageCost
-        | MarketBidCost
-        | MarketBidTimeSeriesCost
-        | ImportExportTimeSeriesCost
-    ) = Field(
-        ...,
-        description="Operating cost of storage. or MarketBidCost",
-        discriminator="cost_type",
-    )
+        StorageCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
+    ) = Field(..., description="Operating cost of storage. or MarketBidCost")
     conversion_factor: float | None = Field(
         1.0,
         description="Conversion factor of `storage_capacity` to MWh, if different than 1.0. For example, X MWh/liter hydrogen. Units: 1.",
@@ -461,15 +310,15 @@ class LoadConformity(Enum):
     UNDEFINED = "UNDEFINED"
 
 
-class ControlMode(Enum):
-    OOS = "OOS"
-    NML = "NML"
-    BYP = "BYP"
-
-
 class ShuntControlType(Enum):
     SVC = "SVC"
     STATCOM = "STATCOM"
+
+
+class FACTSControlDeviceControlMode(Enum):
+    OOS = "OOS"
+    NML = "NML"
+    BYP = "BYP"
 
 
 class VoltageUnitBasis(Enum):
@@ -487,9 +336,7 @@ class FixedAdmittance(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     admittance_units: ShuntAdmittanceUnitBasis | None = Field(
         "COMPONENT_MVAR",
         description="Unit basis for the shunt admittance Y. COMPONENT_MVAR is PSS/E RAW native (Mvar/MW at unity voltage).",
@@ -503,8 +350,7 @@ class FixedAdmittance(BaseModel):
         description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
     )
     dynamic_injector: int | None = Field(
-        None,
-        description="ID of the corresponding dynamic injection model for admittance, if any.",
+        None, description="ID of the corresponding dynamic injection model for admittance, if any."
     )
 
 
@@ -514,6 +360,10 @@ class FixedForcedOutage(BaseModel):
     monitored_components: list[int] | None = Field(
         [],
         description="IDs of devices whose post-contingency state should be modeled when this outage occurs. Empty by default; semantics of an empty list are decided by the downstream consumer.",
+    )
+    identifier: str | None = Field(
+        None,
+        description="Optional user-supplied identifier for the outage, such as a name or a block id. Null when not set.",
     )
 
 
@@ -545,9 +395,7 @@ class GenericArcImpedance(BaseModel):
         ...,
         description="Maximum allowable flow on the generic impedance. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
-    arc: int = Field(
-        ..., description="An `Arc` defining this line `from` a bus `to` another bus."
-    )
+    arc: int = Field(..., description="An `Arc` defining this line `from` a bus `to` another bus.")
     base_power: float = Field(
         ...,
         description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
@@ -584,86 +432,17 @@ class GeometricDistributionForcedOutage(BaseModel):
         [],
         description="IDs of devices whose post-contingency state should be modeled when this outage occurs. Empty by default; semantics of an empty list are decided by the downstream consumer.",
     )
+    identifier: str | None = Field(
+        None,
+        description="Optional user-supplied identifier for the outage, such as a name or a block id. Null when not set.",
+    )
 
 
-class HybridSystem(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    status: bool = Field(
-        ...,
-        description="Initial commitment condition at the start of a simulation (`true` = on or `false` = off).",
-    )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
-    active_power: float = Field(
-        ...,
-        description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    reactive_power: float = Field(
-        ...,
-        description="Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    base_power: float = Field(
-        ...,
-        description="Base power of the unit for per unitization, which is commonly the same as `interconnection_rating`. Units: MVA.",
-    )
-    power_units: UnitSystem = Field(
-        ...,
-        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
-    )
-    operation_cost: MarketBidCost = Field(
-        ..., description="`MarketBidCost` of operating the hybrid system."
-    )
-    thermal_unit: int | None = Field(
-        None,
-        description="ID of a thermal generator with supertype `ThermalGen`, if any.",
-    )
-    electric_load: int | None = Field(
-        None, description="ID of a load with supertype `ElectricLoad`, if any."
-    )
-    storage: int | None = Field(
-        None,
-        description="ID of an energy storage system with supertype `Storage`, if any.",
-    )
-    renewable_unit: int | None = Field(
-        None,
-        description="ID of a renewable generator with supertype `RenewableGen`, if any.",
-    )
-    interconnection_impedance: ComplexNumber | None = Field(
-        None,
-        description="Impedance between the hybrid system and the grid interconnection. Per-unit on `base_power`. Units: pu.",
-    )
-    interconnection_rating: float | None = Field(
-        None,
-        description="Maximum rating of the hybrid system's interconnection with the transmission network. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-    )
-    input_active_power_limits: MinMax | None = Field(
-        None,
-        description="Minimum and maximum stable input active power levels. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    output_active_power_limits: MinMax | None = Field(
-        None,
-        description="Minimum and maximum stable output active power levels. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    reactive_power_limits: MinMax | None = Field(
-        None,
-        description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    interconnection_efficiency: InOut | None = Field(
-        None,
-        description="Efficiency [0, 1.0] at the grid interconnection to model losses `in` and `out` of the common DC-side conversion. Set to `null` if not applicable.",
-    )
-    dynamic_injector: int | None = Field(
-        None, description="ID of the corresponding dynamic injection device, if any."
-    )
+class OperationalStates(Enum):
+    OFFLINE = "OFFLINE"
+    ONLINE = "ONLINE"
+    STARTUP = "STARTUP"
+    SHUTDOWN = "SHUTDOWN"
 
 
 class HydroDispatch(BaseModel):
@@ -676,9 +455,7 @@ class HydroDispatch(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     active_power: float = Field(
         ...,
         description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -716,23 +493,18 @@ class HydroDispatch(BaseModel):
         ...,
         description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
     )
-    status: bool | None = Field(
-        False,
-        description="Initial commitment condition at the start of a simulation (`true` = on or `false` = off).",
+    status: OperationalStates | None = Field(
+        "OFFLINE", description="Operating state of the unit at the start of a simulation."
     )
     time_at_status: float | None = Field(
         600000.0,
-        description="Time the generator has been on or off, as indicated by `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
+        description="Time the generator has been in its current `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
     )
     operation_cost: (
-        HydroGenerationCost
-        | MarketBidCost
-        | MarketBidTimeSeriesCost
-        | ImportExportTimeSeriesCost
+        HydroGenerationCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
     ) = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
-        discriminator="cost_type",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -744,7 +516,7 @@ class HydroPowerPlant(BaseModel):
     name: str = Field(..., description="Name of the hydro power plant")
 
 
-class Status(Enum):
+class OperatingMode(Enum):
     PUMP = "PUMP"
     GEN = "GEN"
     OFF = "OFF"
@@ -800,9 +572,7 @@ class HydroReservoir(BaseModel):
     upstream_turbines: list[int] | None = None
     downstream_turbines: list[int] | None = None
     upstream_reservoirs: list[int] | None = None
-    operation_cost: (
-        HydroReservoirCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
-    ) = Field(..., discriminator="cost_type")
+    operation_cost: HydroReservoirCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
     evaporative_loss: float | None = Field(
         0.0,
         description="Standing loss from evaporation as a fraction of the reservoir's stored volume/energy lost per hour. Units: 1.",
@@ -833,9 +603,7 @@ class HydroTurbine(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     active_power: float = Field(
         ...,
         description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -863,15 +631,21 @@ class HydroTurbine(BaseModel):
         ...,
         description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
     )
+    status: OperationalStates | None = Field(
+        "OFFLINE", description="Operating state of the unit at the start of a simulation."
+    )
+    time_at_status: float | None = Field(
+        600000.0,
+        description="Time the generator has been in its current `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
+    )
+    commitment_mode: CommitmentModes | None = Field(
+        "COMMITTED", description="Commitment mode of the unit."
+    )
     operation_cost: (
-        HydroGenerationCost
-        | MarketBidCost
-        | MarketBidTimeSeriesCost
-        | ImportExportTimeSeriesCost
+        HydroGenerationCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
     ) = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
-        discriminator="cost_type",
     )
     powerhouse_elevation: float | None = Field(
         0.0,
@@ -885,16 +659,12 @@ class HydroTurbine(BaseModel):
         None, description="Minimum up and minimum down time limits. Units: min."
     )
     outflow_limits: MinMax | None = Field(
-        None,
-        description="Turbine outflow limits. Set to `null` if not applicable. Units: m3/s.",
+        None, description="Turbine outflow limits. Set to `null` if not applicable. Units: m3/s."
     )
     efficiency: float | None = Field(1.0, description="Turbine efficiency [0, 1.0].")
-    turbine_type: TurbineType | None = Field(
-        "UNKNOWN", description="Type of the turbine."
-    )
+    turbine_type: TurbineType | None = Field("UNKNOWN", description="Type of the turbine.")
     conversion_factor: float | None = Field(
-        1.0,
-        description="Conversion factor from flow/volume to energy: m^3 -> p.u-hr. Units: 1.",
+        1.0, description="Conversion factor from flow/volume to energy: m^3 -> p.u-hr. Units: 1."
     )
     prime_mover_type: PrimeMovers | None = Field(
         "HY", description="Prime mover technology according to EIA 923."
@@ -949,9 +719,7 @@ class InterruptiblePowerLoad(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     active_power: float = Field(
         ...,
         description="Initial steady state active power demand. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -977,11 +745,7 @@ class InterruptiblePowerLoad(BaseModel):
     )
     operation_cost: (
         LoadCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
-    ) = Field(
-        ...,
-        description="Operational cost of interrupting load. or MarketBidCost",
-        discriminator="cost_type",
-    )
+    ) = Field(..., description="Operational cost of interrupting load. or MarketBidCost")
     conformity: LoadConformity | None = Field(
         "UNDEFINED",
         description="Indicates whether the specified load is conforming or non-conforming.",
@@ -1001,9 +765,7 @@ class InterruptibleStandardLoad(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     base_power: float = Field(
         ..., description="Base power of the load for per unitization. Units: MVA."
     )
@@ -1013,11 +775,7 @@ class InterruptibleStandardLoad(BaseModel):
     )
     operation_cost: (
         LoadCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
-    ) = Field(
-        ...,
-        description="Operational cost of interrupting load. or MarketBidCost",
-        discriminator="cost_type",
-    )
+    ) = Field(..., description="Operational cost of interrupting load. or MarketBidCost")
     conformity: LoadConformity | None = Field(
         "UNDEFINED",
         description="Indicates whether the specified load is conforming or non-conforming.",
@@ -1093,9 +851,7 @@ class Line(BaseModel):
         ...,
         description="Initial condition of reactive power flow on the line. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
-    arc: int = Field(
-        ..., description="An `Arc` defining this line `from` a bus `to` another bus."
-    )
+    arc: int = Field(..., description="An `Arc` defining this line `from` a bus `to` another bus.")
     r: float = Field(
         ...,
         description="Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
@@ -1132,36 +888,10 @@ class Line(BaseModel):
         None,
         description="Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
     )
-    angle_limits: MinMax = Field(
-        ..., description="Minimum and maximum angle limits. Units: rad."
-    )
+    angle_limits: MinMax = Field(..., description="Minimum and maximum angle limits. Units: rad.")
     g: FromTo | None = Field(
         {"from": 0.0, "to": 0.0},
         description="Shunt conductance, specified both on the `from` and `to` ends of the line. These are commonly modeled with the same value. Units: per parameter_units — NATURAL_UNITS: S, COMPONENT_BASE: pu .",
-    )
-
-
-class LoadZone(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    peak_active_power: float = Field(
-        ...,
-        description="Peak active power in the zone. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    peak_reactive_power: float = Field(
-        ...,
-        description="Peak reactive power in the zone. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    base_power: float = Field(
-        ...,
-        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
-    )
-    power_units: UnitSystem = Field(
-        ...,
-        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
     )
 
 
@@ -1183,9 +913,7 @@ class MonitoredLine(BaseModel):
         ...,
         description="Initial condition of reactive power flow on the line. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
-    arc: int = Field(
-        ..., description="An `Arc` defining this line `from` a bus `to` another bus."
-    )
+    arc: int = Field(..., description="An `Arc` defining this line `from` a bus `to` another bus.")
     r: float = Field(
         ...,
         description="Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
@@ -1226,9 +954,7 @@ class MonitoredLine(BaseModel):
         None,
         description="Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
     )
-    angle_limits: MinMax = Field(
-        ..., description="Minimum and maximum angle limits. Units: rad."
-    )
+    angle_limits: MinMax = Field(..., description="Minimum and maximum angle limits. Units: rad.")
     g: FromTo | None = Field(
         {"from": 0.0, "to": 0.0},
         description="Shunt conductance, specified both on the `from` and `to` ends of the line. These are commonly modeled with the same value. Units: per parameter_units — NATURAL_UNITS: S, COMPONENT_BASE: pu .",
@@ -1251,9 +977,7 @@ class MotorLoad(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     active_power: float = Field(
         ...,
         description="Initial steady-state active power demand. A positive value indicates power consumption. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -1281,9 +1005,7 @@ class MotorLoad(BaseModel):
         None,
         description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
-    motor_technology: MotorTechnology | None = Field(
-        "UNDETERMINED", description="AC Motor type."
-    )
+    motor_technology: MotorTechnology | None = Field("UNDETERMINED", description="AC Motor type.")
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
     )
@@ -1300,12 +1022,9 @@ class OfflineReserve(BaseModel):
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
     time_frame: float = Field(
-        ...,
-        description="The saturation time frame to provide reserve contribution. Units: min.",
+        ..., description="The saturation time frame to provide reserve contribution. Units: min."
     )
-    requirement: float | None = Field(
-        0.0, description="The value of required reserves. Units: MW."
-    )
+    requirement: float | None = Field(0.0, description="The value of required reserves. Units: MW.")
     variable: CostCurve | None = Field(
         None,
         description="Operating reserve demand curve, either static or time-series-backed. Time series values are carried via `time_series_associations` in the sidecar, never inline. Omit when the reserve has no demand curve.",
@@ -1339,12 +1058,9 @@ class OnlineReserve(BaseModel):
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
     time_frame: float = Field(
-        ...,
-        description="The saturation time frame to provide reserve contribution. Units: min.",
+        ..., description="The saturation time frame to provide reserve contribution. Units: min."
     )
-    requirement: float | None = Field(
-        0.0, description="The value of required reserves. Units: MW."
-    )
+    requirement: float | None = Field(0.0, description="The value of required reserves. Units: MW.")
     variable: CostCurve | None = Field(
         None,
         description="Operating reserve demand curve, either static or time-series-backed. Time series values are carried via `time_series_associations` in the sidecar, never inline. Omit when the reserve has no demand curve.",
@@ -1366,8 +1082,7 @@ class OnlineReserve(BaseModel):
         description="Fraction of service procurement that is assumed to be actually deployed. Most commonly, this is assumed to be either 0.0 or 1.0.",
     )
     reserve_direction: ReserveDirection = Field(
-        ...,
-        description="Whether the reserve is an upward, downward, or symmetric reserve product.",
+        ..., description="Whether the reserve is an upward, downward, or symmetric reserve product."
     )
 
 
@@ -1378,12 +1093,14 @@ class PlannedOutage(BaseModel):
         [],
         description="IDs of devices whose post-contingency state should be modeled when this outage occurs. Empty by default; semantics of an empty list are decided by the downstream consumer.",
     )
+    identifier: str | None = Field(
+        None,
+        description="Optional user-supplied identifier for the outage, such as a name or a block id. Null when not set.",
+    )
 
 
 class PlantAssociation(BaseModel):
-    plant_id: int = Field(
-        ..., description="ID of the parent plant supplemental attribute"
-    )
+    plant_id: int = Field(..., description="ID of the parent plant supplemental attribute")
     entity_id: int = Field(
         ..., description="ID of the generating unit (entity) participating in the plant"
     )
@@ -1411,13 +1128,10 @@ class PointToPointBid(BaseModel):
         ...,
         description="ID of the sink terminal (injection side), resolved through the entity registry: a topology record or a trading hub; must differ from `from_id`.",
     )
-    max_active_power: float = Field(
-        ..., description="MW envelope for the bid. Units: MW."
-    )
+    max_active_power: float = Field(..., description="MW envelope for the bid. Units: MW.")
     spread_bid: MarketBidCost | MarketBidTimeSeriesCost = Field(
         ...,
         description="Willingness-to-pay curve on the to-minus-from price spread, as an offer-curve operating cost (incremental side only).",
-        discriminator="cost_type",
     )
     price_limits: MinMax = Field(
         ..., description="Tariff bid-price bounds on the spread. Units: USD/MWh."
@@ -1438,9 +1152,7 @@ class PowerLoad(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     active_power: float = Field(
         ...,
         description="Initial steady-state active power demand. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -1483,9 +1195,7 @@ class RenewableDispatch(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     active_power: float = Field(
         ...,
         description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -1514,11 +1224,7 @@ class RenewableDispatch(BaseModel):
         | MarketBidCost
         | MarketBidTimeSeriesCost
         | ImportExportTimeSeriesCost
-    ) = Field(
-        ...,
-        description="Operating cost of generation. or MarketBidCost",
-        discriminator="cost_type",
-    )
+    ) = Field(..., description="Operating cost of generation. or MarketBidCost")
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
     )
@@ -1541,9 +1247,7 @@ class RenewableNonDispatch(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     active_power: float = Field(
         ...,
         description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -1581,12 +1285,9 @@ class RenewablePowerPlant(BaseModel):
 
 
 class ServiceAssociation(BaseModel):
-    service_id: int = Field(
-        ..., description="ID of the service the membership belongs to."
-    )
+    service_id: int = Field(..., description="ID of the service the membership belongs to.")
     entity_id: int = Field(
-        ...,
-        description="ID of the contributing member: a Device, a Branch, or another Service.",
+        ..., description="ID of the contributing member: a Device, a Branch, or another Service."
     )
 
 
@@ -1600,9 +1301,7 @@ class ShiftablePowerLoad(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     active_power: float = Field(
         ...,
         description="Initial steady state active power demand. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -1635,11 +1334,7 @@ class ShiftablePowerLoad(BaseModel):
     )
     operation_cost: (
         LoadCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
-    ) = Field(
-        ...,
-        description="Operational cost of interrupting load. or MarketBidCost",
-        discriminator="cost_type",
-    )
+    ) = Field(..., description="Operational cost of interrupting load. or MarketBidCost")
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
     )
@@ -1655,9 +1350,7 @@ class Source(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     active_power: float | None = Field(
         0.0,
         description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -1675,8 +1368,7 @@ class Source(BaseModel):
         description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
     parameter_units: ImpedanceUnitBasis | None = Field(
-        "COMPONENT_BASE",
-        description="Unit basis for this source's impedance fields (R_th, X_th).",
+        "COMPONENT_BASE", description="Unit basis for this source's impedance fields (R_th, X_th)."
     )
     R_th: float | None = Field(
         0.0,
@@ -1686,9 +1378,7 @@ class Source(BaseModel):
         0.0,
         description="Source Thevenin reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
-    internal_voltage: float | None = Field(
-        1.0, description="Internal voltage. Units: pu."
-    )
+    internal_voltage: float | None = Field(1.0, description="Internal voltage. Units: pu.")
     internal_angle: float | None = Field(0.0, description="Internal angle. Units: rad.")
     base_voltage: float | None = Field(None, description="The base voltage. Units: kV.")
     base_power: float | None = Field(
@@ -1698,12 +1388,8 @@ class Source(BaseModel):
         ...,
         description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
     )
-    operation_cost: (
-        ImportExportCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
-    ) = Field(
-        ...,
-        description="Cost of importing and exporting power at the source. or MarketBidCost",
-        discriminator="cost_type",
+    operation_cost: ImportExportCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost = Field(
+        ..., description="Cost of importing and exporting power at the source. or MarketBidCost"
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -1720,9 +1406,7 @@ class StandardLoad(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     base_power: float = Field(
         ..., description="Base power of the load for per unitization. Units: MVA."
     )
@@ -1790,15 +1474,13 @@ class StandardLoad(BaseModel):
 class Substation(BaseModel):
     id: int
     name: str = Field(..., description="Name of the substation")
-    number: int = Field(
-        ..., description="Substation number in the source power flow data"
-    )
+    number: int = Field(..., description="Substation number in the source power flow data")
     grounding_resistance: float = Field(
         ..., description="Substation grounding DC resistance. Units: ohm."
     )
 
 
-class ControlMode1(Enum):
+class SwitchedAdmittanceControlMode(Enum):
     UNDEFINED = "UNDEFINED"
     FIXED = "FIXED"
     DISCRETE_VOLTAGE = "DISCRETE_VOLTAGE"
@@ -1806,56 +1488,6 @@ class ControlMode1(Enum):
     DISCRETE_REACTIVE_PLANT = "DISCRETE_REACTIVE_PLANT"
     DISCRETE_REACTIVE_VSC = "DISCRETE_REACTIVE_VSC"
     DISCRETE_ADMITTANCE_REMOTE = "DISCRETE_ADMITTANCE_REMOTE"
-
-
-class SwitchedAdmittance(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
-    admittance_units: ShuntAdmittanceUnitBasis | None = Field(
-        "COMPONENT_MVAR",
-        description="Unit basis for the shunt admittance Y. COMPONENT_MVAR is PSS/E RAW native (Mvar/MW at unity voltage).",
-    )
-    Y: ComplexNumber = Field(
-        ...,
-        description="Initial admittance at N = 0. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
-    )
-    initial_status: list[int] | None = Field(
-        None,
-        description="Vector of initial switched shunt status, one for in-service and zero for out-of-service for block i (1 through 8).",
-    )
-    number_of_steps: list[int] | None = Field(
-        None,
-        description="Vector with number of steps for each adjustable shunt block. For example, `number_of_steps[2]` are the number of available steps for admittance increment at block 2.",
-    )
-    Y_increase: list[ComplexNumber] | None = Field(
-        None,
-        description="Vector with admittance increment step for each adjustable shunt block. For example, `Y_increase[2]` is the complex admittance increment for each step at block 2. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
-    )
-    admittance_limits: MinMax | None = Field(
-        {"min": 1.0, "max": 1.0},
-        description="Shunt admittance limits for switched shunt model. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
-    )
-    control_mode: ControlMode1 | None = Field(
-        "FIXED", description="Switched-shunt control mode (PSS/E MODSW)."
-    )
-    regulated_bus_number: int | None = Field(
-        0,
-        description="Bus number whose voltage/quantity this shunt regulates; 0 means local bus (PSS/E SWREM/NREG). Units: 1.",
-    )
-    dynamic_injector: int | None = Field(
-        None,
-        description="ID of the corresponding dynamic injection model for admittance, if any.",
-    )
 
 
 class SynchronousCondenser(BaseModel):
@@ -1868,9 +1500,7 @@ class SynchronousCondenser(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     reactive_power: float = Field(
         ...,
         description="Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
@@ -1910,12 +1540,9 @@ class TModelHVDCLine(BaseModel):
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
     active_power_flow: float = Field(
-        ...,
-        description="Initial condition of active power flow on the line. Units: MW.",
+        ..., description="Initial condition of active power flow on the line. Units: MW."
     )
-    arc: int = Field(
-        ..., description="An `Arc` defining this line `from` a bus `to` another bus."
-    )
+    arc: int = Field(..., description="An `Arc` defining this line `from` a bus `to` another bus.")
     parameter_units: ImpedanceUnitBasis | None = Field(
         "NATURAL_UNITS", description="Unit basis for this line's impedance field (r)."
     )
@@ -1932,24 +1559,91 @@ class TModelHVDCLine(BaseModel):
         description="Total series inductance, split equally on both sides of the shunt capacitance. Per-unit on this line's `base_current`. Units: pu.",
     )
     c: float = Field(
-        ...,
-        description="Shunt capacitance. Per-unit on this line's `base_current`. Units: pu.",
+        ..., description="Shunt capacitance. Per-unit on this line's `base_current`. Units: pu."
     )
     active_power_limits_from: MinMax = Field(
-        ...,
-        description="Minimum and maximum active power flows to the FROM node. Units: MW.",
+        ..., description="Minimum and maximum active power flows to the FROM node. Units: MW."
     )
     active_power_limits_to: MinMax = Field(
-        ...,
-        description="Minimum and maximum active power flows to the TO node. Units: MW.",
+        ..., description="Minimum and maximum active power flows to the TO node. Units: MW."
     )
 
 
-class OperationalStates(Enum):
-    OFFLINE = "OFFLINE"
-    STARTUP = "STARTUP"
-    ONLINE = "ONLINE"
-    SHUTDOWN = "SHUTDOWN"
+class ThermalMultiStart(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+    )
+    status: OperationalStates = Field(
+        ..., description="Operating state of the unit at the start of a simulation."
+    )
+    commitment_mode: CommitmentModes | None = Field(
+        "COMMITTED", description="Commitment mode of the unit."
+    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
+    active_power: float = Field(
+        ...,
+        description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    reactive_power: float = Field(
+        ...,
+        description="Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    rating: float = Field(
+        ...,
+        description="Maximum AC side output power rating of the unit. Not to be confused with base_power. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    prime_mover_type: PrimeMovers = Field(
+        ..., description="Prime mover technology according to EIA 923."
+    )
+    fuel: ThermalFuels = Field(..., description="Prime mover fuel according to EIA 923.")
+    active_power_limits: MinMax = Field(
+        ...,
+        description="Minimum and maximum stable active power levels. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    reactive_power_limits: MinMax | None = Field(
+        None,
+        description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    ramp_limits: UpDown | None = Field(
+        None,
+        description="Ramp up and ramp down limits. Units: per power_units — NATURAL_UNITS: MW/min, COMPONENT_BASE: pu/min .",
+    )
+    power_trajectory: StartUpShutDown | None = Field(
+        None,
+        description="Power trajectory the unit will take during the start-up and shut-down ramp process. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    time_limits: UpDown | None = Field(
+        None, description="Minimum up and minimum down time limits. Units: min."
+    )
+    start_time_limits: StartUpStages | None = Field(
+        None, description="Time limits for start-up based on turbine temperature. Units: min."
+    )
+    start_types: int = Field(
+        ...,
+        description="Number of start-up based on turbine temperature, where `1` = *hot*, `2` = *warm*, and `3` = *cold*.",
+    )
+    operation_cost: (
+        ThermalGenerationCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
+    ) = Field(..., description="Operating cost of generation. or MarketBidCost")
+    base_power: float = Field(
+        ..., description="Base power of the unit for per unitization. Units: MVA."
+    )
+    power_units: UnitSystem = Field(
+        ...,
+        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
+    )
+    time_at_status: float | None = Field(
+        600000.0, description="Time the generator has been in its current status. Units: min."
+    )
+    dynamic_injector: int | None = Field(
+        None, description="ID of the corresponding dynamic injection device, if any."
+    )
 
 
 class ThermalPowerPlant(BaseModel):
@@ -1973,9 +1667,7 @@ class ThermalStandard(BaseModel):
     commitment_mode: CommitmentModes | None = Field(
         "COMMITTED", description="Commitment mode of the unit."
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     active_power: float = Field(
         ...,
         description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -2001,15 +1693,8 @@ class ThermalStandard(BaseModel):
         description="Ramp up and ramp down limits. Units: per power_units — NATURAL_UNITS: MW/min, COMPONENT_BASE: pu/min .",
     )
     operation_cost: (
-        ThermalGenerationCost
-        | MarketBidCost
-        | MarketBidTimeSeriesCost
-        | ImportExportTimeSeriesCost
-    ) = Field(
-        ...,
-        description="Operating cost of generation, or a MarketBidCost.",
-        discriminator="cost_type",
-    )
+        ThermalGenerationCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
+    ) = Field(..., description="Operating cost of generation, or a MarketBidCost.")
     base_power: float = Field(
         ...,
         description="Base power of the unit for per unitization. Must be positive; a zero base would make per-unit conversion undefined. Units: MVA.",
@@ -2024,12 +1709,9 @@ class ThermalStandard(BaseModel):
     prime_mover_type: PrimeMovers | None = Field(
         "OT", description="Prime mover technology according to EIA 923."
     )
-    fuel: ThermalFuels | None = Field(
-        "OTHER", description="Prime mover fuel according to EIA 923."
-    )
+    fuel: ThermalFuels | None = Field("OTHER", description="Prime mover fuel according to EIA 923.")
     time_at_status: float | None = Field(
-        600000.0,
-        description="Time the generator has been in its current status. Units: min.",
+        600000.0, description="Time the generator has been in its current status. Units: min."
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -2115,9 +1797,7 @@ class TwoTerminalGenericHVDCLine(BaseModel):
         ...,
         description="Initial condition of active power flow on the line. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
-    arc: int = Field(
-        ..., description="An Arc defining this line `from` a bus `to` another bus."
-    )
+    arc: int = Field(..., description="An Arc defining this line `from` a bus `to` another bus.")
     active_power_limits_from: MinMax = Field(
         ...,
         description="Minimum and maximum active power flows to the FROM node. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -2134,15 +1814,8 @@ class TwoTerminalGenericHVDCLine(BaseModel):
         ...,
         description="Minimum and maximum reactive power limits to the TO node. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
-    loss: TwoTerminalLoss | None = Field(
-        {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
-            },
-        },
+    loss: LossCurve | None = Field(
+        None,
         description="Loss model coefficients. It accepts a linear model with a constant loss and a proportional loss rate (MW of loss per MW of flow). It also accepts a Piecewise loss, with N segments to specify different proportional losses for different segments.",
     )
     base_power: float = Field(
@@ -2197,8 +1870,7 @@ class TwoTerminalLCCLine(BaseModel):
         ..., description="Number of bridges in series in the rectifier side."
     )
     rectifier_delay_angle_limits: MinMax = Field(
-        ...,
-        description="Minimum and maximum rectifier firing delay angle (alpha). Units: rad.",
+        ..., description="Minimum and maximum rectifier firing delay angle (alpha). Units: rad."
     )
     rectifier_rc: float = Field(
         ...,
@@ -2215,8 +1887,7 @@ class TwoTerminalLCCLine(BaseModel):
         ..., description="Number of bridges in series in the inverter side."
     )
     inverter_extinction_angle_limits: MinMax = Field(
-        ...,
-        description="Minimum and maximum inverter extinction angle (gamma). Units: rad.",
+        ..., description="Minimum and maximum inverter extinction angle (gamma). Units: rad."
     )
     inverter_rc: float = Field(
         ...,
@@ -2303,13 +1974,16 @@ class TwoTerminalLCCLine(BaseModel):
         {"min": 0.0, "max": 0.0},
         description="Minimum and maximum reactive power limits to the TO node. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
-    loss: TwoTerminalLoss | None = Field(
+    loss: LossCurve | None = Field(
         {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
+            "power_units": "NATURAL_UNITS",
+            "value_curve": {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
             },
         },
         description="A generic loss model coefficients. It accepts a linear model with a constant loss and a proportional loss rate (MW of loss per MW of flow). It also accepts a Piecewise loss, with N segments to specify different proportional losses for different segments.",
@@ -2334,9 +2008,7 @@ class TwoTerminalVSCLine(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    arc: int = Field(
-        ..., description="An Arc defining this line `from` a bus `to` another bus."
-    )
+    arc: int = Field(..., description="An Arc defining this line `from` a bus `to` another bus.")
     active_power_flow: float = Field(
         ...,
         description="Initial condition of active power flowing from the from-bus to the to-bus in DC. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -2390,13 +2062,16 @@ class TwoTerminalVSCLine(BaseModel):
         0.0,
         description="Rated (base) AC voltage at the `from` converter's AC terminal in kV. Used as the AC voltage base for interpreting ac_setpoint_from when ac_control_from is AC_VOLTAGE; 0.0 means unspecified (the setpoint is taken as per-unit directly). Units: kV.",
     )
-    converter_loss_from: InputOutputCurve | None = Field(
+    converter_loss_from: LossCurve | None = Field(
         {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
+            "power_units": "NATURAL_UNITS",
+            "value_curve": {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
             },
         },
         description="Loss model coefficients in the `from` bus converter. It accepts a linear model or quadratic. Same converter data is used in both ends.",
@@ -2450,13 +2125,16 @@ class TwoTerminalVSCLine(BaseModel):
         0.0,
         description="Rated (base) AC voltage at the `to` converter's AC terminal in kV. Used as the AC voltage base for interpreting ac_setpoint_to when ac_control_to is AC_VOLTAGE; 0.0 means unspecified (the setpoint is taken as per-unit directly). Units: kV.",
     )
-    converter_loss_to: InputOutputCurve | None = Field(
+    converter_loss_to: LossCurve | None = Field(
         {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
+            "power_units": "NATURAL_UNITS",
+            "value_curve": {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
             },
         },
         description="Loss model coefficients in the `to` bus converter. It accepts a linear model or quadratic. Same converter data is used in both ends.",
@@ -2535,17 +2213,13 @@ class VirtualParticipant(BaseModel):
         description="ID of the location this participant settles at — a bus, area, or load zone. `null` when the participant settles at trading hubs instead.",
     )
     max_supply: float = Field(
-        ...,
-        description="Maximum envelope for the incremental (supply) side. Units: MW.",
+        ..., description="Maximum envelope for the incremental (supply) side. Units: MW."
     )
     max_demand: float = Field(
-        ...,
-        description="Maximum envelope for the decremental (demand) side. Units: MW.",
+        ..., description="Maximum envelope for the decremental (demand) side. Units: MW."
     )
     operation_cost: MarketBidCost | MarketBidTimeSeriesCost = Field(
-        ...,
-        description="Bid curves as an offer-curve operating cost.",
-        discriminator="cost_type",
+        ..., description="Bid curves as an offer-curve operating cost."
     )
 
 
@@ -2578,9 +2252,7 @@ class BilateralTransaction(BaseModel):
     confirmation: BilateralConfirmation = Field(
         ..., description="Confirmation status the transaction settled under."
     )
-    max_active_power: float = Field(
-        ..., description="MW envelope of the transaction. Units: MW."
-    )
+    max_active_power: float = Field(..., description="MW envelope of the transaction. Units: MW.")
     active_power_association_id: int | None = Field(
         None,
         description="Store-minted id of the time series supplying the trade's delivered active-power schedule, or null when `max_active_power` alone describes the trade.",
@@ -2606,9 +2278,7 @@ class ExponentialLoad(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     active_power: float = Field(
         ...,
         description="Active power coefficient, P0. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -2660,9 +2330,8 @@ class FACTSControlDevice(BaseModel):
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
     bus: int = Field(..., description="Sending end bus number.")
-    control_mode: ControlMode | None = Field(
-        None,
-        description="Control mode. Used to describe the behavior of the control device. in psy5 a required param with an option to be nothing",
+    control_mode: FACTSControlDeviceControlMode | None = Field(
+        None, description="Control mode. Used to describe the behavior of the control device."
     )
     voltage_setpoint_units: VoltageUnitBasis | None = Field(
         "COMPONENT_BASE",
@@ -2685,8 +2354,7 @@ class FACTSControlDevice(BaseModel):
         description="Independent maximum reactive power ceiling; the device reactive limit is min(the current/susceptance law on max_shunt_current, this value). Non-binding at the 9999.0 default. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
     shunt_control_type: ShuntControlType | None = Field(
-        "STATCOM",
-        description="Device class selecting the reactive-limit law (SVC vs STATCOM).",
+        "STATCOM", description="Device class selecting the reactive-limit law (SVC vs STATCOM)."
     )
     regulated_bus_number: int | None = Field(
         0,
@@ -2716,16 +2384,87 @@ class GroupReserve(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    requirement: float = Field(
-        ..., description="The value of required reserves. Units: MW."
-    )
+    requirement: float = Field(..., description="The value of required reserves. Units: MW.")
     variable: CostCurve | None = Field(
         None,
         description="Operating reserve demand curve for the group, either static or time-series-backed. A group carrying a curve is elastic: its requirement is priced by the curve rather than enforced. Time series values are carried via `time_series_associations` in the sidecar, never inline. Omit when the group has no demand curve.",
     )
     reserve_direction: ReserveDirection = Field(
+        ..., description="Whether the reserve is an upward, downward, or symmetric reserve product."
+    )
+
+
+class HybridSystem(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
         ...,
-        description="Whether the reserve is an upward, downward, or symmetric reserve product.",
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+    )
+    status: OperationalStates = Field(
+        ..., description="Operating state of the unit at the start of a simulation."
+    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
+    active_power: float = Field(
+        ...,
+        description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    reactive_power: float = Field(
+        ...,
+        description="Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    base_power: float = Field(
+        ...,
+        description="Base power of the unit for per unitization, which is commonly the same as `interconnection_rating`. Units: MVA.",
+    )
+    power_units: UnitSystem = Field(
+        ...,
+        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
+    )
+    operation_cost: MarketBidCost = Field(
+        ..., description="`MarketBidCost` of operating the hybrid system."
+    )
+    thermal_unit: int | None = Field(
+        None, description="ID of a thermal generator with supertype `ThermalGen`, if any."
+    )
+    electric_load: int | None = Field(
+        None, description="ID of a load with supertype `ElectricLoad`, if any."
+    )
+    storage: int | None = Field(
+        None, description="ID of an energy storage system with supertype `Storage`, if any."
+    )
+    renewable_unit: int | None = Field(
+        None, description="ID of a renewable generator with supertype `RenewableGen`, if any."
+    )
+    interconnection_impedance: ComplexNumber | None = Field(
+        None,
+        description="Impedance between the hybrid system and the grid interconnection. Per-unit on `base_power`. Units: pu.",
+    )
+    interconnection_rating: float | None = Field(
+        None,
+        description="Maximum rating of the hybrid system's interconnection with the transmission network. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    input_active_power_limits: MinMax | None = Field(
+        None,
+        description="Minimum and maximum stable input active power levels. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    output_active_power_limits: MinMax | None = Field(
+        None,
+        description="Minimum and maximum stable output active power levels. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    reactive_power_limits: MinMax | None = Field(
+        None,
+        description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    interconnection_efficiency: InOut | None = Field(
+        None,
+        description="Efficiency [0, 1.0] at the grid interconnection to model losses `in` and `out` of the common DC-side conversion. Set to `null` if not applicable.",
+    )
+    dynamic_injector: int | None = Field(
+        None, description="ID of the corresponding dynamic injection device, if any."
     )
 
 
@@ -2739,9 +2478,7 @@ class HydroPumpTurbine(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
     active_power: float = Field(
         ...,
         description="Initial active power set point of the turbine unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -2789,23 +2526,22 @@ class HydroPumpTurbine(BaseModel):
         ...,
         description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
     )
-    status: Status | None = Field(
+    operating_mode: OperatingMode | None = Field(
         "OFF",
-        description="Initial Operating status of a pumped-storage hydro unit. See `HydroPumpTurbineStatus` for reference.",
+        description="Which mode the pumped-storage unit is operating in at the start of a simulation: pumping, generating, or idle.",
+    )
+    status: OperationalStates | None = Field(
+        "OFFLINE", description="Operating state of the unit at the start of a simulation."
     )
     time_at_status: float | None = Field(
         600000.0,
-        description="Time the generator has been on or off, as indicated by `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
+        description="Time the generator has been in its current `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
     )
     operation_cost: (
-        HydroGenerationCost
-        | MarketBidCost
-        | MarketBidTimeSeriesCost
-        | ImportExportTimeSeriesCost
+        HydroGenerationCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
     ) = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
-        discriminator="cost_type",
     )
     active_power_pump: float | None = Field(
         0.0,
@@ -2827,8 +2563,7 @@ class HydroPumpTurbine(BaseModel):
         description="Downstream (from reservoir into turbine) travel time. Set to `null` if not applicable. Units: min.",
     )
     conversion_factor: float | None = Field(
-        1.0,
-        description="Conversion factor from flow/volume to energy: m^3 -> p.u-hr. Units: 1.",
+        1.0, description="Conversion factor from flow/volume to energy: m^3 -> p.u-hr. Units: 1."
     )
     commitment_mode: CommitmentModes | None = Field(
         "COMMITTED", description="Commitment mode of the unit."
@@ -2852,9 +2587,7 @@ class InterconnectingConverter(BaseModel):
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
     bus: int = Field(..., description="ID of the bus on the AC side of this converter.")
-    dc_bus: int = Field(
-        ..., description="ID of the bus on the DC side of this converter."
-    )
+    dc_bus: int = Field(..., description="ID of the bus on the DC side of this converter.")
     active_power: float = Field(
         ...,
         description="Active power on the DC side. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -2878,22 +2611,12 @@ class InterconnectingConverter(BaseModel):
         None,
         description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
-    dc_current: float | None = Field(
-        0.0, description="DC current on the converter. Units: A."
-    )
+    dc_current: float | None = Field(0.0, description="DC current on the converter. Units: A.")
     max_dc_current: float | None = Field(
         100000000.0, description="Maximum stable dc current limits. Units: A."
     )
-    loss_function: InputOutputCurve | None = Field(
-        {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
-            },
-        },
-        description="Linear or quadratic loss function with respect to the converter current.",
+    loss_function: LossCurve | None = Field(
+        None, description="Linear or quadratic loss function with respect to the converter current."
     )
     dc_control: VSCDCControlModes | None = Field(
         "DC_VOLTAGE", description="DC-side control mode of the converter."
@@ -2937,7 +2660,7 @@ class InterconnectingConverter(BaseModel):
     )
 
 
-class ThermalMultiStart(BaseModel):
+class SwitchedAdmittance(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -2947,83 +2670,40 @@ class ThermalMultiStart(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
-    status: OperationalStates = Field(
-        ..., description="Operating state of the unit at the start of a simulation."
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
+    admittance_units: ShuntAdmittanceUnitBasis | None = Field(
+        "COMPONENT_MVAR",
+        description="Unit basis for the shunt admittance fields. COMPONENT_MVAR is PSS/E RAW native (Mvar/MW at unity voltage).",
     )
-    commitment_mode: CommitmentModes | None = Field(
-        "COMMITTED", description="Commitment mode of the unit."
-    )
-    bus: int = Field(
-        ..., description="ID of the bus that this component is connected to."
-    )
-    active_power: float = Field(
-        ...,
-        description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    reactive_power: float = Field(
-        ...,
-        description="Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    rating: float = Field(
-        ...,
-        description="Maximum AC side output power rating of the unit. Not to be confused with base_power. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-    )
-    prime_mover_type: PrimeMovers = Field(
-        ..., description="Prime mover technology according to EIA 923."
-    )
-    fuel: ThermalFuels = Field(
-        ..., description="Prime mover fuel according to EIA 923."
-    )
-    active_power_limits: MinMax = Field(
-        ...,
-        description="Minimum and maximum stable active power levels. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    reactive_power_limits: MinMax | None = Field(
+    number_engaged: list[int] | None = Field(
         None,
-        description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+        description="Vector with the number of steps currently engaged (switched in) for each adjustable shunt block. For example, `number_engaged[2]` is the number of steps in service at block 2, and cannot exceed `number_of_steps[2]`.",
     )
-    ramp_limits: UpDown | None = Field(
+    number_of_steps: list[int] | None = Field(
         None,
-        description="Ramp up and ramp down limits. Units: per power_units — NATURAL_UNITS: MW/min, COMPONENT_BASE: pu/min .",
+        description="Vector with number of steps for each adjustable shunt block. For example, `number_of_steps[2]` are the number of available steps for admittance increment at block 2.",
     )
-    power_trajectory: StartUpShutDown | None = Field(
+    Y_increase: list[ComplexNumber] | None = Field(
         None,
-        description="Power trajectory the unit will take during the start-up and shut-down ramp process. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+        description="Vector with admittance increment step for each adjustable shunt block. For example, `Y_increase[2]` is the complex admittance increment for each step at block 2. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
     )
-    time_limits: UpDown | None = Field(
-        None, description="Minimum up and minimum down time limits. Units: min."
-    )
-    start_time_limits: StartUpStages | None = Field(
+    solved_admittance: float | None = Field(
         None,
-        description="Time limits for start-up based on turbine temperature. Units: min.",
+        description="Solved-case switched shunt admittance (PSS/E BINIT); when present it is the shunt's effective admittance, used in place of `number_engaged` * `Y_increase`. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
     )
-    start_types: int = Field(
-        ...,
-        description="Number of start-up based on turbine temperature, where `1` = *hot*, `2` = *warm*, and `3` = *cold*.",
+    admittance_limits: MinMax | None = Field(
+        {"min": 1.0, "max": 1.0},
+        description="Shunt admittance limits for switched shunt model. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
     )
-    operation_cost: (
-        ThermalGenerationCost
-        | MarketBidCost
-        | MarketBidTimeSeriesCost
-        | ImportExportTimeSeriesCost
-    ) = Field(
-        ...,
-        description="Operating cost of generation. or MarketBidCost",
-        discriminator="cost_type",
+    control_mode: SwitchedAdmittanceControlMode | None = Field(
+        "FIXED", description="Switched-shunt control mode."
     )
-    base_power: float = Field(
-        ..., description="Base power of the unit for per unitization. Units: MVA."
-    )
-    power_units: UnitSystem = Field(
-        ...,
-        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
-    )
-    time_at_status: float | None = Field(
-        600000.0,
-        description="Time the generator has been in its current status. Units: min.",
+    regulated_bus_number: int | None = Field(
+        0,
+        description="Bus number whose voltage/quantity this shunt regulates; 0 means local bus (PSS/E SWREM/NREG). Units: 1.",
     )
     dynamic_injector: int | None = Field(
-        None, description="ID of the corresponding dynamic injection device, if any."
+        None, description="ID of the corresponding dynamic injection model for admittance, if any."
     )
 
 
@@ -3046,8 +2726,7 @@ class ThreeWindingTransformer(BaseModel):
         description="The tertiary `TransformerCircuit` connecting the tertiary bus to the star bus.",
     )
     star_bus: int = Field(
-        ...,
-        description="Star (hidden) Bus that this component (equivalent model) is connected to.",
+        ..., description="Star (hidden) Bus that this component (equivalent model) is connected to."
     )
     parameter_units: ImpedanceUnitBasis | None = Field(
         "COMPONENT_BASE",
@@ -3097,8 +2776,7 @@ class ThreeWindingTransformer(BaseModel):
         description="Magnetizing shunt admittance referenced to the primary circuit's base voltage. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr, COMPONENT_BASE: pu .",
     )
     shunt_location: ThreeWindingTransformerShuntLocation | None = Field(
-        "PRIMARY",
-        description="Placement of `magnetizing_shunt` in the equivalent star model.",
+        "PRIMARY", description="Placement of `magnetizing_shunt` in the equivalent star model."
     )
 
 
@@ -3116,12 +2794,10 @@ class TransformerCircuit(BaseModel):
         description="Normalized tap changer position for voltage control, varying between 0 and 2, with 1 centered at the nominal voltage. Units: 1.",
     )
     alpha: float | None = Field(
-        0.0,
-        description="Initial condition of phase shift across this circuit. Units: rad.",
+        0.0, description="Initial condition of phase shift across this circuit. Units: rad."
     )
     parameter_units: ImpedanceUnitBasis | None = Field(
-        "COMPONENT_BASE",
-        description="Unit basis for this circuit's impedance fields (r, x).",
+        "COMPONENT_BASE", description="Unit basis for this circuit's impedance fields (r, x)."
     )
     r: float | None = Field(
         0.0,

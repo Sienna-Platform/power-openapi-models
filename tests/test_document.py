@@ -59,9 +59,7 @@ def test_required_fields_match_schema_required(document_module, schema):
 def test_trading_hub_associations_defaults_to_empty_list(document_module, schema):
     field = document_module.SystemDocument.model_fields["trading_hub_associations"]
     assert (
-        field.default_factory()
-        == schema["properties"]["trading_hub_associations"]["default"]
-        == []
+        field.default_factory() == schema["properties"]["trading_hub_associations"]["default"] == []
     )
 
 
@@ -77,9 +75,7 @@ def test_rejects_top_level_unit_system_and_base_power(document_module):
         "time_series_storage_file": None,
     }
     with pytest.raises(ValidationError):
-        document_module.SystemDocument.model_validate(
-            {**minimal, "unit_system": "NATURAL_UNITS"}
-        )
+        document_module.SystemDocument.model_validate({**minimal, "unit_system": "NATURAL_UNITS"})
     with pytest.raises(ValidationError):
         document_module.SystemDocument.model_validate({**minimal, "base_power": 100.0})
 

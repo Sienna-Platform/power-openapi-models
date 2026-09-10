@@ -1,6 +1,7 @@
 """Basic import tests for generated models."""
 
 import json
+
 import pytest
 
 
@@ -27,7 +28,7 @@ def test_import_operations_models():
     """Verify operations models can be imported."""
     from power_openapi_models.operations import models
 
-    assert hasattr(models, "ACBus")
+    assert hasattr(models, "AreaInterchange")
 
 
 def test_simple_model_roundtrip():
@@ -49,21 +50,25 @@ def test_discriminated_union():
         QuadraticFunctionData,
     )
 
-    linear_json = json.dumps({
-        "function_type": "LINEAR",
-        "proportional_term": 2.0,
-        "constant_term": 5.0,
-    })
+    linear_json = json.dumps(
+        {
+            "function_type": "LINEAR",
+            "proportional_term": 2.0,
+            "constant_term": 5.0,
+        }
+    )
     result = FunctionData.model_validate_json(linear_json)
     assert isinstance(result.root, LinearFunctionData)
     assert result.root.proportional_term == 2.0
 
-    quad_json = json.dumps({
-        "function_type": "QUADRATIC",
-        "quadratic_term": 1.0,
-        "proportional_term": 2.0,
-        "constant_term": 0.0,
-    })
+    quad_json = json.dumps(
+        {
+            "function_type": "QUADRATIC",
+            "quadratic_term": 1.0,
+            "proportional_term": 2.0,
+            "constant_term": 0.0,
+        }
+    )
     result = FunctionData.model_validate_json(quad_json)
     assert isinstance(result.root, QuadraticFunctionData)
     assert result.root.quadratic_term == 1.0
@@ -90,8 +95,9 @@ def test_nested_discriminated_union():
 
 def test_enum_validation():
     """Literal discriminator fields reject invalid values."""
-    from power_openapi_models.core.models import LinearFunctionData
     from pydantic import ValidationError
+
+    from power_openapi_models.core.models import LinearFunctionData
 
     with pytest.raises(ValidationError):
         LinearFunctionData(

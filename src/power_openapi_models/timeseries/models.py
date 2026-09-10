@@ -49,10 +49,6 @@ class Period(RootModel[str]):
     )
 
 
-class UnitSystem1(RootModel[UnitSystem]):
-    root: UnitSystem
-
-
 class TimeSeriesFeatures(RootModel[dict[str, TimeSeriesFeatureValue]]):
     root: dict[str, TimeSeriesFeatureValue] = Field(
         ...,
@@ -92,6 +88,10 @@ class NonSequentialTimeSeries(BaseModel):
     uri: str = Field(
         ...,
         description="Locator for the dense data, unique within one store. No required format — typically a file path or an HDF5 dataset path; the backing store decides what it means and resolves it (infrastore uses its content hash as this value). Never parsed or interpreted here. This layer records where the values are, never the values.",
+    )
+    timestamps_uri: str | None = Field(
+        None,
+        description="Locator for this series' explicit timestamp vector, unique within one store — `uri`'s counterpart for the time axis, with the same contract: no required format, never parsed or interpreted here, and resolved by the backing store (infrastore uses the axis's content hash, the same value it keys the shared vector under). A locator rather than the vector itself because the axis is shared: a cohort of irregular series on one axis names it once each, where inlining the timestamps would repeat the whole vector per row. Optional, so a producer that predates it is still valid, and absent from the other five types, which have no explicit axis. Without it a document cannot say which of the store's axes a row sits on, and the row cannot be reconstructed from the document — the store cannot infer it either, since arrays are content-addressed and two irregular series with identical values on different axes share one stored array. A consumer restoring rows from a document therefore requires it.",
     )
     data_hash: str | None = Field(
         None,
@@ -213,9 +213,7 @@ class Deterministic(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: AwareDatetime = Field(
-        ..., description="Start of the first forecast window."
-    )
+    initial_timestamp: AwareDatetime = Field(..., description="Start of the first forecast window.")
     resolution: Period = Field(
         ...,
         description="Cadence within a forecast window. Always present for a forecast, and part of the series' identity.",
@@ -307,9 +305,7 @@ class DeterministicSingleTimeSeries(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: AwareDatetime = Field(
-        ..., description="Start of the first forecast window."
-    )
+    initial_timestamp: AwareDatetime = Field(..., description="Start of the first forecast window.")
     resolution: Period = Field(
         ...,
         description="Cadence within a forecast window. Always present for a forecast, and part of the series' identity.",
@@ -401,9 +397,7 @@ class Probabilistic(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: AwareDatetime = Field(
-        ..., description="Start of the first forecast window."
-    )
+    initial_timestamp: AwareDatetime = Field(..., description="Start of the first forecast window.")
     resolution: Period = Field(
         ...,
         description="Cadence within a forecast window. Always present for a forecast, and part of the series' identity.",
@@ -500,9 +494,7 @@ class Scenarios(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: AwareDatetime = Field(
-        ..., description="Start of the first forecast window."
-    )
+    initial_timestamp: AwareDatetime = Field(..., description="Start of the first forecast window.")
     resolution: Period = Field(
         ...,
         description="Cadence within a forecast window. Always present for a forecast, and part of the series' identity.",
@@ -628,7 +620,7 @@ class TimeSeriesAssociation(
         | Scenarios
     ) = Field(
         ...,
-        description="Metadata linking one time series to the component or supplemental attribute that owns it — the JSON form of a row in the store's `time_series_associations` catalog table. A closed set of six canonical types owned by the data layer: two static (SingleTimeSeries on a regular grid, NonSequentialTimeSeries on explicit irregular timestamps) and four forecasts. The type decides which timing fields the row carries, which is why each is its own schema rather than one row with everything nullable.\n\nDense values never appear here. `uri` names the store location that holds them; `data_hash` optionally carries a content hash of that array. Other content hashes (features_hash, timestamps_hash) remain store-internal and deliberately absent.",
+        description="Metadata linking one time series to the component or supplemental attribute that owns it — the JSON form of a row in the store's `time_series_associations` catalog table. A closed set of six canonical types owned by the data layer: two static (SingleTimeSeries on a regular grid, NonSequentialTimeSeries on explicit irregular timestamps) and four forecasts. The type decides which timing fields the row carries, which is why each is its own schema rather than one row with everything nullable.\n\nDense values never appear here. `uri` names the store location that holds them; `data_hash` optionally carries a content hash of that array. A NonSequentialTimeSeries adds `timestamps_uri`, the same kind of locator for its explicit time axis, which is likewise stored rather than carried. Content hashes themselves (features_hash, timestamps_hash) remain store-internal and deliberately absent — a locator names where something is, which is not the same as exposing the store's own address for it.",
         discriminator="time_series_type",
         title="TimeSeriesAssociation",
     )

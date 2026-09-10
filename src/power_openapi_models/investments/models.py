@@ -3,13 +3,15 @@
 
 from __future__ import annotations
 from power_openapi_models.core.models import (
-    ACBusType,
+    CapitalCost,
     GenericOperationCost,
     InOut,
     MinMax,
+    MinMaxByKey,
+    OutageFactors,
     PrimeMovers,
     ProductionVariableCostCurve,
-    RenewableGenerationCost,
+    StorageCapitalCost,
     StorageCost,
     StorageTech,
     ThermalFuels,
@@ -17,30 +19,6 @@ from power_openapi_models.core.models import (
     ValueCurve,
 )
 from pydantic import BaseModel, Field
-
-
-class AggregateRetirementPotential(BaseModel):
-    id: int = Field(..., description="ID for individual component.")
-    retirement_potential: float | None = Field(
-        0.0,
-        description="Amount of pre-existing capacity for a technology that is eligible for retirement. Units: MW.",
-    )
-
-
-class AggregateRetrofitPotential(BaseModel):
-    id: int = Field(..., description="ID for individual component.")
-    retrofit_id: int | None = Field(
-        None,
-        description="Unique identifier to group retrofittable source technologies with retrofit options inside the same zone.",
-    )
-    retrofit_potential: float | None = Field(
-        0.0,
-        description="Amount of existing capacity for technology that can be retrofitted. Units: MW.",
-    )
-    retrofit_fraction: float | None = Field(
-        None,
-        description="Fraction of existing capacity that is eligible for retrofits. Alternative to retrofit_potential. Units: 1.",
-    )
 
 
 class TechnologyFinancialData(BaseModel):
@@ -54,15 +32,11 @@ class TechnologyFinancialData(BaseModel):
     debt_fraction: float = Field(
         ..., description="Fraction of capital costs financed through debt. Units: 1."
     )
-    debt_rate: float = Field(
-        ..., description="Interest rate on debt financing. Units: 1."
-    )
+    debt_rate: float = Field(..., description="Interest rate on debt financing. Units: 1.")
     return_on_equity: float = Field(
         ..., description="Required rate of return on equity financing. Units: 1."
     )
-    tax_rate: float = Field(
-        ..., description="Tax rate applied to equity returns. Units: 1."
-    )
+    tax_rate: float = Field(..., description="Tax rate applied to equity returns. Units: 1.")
 
 
 class CapacityReserveMargin(BaseModel):
@@ -72,9 +46,7 @@ class CapacityReserveMargin(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`).",
     )
-    target_year: int | None = Field(
-        None, description="Year in which this requirement is applied."
-    )
+    target_year: int | None = Field(None, description="Year in which this requirement is applied.")
     capacity_reserve_fraction: float | None = Field(
         0.0,
         description="Capacity reserve requirements, represented as a fraction of peak demand in a region. Units: 1.",
@@ -88,15 +60,12 @@ class CarbonCaps(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`).",
     )
-    target_year: int | None = Field(
-        None, description="Year in which this requirement is applied."
-    )
+    target_year: int | None = Field(None, description="Year in which this requirement is applied.")
     max_tons_mwh: float | None = Field(
         100000000, description="Emission limit in terms of rate. Units: Mt/MWh."
     )
     max_mtons: float | None = Field(
-        None,
-        description="Emission limit in absolute values (million tonnes). Units: Mt.",
+        None, description="Emission limit in absolute values (million tonnes). Units: Mt."
     )
 
 
@@ -107,9 +76,7 @@ class CarbonTax(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`).",
     )
-    target_year: int | None = Field(
-        None, description="Year in which this requirement is applied."
-    )
+    target_year: int | None = Field(None, description="Year in which this requirement is applied.")
     tax_dollars_per_ton: float | None = Field(
         0.0,
         description="Cost penalty per ton of CO2 emitted by technologies in the eligible regions during the target year. Units: USD/t.",
@@ -130,90 +97,22 @@ class ColocatedSupplyStorageTechnology(BaseModel):
         None, description="Location where the component applies. Can be a zone or node."
     )
     financial_data: TechnologyFinancialData = Field(
+        ..., description="Struct containing relevant financial information for a technology."
+    )
+    supply_technology: int = Field(
         ...,
-        description="Struct containing relevant financial information for a technology.",
+        description="The ID of the underlying supply technology (e.g., wind or solar) co-located with storage.",
     )
-    capital_costs_solar: ValueCurve | None = Field(
-        None,
-        description="Capital costs for investing in a solar technology. Units: USD/MW.",
-    )
-    operation_costs_solar: RenewableGenerationCost | None = Field(
-        None,
-        description="Fixed and variable O&M costs for the solar component. Units: USD/MWh.",
-    )
-    capacity_limits_solar: MinMax | None = Field(
-        None,
-        description="Maximum allowable installed capacity for the solar component. Units: MW.",
-    )
-    lifetime_solar: int | None = Field(
-        None,
-        description="Maximum number of years the solar component can be active once installed. Units: yr.",
-    )
-    capital_costs_wind: ValueCurve | None = Field(
-        None,
-        description="Capital costs for investing in a wind technology. Units: USD/MW.",
-    )
-    operation_costs_wind: RenewableGenerationCost | None = Field(
-        None,
-        description="Fixed and variable O&M costs for the wind component. Units: USD/MWh.",
-    )
-    capacity_limits_wind: MinMax | None = Field(
-        None,
-        description="Maximum allowable installed capacity for the wind component. Units: MW.",
-    )
-    lifetime_wind: int | None = Field(
-        None,
-        description="Maximum number of years the wind component can be active once installed. Units: yr.",
-    )
-    capital_costs_energy: ValueCurve | None = Field(
-        None,
-        description="Capital costs for investing in the storage technology's energy capacity. Units: USD/MWh.",
-    )
-    capital_costs_power: ValueCurve | None = Field(
-        None,
-        description="Capital costs for investing in the storage technology's charge/discharge capacity. Units: USD/MW.",
-    )
-    operation_costs_energy: StorageCost | None = Field(
-        None,
-        description="Fixed and variable O&M costs for the storage energy component. Units: USD/MWh.",
-    )
-    operation_costs_power: StorageCost | None = Field(
-        None,
-        description="Fixed and variable O&M costs for the storage power component. Units: USD/MWh.",
-    )
-    capacity_power_limits: MinMax | None = Field(
-        None,
-        description="Allowable installed power capacity for the storage component. Units: MW.",
-    )
-    capacity_energy_limits: MinMax | None = Field(
-        None,
-        description="Allowable installed energy capacity for the storage component. Units: MWh.",
-    )
-    duration_limits: MinMax | None = Field(
-        None,
-        description="Minimum and maximum duration limits for the storage component (minutes). Units: min.",
-    )
-    efficiency_storage: InOut | None = Field(
-        None,
-        description="Efficiency of charging storage, fraction of total charge (in) and discharge (out) capacity. Units: 1.",
-    )
-    losses_storage: float | None = Field(
-        1.0,
-        description="Self-discharge of storage (fraction of stored energy per hour). Units: 1.",
-    )
-    lifetime_storage: int | None = Field(
-        100,
-        description="Maximum number of years the storage component can be active once installed. Units: yr.",
-    )
-    max_inverter_capacity: float | None = Field(
-        None, description="Limit on inverter capacity. Units: MW."
-    )
-    min_inverter_capacity: float | None = Field(
-        None, description="Minimum inverter capacity. Units: MW."
-    )
-    capital_costs_inverter: ValueCurve = Field(
+    storage_technology: int = Field(
         ...,
-        description="Capital costs for investing in inverter capacity. Units: USD/MW.",
+        description="The ID of the underlying storage technology co-located with the supply technology.",
+    )
+    inverter_capacity_limits: MinMax | None = Field(
+        None, description="Limits on inverter capacity. Units: MW."
+    )
+    capital_costs_inverter: CapitalCost = Field(
+        ...,
+        description="Capital and interconnection cost for investing in inverter capacity (capital cost in USD/MW).",
     )
     operation_costs_inverter: ProductionVariableCostCurve = Field(
         ...,
@@ -223,8 +122,7 @@ class ColocatedSupplyStorageTechnology(BaseModel):
         ..., description="Efficiency of AC to DC conversion of inverter. Units: 1."
     )
     inverter_supply_ratio: float = Field(
-        ...,
-        description="Ratio of generation capacity to grid connection capacity. Units: 1.",
+        ..., description="Ratio of generation capacity to grid connection capacity. Units: 1."
     )
     requirements: list[int] | None = Field(
         [], description="List of requirement IDs associated with the component."
@@ -260,8 +158,8 @@ class DemandRequirement(BaseModel):
     region: list[int] | None = Field(
         None, description="Location where the component applies. Can be a zone or node."
     )
-    value_of_lost_load: float = Field(
-        ..., description="Value of unserved load. Units: USD/MWh."
+    value_of_lost_load: float | None = Field(
+        None, description="Value of unserved load. Units: USD/MWh."
     )
     unserved_demand_curve: ValueCurve | None = Field(
         None,
@@ -297,9 +195,7 @@ class DemandSideTechnology(BaseModel):
         0.0,
         description="Minimum operation of demandside unit as a fraction of peak demand. Units: 1.",
     )
-    peak_demand_mw: float | None = Field(
-        0.0, description="Peak demand value in MW. Units: MW."
-    )
+    peak_demand_mw: float | None = Field(0.0, description="Peak demand value in MW. Units: MW.")
     max_demand_delay: float | None = Field(
         None,
         description="Maximum number of minutes that demand can be deferred or delayed (minutes). Units: min.",
@@ -317,8 +213,7 @@ class DemandSideTechnology(BaseModel):
         description="Variable operation and maintenance costs associated with flexible demand deferral/advancement. Units: USD/MWh.",
     )
     curtailment_cost: ValueCurve | None = Field(
-        None,
-        description="Energy cost of curtailed demand, USD per MWh. Units: USD/MWh.",
+        None, description="Energy cost of curtailed demand, USD per MWh. Units: USD/MWh."
     )
     max_demand_curtailment: float | None = Field(
         None, description="Maximum fraction of demand that can be curtailed. Units: 1."
@@ -335,9 +230,7 @@ class EnergyShareRequirements(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`).",
     )
-    target_year: int | None = Field(
-        None, description="Year in which this requirement is applied."
-    )
+    target_year: int | None = Field(None, description="Year in which this requirement is applied.")
     generation_fraction_requirement: float | None = Field(
         0.0,
         description="Fraction of total annual demand across all eligible zones that needs to be met by eligible resources. Units: 1.",
@@ -368,12 +261,9 @@ class MaximumCapacityRequirements(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`).",
     )
-    target_year: int | None = Field(
-        None, description="Year in which this requirement is applied."
-    )
+    target_year: int | None = Field(None, description="Year in which this requirement is applied.")
     max_capacity_mw: float | None = Field(
-        None,
-        description="Maximum total capacity across all eligible resources. Units: MW.",
+        None, description="Maximum total capacity across all eligible resources. Units: MW."
     )
 
 
@@ -384,12 +274,9 @@ class MinimumCapacityRequirements(BaseModel):
         ...,
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`).",
     )
-    target_year: int | None = Field(
-        None, description="Year in which this requirement is applied."
-    )
+    target_year: int | None = Field(None, description="Year in which this requirement is applied.")
     min_capacity_mw: float | None = Field(
-        None,
-        description="Minimum total capacity across all eligible resources. Units: MW.",
+        None, description="Minimum total capacity across all eligible resources. Units: MW."
     )
 
 
@@ -408,13 +295,11 @@ class NodalACTransportTechnology(BaseModel):
     capacity_limits: MinMax | None = Field(
         None, description="Allowable capacity for a transmission line. Units: MW."
     )
-    capital_costs: ValueCurve | None = Field(
+    capital_costs: CapitalCost | None = Field(
         None,
-        description="Cost of adding new capacity to the nodal transmission line. Units: USD/MW.",
+        description="Capital and interconnection cost of adding new capacity to the nodal transmission line (capital cost in USD/MW).",
     )
-    resistance: float | None = Field(
-        0.0, description="Technology resistance in Ohms. Units: ohm."
-    )
+    resistance: float | None = Field(0.0, description="Technology resistance in Ohms. Units: ohm.")
     voltage: float | None = Field(
         0.0, description="Voltage rating of transmission line. Units: kV."
     )
@@ -422,15 +307,12 @@ class NodalACTransportTechnology(BaseModel):
         0.0,
         description="Used for integer investment decisions. Represents the rating capacity of individual new lines. Units: MW.",
     )
-    reactance: float | None = Field(
-        0.0, description="Series reactance for a line. Units: ohm."
-    )
+    reactance: float | None = Field(0.0, description="Series reactance for a line. Units: ohm.")
     requirements: list[int] | None = Field(
         [], description="List of requirement IDs associated with the component."
     )
     financial_data: TechnologyFinancialData = Field(
-        ...,
-        description="Struct containing relevant financial information for a technology.",
+        ..., description="Struct containing relevant financial information for a technology."
     )
 
 
@@ -449,9 +331,9 @@ class NodalHVDCTransportTechnology(BaseModel):
     capacity_limits: MinMax | None = Field(
         None, description="Allowable capacity for a transmission line. Units: MW."
     )
-    capital_costs: ValueCurve | None = Field(
+    capital_costs: CapitalCost | None = Field(
         None,
-        description="Cost of adding new capacity to the nodal transmission line. Units: USD/MW.",
+        description="Capital and interconnection cost of adding new capacity to the nodal transmission line (capital cost in USD/MW).",
     )
     line_loss: ValueCurve | None = Field(
         None,
@@ -465,15 +347,8 @@ class NodalHVDCTransportTechnology(BaseModel):
         [], description="List of requirement IDs associated with the component."
     )
     financial_data: TechnologyFinancialData = Field(
-        ...,
-        description="Struct containing relevant financial information for a technology.",
+        ..., description="Struct containing relevant financial information for a technology."
     )
-
-
-class Node(BaseModel):
-    id: int = Field(..., description="ID for individual component.")
-    name: str = Field(..., description="Name of the component.")
-    bus_type: ACBusType | None = Field("PQ", description="AC Bus Type for a node.")
 
 
 class PortfolioFinancialData(BaseModel):
@@ -481,9 +356,7 @@ class PortfolioFinancialData(BaseModel):
     discount_rate: float = Field(
         ..., description="Discount rate for financial calculations. Units: 1."
     )
-    inflation_rate: float = Field(
-        ..., description="Inflation rate for cost adjustments. Units: 1."
-    )
+    inflation_rate: float = Field(..., description="Inflation rate for cost adjustments. Units: 1.")
     interest_rate: float = Field(
         ..., description="Interest rate for financing calculations. Units: 1."
     )
@@ -495,8 +368,8 @@ class PortfolioFinancialData(BaseModel):
 
 class RetirementPotential(BaseModel):
     id: int = Field(..., description="ID for individual component.")
-    eligible_generators: list[str] | None = Field(
-        None,
+    eligible_generators: list[str] = Field(
+        ...,
         description="Names of individual generation units mapped to a technology that are eligible for retirement.",
     )
     planned_retirement_year: dict[str, int] | None = Field(
@@ -507,13 +380,22 @@ class RetirementPotential(BaseModel):
         None,
         description="Optional dictionary to indicate the year in which existing generators in the base system were built.",
     )
+    retirement_cost: ValueCurve = Field(
+        ..., description="Cost associated with retiring the eligible generators. Units: USD/MW."
+    )
 
 
 class RetrofitPotential(BaseModel):
     id: int = Field(..., description="ID for individual component.")
-    eligible_generators: list[str] | None = Field(
-        None,
+    eligible_generators: list[str] = Field(
+        ...,
         description="Names of individual generation units mapped to this technology that can be retrofitted.",
+    )
+    retrofit_fraction: float | None = Field(
+        1.0, description="Fraction of existing capacity that is eligible for retrofits. Units: 1."
+    )
+    retrofit_cost: ValueCurve = Field(
+        ..., description="Cost associated with retrofitting the eligible generators. Units: USD/MW."
     )
 
 
@@ -531,28 +413,16 @@ class StorageTechnology(BaseModel):
         ..., description="Corresponding type to be used in PCM modeling."
     )
     min_discharge_fraction: float | None = Field(
-        0.0,
-        description="Minimum discharge as a fraction of total discharge capacity. Units: 1.",
+        0.0, description="Minimum discharge as a fraction of total discharge capacity. Units: 1."
     )
-    prime_mover_type: PrimeMovers | None = Field(
-        "OT", description="Prime mover for generator."
-    )
+    prime_mover_type: PrimeMovers | None = Field("OT", description="Prime mover for generator.")
     storage_tech: StorageTech = Field(..., description="Storage Technology Type.")
-    capital_costs_energy: ValueCurve | None = Field(
+    capital_costs: StorageCapitalCost | None = Field(
         None,
-        description="Capital costs for investing in a storage technology's energy capacity. Units: USD/MWh.",
-    )
-    capital_costs_charge: ValueCurve | None = Field(
-        None,
-        description="Capital costs for investing in a storage technology's charge capacity. Units: USD/MW.",
-    )
-    capital_costs_discharge: ValueCurve | None = Field(
-        None,
-        description="Capital costs for investing in a storage technology's discharge capacity. Units: USD/MW.",
+        description="Capital and interconnection cost for investing in a storage technology's charge, discharge, and energy capacity (charge and discharge in USD/MW, energy in USD/MWh).",
     )
     operation_costs: StorageCost | None = Field(
-        None,
-        description="Fixed and variable O&M costs for a storage technology. Units: USD/MWh.",
+        None, description="Fixed and variable O&M costs for a storage technology. Units: USD/MWh."
     )
     unit_size_discharge: float | None = Field(
         0.0,
@@ -566,17 +436,17 @@ class StorageTechnology(BaseModel):
         0.0,
         description="Used for discrete investment decisions. Size of each unit of energy capacity being built. Units: MWh.",
     )
-    capacity_limits_charge: MinMax | None = Field(
+    capacity_limits_charge: MinMax | MinMaxByKey | None = Field(
         None,
-        description="Allowable installed power capacity for charging of a storage technology. Units: MW.",
+        description="Allowable installed power capacity for charging of a storage technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MW.",
     )
-    capacity_limits_discharge: MinMax | None = Field(
+    capacity_limits_discharge: MinMax | MinMaxByKey | None = Field(
         None,
-        description="Allowable installed power capacity for discharging of a storage technology. Units: MW.",
+        description="Allowable installed power capacity for discharging of a storage technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MW.",
     )
-    capacity_limits_energy: MinMax | None = Field(
+    capacity_limits_energy: MinMax | MinMaxByKey | None = Field(
         None,
-        description="Allowable installed energy capacity for a storage technology. Units: MWh.",
+        description="Allowable installed energy capacity for a storage technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MWh.",
     )
     duration_limits: MinMax | None = Field(
         None,
@@ -587,8 +457,7 @@ class StorageTechnology(BaseModel):
         description="Efficiency of charging storage, fraction of total charge (in) and discharge (out) capacity. Units: 1.",
     )
     losses: float | None = Field(
-        1.0,
-        description="Self-discharge of storage (fraction of energy stored per hour). Units: 1.",
+        1.0, description="Self-discharge of storage (fraction of energy stored per hour). Units: 1."
     )
     lifetime: int | None = Field(
         100,
@@ -598,8 +467,7 @@ class StorageTechnology(BaseModel):
         [], description="List of requirement IDs associated with the component."
     )
     financial_data: TechnologyFinancialData = Field(
-        ...,
-        description="Struct containing relevant financial information for a technology.",
+        ..., description="Struct containing relevant financial information for a technology."
     )
 
 
@@ -616,15 +484,8 @@ class SupplyTechnology(BaseModel):
     region: list[int] | None = Field(
         None, description="Location where the component applies. Can be a zone or node."
     )
-    prime_mover_type: PrimeMovers | None = Field(
-        "OT", description="Prime mover for generator."
-    )
-    fuel: list[ThermalFuels] | None = Field(
-        None, description="Fuel type according to IEA."
-    )
-    co2: dict[str, float] | None = Field(
-        None, description="Carbon intensity of fuel. Units: t/MMBtu."
-    )
+    prime_mover_type: PrimeMovers | None = Field("OT", description="Prime mover for generator.")
+    fuel: list[ThermalFuels] | None = Field(None, description="Fuel type according to IEA.")
     cofire_start_limits: dict[str, MinMax] | None = Field(
         None,
         description="Minimum and maximum blending level of each fuel during start-up process for multi-fuel generator. Units: 1.",
@@ -633,24 +494,24 @@ class SupplyTechnology(BaseModel):
         None,
         description="Minimum and maximum blending level of each fuel during normal generation process for multi-fuel generator. Units: 1.",
     )
-    capital_costs: ValueCurve | None = Field(
-        None, description="Capital costs for investing in a technology. Units: USD/MW."
+    capital_costs: CapitalCost | None = Field(
+        None,
+        description="Capital and interconnection cost for investing in a technology (capital cost in USD/MW).",
     )
     operation_costs: GenericOperationCost | None = Field(
-        None,
-        description="Fixed and variable O&M costs for a technology. Units: USD/MWh.",
+        None, description="Fixed and variable O&M costs for a technology. Units: USD/MWh."
     )
     unit_size: float | None = Field(
         0.0,
         description="Used for discrete investment decisions. Size of each unit being built. Units: MW.",
     )
-    capacity_limits: MinMax | None = Field(
+    capacity_limits: MinMax | MinMaxByKey | None = Field(
         None,
-        description="Minimum and maximum allowable installed capacity for a technology. Units: MW.",
+        description="Minimum and maximum allowable installed capacity for a technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MW.",
     )
-    outage_factor: float | None = Field(
-        1.0,
-        description="Derating factor to account for planned or forced outages of a technology. Fraction of hours in a year where technology is unavailable. Units: 1.",
+    outage_factor: OutageFactors | None = Field(
+        None,
+        description="Planned and forced outage factors for a technology, each a fraction of total availability (the fraction of hours in a year the technology is unavailable).",
     )
     min_generation_fraction: float | None = Field(
         0.0, description="Minimum generation as a fraction of total capacity. Units: 1."
@@ -675,22 +536,15 @@ class SupplyTechnology(BaseModel):
         [], description="List of requirement IDs associated with the component."
     )
     financial_data: TechnologyFinancialData = Field(
-        ...,
-        description="Struct containing relevant financial information for a technology.",
+        ..., description="Struct containing relevant financial information for a technology."
     )
 
 
 class TopologyMapping(BaseModel):
     id: int = Field(..., description="ID for individual component.")
     buses: list[str] | None = Field(
-        None,
-        description="List of buses in the base system that are associated with a zone.",
+        None, description="List of buses in the base system that are associated with a zone."
     )
-
-
-class Zone(BaseModel):
-    id: int = Field(..., description="ID for individual component.")
-    name: str = Field(..., description="Name of the component.")
 
 
 class AggregateTransportTechnology(BaseModel):
@@ -708,9 +562,9 @@ class AggregateTransportTechnology(BaseModel):
     capacity_limits: MinMax | None = Field(
         None, description="Allowable capacity for a transmission line. Units: MW."
     )
-    capital_costs: ValueCurve | None = Field(
+    capital_costs: CapitalCost | None = Field(
         None,
-        description="Cost of adding new capacity to the nodal transmission line. Units: USD/MW.",
+        description="Capital and interconnection cost of adding new capacity to the transmission line (capital cost in USD/MW).",
     )
     line_loss: float | None = Field(
         None, description="Transmission loss for each transport technology. Units: 1."
@@ -723,6 +577,5 @@ class AggregateTransportTechnology(BaseModel):
         [], description="List of requirement IDs associated with the component."
     )
     financial_data: TechnologyFinancialData = Field(
-        ...,
-        description="Struct containing relevant financial information for a technology.",
+        ..., description="Struct containing relevant financial information for a technology."
     )
