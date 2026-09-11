@@ -36,8 +36,7 @@ def _class_blocks(content: str) -> dict[str, str]:
     lines rather than requiring the header to close on one line.
     """
     starts = [
-        (m.start(), m.group(1))
-        for m in re.finditer(r"^class (\w+)\(", content, re.MULTILINE)
+        (m.start(), m.group(1)) for m in re.finditer(r"^class (\w+)\(", content, re.MULTILINE)
     ]
     blocks = {}
     for i, (start, name) in enumerate(starts):
@@ -95,19 +94,25 @@ def dedupe_core_against_infrastructure_core() -> bool:
 
     content = re.sub(r"\n{3,}", "\n\n\n", content)
 
+    names = sorted(infra_blocks)
     import_block = (
         f"from {INFRASTRUCTURE_CORE_IMPORT} import (\n"
-        + "".join(f"    {name},\n" for name in sorted(infra_blocks))
+        + "".join(f"    {name},\n" for name in names)
         + ")\n"
     )
     if import_block not in content:
         header_end = re.search(r"^class \w+\(", content, re.MULTILINE).start()
         content = content[:header_end] + import_block + "\n\n" + content[header_end:]
+    # Nothing in this file references these names directly -- they exist purely to
+    # re-export infrastructure_core's surface through core.models (see the docstring
+    # above). Without __all__ naming them, _ruff_fix_imports()'s F401 pass reads that as
+    # "unused import" and deletes the whole block.
+    all_decl = "__all__ = [\n" + "".join(f'    "{name}",\n' for name in names) + "]\n"
+    if all_decl not in content:
+        content = content.replace(import_block, import_block + "\n" + all_decl, 1)
 
     CORE_MODELS.write_text(content)
-    subprocess.run(
-        ["ruff", "format", str(CORE_MODELS)], check=True, capture_output=True
-    )
+    subprocess.run(["ruff", "format", str(CORE_MODELS)], check=True, capture_output=True)
     return True
 
 
@@ -126,9 +131,9 @@ def fix_thermal_generation_cost_start_up(content: str) -> tuple[str, bool]:
     so the discriminator must be removed.
     """
     fixed = re.sub(
-        r'(start_up: float \| StartUpStages = Field\([^)]*?)'
+        r"(start_up: float \| StartUpStages = Field\([^)]*?)"
         r',\s*discriminator="startup_stages_type"',
-        r'\1',
+        r"\1",
         content,
         flags=re.DOTALL,
     )
@@ -178,13 +183,11 @@ def fix_missing_composite_defaults(content: str) -> tuple[str, bool]:
     changed = False
     for description, (field, type_name) in MISSING_TYPE_LEVEL_DEFAULTS.items():
         pattern = re.compile(
-            rf'(    {re.escape(field)}: {re.escape(type_name)} \| None = Field\(\n)'
+            rf"(    {re.escape(field)}: {re.escape(type_name)} \| None = Field\(\n)"
             rf"(        None,\n)"
             rf'(        description="{re.escape(description)}",\n    \))'
         )
-        new_content, n = pattern.subn(
-            rf"\1        {INPUT_OUTPUT_CURVE_ZERO_DEFAULT},\n\3", content
-        )
+        new_content, n = pattern.subn(rf"\1        {INPUT_OUTPUT_CURVE_ZERO_DEFAULT},\n\3", content)
         if n:
             content = new_content
             changed = True
@@ -207,9 +210,7 @@ def fix_costcurve_power_units_default(content: str) -> tuple[str, bool]:
     Julia does. Only `CostCurve` itself (not `FuelCurve`, whose schema
     `power_units` has no sibling default) is affected.
     """
-    pattern = re.compile(
-        r"(class CostCurve\(BaseModel\):\n)(    power_units: UnitSystem\n)"
-    )
+    pattern = re.compile(r"(class CostCurve\(BaseModel\):\n)(    power_units: UnitSystem\n)")
     new_content, n = pattern.subn(
         r"\1    power_units: UnitSystem = UnitSystem.NATURAL_UNITS\n", content
     )
@@ -263,9 +264,7 @@ def warn_primitive_discriminators(content: str, path: Path) -> int:
     addressed with a targeted fix.
     """
     warnings = 0
-    for match in re.finditer(
-        r"^\s+(\w+):\s*(.+?)\s*=\s*Field\(", content, re.MULTILINE
-    ):
+    for match in re.finditer(r"^\s+(\w+):\s*(.+?)\s*=\s*Field\(", content, re.MULTILINE):
         field_name = match.group(1)
         type_str = match.group(2)
         if not _has_primitive_in_union(type_str):
@@ -276,8 +275,7 @@ def warn_primitive_discriminators(content: str, path: Path) -> int:
             continue
         if "discriminator=" in content[match.start() : paren_end + 1]:
             print(
-                f"  WARNING: {path}:{field_name} — primitive in "
-                f"discriminated union ({type_str})",
+                f"  WARNING: {path}:{field_name} — primitive in discriminated union ({type_str})",
                 file=sys.stderr,
             )
             warnings += 1
@@ -294,6 +292,26 @@ WARNINGS = [
 # ---------------------------------------------------------------------------
 
 
+def _ruff_fix_imports(path: Path) -> None:
+    """Auto-fix F401 (unused import) / F811 (redefined-while-unused import).
+
+    datamodel-codegen emits one import statement per $ref resolved, with no
+    dedup pass of its own: a type referenced from several properties in the
+    same file, or re-exported by dedupe_core_against_infrastructure_core()
+    above while a per-property import of the same name already exists, ends
+    up imported more than once. `--formatters ruff-format` (passed to every
+    codegen invocation) only reformats; it does not remove or merge imports,
+    which is a `ruff check --fix` job, not a `ruff format` one. Restricted to
+    these two codes rather than every default-enabled rule so this never
+    silently starts rewriting something else `ruff check` gains later.
+    """
+    subprocess.run(
+        ["ruff", "check", "--fix", "--select", "F401,F811", str(path)],
+        check=True,
+        capture_output=True,
+    )
+
+
 def main() -> None:
     if dedupe_core_against_infrastructure_core():
         print(f"  De-duplicated: {CORE_MODELS} against {INFRASTRUCTURE_CORE_MODELS}")
@@ -307,6 +325,8 @@ def main() -> None:
             if changed:
                 models_file.write_text(content)
                 print(f"  Fixed ({fix.__name__}): {models_file}")
+
+        _ruff_fix_imports(models_file)
 
         for warn in WARNINGS:
             warnings += warn(content, models_file)

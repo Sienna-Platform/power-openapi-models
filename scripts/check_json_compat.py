@@ -96,7 +96,7 @@ def diff_payload(before, after, path=""):
         if len(before) != len(after):
             out.append(f"length {path}: {len(before)} -> {len(after)}")
         else:
-            for i, (b, a) in enumerate(zip(before, after)):
+            for i, (b, a) in enumerate(zip(before, after, strict=True)):
                 out.extend(diff_payload(b, a, f"{path}[{i}]"))
     elif before != after:
         out.append(f"changed {path}: {before!r} -> {after!r}")
@@ -135,9 +135,7 @@ def check_document(path, registry):
             # round-trip, not get materialized to its schema default. A truly
             # required field (no pydantic default) already failed model_validate
             # above if missing, so this can't hide a genuine required-field drop.
-            rebuilt.append(
-                model.model_dump(mode="json", by_alias=True, exclude_unset=True)
-            )
+            rebuilt.append(model.model_dump(mode="json", by_alias=True, exclude_unset=True))
             total += 1
         validated[type_name] = rebuilt
 
@@ -238,9 +236,7 @@ def main():
     if not in_dir.is_dir():
         print(f"Input directory not found: {in_dir}")
         print("Generate documents first:")
-        print(
-            "  cd ../PowerFlowFileParser.jl && julia --project scripts/inspect_14bus_json.jl"
-        )
+        print("  cd ../PowerFlowFileParser.jl && julia --project scripts/inspect_14bus_json.jl")
         return 1 if failures else 0
 
     docs = sorted(
@@ -250,9 +246,7 @@ def main():
         and p.name != "python_authored_selftest.json"
     )
     if not docs:
-        print(
-            f"No OpenAPI documents in {in_dir} (looked for *.json, excluding *.pm.json)"
-        )
+        print(f"No OpenAPI documents in {in_dir} (looked for *.json, excluding *.pm.json)")
         return 1 if failures else 0
 
     for path in docs:

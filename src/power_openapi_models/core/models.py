@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 from enum import Enum, IntEnum
-from typing import Literal
 from pydantic import BaseModel, Field, RootModel
+from typing import Literal
 
 
 from power_openapi_models.infrastructure_core.models import (
@@ -30,6 +30,29 @@ from power_openapi_models.infrastructure_core.models import (
     XYCoords,
 )
 
+__all__ = [
+    "ComplexNumber",
+    "DataSource",
+    "FromTo",
+    "FromToToFrom",
+    "FunctionData",
+    "GeographicInfo",
+    "InOut",
+    "LinearFunctionData",
+    "MinMax",
+    "PiecewiseLinearData",
+    "PiecewiseStepData",
+    "QuadraticFunctionData",
+    "SupplementalAttributeAssociation",
+    "TimeSeriesLinearFunctionData",
+    "TimeSeriesPiecewiseLinearData",
+    "TimeSeriesPiecewiseStepData",
+    "TimeSeriesQuadraticFunctionData",
+    "UnitSystem",
+    "UpDown",
+    "XYCoords",
+]
+
 
 class ACBusType(Enum):
     PQ = "PQ"
@@ -39,10 +62,34 @@ class ACBusType(Enum):
     SLACK = "SLACK"
 
 
-class CurveStyle(IntEnum):
+class ChargeDischarge(BaseModel):
+    charge: float
+    discharge: float
+
+
+class MinMaxByKey(RootModel[dict[str, MinMax]]):
+    root: dict[str, MinMax]
+
+
+class OutageFactors(BaseModel):
+    planned: float | None = Field(None, title="Planned")
+    forced: float | None = Field(None, title="Forced")
+
+
+class Arc(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    from_id: int = Field(..., description="ID of the initial bus.")
+    to_id: int = Field(..., description="ID of the terminal bus.")
+
+
+class CurveMultiStep(IntEnum):
     integer_0 = 0
     integer_1 = 1
-    integer_2 = 2
+
+
+class CurveStyles(IntEnum):
+    integer_0 = 0
+    integer_1 = 1
 
 
 class StartUpStages(BaseModel):
@@ -55,6 +102,67 @@ class StartUpStages(BaseModel):
 class DbdPnts(BaseModel):
     dbd1: float | None = None
     dbd2: float | None = None
+
+
+class DCBus(BaseModel):
+    area: int | None = Field(None, description="ID of the area containing the DC bus.")
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+    )
+    base_voltage: float | None = Field(
+        None,
+        description="The base voltage. in psy5 a required param with an option to be nothing Units: kV.",
+    )
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    load_zone: int | None = Field(None, description="ID of the load zone containing the DC bus.")
+    magnitude: float | None = Field(
+        None,
+        description="Voltage as a multiple of `base_voltage`. in psy5 a required param with an option to be nothing Units: pu.",
+    )
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    number: float = Field(..., description="A unique bus identification number (positive integer).")
+    voltage_limits: MinMax | None = Field(
+        None,
+        description="Limits on the voltage variation as multiples of `base_voltage`. in psy5 a required param with an option to be nothing Units: pu.",
+    )
+
+
+class PollutantType(Enum):
+    CO2 = "CO2"
+    CO2E = "CO2E"
+    CH4 = "CH4"
+    N2O = "N2O"
+    NOX = "NOX"
+    SO2 = "SO2"
+    CO = "CO"
+    VOC = "VOC"
+    PM25 = "PM25"
+    PM10 = "PM10"
+    HG = "HG"
+    HAP = "HAP"
+    CUSTOM = "CUSTOM"
+
+
+class EmissionBasis(Enum):
+    FUEL_INPUT = "FUEL_INPUT"
+    POWER_OUTPUT = "POWER_OUTPUT"
+
+
+class MassUnit(Enum):
+    KG = "KG"
+    LB = "LB"
+    SHORT_TON = "SHORT_TON"
+    METRIC_TON = "METRIC_TON"
+
+
+class EnergyUnit(Enum):
+    MMBTU = "MMBTU"
+    GJ = "GJ"
+    MWH = "MWH"
 
 
 class EnergyUnitBasis(Enum):
@@ -90,9 +198,28 @@ class HydroReservoirCost(BaseModel):
     spillage_cost: float | None = 0.0
 
 
-class StartUp(BaseModel):
-    charge: float | None = None
-    discharge: float | None = None
+class LoadZone(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    peak_active_power: float = Field(
+        ...,
+        description="Peak active power in the zone. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    peak_reactive_power: float = Field(
+        ...,
+        description="Peak reactive power in the zone. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+    )
+    power_units: UnitSystem = Field(
+        ...,
+        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
+    )
 
 
 class PrimeMovers(Enum):
@@ -187,38 +314,32 @@ class TurbinePump(BaseModel):
     pump: float
 
 
-class PollutantType(Enum):
-    CO2 = "CO2"
-    CO2E = "CO2E"
-    CH4 = "CH4"
-    N2O = "N2O"
-    NOX = "NOX"
-    SO2 = "SO2"
-    CO = "CO"
-    VOC = "VOC"
-    PM25 = "PM25"
-    PM10 = "PM10"
-    HG = "HG"
-    HAP = "HAP"
-    CUSTOM = "CUSTOM"
-
-
-class EmissionBasis(Enum):
-    FUEL_INPUT = "FUEL_INPUT"
-    POWER_OUTPUT = "POWER_OUTPUT"
-
-
-class MassUnit(Enum):
-    KG = "KG"
-    LB = "LB"
-    SHORT_TON = "SHORT_TON"
-    METRIC_TON = "METRIC_TON"
-
-
-class EnergyUnit(Enum):
-    MMBTU = "MMBTU"
-    GJ = "GJ"
-    MWH = "MWH"
+class ACBus(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    number: int = Field(..., description="A unique bus identification number (positive integer).")
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations. This field should not be confused with the ISOLATED enum value.",
+    )
+    bustype: ACBusType | None = Field(
+        None,
+        description="Used to describe the connectivity and behavior of this bus. in psy5 a required param with an option to be nothing",
+    )
+    angle: float | None = Field(None, description="Angle of the bus. Units: rad.")
+    magnitude: float | None = Field(
+        None, description="Voltage as a multiple of `base_voltage`. Units: pu."
+    )
+    voltage_limits: MinMax | None = Field(
+        None,
+        description="Limits on the voltage variation as multiples of `base_voltage`. Units: pu.",
+    )
+    base_voltage: float | None = Field(None, description="The base voltage. Units: kV.")
+    area: int | None = Field(None, description="ID of the area containing the bus.")
+    load_zone: int | None = Field(None, description="ID of the load zone containing the bus.")
 
 
 class AverageRateCurve(BaseModel):
@@ -239,12 +360,57 @@ class IncrementalCurve(BaseModel):
     input_at_zero: float | None = None
 
 
+class Area(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    peak_active_power: float | None = Field(
+        0.0,
+        description="Peak active power in the area. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    peak_reactive_power: float | None = Field(
+        0.0,
+        description="Peak reactive power in the area. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    load_response: float | None = Field(
+        0.0,
+        description="Load-frequency damping parameter modeling how much the load in the area changes due to changes in frequency. Units: MW/Hz.",
+    )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+    )
+    power_units: UnitSystem = Field(
+        ...,
+        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
+    )
+
+
 class InputOutputCurve(BaseModel):
     curve_type: Literal["INPUT_OUTPUT"]
-    function_data: QuadraticFunctionData | LinearFunctionData | PiecewiseLinearData = (
-        Field(..., discriminator="function_type")
+    function_data: QuadraticFunctionData | LinearFunctionData | PiecewiseLinearData = Field(
+        ..., discriminator="function_type"
     )
     input_at_zero: float | None = None
+
+
+class LossValueCurve(RootModel[InputOutputCurve | IncrementalCurve]):
+    root: InputOutputCurve | IncrementalCurve = Field(
+        {
+            "curve_type": "INPUT_OUTPUT",
+            "function_data": {
+                "function_type": "LINEAR",
+                "constant_term": 0,
+                "proportional_term": 0,
+            },
+        },
+        description="The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
+        discriminator="curve_type",
+        title="LossValueCurve",
+        validate_default=True,
+    )
 
 
 class TimeSeriesAverageRateCurve(BaseModel):
@@ -291,21 +457,9 @@ class TimeSeriesInputOutputCurve(BaseModel):
     )
 
 
-class TwoTerminalLoss(RootModel[InputOutputCurve | IncrementalCurve]):
-    root: InputOutputCurve | IncrementalCurve = Field(
-        {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
-            },
-        },
-        description="Loss model of a two-terminal HVDC line as a function of flow, selected by `curve_type`. It accepts a linear model with a constant loss and a proportional loss rate (MW of loss per MW of flow), or a piecewise model giving different proportional losses on different flow segments.",
-        discriminator="curve_type",
-        title="TwoTerminalLoss",
-        validate_default=True,
-    )
+class LossCurve(BaseModel):
+    power_units: UnitSystem
+    value_curve: LossValueCurve
 
 
 class ValueCurve(
@@ -333,6 +487,51 @@ class ValueCurve(
     )
 
 
+class StorageCapitalCost(BaseModel):
+    charge_capital_cost: ValueCurve
+    discharge_capital_cost: ValueCurve
+    energy_capital_cost: ValueCurve
+    interconnection_cost: float
+
+
+class CostCurve(BaseModel):
+    power_units: UnitSystem = UnitSystem.NATURAL_UNITS
+    value_curve: ValueCurve
+    variable_cost_type: Literal["COST"]
+    vom_cost: InputOutputCurve
+
+
+class EmissionsData(BaseModel):
+    id: int
+    name: str = Field(..., description="Identifier for this emissions attribute")
+    pollutant: PollutantType = Field(
+        ...,
+        description="Pollutant identity (CO2, CO2E, CH4, N2O, NOX, SO2, PM25, PM10, HG, HAP, CUSTOM)",
+    )
+    emission_rate: ValueCurve = Field(
+        ...,
+        description="Emission rate as a ValueCurve, typically an IncrementalCurve with LinearFunctionData (constant or linearly varying rate) or PiecewiseStepData (piecewise step rates). Rates must be non-negative and finite.",
+    )
+    basis: EmissionBasis = Field(
+        ...,
+        description="FUEL_INPUT (mass per unit of heat input) or POWER_OUTPUT (mass per unit of electrical output)",
+    )
+    start_up_adder: float | None = Field(
+        0.0,
+        description="Per-start emission pulse, in mass_unit. Must be finite and non-negative. Units: per mass_unit — KG: kg, LB: lb, SHORT_TON: ston, METRIC_TON: t .",
+    )
+    mass_unit: MassUnit | None = Field("KG", description="Mass unit of the emission rate numerator")
+    energy_unit: EnergyUnit = Field(
+        ...,
+        description="Energy unit for the rate denominator. Must be MMBTU or GJ when basis is FUEL_INPUT, and MWH when basis is POWER_OUTPUT.",
+    )
+    gwp: float | None = Field(
+        1.0,
+        description="GWP100 multiplier for CO2-equivalent reporting. Must be finite and non-negative. Units: 1.",
+    )
+    available: bool | None = Field(True, description="Whether this attribute is active")
+
+
 class FuelCurve(BaseModel):
     fuel_cost: float | None = Field(
         None,
@@ -344,18 +543,10 @@ class FuelCurve(BaseModel):
     )
     power_units: UnitSystem
     startup_fuel_offtake: InputOutputCurve | None = Field(
-        None,
-        description="Fuel consumed during startup, as a curve in the unit's fuel units.",
+        None, description="Fuel consumed during startup, as a curve in the unit's fuel units."
     )
     value_curve: ValueCurve
     variable_cost_type: Literal["FUEL"]
-    vom_cost: InputOutputCurve
-
-
-class CostCurve(BaseModel):
-    power_units: UnitSystem = UnitSystem.NATURAL_UNITS
-    value_curve: ValueCurve
-    variable_cost_type: Literal["COST"]
     vom_cost: InputOutputCurve
 
 
@@ -402,7 +593,7 @@ class StorageCost(BaseModel):
     discharge_variable_cost: CostCurve | None = None
     fixed: float
     shut_down: float
-    start_up: float | StartUp
+    start_up: float | ChargeDischarge
     energy_shortage_cost: float | None = 0.0
     energy_surplus_cost: float | None = 0.0
 
@@ -471,8 +662,7 @@ class MarketBidTimeSeriesCost(BaseModel):
         description="Buy offer curves whose value curve is a time-series-backed piecewise incremental curve. Only the TIME_SERIES_INCREMENTAL variant is admissible here; any other variant is rejected by the consuming constructor.",
     )
     ancillary_service_offers: list[int] = Field(
-        ...,
-        description="IDs of the ancillary service components that this bid offers into.",
+        ..., description="IDs of the ancillary service components that this bid offers into."
     )
     incremental_slope: bool | None = Field(
         False,
@@ -482,10 +672,19 @@ class MarketBidTimeSeriesCost(BaseModel):
         False,
         description="Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
     )
-    curve_style: CurveStyle | None = Field(
+    curve_style: CurveStyles | None = Field(
         0,
-        description="Curve-clearing style for the bid: 0 = CURVE (ordinary divisible price-setting curve, default); 1 = FIXED (clears as one indivisible all-or-nothing package over its period); 2 = VARIABLE (divisible quantity, block-priced, cannot set the settlement-point price). Corresponds to ERCOT's DAM PriceCurve curveStyle field (CURVE/FIXED/VARIABLE). A non-zero value is mutually exclusive with incremental_slope/decremental_slope.",
+        description="Curve-clearing style for the bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
     )
+    curve_multistep: CurveMultiStep | None = Field(
+        0,
+        description="Multi-step block indicator for the bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve_style: curve_style is the quantity structure, curve_multistep is the time structure, and they compose.",
+    )
+
+
+class CapitalCost(BaseModel):
+    capital_cost: ValueCurve
+    interconnection_cost: float | None = 0.0
 
 
 class MarketBidCost(BaseModel):
@@ -495,24 +694,20 @@ class MarketBidCost(BaseModel):
         description="Minimum-energy offer: cost to operate at minimum stable level, in $/MWh at the curve's minimum power, stored as submitted. $/h sources convert at parse (MEO = no-load cost / P_min). Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     start_up: StartUpStages = Field(
-        ...,
-        description="Start-up cost at different stages of the thermal cycle (hot, warm, cold).",
+        ..., description="Start-up cost at different stages of the thermal cycle (hot, warm, cold)."
     )
     shut_down: InputOutputCurve = Field(
         ...,
         description="Shut-down cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     incremental_offer_curves: CostCurve = Field(
-        ...,
-        description="Sell offer curves data as a `CostCurve` of `PiecewiseIncrementalCurve`.",
+        ..., description="Sell offer curves data as a `CostCurve` of `PiecewiseIncrementalCurve`."
     )
     decremental_offer_curves: CostCurve = Field(
-        ...,
-        description="Buy offer curves data as a `CostCurve` of `PiecewiseIncrementalCurve`.",
+        ..., description="Buy offer curves data as a `CostCurve` of `PiecewiseIncrementalCurve`."
     )
     ancillary_service_offers: list[int] = Field(
-        ...,
-        description="IDs of the ancillary service components that this market bid offers into.",
+        ..., description="IDs of the ancillary service components that this market bid offers into."
     )
     incremental_slope: bool | None = Field(
         False,
@@ -522,9 +717,13 @@ class MarketBidCost(BaseModel):
         False,
         description="Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
     )
-    curve_style: CurveStyle | None = Field(
+    curve_style: CurveStyles | None = Field(
         0,
-        description="Curve-clearing style for the bid: 0 = CURVE (ordinary divisible price-setting curve, default); 1 = FIXED (clears as one indivisible all-or-nothing package over its period); 2 = VARIABLE (divisible quantity, block-priced, cannot set the settlement-point price). Corresponds to ERCOT's DAM PriceCurve curveStyle field (CURVE/FIXED/VARIABLE). A non-zero value is mutually exclusive with incremental_slope/decremental_slope.",
+        description="Curve-clearing style for the bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
+    )
+    curve_multistep: CurveMultiStep | None = Field(
+        0,
+        description="Multi-step block indicator for the bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve_style: curve_style is the quantity structure, curve_multistep is the time structure, and they compose.",
     )
 
 

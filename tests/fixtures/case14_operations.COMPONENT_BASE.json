@@ -1439,11 +1439,7 @@
         "available": true,
         "bus": 3,
         "admittance_units": "COMPONENT_MVAR",
-        "Y": {
-          "real": 0.0,
-          "imag": 50.0
-        },
-        "initial_status": [
+        "number_engaged": [
           0
         ],
         "number_of_steps": [
@@ -1468,11 +1464,7 @@
         "available": true,
         "bus": 15,
         "admittance_units": "COMPONENT_MVAR",
-        "Y": {
-          "real": 0.0,
-          "imag": 10.0
-        },
-        "initial_status": [
+        "number_engaged": [
           0
         ],
         "number_of_steps": [
@@ -1497,7 +1489,8 @@
         "id": 38,
         "name": "generator-101-1",
         "available": true,
-        "status": true,
+        "status": "ONLINE",
+        "commitment_mode": "COMMITTED",
         "bus": 3,
         "active_power": 20.88167,
         "reactive_power": -24.46801,
@@ -1543,7 +1536,6 @@
         },
         "base_power": 100.0,
         "power_units": "COMPONENT_BASE",
-        "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
         "time_at_status": 600000.0
@@ -1552,7 +1544,8 @@
         "id": 39,
         "name": "generator-101-2",
         "available": true,
-        "status": true,
+        "status": "ONLINE",
+        "commitment_mode": "COMMITTED",
         "bus": 3,
         "active_power": 10.89478,
         "reactive_power": -12.765920000000001,
@@ -1598,7 +1591,6 @@
         },
         "base_power": 100.0,
         "power_units": "COMPONENT_BASE",
-        "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
         "time_at_status": 600000.0
@@ -1607,7 +1599,8 @@
         "id": 40,
         "name": "generator-102-1",
         "available": true,
-        "status": true,
+        "status": "ONLINE",
+        "commitment_mode": "COMMITTED",
         "bus": 4,
         "active_power": 3.0,
         "reactive_power": -0.5,
@@ -1653,7 +1646,6 @@
         },
         "base_power": 100.0,
         "power_units": "COMPONENT_BASE",
-        "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
         "time_at_status": 600000.0
@@ -1662,7 +1654,8 @@
         "id": 41,
         "name": "generator-106-1",
         "available": true,
-        "status": true,
+        "status": "ONLINE",
+        "commitment_mode": "COMMITTED",
         "bus": 8,
         "active_power": 2.0,
         "reactive_power": -0.5,
@@ -1708,7 +1701,6 @@
         },
         "base_power": 100.0,
         "power_units": "COMPONENT_BASE",
-        "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
         "time_at_status": 600000.0
@@ -1717,7 +1709,8 @@
         "id": 42,
         "name": "generator-108-1",
         "available": true,
-        "status": true,
+        "status": "ONLINE",
+        "commitment_mode": "COMMITTED",
         "bus": 10,
         "active_power": 5.002730000000001,
         "reactive_power": -0.04997,
@@ -1763,7 +1756,6 @@
         },
         "base_power": 100.0,
         "power_units": "COMPONENT_BASE",
-        "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
         "time_at_status": 600000.0
@@ -1772,7 +1764,8 @@
         "id": 43,
         "name": "generator-110-1",
         "available": true,
-        "status": true,
+        "status": "ONLINE",
+        "commitment_mode": "COMMITTED",
         "bus": 12,
         "active_power": 3.0,
         "reactive_power": 27.08623,
@@ -1818,7 +1811,6 @@
         },
         "base_power": 100.0,
         "power_units": "COMPONENT_BASE",
-        "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
         "time_at_status": 600000.0
@@ -1827,7 +1819,8 @@
         "id": 44,
         "name": "generator-111-1",
         "available": true,
-        "status": true,
+        "status": "ONLINE",
+        "commitment_mode": "COMMITTED",
         "bus": 13,
         "active_power": 0.9,
         "reactive_power": 7.84759,
@@ -1873,7 +1866,6 @@
         },
         "base_power": 100.0,
         "power_units": "COMPONENT_BASE",
-        "must_run": false,
         "prime_mover_type": "OT",
         "fuel": "OTHER",
         "time_at_status": 600000.0
@@ -2250,11 +2242,14 @@
           "min": 0.0
         },
         "loss": {
-          "curve_type": "INPUT_OUTPUT",
-          "function_data": {
-            "constant_term": 0.0,
-            "function_type": "LINEAR",
-            "proportional_term": 0.0
+          "power_units": "COMPONENT_BASE",
+          "value_curve": {
+            "curve_type": "INPUT_OUTPUT",
+            "function_data": {
+              "constant_term": 0.0,
+              "function_type": "LINEAR",
+              "proportional_term": 0.0
+            }
           }
         },
         "base_power": 100.0,

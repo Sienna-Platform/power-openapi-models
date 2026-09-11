@@ -1,6 +1,11 @@
 SCHEMA_DIR ?= ../SiennaSchemas
 CODEGEN_IMAGE ?= ghcr.io/sienna-platform/power-openapi-models/codegen:latest
 PKG_DIR := src/power_openapi_models
+# `--allow-remote-refs` (previously passed to the infrastructure_core and core
+# invocations below) does not exist in datamodel-code-generator 0.55.0 (the Dockerfile's
+# pin) and fails immediately: "unrecognized arguments: --allow-remote-refs". Confirmed
+# generation of every domain still resolves same-filesystem external $refs correctly
+# without it.
 CODEGEN := datamodel-codegen --input-file-type openapi \
 	--output-model-type pydantic_v2.BaseModel \
 	--formatters ruff-format \
@@ -8,15 +13,15 @@ CODEGEN := datamodel-codegen --input-file-type openapi \
 	--disable-timestamp
 CORE_REF := --external-ref-mapping "Core/common.json=power_openapi_models.core.models"
 
-.PHONY: generate generate-docker clean validate
+.PHONY: generate generate-docker clean validate lint typecheck check
 
 generate:
 	@# infrastructure_core is its own subpackage, generated straight from
 	@# openapi-infrastructure-core.json -- see SiennaSchemas' six-package
-	@# contract (openapi-config-infrastructure-core.json, scripts/check_layering.py
+	@# contract (openapi-infrastructure-core.json, scripts/check_layering.py
 	@# there). It has no dependencies of its own, so no ref mapping is needed.
 	@echo "==> Generating infrastructure_core"
-	$(CODEGEN) --allow-remote-refs \
+	$(CODEGEN) \
 	  --input $(SCHEMA_DIR)/openapi-infrastructure-core.json \
 	  --output $(PKG_DIR)/infrastructure_core/models.py
 
@@ -36,7 +41,7 @@ generate:
 	@# imports afterward -- failing loudly if a body it finds in both files
 	@# ever differs -- so nothing is defined twice in the committed output.
 	@echo "==> Generating core"
-	$(CODEGEN) --allow-remote-refs \
+	$(CODEGEN) \
 	  --input $(SCHEMA_DIR)/openapi-core.json \
 	  --output $(PKG_DIR)/core/models.py
 
@@ -61,7 +66,11 @@ generate:
 	  --output $(PKG_DIR)/timeseries/models.py
 
 	@echo "==> Post-processing"
-	python scripts/postprocess.py
+	python3 scripts/postprocess.py
+
+	@# Keep the packaged copy of .schema-version in sync so
+	@# power_openapi_models.__schema_version__ never goes stale after a regen.
+	cp .schema-version $(PKG_DIR)/_schema_version.txt
 
 generate-docker:
 	docker run --rm \
@@ -73,5 +82,20 @@ clean:
 	rm -f $(PKG_DIR)/*/models.py
 
 validate:
-	python -c "import power_openapi_models; print('Import OK')"
+	python3 -c "import power_openapi_models; print('Import OK')"
 	pytest tests/ -v
+
+lint:
+	ruff check .
+	ruff format --check .
+
+typecheck:
+	@# scripts/check_typecompleteness.py runs `pyright --verifytypes` itself
+	@# (with PYTHONPATH=src -- an editable install alone does not let
+	@# --verifytypes find a src/-layout package) and enforces a completeness
+	@# floor explicitly, rather than trusting pyright's raw exit code: that
+	@# exit code reflects whether any diagnostic was printed, not whether the
+	@# score cleared a bar, so it is not on its own an honest gate.
+	python3 scripts/check_typecompleteness.py
+
+check: lint typecheck validate

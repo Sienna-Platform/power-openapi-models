@@ -10,6 +10,7 @@ back to `list[dict]` for the association fields it cannot import.
 
 import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -17,7 +18,8 @@ import pytest
 from pydantic import ValidationError
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SCHEMA_PATH = REPO_ROOT.parent / "SiennaSchemas" / "Core" / "SystemDocument.json"
+SCHEMAS_DIR = Path(os.environ.get("SIENNA_SCHEMAS_DIR", str(REPO_ROOT.parent / "SiennaSchemas")))
+SCHEMA_PATH = SCHEMAS_DIR / "Core" / "SystemDocument.json"
 
 
 def _load_document_module():
@@ -38,6 +40,11 @@ def document_module():
 
 @pytest.fixture(scope="module")
 def schema():
+    if not SCHEMA_PATH.is_file():
+        pytest.fail(
+            f"Schema file not found at {SCHEMA_PATH}. Set SIENNA_SCHEMAS_DIR to a "
+            "SiennaSchemas checkout (defaults to the sibling ../SiennaSchemas)."
+        )
     return json.loads(SCHEMA_PATH.read_text())
 
 
@@ -59,9 +66,7 @@ def test_required_fields_match_schema_required(document_module, schema):
 def test_trading_hub_associations_defaults_to_empty_list(document_module, schema):
     field = document_module.SystemDocument.model_fields["trading_hub_associations"]
     assert (
-        field.default_factory()
-        == schema["properties"]["trading_hub_associations"]["default"]
-        == []
+        field.default_factory() == schema["properties"]["trading_hub_associations"]["default"] == []
     )
 
 
@@ -77,9 +82,7 @@ def test_rejects_top_level_unit_system_and_base_power(document_module):
         "time_series_storage_file": None,
     }
     with pytest.raises(ValidationError):
-        document_module.SystemDocument.model_validate(
-            {**minimal, "unit_system": "NATURAL_UNITS"}
-        )
+        document_module.SystemDocument.model_validate({**minimal, "unit_system": "NATURAL_UNITS"})
     with pytest.raises(ValidationError):
         document_module.SystemDocument.model_validate({**minimal, "base_power": 100.0})
 

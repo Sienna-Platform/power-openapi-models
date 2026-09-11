@@ -4,7 +4,6 @@
 from __future__ import annotations
 from power_openapi_models.core.models import DbdPnts, FdbdPnts, MinMax
 from pydantic import BaseModel, Field
-from power_openapi_models.core.models import DbdPnts, FdbdPnts, MinMax
 
 
 class ActiveRenewableControllerAB(BaseModel):
@@ -29,24 +28,19 @@ class ActiveRenewableControllerAB(BaseModel):
     )
     K_pg: float = Field(..., description="Active power PI control proportional gain.")
     K_ig: float = Field(..., description="Active power PI control integral gain.")
-    T_p: float = Field(
-        ..., description="Real power measurement filter time constant. Units: s."
-    )
+    T_p: float = Field(..., description="Real power measurement filter time constant. Units: s.")
     fdbd_pnts: FdbdPnts = Field(
         ..., description="Frequency error dead band thresholds `(fdbd1, fdbd2)`."
     )
     fe_lim: MinMax = Field(
         ..., description="Upper/Lower limit on frequency error `(fe_min, fe_max)`."
     )
-    P_lim: MinMax = Field(
-        ..., description="Upper/Lower limit on power reference `(P_min, P_max)`."
-    )
+    P_lim: MinMax = Field(..., description="Upper/Lower limit on power reference `(P_min, P_max)`.")
     T_g: float = Field(..., description="Power Controller lag time constant. Units: s.")
     D_dn: float = Field(..., description="Droop for over-frequency conditions.")
     D_up: float = Field(..., description="Droop for under-frequency conditions.")
     dP_lim: MinMax = Field(
-        ...,
-        description="Upper/Lower limit on power reference ramp rates `(dP_min, dP_max)`.",
+        ..., description="Upper/Lower limit on power reference ramp rates `(dP_min, dP_max)`."
     )
     P_lim_inner: MinMax = Field(
         ...,
@@ -61,16 +55,11 @@ class ActiveRenewableControllerAB(BaseModel):
 class RECurrentControlB(BaseModel):
     Q_Flag: bool = Field(..., description="Q Flag used for I_qinj.")
     PQ_Flag: bool = Field(..., description="PQ Flag used for the Current Limit Logic.")
-    Vdip_lim: MinMax = Field(
-        ..., description="Limits for Voltage Dip Logic `(Vdip, Vup)`."
-    )
+    Vdip_lim: MinMax = Field(..., description="Limits for Voltage Dip Logic `(Vdip, Vup)`.")
     T_rv: float = Field(..., description="Voltage Filter Time Constant. Units: s.")
-    dbd_pnts: DbdPnts = Field(
-        ..., description="Voltage error deadband thresholds `(dbd1, dbd2)`."
-    )
+    dbd_pnts: DbdPnts = Field(..., description="Voltage error deadband thresholds `(dbd1, dbd2)`.")
     K_qv: float = Field(
-        ...,
-        description="Reactive current injection gain during over and undervoltage conditions.",
+        ..., description="Reactive current injection gain during over and undervoltage conditions."
     )
     Iqinj_lim: MinMax = Field(..., description="Limits for Iqinj `(I_qh1, I_ql1)`.")
     V_ref0: float = Field(
@@ -80,12 +69,9 @@ class RECurrentControlB(BaseModel):
     K_vp: float = Field(
         ..., description="Voltage regulator proportional gain (used when QFlag = 1)."
     )
-    K_vi: float = Field(
-        ..., description="Voltage regulator integral gain (used when QFlag = 1)."
-    )
+    K_vi: float = Field(..., description="Voltage regulator integral gain (used when QFlag = 1).")
     T_iq: float = Field(
-        ...,
-        description="Time constant for low-pass filter for state q_V when QFlag = 0. Units: s.",
+        ..., description="Time constant for low-pass filter for state q_V when QFlag = 0. Units: s."
     )
     I_max: float = Field(..., description="Maximum limit on total converter current.")
 
@@ -128,21 +114,17 @@ class ReactiveRenewableControllerAB(BaseModel):
     T_ft: float = Field(..., description="Reactive power lead time constant. Units: s.")
     T_fv: float = Field(..., description="Reactive power lag time constant. Units: s.")
     V_frz: float = Field(
-        ...,
-        description="Voltage below which state xiq_oc (integrator state) is freeze.",
+        ..., description="Voltage below which state xiq_oc (integrator state) is freeze."
     )
     R_c: float = Field(
         ..., description="Line drop compensation resistance (used when VC_Flag = 1)."
     )
-    X_c: float = Field(
-        ..., description="Line drop compensation reactance (used when VC_Flag = 1)."
-    )
+    X_c: float = Field(..., description="Line drop compensation reactance (used when VC_Flag = 1).")
     K_c: float = Field(
         ..., description="Reactive current compensation gain (used when VC_Flag = 0)."
     )
     e_lim: MinMax = Field(
-        ...,
-        description="Upper/Lower limit on Voltage or Q-power deadband output `(e_min, e_max)`.",
+        ..., description="Upper/Lower limit on Voltage or Q-power deadband output `(e_min, e_max)`."
     )
     dbd_pnts: DbdPnts = Field(
         ..., description="Voltage or Q-power error dead band thresholds `(dbd1, dbd2)`."
@@ -164,12 +146,10 @@ class ReactiveRenewableControllerAB(BaseModel):
         description="Upper/Lower limit on reactive power PI controller in REECB `(V_min, V_max)`. Only used when V_Flag = 1.",
     )
     K_qp: float = Field(
-        ...,
-        description="Reactive power regulator proportional gain (used when V_Flag = 1).",
+        ..., description="Reactive power regulator proportional gain (used when V_Flag = 1)."
     )
     K_qi: float = Field(
-        ...,
-        description="Reactive power regulator integral gain (used when V_Flag = 1).",
+        ..., description="Reactive power regulator integral gain (used when V_Flag = 1)."
     )
     Q_ref: float | None = Field(1.0, description="Reference Reactive Power Set-point.")
     V_ref: float | None = Field(1.0, description="Reference Voltage Set-point.")
@@ -177,9 +157,7 @@ class ReactiveRenewableControllerAB(BaseModel):
 
 class RenewableEnergyConverterTypeA(BaseModel):
     T_g: float = Field(..., description="Converter time constant. Units: s.")
-    Rrpwr: float = Field(
-        ..., description="Low Voltage Power Logic (LVPL) ramp rate limit."
-    )
+    Rrpwr: float = Field(..., description="Low Voltage Power Logic (LVPL) ramp rate limit.")
     Brkpt: float = Field(..., description="LVPL characteristic voltage 2.")
     Zerox: float = Field(..., description="LVPL characteristic voltage 1.")
     Lvpl1: float = Field(..., description="LVPL gain.")
@@ -203,8 +181,7 @@ class RenewableEnergyConverterTypeA(BaseModel):
         description="Overvoltage compensation gain used in the high voltage reactive current management.",
     )
     Iqr_lims: MinMax = Field(
-        ...,
-        description="Limit on rate of change for reactive current (Iqr_min, Iqr_max).",
+        ..., description="Limit on rate of change for reactive current (Iqr_min, Iqr_max)."
     )
     Accel: float = Field(..., description="Acceleration factor.")
     Lvpl_sw: bool = Field(
@@ -225,15 +202,11 @@ class RenewableEnergyConverterTypeA(BaseModel):
 class RoundRotorMachine(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component.")
     R: float = Field(..., description="Armature resistance.")
-    Td0_p: float = Field(
-        ..., description="Time constant of transient d-axis voltage. Units: s."
-    )
+    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage. Units: s.")
     Td0_pp: float = Field(
         ..., description="Time constant of sub-transient d-axis voltage. Units: s."
     )
-    Tq0_p: float = Field(
-        ..., description="Time constant of transient q-axis voltage. Units: s."
-    )
+    Tq0_p: float = Field(..., description="Time constant of transient q-axis voltage. Units: s.")
     Tq0_pp: float = Field(
         ..., description="Time constant of sub-transient q-axis voltage. Units: s."
     )
@@ -242,8 +215,7 @@ class RoundRotorMachine(BaseModel):
     Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis.")
     Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis.")
     Xd_pp: float = Field(
-        ...,
-        description="Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp.",
+        ..., description="Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp."
     )
     Xl: float = Field(..., description="Stator leakage reactance.")
     Se: list[float] = Field(
