@@ -28,7 +28,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: schema-version
-        run: echo "sha=$(cat .schema-version)" >> "$GITHUB_OUTPUT"
+        run: |
+          short_sha=$(cat .schema-version)
+          response=$(curl -fsSL -H "Authorization: Bearer ${{ github.token }}" \
+            "https://api.github.com/repos/Sienna-Platform/SiennaSchemas/commits/${short_sha}" || true)
+          full_sha=""
+          if [ -n "$response" ]; then
+            full_sha=$(printf '%s' "$response" | python3 -c "import json, sys; print(json.load(sys.stdin).get('sha', ''))")
+          fi
+          if [ -z "$full_sha" ]; then
+            echo "::error::Could not resolve full sha for SiennaSchemas commit '${short_sha}' (from .schema-version) via the GitHub API" >&2
+            exit 1
+          fi
+          echo "sha=$full_sha" >> "$GITHUB_OUTPUT"
         shell: bash
       - uses: actions/checkout@v4
         with:
