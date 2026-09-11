@@ -20,7 +20,7 @@ class OwnerCategory(Enum):
 class TimeSeriesFeatureValue(RootModel[int | float | bool | str]):
     root: int | float | bool | str = Field(
         ...,
-        description="One feature value. Four kinds, matching the backing store's feature-value type: int, float, bool, str. `anyOf` rather than `oneOf` is required, not stylistic: JSON Schema's `integer` is a subset of `number`, so an integer instance matches both branches and `oneOf` — which demands exactly one match — would reject every integer feature. A float feature is compared and hashed by its bit pattern rather than by IEEE comparison, so 0.0 and -0.0 are two different series; NaN and negative zero are rejected on write because the catalog cannot store either faithfully.",
+        description="One feature value: int, float, bool, or str. anyOf (not oneOf) because JSON Schema's integer is a subset of number. A float is compared and hashed by bit pattern, so 0.0 and -0.0 differ; NaN and negative zero are rejected on write.",
         title="TimeSeriesFeatureValue",
     )
 
@@ -28,7 +28,7 @@ class TimeSeriesFeatureValue(RootModel[int | float | bool | str]):
 class ElementType(RootModel[str]):
     root: str = Field(
         ...,
-        description="Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `u32`, `u16`, `u8`, `i16`, `i8`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value means and how it is laid out; the physical dtype of the bytes derives from it rather than being recorded separately. `linear_function` occupies 2 slots, `quadratic_function` 3; the two piecewise kinds are ragged, with the used count in the row's leading element.",
+        description="Canonical element type of the stored array: a dtype spelling (f64, f32, i64, i32, u64, u32, u16, u8, i16, i8, bool) for scalars, else tuple(N,dtype) or a function-data kind. Says what one timestep's value means and how it is laid out.",
         title="ElementType",
     )
 
@@ -36,7 +36,7 @@ class ElementType(RootModel[str]):
 class TimeReference(RootModel[str]):
     root: str = Field(
         ...,
-        description="How a series' timestamps were spelled, recorded so a read hands back what the write declared instead of relabelling every series UTC. Four forms share one string, and are unambiguous because a zone name that would read as either literal or as an offset is rejected: `utc`; `zoneless` for a wall clock, which names no instant; a fixed UTC offset (`-07:00`, `+0530`, `+05`); or an IANA zone name (`America/Denver`). Only the name's shape is checked here — whether a zone exists is a tz-database question, and the store records the name either way. A spelling, not a grid: it does not change what a calendar `resolution` steps on, and a series on a local-clock grid is a NonSequentialTimeSeries. Descriptive, so two series differing only in it are duplicates rather than distinct series, but not inert — a query's bounds must match the series' spelling, and the zoneless series form their own group.",
+        description="How a series' timestamps are spelled: utc; zoneless for a wall clock; a fixed UTC offset (-07:00, +0530); or an IANA zone name. Not a grid: does not change what resolution steps on.",
         title="TimeReference",
     )
 
@@ -44,7 +44,7 @@ class TimeReference(RootModel[str]):
 class Period(RootModel[str]):
     root: str = Field(
         ...,
-        description="A time period as an ISO-8601 duration string, used for `resolution`, `horizon`, and `interval`. Two kinds, which are never equal even when their spans coincide: fixed spans (`PT1H`, `PT5M`, down to a one-millisecond floor of `PT0.001S`) and calendar spans (`P1M`, `P1Y`), whose length depends on the calendar. `PT0S` is the canonical interval of a single-window forecast. More than three fractional-second digits is rejected, so a series on a grid finer than a millisecond is not storable at all rather than storable and unreadable.",
+        description="A time period as an ISO-8601 duration string, used for resolution, horizon, and interval. Fixed spans (PT1H, down to a millisecond floor) and calendar spans (P1M, P1Y) are never equal even when their spans coincide.",
         title="Period",
     )
 
@@ -52,7 +52,7 @@ class Period(RootModel[str]):
 class TimeSeriesFeatures(RootModel[dict[str, TimeSeriesFeatureValue]]):
     root: dict[str, TimeSeriesFeatureValue] = Field(
         ...,
-        description="User-defined key/value tags forming part of a series' identity. A map, matching the backing store's feature-map type (a BTreeMap whose sort order is load-bearing, because the hash of the feature map keys the catalog's uniqueness index). The excluded property names each already name a field of a time series or of the tuple that addresses one: consumers routinely spread a feature map into keyword arguments, where a feature called `name` or `resolution` would shadow the real field and silently change what a query means. The comparison is exact and case-sensitive — `resolution` is reserved, `Resolution` is not.",
+        description="User-defined key/value tags forming part of a series' identity. Excludes names already used by a series field or by the tuple addressing one, since a feature would otherwise shadow that field. Comparison is exact and case-sensitive.",
         title="TimeSeriesFeatures",
     )
 
@@ -60,11 +60,11 @@ class TimeSeriesFeatures(RootModel[dict[str, TimeSeriesFeatureValue]]):
 class NonSequentialTimeSeries(BaseModel):
     association_id: int = Field(
         ...,
-        description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
+        description="Surrogate id for this association, minted by the store. Fixed once assigned and never reused; a consumer may persist it as a durable reference.",
     )
     owner_id: int = Field(
         ...,
-        description="ID of the owning component or supplemental attribute. The producing data layer allocates both from one id stream, so an `owner_id` never collides across the two categories; `owner_category` remains required because the store's catalog contract still supports independent streams from other producers, and it is still the store's disambiguator.",
+        description="ID of the owning component or supplemental attribute. `owner_category` says which.",
     )
     owner_type: str = Field(
         ...,
@@ -74,24 +74,23 @@ class NonSequentialTimeSeries(BaseModel):
         ..., description="Whether the owner is a component or a supplemental attribute."
     )
     time_series_type: Literal["NonSequentialTimeSeries"] = Field(
-        ...,
-        description="Discriminator. Fixed to NonSequentialTimeSeries for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
+        ..., description="Discriminator, fixed to NonSequentialTimeSeries for this schema."
     )
     name: str = Field(
         ...,
-        description="Time series name (e.g. max_active_power). Part of the series' identity, and often carrying a disambiguating suffix; `component_field` records what the values are for.",
+        description="Series name (e.g. max_active_power), part of its identity. `component_field` records what the values represent.",
     )
     features: TimeSeriesFeatures = Field(
         ...,
-        description="User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected.",
+        description="User-defined key/value tags, part of the series' identity: two series differing only by a feature are distinct. Names cannot collide with another series field.",
     )
     uri: str = Field(
         ...,
-        description="Locator for the dense data, unique within one store. No required format — typically a file path or an HDF5 dataset path; the backing store decides what it means and resolves it (infrastore uses its content hash as this value). Never parsed or interpreted here. This layer records where the values are, never the values.",
+        description="Locator for the dense data, unique within its store. Format is store-defined, often a file or dataset path. Never parsed or interpreted here.",
     )
     timestamps_uri: str | None = Field(
         None,
-        description="Locator for this series' explicit timestamp vector, unique within one store — `uri`'s counterpart for the time axis, with the same contract: no required format, never parsed or interpreted here, and resolved by the backing store (infrastore uses the axis's content hash, the same value it keys the shared vector under). A locator rather than the vector itself because the axis is shared: a cohort of irregular series on one axis names it once each, where inlining the timestamps would repeat the whole vector per row. Optional, so a producer that predates it is still valid, and absent from the other five types, which have no explicit axis. Without it a document cannot say which of the store's axes a row sits on, and the row cannot be reconstructed from the document — the store cannot infer it either, since arrays are content-addressed and two irregular series with identical values on different axes share one stored array. A consumer restoring rows from a document therefore requires it.",
+        description="Locator for this series' explicit timestamp vector, unique within one store. Optional; absent from the other five types, which have no explicit axis.",
     )
     data_hash: str | None = Field(
         None,
@@ -99,7 +98,7 @@ class NonSequentialTimeSeries(BaseModel):
     )
     element_type: ElementType = Field(
         ...,
-        description="What one timestep's values mean and how they are laid out. The physical dtype of the stored bytes derives from this and is not recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label — the writing package derives it from the array.",
+        description="What one timestep's values mean and how they are laid out. The stored dtype derives from this and is not recorded separately.",
     )
     element_shape: list[conint(ge=0)] = Field(
         ...,
@@ -107,47 +106,47 @@ class NonSequentialTimeSeries(BaseModel):
     )
     array_shape: list[ArrayShapeItem] | None = Field(
         None,
-        description="Full native shape of the stored array, in the order the store holds it: the first axis is the array's length and the trailing axes end with `element_shape`. Static types are `[length, *element_shape]`; a deterministic forecast stacks windows as `[horizon_count, count, *element_shape]`; probabilistic and scenarios forecasts add a percentile or scenario axis in front of that. Optional, and redundant for the static types, where it is exactly `[length] + element_shape`. It earns its place on the forecasts, whose array layout is a convention the producing package owns rather than a rule this layer enforces, so the stored geometry cannot be reconstructed from `horizon`, `count`, `percentiles`, and `scenario_count` alone. A consumer that has it should prefer it; one that does not falls back to those fields, which is exact for the static types and a best effort for the forecasts.",
+        description="Full native shape of the stored array: length, then `element_shape`. Forecasts add a horizon/percentile/scenario axis. Optional for static types.",
         min_length=1,
     )
     units: str | None = Field(
         None,
-        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
+        description="Unit label for the series values, set by the writer. Drawn from the vocabulary in Core/units.json by convention, not validated against it.",
     )
     quantity_kind: str | None = Field(
         None,
-        description="Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
+        description="Physical quantity the values measure (e.g. ActivePower, ReactivePower). Finer-grained than a dimension; the only quantity record when `unit_system` is per-unit.",
     )
     unit_system: UnitSystem | None = Field(
         None,
-        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+        description="Basis the series values are already expressed in. A declaration only; nothing here rescales values. Absent means unspecified, not NATURAL_UNITS.",
     )
     time_reference: TimeReference | None = Field(
         None,
-        description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
+        description="How this series' timestamps are spelled, returned as declared rather than relabeled as UTC. Absent means unspecified, not a UTC claim.",
     )
     component_field: str | None = Field(
         None,
-        description="The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.",
+        description="Field on the owning object whose time-varying values these are (e.g. max_active_power). Free-form; records what the values are for.",
     )
     application_data: str | None = Field(
         None,
-        description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
+        description="Opaque payload, typically JSON, carried verbatim for the owning application to reconstruct its own objects. Never parsed here.",
     )
     length: conint(ge=0) = Field(
         ...,
-        description="Number of timesteps. Together with `name` this is what identifies the series: its explicit, strictly-increasing timestamp vector lives in the store, content-addressed so that many irregular series sharing one time axis store it once.",
+        description="Number of timesteps. Together with name, identifies the series; its explicit, strictly-increasing timestamp vector lives in the store, content-addressed.",
     )
 
 
 class Deterministic(BaseModel):
     association_id: int = Field(
         ...,
-        description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
+        description="Surrogate id for this association, minted by the store. Fixed once assigned and never reused; a consumer may persist it as a durable reference.",
     )
     owner_id: int = Field(
         ...,
-        description="ID of the owning component or supplemental attribute. The producing data layer allocates both from one id stream, so an `owner_id` never collides across the two categories; `owner_category` remains required because the store's catalog contract still supports independent streams from other producers, and it is still the store's disambiguator.",
+        description="ID of the owning component or supplemental attribute. `owner_category` says which.",
     )
     owner_type: str = Field(
         ...,
@@ -157,20 +156,19 @@ class Deterministic(BaseModel):
         ..., description="Whether the owner is a component or a supplemental attribute."
     )
     time_series_type: Literal["Deterministic"] = Field(
-        ...,
-        description="Discriminator. Fixed to Deterministic for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
+        ..., description="Discriminator, fixed to Deterministic for this schema."
     )
     name: str = Field(
         ...,
-        description="Time series name (e.g. max_active_power). Part of the series' identity, and often carrying a disambiguating suffix; `component_field` records what the values are for.",
+        description="Series name (e.g. max_active_power), part of its identity. `component_field` records what the values represent.",
     )
     features: TimeSeriesFeatures = Field(
         ...,
-        description="User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected.",
+        description="User-defined key/value tags, part of the series' identity: two series differing only by a feature are distinct. Names cannot collide with another series field.",
     )
     uri: str = Field(
         ...,
-        description="Locator for the dense data, unique within one store. No required format — typically a file path or an HDF5 dataset path; the backing store decides what it means and resolves it (infrastore uses its content hash as this value). Never parsed or interpreted here. This layer records where the values are, never the values.",
+        description="Locator for the dense data, unique within its store. Format is store-defined, often a file or dataset path. Never parsed or interpreted here.",
     )
     data_hash: str | None = Field(
         None,
@@ -178,7 +176,7 @@ class Deterministic(BaseModel):
     )
     element_type: ElementType = Field(
         ...,
-        description="What one timestep's values mean and how they are laid out. The physical dtype of the stored bytes derives from this and is not recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label — the writing package derives it from the array.",
+        description="What one timestep's values mean and how they are laid out. The stored dtype derives from this and is not recorded separately.",
     )
     element_shape: list[conint(ge=0)] = Field(
         ...,
@@ -186,32 +184,32 @@ class Deterministic(BaseModel):
     )
     array_shape: list[ArrayShapeItem] | None = Field(
         None,
-        description="Full native shape of the stored array, in the order the store holds it: the first axis is the array's length and the trailing axes end with `element_shape`. Static types are `[length, *element_shape]`; a deterministic forecast stacks windows as `[horizon_count, count, *element_shape]`; probabilistic and scenarios forecasts add a percentile or scenario axis in front of that. Optional, and redundant for the static types, where it is exactly `[length] + element_shape`. It earns its place on the forecasts, whose array layout is a convention the producing package owns rather than a rule this layer enforces, so the stored geometry cannot be reconstructed from `horizon`, `count`, `percentiles`, and `scenario_count` alone. A consumer that has it should prefer it; one that does not falls back to those fields, which is exact for the static types and a best effort for the forecasts.",
+        description="Full native shape of the stored array: length, then `element_shape`. Forecasts add a horizon/percentile/scenario axis. Optional for static types.",
         min_length=1,
     )
     units: str | None = Field(
         None,
-        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
+        description="Unit label for the series values, set by the writer. Drawn from the vocabulary in Core/units.json by convention, not validated against it.",
     )
     quantity_kind: str | None = Field(
         None,
-        description="Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
+        description="Physical quantity the values measure (e.g. ActivePower, ReactivePower). Finer-grained than a dimension; the only quantity record when `unit_system` is per-unit.",
     )
     unit_system: UnitSystem | None = Field(
         None,
-        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+        description="Basis the series values are already expressed in. A declaration only; nothing here rescales values. Absent means unspecified, not NATURAL_UNITS.",
     )
     time_reference: TimeReference | None = Field(
         None,
-        description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
+        description="How this series' timestamps are spelled, returned as declared rather than relabeled as UTC. Absent means unspecified, not a UTC claim.",
     )
     component_field: str | None = Field(
         None,
-        description="The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.",
+        description="Field on the owning object whose time-varying values these are (e.g. max_active_power). Free-form; records what the values are for.",
     )
     application_data: str | None = Field(
         None,
-        description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
+        description="Opaque payload, typically JSON, carried verbatim for the owning application to reconstruct its own objects. Never parsed here.",
     )
     initial_timestamp: AwareDatetime = Field(..., description="Start of the first forecast window.")
     resolution: Period = Field(
@@ -224,7 +222,7 @@ class Deterministic(BaseModel):
     )
     interval: Period = Field(
         ...,
-        description="Step between the start of consecutive forecast windows. Part of the series' identity: two forecasts of one variable at the same resolution but different intervals — a day-ahead and a real-time forecast — are distinct series. `PT0S` is the canonical interval of a single-window forecast, which has no second window to step to.",
+        description="Step between the start of consecutive forecast windows. Part of the series' identity. `PT0S` is canonical for a single-window forecast.",
     )
     count: conint(ge=0) = Field(
         ...,
@@ -235,11 +233,11 @@ class Deterministic(BaseModel):
 class DeterministicSingleTimeSeries(BaseModel):
     association_id: int = Field(
         ...,
-        description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
+        description="Surrogate id for this association, minted by the store. Fixed once assigned and never reused; a consumer may persist it as a durable reference.",
     )
     owner_id: int = Field(
         ...,
-        description="ID of the owning component or supplemental attribute. The producing data layer allocates both from one id stream, so an `owner_id` never collides across the two categories; `owner_category` remains required because the store's catalog contract still supports independent streams from other producers, and it is still the store's disambiguator.",
+        description="ID of the owning component or supplemental attribute. `owner_category` says which.",
     )
     owner_type: str = Field(
         ...,
@@ -249,20 +247,19 @@ class DeterministicSingleTimeSeries(BaseModel):
         ..., description="Whether the owner is a component or a supplemental attribute."
     )
     time_series_type: Literal["DeterministicSingleTimeSeries"] = Field(
-        ...,
-        description="Discriminator. Fixed to DeterministicSingleTimeSeries for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
+        ..., description="Discriminator, fixed to DeterministicSingleTimeSeries for this schema."
     )
     name: str = Field(
         ...,
-        description="Time series name (e.g. max_active_power). Part of the series' identity, and often carrying a disambiguating suffix; `component_field` records what the values are for.",
+        description="Series name (e.g. max_active_power), part of its identity. `component_field` records what the values represent.",
     )
     features: TimeSeriesFeatures = Field(
         ...,
-        description="User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected.",
+        description="User-defined key/value tags, part of the series' identity: two series differing only by a feature are distinct. Names cannot collide with another series field.",
     )
     uri: str = Field(
         ...,
-        description="Locator for the dense data, unique within one store. No required format — typically a file path or an HDF5 dataset path; the backing store decides what it means and resolves it (infrastore uses its content hash as this value). Never parsed or interpreted here. This layer records where the values are, never the values.",
+        description="Locator for the dense data, unique within its store. Format is store-defined, often a file or dataset path. Never parsed or interpreted here.",
     )
     data_hash: str | None = Field(
         None,
@@ -270,7 +267,7 @@ class DeterministicSingleTimeSeries(BaseModel):
     )
     element_type: ElementType = Field(
         ...,
-        description="What one timestep's values mean and how they are laid out. The physical dtype of the stored bytes derives from this and is not recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label — the writing package derives it from the array.",
+        description="What one timestep's values mean and how they are laid out. The stored dtype derives from this and is not recorded separately.",
     )
     element_shape: list[conint(ge=0)] = Field(
         ...,
@@ -278,32 +275,32 @@ class DeterministicSingleTimeSeries(BaseModel):
     )
     array_shape: list[ArrayShapeItem] | None = Field(
         None,
-        description="Full native shape of the stored array, in the order the store holds it: the first axis is the array's length and the trailing axes end with `element_shape`. Static types are `[length, *element_shape]`; a deterministic forecast stacks windows as `[horizon_count, count, *element_shape]`; probabilistic and scenarios forecasts add a percentile or scenario axis in front of that. Optional, and redundant for the static types, where it is exactly `[length] + element_shape`. It earns its place on the forecasts, whose array layout is a convention the producing package owns rather than a rule this layer enforces, so the stored geometry cannot be reconstructed from `horizon`, `count`, `percentiles`, and `scenario_count` alone. A consumer that has it should prefer it; one that does not falls back to those fields, which is exact for the static types and a best effort for the forecasts.",
+        description="Full native shape of the stored array: length, then `element_shape`. Forecasts add a horizon/percentile/scenario axis. Optional for static types.",
         min_length=1,
     )
     units: str | None = Field(
         None,
-        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
+        description="Unit label for the series values, set by the writer. Drawn from the vocabulary in Core/units.json by convention, not validated against it.",
     )
     quantity_kind: str | None = Field(
         None,
-        description="Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
+        description="Physical quantity the values measure (e.g. ActivePower, ReactivePower). Finer-grained than a dimension; the only quantity record when `unit_system` is per-unit.",
     )
     unit_system: UnitSystem | None = Field(
         None,
-        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+        description="Basis the series values are already expressed in. A declaration only; nothing here rescales values. Absent means unspecified, not NATURAL_UNITS.",
     )
     time_reference: TimeReference | None = Field(
         None,
-        description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
+        description="How this series' timestamps are spelled, returned as declared rather than relabeled as UTC. Absent means unspecified, not a UTC claim.",
     )
     component_field: str | None = Field(
         None,
-        description="The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.",
+        description="Field on the owning object whose time-varying values these are (e.g. max_active_power). Free-form; records what the values are for.",
     )
     application_data: str | None = Field(
         None,
-        description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
+        description="Opaque payload, typically JSON, carried verbatim for the owning application to reconstruct its own objects. Never parsed here.",
     )
     initial_timestamp: AwareDatetime = Field(..., description="Start of the first forecast window.")
     resolution: Period = Field(
@@ -316,7 +313,7 @@ class DeterministicSingleTimeSeries(BaseModel):
     )
     interval: Period = Field(
         ...,
-        description="Step between the start of consecutive forecast windows. Part of the series' identity: two forecasts of one variable at the same resolution but different intervals — a day-ahead and a real-time forecast — are distinct series. `PT0S` is the canonical interval of a single-window forecast, which has no second window to step to.",
+        description="Step between the start of consecutive forecast windows. Part of the series' identity. `PT0S` is canonical for a single-window forecast.",
     )
     count: conint(ge=0) = Field(
         ...,
@@ -327,11 +324,11 @@ class DeterministicSingleTimeSeries(BaseModel):
 class Probabilistic(BaseModel):
     association_id: int = Field(
         ...,
-        description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
+        description="Surrogate id for this association, minted by the store. Fixed once assigned and never reused; a consumer may persist it as a durable reference.",
     )
     owner_id: int = Field(
         ...,
-        description="ID of the owning component or supplemental attribute. The producing data layer allocates both from one id stream, so an `owner_id` never collides across the two categories; `owner_category` remains required because the store's catalog contract still supports independent streams from other producers, and it is still the store's disambiguator.",
+        description="ID of the owning component or supplemental attribute. `owner_category` says which.",
     )
     owner_type: str = Field(
         ...,
@@ -341,20 +338,19 @@ class Probabilistic(BaseModel):
         ..., description="Whether the owner is a component or a supplemental attribute."
     )
     time_series_type: Literal["Probabilistic"] = Field(
-        ...,
-        description="Discriminator. Fixed to Probabilistic for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
+        ..., description="Discriminator, fixed to Probabilistic for this schema."
     )
     name: str = Field(
         ...,
-        description="Time series name (e.g. max_active_power). Part of the series' identity, and often carrying a disambiguating suffix; `component_field` records what the values are for.",
+        description="Series name (e.g. max_active_power), part of its identity. `component_field` records what the values represent.",
     )
     features: TimeSeriesFeatures = Field(
         ...,
-        description="User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected.",
+        description="User-defined key/value tags, part of the series' identity: two series differing only by a feature are distinct. Names cannot collide with another series field.",
     )
     uri: str = Field(
         ...,
-        description="Locator for the dense data, unique within one store. No required format — typically a file path or an HDF5 dataset path; the backing store decides what it means and resolves it (infrastore uses its content hash as this value). Never parsed or interpreted here. This layer records where the values are, never the values.",
+        description="Locator for the dense data, unique within its store. Format is store-defined, often a file or dataset path. Never parsed or interpreted here.",
     )
     data_hash: str | None = Field(
         None,
@@ -362,7 +358,7 @@ class Probabilistic(BaseModel):
     )
     element_type: ElementType = Field(
         ...,
-        description="What one timestep's values mean and how they are laid out. The physical dtype of the stored bytes derives from this and is not recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label — the writing package derives it from the array.",
+        description="What one timestep's values mean and how they are laid out. The stored dtype derives from this and is not recorded separately.",
     )
     element_shape: list[conint(ge=0)] = Field(
         ...,
@@ -370,32 +366,32 @@ class Probabilistic(BaseModel):
     )
     array_shape: list[ArrayShapeItem] | None = Field(
         None,
-        description="Full native shape of the stored array, in the order the store holds it: the first axis is the array's length and the trailing axes end with `element_shape`. Static types are `[length, *element_shape]`; a deterministic forecast stacks windows as `[horizon_count, count, *element_shape]`; probabilistic and scenarios forecasts add a percentile or scenario axis in front of that. Optional, and redundant for the static types, where it is exactly `[length] + element_shape`. It earns its place on the forecasts, whose array layout is a convention the producing package owns rather than a rule this layer enforces, so the stored geometry cannot be reconstructed from `horizon`, `count`, `percentiles`, and `scenario_count` alone. A consumer that has it should prefer it; one that does not falls back to those fields, which is exact for the static types and a best effort for the forecasts.",
+        description="Full native shape of the stored array: length, then `element_shape`. Forecasts add a horizon/percentile/scenario axis. Optional for static types.",
         min_length=1,
     )
     units: str | None = Field(
         None,
-        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
+        description="Unit label for the series values, set by the writer. Drawn from the vocabulary in Core/units.json by convention, not validated against it.",
     )
     quantity_kind: str | None = Field(
         None,
-        description="Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
+        description="Physical quantity the values measure (e.g. ActivePower, ReactivePower). Finer-grained than a dimension; the only quantity record when `unit_system` is per-unit.",
     )
     unit_system: UnitSystem | None = Field(
         None,
-        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+        description="Basis the series values are already expressed in. A declaration only; nothing here rescales values. Absent means unspecified, not NATURAL_UNITS.",
     )
     time_reference: TimeReference | None = Field(
         None,
-        description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
+        description="How this series' timestamps are spelled, returned as declared rather than relabeled as UTC. Absent means unspecified, not a UTC claim.",
     )
     component_field: str | None = Field(
         None,
-        description="The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.",
+        description="Field on the owning object whose time-varying values these are (e.g. max_active_power). Free-form; records what the values are for.",
     )
     application_data: str | None = Field(
         None,
-        description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
+        description="Opaque payload, typically JSON, carried verbatim for the owning application to reconstruct its own objects. Never parsed here.",
     )
     initial_timestamp: AwareDatetime = Field(..., description="Start of the first forecast window.")
     resolution: Period = Field(
@@ -408,7 +404,7 @@ class Probabilistic(BaseModel):
     )
     interval: Period = Field(
         ...,
-        description="Step between the start of consecutive forecast windows. Part of the series' identity: two forecasts of one variable at the same resolution but different intervals — a day-ahead and a real-time forecast — are distinct series. `PT0S` is the canonical interval of a single-window forecast, which has no second window to step to.",
+        description="Step between the start of consecutive forecast windows. Part of the series' identity. `PT0S` is canonical for a single-window forecast.",
     )
     count: conint(ge=0) = Field(
         ...,
@@ -424,11 +420,11 @@ class Probabilistic(BaseModel):
 class Scenarios(BaseModel):
     association_id: int = Field(
         ...,
-        description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
+        description="Surrogate id for this association, minted by the store. Fixed once assigned and never reused; a consumer may persist it as a durable reference.",
     )
     owner_id: int = Field(
         ...,
-        description="ID of the owning component or supplemental attribute. The producing data layer allocates both from one id stream, so an `owner_id` never collides across the two categories; `owner_category` remains required because the store's catalog contract still supports independent streams from other producers, and it is still the store's disambiguator.",
+        description="ID of the owning component or supplemental attribute. `owner_category` says which.",
     )
     owner_type: str = Field(
         ...,
@@ -438,20 +434,19 @@ class Scenarios(BaseModel):
         ..., description="Whether the owner is a component or a supplemental attribute."
     )
     time_series_type: Literal["Scenarios"] = Field(
-        ...,
-        description="Discriminator. Fixed to Scenarios for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
+        ..., description="Discriminator, fixed to Scenarios for this schema."
     )
     name: str = Field(
         ...,
-        description="Time series name (e.g. max_active_power). Part of the series' identity, and often carrying a disambiguating suffix; `component_field` records what the values are for.",
+        description="Series name (e.g. max_active_power), part of its identity. `component_field` records what the values represent.",
     )
     features: TimeSeriesFeatures = Field(
         ...,
-        description="User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected.",
+        description="User-defined key/value tags, part of the series' identity: two series differing only by a feature are distinct. Names cannot collide with another series field.",
     )
     uri: str = Field(
         ...,
-        description="Locator for the dense data, unique within one store. No required format — typically a file path or an HDF5 dataset path; the backing store decides what it means and resolves it (infrastore uses its content hash as this value). Never parsed or interpreted here. This layer records where the values are, never the values.",
+        description="Locator for the dense data, unique within its store. Format is store-defined, often a file or dataset path. Never parsed or interpreted here.",
     )
     data_hash: str | None = Field(
         None,
@@ -459,7 +454,7 @@ class Scenarios(BaseModel):
     )
     element_type: ElementType = Field(
         ...,
-        description="What one timestep's values mean and how they are laid out. The physical dtype of the stored bytes derives from this and is not recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label — the writing package derives it from the array.",
+        description="What one timestep's values mean and how they are laid out. The stored dtype derives from this and is not recorded separately.",
     )
     element_shape: list[conint(ge=0)] = Field(
         ...,
@@ -467,32 +462,32 @@ class Scenarios(BaseModel):
     )
     array_shape: list[ArrayShapeItem] | None = Field(
         None,
-        description="Full native shape of the stored array, in the order the store holds it: the first axis is the array's length and the trailing axes end with `element_shape`. Static types are `[length, *element_shape]`; a deterministic forecast stacks windows as `[horizon_count, count, *element_shape]`; probabilistic and scenarios forecasts add a percentile or scenario axis in front of that. Optional, and redundant for the static types, where it is exactly `[length] + element_shape`. It earns its place on the forecasts, whose array layout is a convention the producing package owns rather than a rule this layer enforces, so the stored geometry cannot be reconstructed from `horizon`, `count`, `percentiles`, and `scenario_count` alone. A consumer that has it should prefer it; one that does not falls back to those fields, which is exact for the static types and a best effort for the forecasts.",
+        description="Full native shape of the stored array: length, then `element_shape`. Forecasts add a horizon/percentile/scenario axis. Optional for static types.",
         min_length=1,
     )
     units: str | None = Field(
         None,
-        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
+        description="Unit label for the series values, set by the writer. Drawn from the vocabulary in Core/units.json by convention, not validated against it.",
     )
     quantity_kind: str | None = Field(
         None,
-        description="Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
+        description="Physical quantity the values measure (e.g. ActivePower, ReactivePower). Finer-grained than a dimension; the only quantity record when `unit_system` is per-unit.",
     )
     unit_system: UnitSystem | None = Field(
         None,
-        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+        description="Basis the series values are already expressed in. A declaration only; nothing here rescales values. Absent means unspecified, not NATURAL_UNITS.",
     )
     time_reference: TimeReference | None = Field(
         None,
-        description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
+        description="How this series' timestamps are spelled, returned as declared rather than relabeled as UTC. Absent means unspecified, not a UTC claim.",
     )
     component_field: str | None = Field(
         None,
-        description="The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.",
+        description="Field on the owning object whose time-varying values these are (e.g. max_active_power). Free-form; records what the values are for.",
     )
     application_data: str | None = Field(
         None,
-        description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
+        description="Opaque payload, typically JSON, carried verbatim for the owning application to reconstruct its own objects. Never parsed here.",
     )
     initial_timestamp: AwareDatetime = Field(..., description="Start of the first forecast window.")
     resolution: Period = Field(
@@ -505,7 +500,7 @@ class Scenarios(BaseModel):
     )
     interval: Period = Field(
         ...,
-        description="Step between the start of consecutive forecast windows. Part of the series' identity: two forecasts of one variable at the same resolution but different intervals — a day-ahead and a real-time forecast — are distinct series. `PT0S` is the canonical interval of a single-window forecast, which has no second window to step to.",
+        description="Step between the start of consecutive forecast windows. Part of the series' identity. `PT0S` is canonical for a single-window forecast.",
     )
     count: conint(ge=0) = Field(
         ...,
@@ -513,18 +508,18 @@ class Scenarios(BaseModel):
     )
     scenario_count: conint(ge=1) = Field(
         ...,
-        description="Number of scenarios, one per leading axis entry of the stored array. The store's catalog has no column for this and reads it off the array's shape; it is recorded explicitly here because this layer carries no array.",
+        description="Number of scenarios, one per leading axis entry of the stored array. Recorded explicitly here since this layer carries no array.",
     )
 
 
 class SingleTimeSeries(BaseModel):
     association_id: int = Field(
         ...,
-        description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
+        description="Surrogate id for this association, minted by the store. Fixed once assigned and never reused; a consumer may persist it as a durable reference.",
     )
     owner_id: int = Field(
         ...,
-        description="ID of the owning component or supplemental attribute. The producing data layer allocates both from one id stream, so an `owner_id` never collides across the two categories; `owner_category` remains required because the store's catalog contract still supports independent streams from other producers, and it is still the store's disambiguator.",
+        description="ID of the owning component or supplemental attribute. `owner_category` says which.",
     )
     owner_type: str = Field(
         ...,
@@ -534,20 +529,19 @@ class SingleTimeSeries(BaseModel):
         ..., description="Whether the owner is a component or a supplemental attribute."
     )
     time_series_type: Literal["SingleTimeSeries"] = Field(
-        ...,
-        description="Discriminator. Fixed to SingleTimeSeries for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
+        ..., description="Discriminator, fixed to SingleTimeSeries for this schema."
     )
     name: str = Field(
         ...,
-        description="Time series name (e.g. max_active_power). Part of the series' identity, and often carrying a disambiguating suffix; `component_field` records what the values are for.",
+        description="Series name (e.g. max_active_power), part of its identity. `component_field` records what the values represent.",
     )
     features: TimeSeriesFeatures = Field(
         ...,
-        description="User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected.",
+        description="User-defined key/value tags, part of the series' identity: two series differing only by a feature are distinct. Names cannot collide with another series field.",
     )
     uri: str = Field(
         ...,
-        description="Locator for the dense data, unique within one store. No required format — typically a file path or an HDF5 dataset path; the backing store decides what it means and resolves it (infrastore uses its content hash as this value). Never parsed or interpreted here. This layer records where the values are, never the values.",
+        description="Locator for the dense data, unique within its store. Format is store-defined, often a file or dataset path. Never parsed or interpreted here.",
     )
     data_hash: str | None = Field(
         None,
@@ -555,7 +549,7 @@ class SingleTimeSeries(BaseModel):
     )
     element_type: ElementType = Field(
         ...,
-        description="What one timestep's values mean and how they are laid out. The physical dtype of the stored bytes derives from this and is not recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label — the writing package derives it from the array.",
+        description="What one timestep's values mean and how they are laid out. The stored dtype derives from this and is not recorded separately.",
     )
     element_shape: list[conint(ge=0)] = Field(
         ...,
@@ -563,36 +557,36 @@ class SingleTimeSeries(BaseModel):
     )
     array_shape: list[ArrayShapeItem] | None = Field(
         None,
-        description="Full native shape of the stored array, in the order the store holds it: the first axis is the array's length and the trailing axes end with `element_shape`. Static types are `[length, *element_shape]`; a deterministic forecast stacks windows as `[horizon_count, count, *element_shape]`; probabilistic and scenarios forecasts add a percentile or scenario axis in front of that. Optional, and redundant for the static types, where it is exactly `[length] + element_shape`. It earns its place on the forecasts, whose array layout is a convention the producing package owns rather than a rule this layer enforces, so the stored geometry cannot be reconstructed from `horizon`, `count`, `percentiles`, and `scenario_count` alone. A consumer that has it should prefer it; one that does not falls back to those fields, which is exact for the static types and a best effort for the forecasts.",
+        description="Full native shape of the stored array: length, then `element_shape`. Forecasts add a horizon/percentile/scenario axis. Optional for static types.",
         min_length=1,
     )
     units: str | None = Field(
         None,
-        description="Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
+        description="Unit label for the series values, set by the writer. Drawn from the vocabulary in Core/units.json by convention, not validated against it.",
     )
     quantity_kind: str | None = Field(
         None,
-        description="Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
+        description="Physical quantity the values measure (e.g. ActivePower, ReactivePower). Finer-grained than a dimension; the only quantity record when `unit_system` is per-unit.",
     )
     unit_system: UnitSystem | None = Field(
         None,
-        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+        description="Basis the series values are already expressed in. A declaration only; nothing here rescales values. Absent means unspecified, not NATURAL_UNITS.",
     )
     time_reference: TimeReference | None = Field(
         None,
-        description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
+        description="How this series' timestamps are spelled, returned as declared rather than relabeled as UTC. Absent means unspecified, not a UTC claim.",
     )
     component_field: str | None = Field(
         None,
-        description="The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.",
+        description="Field on the owning object whose time-varying values these are (e.g. max_active_power). Free-form; records what the values are for.",
     )
     application_data: str | None = Field(
         None,
-        description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
+        description="Opaque payload, typically JSON, carried verbatim for the owning application to reconstruct its own objects. Never parsed here.",
     )
     initial_timestamp: AwareDatetime = Field(
         ...,
-        description="First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. An RFC3339 string with at most 3 fractional-second digits: the store's floor is one millisecond, matching Julia's millisecond-precision DateTime.",
+        description="First timestamp of the regular grid; each later step lands at initial_timestamp + k * resolution. An RFC3339 string with at most 3 fractional-second digits.",
     )
     resolution: Period = Field(
         ...,
@@ -620,7 +614,7 @@ class TimeSeriesAssociation(
         | Scenarios
     ) = Field(
         ...,
-        description="Metadata linking one time series to the component or supplemental attribute that owns it — the JSON form of a row in the store's `time_series_associations` catalog table. A closed set of six canonical types owned by the data layer: two static (SingleTimeSeries on a regular grid, NonSequentialTimeSeries on explicit irregular timestamps) and four forecasts. The type decides which timing fields the row carries, which is why each is its own schema rather than one row with everything nullable.\n\nDense values never appear here. `uri` names the store location that holds them; `data_hash` optionally carries a content hash of that array. A NonSequentialTimeSeries adds `timestamps_uri`, the same kind of locator for its explicit time axis, which is likewise stored rather than carried. Content hashes themselves (features_hash, timestamps_hash) remain store-internal and deliberately absent — a locator names where something is, which is not the same as exposing the store's own address for it.",
+        description="Metadata linking one time series to the component or attribute that owns it. A closed set of six canonical types: two static, four forecasts. The type decides which timing fields the row carries. Dense values never appear here.",
         discriminator="time_series_type",
         title="TimeSeriesAssociation",
     )

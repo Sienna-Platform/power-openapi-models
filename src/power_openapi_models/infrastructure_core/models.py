@@ -75,7 +75,7 @@ class TimeSeriesLinearFunctionData(BaseModel):
     function_type: Literal["TIME_SERIES_LINEAR"]
     association_id: int = Field(
         ...,
-        description="Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
+        description="Id of the time series association supplying this function data's values over time. Resolved against that store; not assigned by a document producer.",
     )
 
 
@@ -83,7 +83,7 @@ class TimeSeriesPiecewiseLinearData(BaseModel):
     function_type: Literal["TIME_SERIES_PIECEWISE_LINEAR"]
     association_id: int = Field(
         ...,
-        description="Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
+        description="Id of the time series association supplying this function data's values over time. Resolved against that store; not assigned by a document producer.",
     )
 
 
@@ -91,7 +91,7 @@ class TimeSeriesPiecewiseStepData(BaseModel):
     function_type: Literal["TIME_SERIES_PIECEWISE_STEP"]
     association_id: int = Field(
         ...,
-        description="Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
+        description="Id of the time series association supplying this function data's values over time. Resolved against that store; not assigned by a document producer.",
     )
 
 
@@ -99,7 +99,7 @@ class TimeSeriesQuadraticFunctionData(BaseModel):
     function_type: Literal["TIME_SERIES_QUADRATIC"]
     association_id: int = Field(
         ...,
-        description="Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
+        description="Id of the time series association supplying this function data's values over time. Resolved against that store; not assigned by a document producer.",
     )
 
 
@@ -137,12 +137,12 @@ class SupplementalAttributeAssociation(BaseModel):
     component_id: int = Field(..., description="ID of the component the attribute describes.")
     component_type: str = Field(
         ...,
-        description="Type name of the component the attribute describes. A denormalized label matching the relational mirror's column, used for filtering; not part of the row's identity, which is the `(component_id, attribute_id)` pair.",
+        description="Type name of the component the attribute describes. A denormalized label for filtering; not part of the row's identity.",
     )
     attribute_id: int = Field(..., description="ID of the supplemental attribute.")
     attribute_type: str = Field(
         ...,
-        description='Schema title of the referenced supplemental attribute (e.g. "EmissionsData", "GeographicInfo"). A free-form string, not an enum: new attribute types are added elsewhere in this repo continuously, and a closed enum here would go stale.',
+        description="Schema title of the referenced supplemental attribute (e.g. EmissionsData). Free-form, not an enum: attribute types are added continuously.",
     )
 
 
@@ -169,7 +169,7 @@ class FunctionData(
         | TimeSeriesPiecewiseStepData
     ) = Field(
         ...,
-        description="Raw mathematical data defining a function `f(x)` — coefficients or point tables with no units or interpretation attached. `function_type` selects the shape: linear, quadratic, piecewise linear through (x, y) points, or piecewise constant between x endpoints. What `x` and `y` stand for is supplied by whatever wraps this, and the `TIME_SERIES_*` variants hold a reference to a stored series in place of the numbers.",
+        description="Raw mathematical data defining f(x): coefficients or point tables with no units attached. `function_type` selects linear, quadratic, piecewise linear, or piecewise constant. TIME_SERIES_* variants reference a stored series.",
         discriminator="function_type",
         title="FunctionData",
     )

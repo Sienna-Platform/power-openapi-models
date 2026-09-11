@@ -18,7 +18,7 @@ CORE_REF := --external-ref-mapping "Core/common.json=power_openapi_models.core.m
 generate:
 	@# infrastructure_core is its own subpackage, generated straight from
 	@# openapi-infrastructure-core.json -- see SiennaSchemas' six-package
-	@# contract (openapi-config-infrastructure-core.json, scripts/check_layering.py
+	@# contract (openapi-infrastructure-core.json, scripts/check_layering.py
 	@# there). It has no dependencies of its own, so no ref mapping is needed.
 	@echo "==> Generating infrastructure_core"
 	$(CODEGEN) \

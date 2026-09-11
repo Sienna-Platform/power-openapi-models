@@ -67,8 +67,8 @@ def test_no_digit_suffix_alias_classes(name):
       e.g. `UnitSystem1`) should be collapsed by `--collapse-root-models`
       (see the Makefile) or, failing that, a `scripts/postprocess.py` pass.
 
-    `inlineSchemaNameMappings` in `openapi-config-*.json` is not a live
-    mechanism -- nothing reads those files anymore.
+    There is no generator-config workaround for this -- name the schema
+    properly at the source instead.
 
     Keyed on the base existing, so a genuine name like `SteamTurbineGov1`
     is not flagged.

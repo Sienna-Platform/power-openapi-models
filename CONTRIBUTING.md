@@ -16,8 +16,9 @@ Fixes belong in one of two upstream places:
    explaining the generator behavior it works around.
 
 A `<Base><N>` class whose `<Base>` also exists is a generator alias leak; the
-cure is an `inlineSchemaNameMappings` entry in the relevant SiennaSchemas
-`openapi-config-*.json`. `tests/test_public_api.py` fails on these.
+cure is naming the inline object or enum as a `$defs` entry in the SiennaSchemas
+source, rather than leaving it anonymous at the reference site.
+`tests/test_public_api.py` fails on these.
 
 `src/power_openapi_models/document.py` is the one exception: it is
 hand-written, not generated, and mirrors `Core/SystemDocument.json` by hand.
