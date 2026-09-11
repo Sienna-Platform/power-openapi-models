@@ -59,7 +59,9 @@ power_openapi_models = ["py.typed", "_schema_version.txt"]
 [tool.ruff]
 line-length = 100
 # models.py files are generated; their formatting is the generator's business.
-extend-exclude = ["src/power_openapi_models/*/models.py"]
+# SiennaSchemas is a sibling checkout (local dev) or a CI-only checkout for the
+# document tests (see .github/workflows/test.yml); its own scripts are out of scope.
+extend-exclude = ["src/power_openapi_models/*/models.py", "SiennaSchemas"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "W"]
