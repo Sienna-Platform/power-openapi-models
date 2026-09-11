@@ -10,6 +10,7 @@ back to `list[dict]` for the association fields it cannot import.
 
 import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -17,7 +18,8 @@ import pytest
 from pydantic import ValidationError
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SCHEMA_PATH = REPO_ROOT.parent / "SiennaSchemas" / "Core" / "SystemDocument.json"
+SCHEMAS_DIR = Path(os.environ.get("SIENNA_SCHEMAS_DIR", str(REPO_ROOT.parent / "SiennaSchemas")))
+SCHEMA_PATH = SCHEMAS_DIR / "Core" / "SystemDocument.json"
 
 
 def _load_document_module():
@@ -38,6 +40,11 @@ def document_module():
 
 @pytest.fixture(scope="module")
 def schema():
+    if not SCHEMA_PATH.is_file():
+        pytest.fail(
+            f"Schema file not found at {SCHEMA_PATH}. Set SIENNA_SCHEMAS_DIR to a "
+            "SiennaSchemas checkout (defaults to the sibling ../SiennaSchemas)."
+        )
     return json.loads(SCHEMA_PATH.read_text())
 
 

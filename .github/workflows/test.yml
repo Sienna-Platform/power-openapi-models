@@ -27,6 +27,14 @@ jobs:
             python-version: "3.12"
     steps:
       - uses: actions/checkout@v4
+      - id: schema-version
+        run: echo "sha=$(cat .schema-version)" >> "$GITHUB_OUTPUT"
+        shell: bash
+      - uses: actions/checkout@v4
+        with:
+          repository: Sienna-Platform/SiennaSchemas
+          ref: ${{ steps.schema-version.outputs.sha }}
+          path: SiennaSchemas
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -35,6 +43,8 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: pytest tests/ -q
+        env:
+          SIENNA_SCHEMAS_DIR: ${{ github.workspace }}/SiennaSchemas
       # Makes the py.typed marker honest. A marker over an incomplete
       # annotation surface tells every downstream type checker something
       # false. scripts/check_typecompleteness.py runs pyright --verifytypes
