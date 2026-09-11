@@ -141,7 +141,7 @@ class DemandRequirement(BaseModel):
     )
     conformity: str | None = Field(
         "UNDEFINED",
-        description="How the demand requirement should conform to the load profile of existing technologies. Only used for new demand requirements.",
+        description="Indicator of how the demand requirement should conform to the load profile of existing technologies in the system. Should only be used for new demand requirements.",
     )
     growth_rate: float | None = Field(
         0.0,
@@ -337,7 +337,7 @@ class NodalHVDCTransportTechnology(BaseModel):
     )
     line_loss: ValueCurve | None = Field(
         None,
-        description="Loss model coefficients: a linear model with constant loss and proportional rate, or a piecewise loss with N segments. Fraction of installed capacity. Units: 1.",
+        description="Loss model coefficients. Accepts a linear model with a constant loss and a proportional loss rate, or a Piecewise loss with N segments for different proportional losses. All terms are defined as fraction of installed nameplate capacity. Units: 1.",
     )
     unit_size: float | None = Field(
         None,
@@ -419,7 +419,7 @@ class StorageTechnology(BaseModel):
     storage_tech: StorageTech = Field(..., description="Storage Technology Type.")
     capital_costs: StorageCapitalCost | None = Field(
         None,
-        description="Capital and interconnection cost for a storage technology's charge, discharge, and energy capacity (charge/discharge in USD/MW, energy in USD/MWh).",
+        description="Capital and interconnection cost for investing in a storage technology's charge, discharge, and energy capacity (charge and discharge in USD/MW, energy in USD/MWh).",
     )
     operation_costs: StorageCost | None = Field(
         None, description="Fixed and variable O&M costs for a storage technology. Units: USD/MWh."
@@ -438,15 +438,15 @@ class StorageTechnology(BaseModel):
     )
     capacity_limits_charge: MinMax | MinMaxByKey | None = Field(
         None,
-        description="Allowable installed charging capacity: a single bound applied to all capacity, or a mapping from a stringified float key to the bound at that key. Units: MW.",
+        description="Allowable installed power capacity for charging of a storage technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MW.",
     )
     capacity_limits_discharge: MinMax | MinMaxByKey | None = Field(
         None,
-        description="Allowable installed discharging capacity: a single bound applied to all capacity, or a mapping from a stringified float key to the bound at that key. Units: MW.",
+        description="Allowable installed power capacity for discharging of a storage technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MW.",
     )
     capacity_limits_energy: MinMax | MinMaxByKey | None = Field(
         None,
-        description="Allowable installed energy capacity: a single bound applied to all capacity, or a mapping from a stringified float key to the bound at that key. Units: MWh.",
+        description="Allowable installed energy capacity for a storage technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MWh.",
     )
     duration_limits: MinMax | None = Field(
         None,
@@ -507,7 +507,7 @@ class SupplyTechnology(BaseModel):
     )
     capacity_limits: MinMax | MinMaxByKey | None = Field(
         None,
-        description="Minimum and maximum allowable installed capacity: a single bound applied to all capacity, or a mapping from a stringified float key to the bound at that key. Units: MW.",
+        description="Minimum and maximum allowable installed capacity for a technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MW.",
     )
     outage_factor: OutageFactors | None = Field(
         None,

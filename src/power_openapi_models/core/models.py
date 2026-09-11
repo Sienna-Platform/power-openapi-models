@@ -108,7 +108,7 @@ class DCBus(BaseModel):
     area: int | None = Field(None, description="ID of the area containing the DC bus.")
     available: bool = Field(
         ...,
-        description="Whether the component is online (true) or offline (false). Unavailable components are excluded from simulations.",
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
     base_voltage: float | None = Field(
         None,
@@ -122,7 +122,7 @@ class DCBus(BaseModel):
     )
     name: str = Field(
         ...,
-        description="Name of the component. Unique among components of the same type; components of different types may share a name.",
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
     )
     number: float = Field(..., description="A unique bus identification number (positive integer).")
     voltage_limits: MinMax | None = Field(
@@ -202,7 +202,7 @@ class LoadZone(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
-        description="Name of the component. Unique among components of the same type; components of different types may share a name.",
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
     )
     peak_active_power: float = Field(
         ...,
@@ -218,7 +218,7 @@ class LoadZone(BaseModel):
     )
     power_units: UnitSystem = Field(
         ...,
-        description="Unit basis for this component's power fields (power, ratings, ramp rates): COMPONENT_BASE per unit on base_power, NATURAL_UNITS the field's own unit.",
+        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
     )
 
 
@@ -319,11 +319,11 @@ class ACBus(BaseModel):
     number: int = Field(..., description="A unique bus identification number (positive integer).")
     name: str = Field(
         ...,
-        description="Name of the component. Unique among components of the same type; components of different types may share a name.",
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
     )
     available: bool = Field(
         ...,
-        description="Whether the component is connected and online (true) or disconnected, offline, or down (false). Distinct from the ISOLATED enum value.",
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations. This field should not be confused with the ISOLATED enum value.",
     )
     bustype: ACBusType | None = Field(
         None,
@@ -364,7 +364,7 @@ class Area(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
-        description="Name of the component. Unique among components of the same type; components of different types may share a name.",
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
     )
     peak_active_power: float | None = Field(
         0.0,
@@ -384,7 +384,7 @@ class Area(BaseModel):
     )
     power_units: UnitSystem = Field(
         ...,
-        description="Unit basis for this component's power fields (power, ratings, ramp rates): COMPONENT_BASE per unit on base_power, NATURAL_UNITS the field's own unit.",
+        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
     )
 
 
@@ -406,7 +406,7 @@ class LossValueCurve(RootModel[InputOutputCurve | IncrementalCurve]):
                 "proportional_term": 0,
             },
         },
-        description="Shape of a loss curve, selected by curve_type. INPUT_OUTPUT gives total loss at each flow level. INCREMENTAL gives the marginal loss rate. Individual loss fields may accept a narrower set of shapes than this union.",
+        description="The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
         discriminator="curve_type",
         title="LossValueCurve",
         validate_default=True,
@@ -417,7 +417,7 @@ class TimeSeriesAverageRateCurve(BaseModel):
     curve_type: Literal["TIME_SERIES_AVERAGE_RATE"]
     function_data: FunctionData = Field(
         ...,
-        description="Only TIME_SERIES_LINEAR or TIME_SERIES_PIECEWISE_STEP is admissible here; other FunctionData variants are rejected.",
+        description="Only TIME_SERIES_LINEAR or TIME_SERIES_PIECEWISE_STEP is admissible here; all other FunctionData variants, static or time-series-backed, are rejected by the consuming constructor.",
     )
     initial_input_association_id: int | None = Field(
         None,
@@ -433,7 +433,7 @@ class TimeSeriesIncrementalCurve(BaseModel):
     curve_type: Literal["TIME_SERIES_INCREMENTAL"]
     function_data: FunctionData = Field(
         ...,
-        description="Only TIME_SERIES_LINEAR or TIME_SERIES_PIECEWISE_STEP is admissible here; other FunctionData variants are rejected.",
+        description="Only TIME_SERIES_LINEAR or TIME_SERIES_PIECEWISE_STEP is admissible here; all other FunctionData variants, static or time-series-backed, are rejected by the consuming constructor.",
     )
     initial_input_association_id: int | None = Field(
         None,
@@ -449,7 +449,7 @@ class TimeSeriesInputOutputCurve(BaseModel):
     curve_type: Literal["TIME_SERIES_INPUT_OUTPUT"]
     function_data: FunctionData = Field(
         ...,
-        description="Only TIME_SERIES_LINEAR, TIME_SERIES_QUADRATIC, or TIME_SERIES_PIECEWISE_LINEAR is admissible; other variants are rejected.",
+        description="Only TIME_SERIES_LINEAR, TIME_SERIES_QUADRATIC, or TIME_SERIES_PIECEWISE_LINEAR is admissible here; the static variants and TIME_SERIES_PIECEWISE_STEP are invalid and rejected by the consuming constructor.",
     )
     input_at_zero: float | None = Field(
         None,
@@ -481,7 +481,7 @@ class ValueCurve(
         | TimeSeriesAverageRateCurve
     ) = Field(
         ...,
-        description="A cost or fuel curve: function data plus how to read its y axis. INPUT_OUTPUT reads the total f(x), INCREMENTAL the marginal rate f'(x), AVERAGE_RATE the average f(x)/x. The TIME_SERIES_* variants are their time-varying equivalents.",
+        description="A cost or fuel curve: function data plus a declaration of how to read its y axis. `INPUT_OUTPUT` reads y as the total `f(x)`, `INCREMENTAL` as the marginal rate `f'(x)`, and `AVERAGE_RATE` as the average `f(x)/x`; the three can express the same underlying function and are inter-convertible given `initial_input`. The `TIME_SERIES_*` variants are the time-varying equivalents. Which form to use follows the data source: bid stacks are incremental, total cost tables input-output, efficiency tables average rate.",
         discriminator="curve_type",
         title="ValueCurve",
     )
@@ -510,7 +510,7 @@ class EmissionsData(BaseModel):
     )
     emission_rate: ValueCurve = Field(
         ...,
-        description="Emission rate as a ValueCurve, typically an IncrementalCurve with LinearFunctionData or PiecewiseStepData. Rates must be non-negative and finite.",
+        description="Emission rate as a ValueCurve, typically an IncrementalCurve with LinearFunctionData (constant or linearly varying rate) or PiecewiseStepData (piecewise step rates). Rates must be non-negative and finite.",
     )
     basis: EmissionBasis = Field(
         ...,
@@ -535,7 +535,7 @@ class EmissionsData(BaseModel):
 class FuelCurve(BaseModel):
     fuel_cost: float | None = Field(
         None,
-        description="Fixed fuel cost per unit of fuel, or null when fuel_cost_time_series supplies a time-varying one. Exactly one of the two is set.",
+        description="Fixed fuel cost per unit of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
     )
     fuel_cost_time_series: int | None = Field(
         None,
@@ -643,7 +643,7 @@ class MarketBidTimeSeriesCost(BaseModel):
     cost_type: Literal["MARKET_BID_TIME_SERIES"]
     minimum_energy_offer: TimeSeriesInputOutputCurve = Field(
         ...,
-        description="Minimum-energy offer as a time-series-backed linear curve, in $/MWh at the curve's minimum power. Only the TIME_SERIES_LINEAR variant is admissible.",
+        description="Minimum-energy offer: cost to operate at minimum stable level, in $/MWh at the curve's minimum power, stored as submitted. $/h sources convert at parse (MEO = no-load cost / P_min). Time-series-backed linear curve; only the TIME_SERIES_LINEAR function-data variant is admissible here — the consuming constructor rejects any other.",
     )
     start_up_association_id: int = Field(
         ...,
@@ -651,15 +651,15 @@ class MarketBidTimeSeriesCost(BaseModel):
     )
     shut_down: TimeSeriesInputOutputCurve = Field(
         ...,
-        description="Shut-down cost as a time-series-backed linear curve. Only the TIME_SERIES_LINEAR variant is admissible.",
+        description="Shut-down cost as a time-series-backed linear curve. Only the TIME_SERIES_LINEAR function-data variant is admissible here; the consuming constructor rejects any other.",
     )
     incremental_offer_curves: CostCurve = Field(
         ...,
-        description="Sell offer curves as time-series-backed piecewise incremental curves. Only the TIME_SERIES_INCREMENTAL variant is admissible; others are rejected.",
+        description="Sell offer curves whose value curve is a time-series-backed piecewise incremental curve. Only the TIME_SERIES_INCREMENTAL variant is admissible here; any other variant is rejected by the consuming constructor.",
     )
     decremental_offer_curves: CostCurve = Field(
         ...,
-        description="Buy offer curves as time-series-backed piecewise incremental curves. Only the TIME_SERIES_INCREMENTAL variant is admissible; others are rejected.",
+        description="Buy offer curves whose value curve is a time-series-backed piecewise incremental curve. Only the TIME_SERIES_INCREMENTAL variant is admissible here; any other variant is rejected by the consuming constructor.",
     )
     ancillary_service_offers: list[int] = Field(
         ..., description="IDs of the ancillary service components that this bid offers into."
@@ -674,11 +674,11 @@ class MarketBidTimeSeriesCost(BaseModel):
     )
     curve_style: CurveStyles | None = Field(
         0,
-        description="Curve-clearing style for the bid: 0 = VARIABLE (default; continuous, one or more segments), 1 = FIXED (all-or-nothing, single segment).",
+        description="Curve-clearing style for the bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
     )
     curve_multistep: CurveMultiStep | None = Field(
         0,
-        description="Multi-step block indicator: 0 = SINGLE_STEP (default; independent steps), 1 = MULTI_STEP (one block across every step). Independent of curve_style.",
+        description="Multi-step block indicator for the bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve_style: curve_style is the quantity structure, curve_multistep is the time structure, and they compose.",
     )
 
 
@@ -691,14 +691,14 @@ class MarketBidCost(BaseModel):
     cost_type: Literal["MARKET_BID"] = "MARKET_BID"
     minimum_energy_offer: InputOutputCurve = Field(
         ...,
-        description="Minimum-energy offer: cost to run at minimum stable level, in $/MWh at the curve's minimum power. A bare scalar `s` promotes to constant_term = s.",
+        description="Minimum-energy offer: cost to operate at minimum stable level, in $/MWh at the curve's minimum power, stored as submitted. $/h sources convert at parse (MEO = no-load cost / P_min). Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     start_up: StartUpStages = Field(
         ..., description="Start-up cost at different stages of the thermal cycle (hot, warm, cold)."
     )
     shut_down: InputOutputCurve = Field(
         ...,
-        description="Shut-down cost. A bare scalar `s` promotes to an InputOutputCurve with constant_term = s, proportional_term = 0.",
+        description="Shut-down cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     incremental_offer_curves: CostCurve = Field(
         ..., description="Sell offer curves data as a `CostCurve` of `PiecewiseIncrementalCurve`."
@@ -719,11 +719,11 @@ class MarketBidCost(BaseModel):
     )
     curve_style: CurveStyles | None = Field(
         0,
-        description="Curve-clearing style for the bid: 0 = VARIABLE (default; continuous, one or more segments), 1 = FIXED (all-or-nothing, single segment).",
+        description="Curve-clearing style for the bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
     )
     curve_multistep: CurveMultiStep | None = Field(
         0,
-        description="Multi-step block indicator: 0 = SINGLE_STEP (default; independent steps), 1 = MULTI_STEP (one block across every step). Independent of curve_style.",
+        description="Multi-step block indicator for the bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve_style: curve_style is the quantity structure, curve_multistep is the time structure, and they compose.",
     )
 
 
