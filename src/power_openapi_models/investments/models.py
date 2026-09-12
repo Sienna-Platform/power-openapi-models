@@ -3,22 +3,46 @@
 
 from __future__ import annotations
 from power_openapi_models.core.models import (
+    AverageRateCurve,
     CapitalCost,
+    ChargeDischarge,
+    CostCurve,
+    FuelCurve,
+    FunctionData,
     GenericOperationCost,
+    HydroGenerationCost,
     InOut,
+    IncrementalCurve,
+    InputOutputCurve,
+    LinearFunctionData,
     MinMax,
     MinMaxByKey,
     OutageFactors,
+    PiecewiseLinearData,
+    PiecewiseStepData,
     PrimeMovers,
     ProductionVariableCostCurve,
+    QuadraticFunctionData,
+    RenewableGenerationCost,
+    StartUpStages,
     StorageCapitalCost,
     StorageCost,
     StorageTech,
     ThermalFuels,
+    ThermalGenerationCost,
+    TimeSeriesAverageRateCurve,
+    TimeSeriesIncrementalCurve,
+    TimeSeriesInputOutputCurve,
+    TimeSeriesLinearFunctionData,
+    TimeSeriesPiecewiseLinearData,
+    TimeSeriesPiecewiseStepData,
+    TimeSeriesQuadraticFunctionData,
+    UnitSystem,
     UpDown,
     ValueCurve,
+    XYCoords,
 )
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel
 
 
 class TechnologyFinancialData(BaseModel):
@@ -124,9 +148,6 @@ class ColocatedSupplyStorageTechnology(BaseModel):
     inverter_supply_ratio: float = Field(
         ..., description="Ratio of generation capacity to grid connection capacity. Units: 1."
     )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
-    )
 
 
 class DemandRequirement(BaseModel):
@@ -164,9 +185,6 @@ class DemandRequirement(BaseModel):
     unserved_demand_curve: ValueCurve | None = Field(
         None,
         description="Piecewise curve to scale the cost of unserved load based on the value of lost load. Units: USD/MWh.",
-    )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
     )
 
 
@@ -217,9 +235,6 @@ class DemandSideTechnology(BaseModel):
     )
     max_demand_curtailment: float | None = Field(
         None, description="Maximum fraction of demand that can be curtailed. Units: 1."
-    )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
     )
 
 
@@ -308,9 +323,6 @@ class NodalACTransportTechnology(BaseModel):
         description="Used for integer investment decisions. Represents the rating capacity of individual new lines. Units: MW.",
     )
     reactance: float | None = Field(0.0, description="Series reactance for a line. Units: ohm.")
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
-    )
     financial_data: TechnologyFinancialData = Field(
         ..., description="Struct containing relevant financial information for a technology."
     )
@@ -343,9 +355,6 @@ class NodalHVDCTransportTechnology(BaseModel):
         None,
         description="Used for integer investment decisions. Represents the rating capacity of individual new lines. Units: MW.",
     )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
-    )
     financial_data: TechnologyFinancialData = Field(
         ..., description="Struct containing relevant financial information for a technology."
     )
@@ -364,6 +373,13 @@ class PortfolioFinancialData(BaseModel):
         ...,
         description="Base economic year. All costs will be converted to a net present value in this year.",
     )
+
+
+class RequirementAssociation(BaseModel):
+    requirement_id: int = Field(
+        ..., description="ID of the policy requirement the membership belongs to."
+    )
+    entity_id: int = Field(..., description="ID of the member the requirement applies to.")
 
 
 class RetirementPotential(BaseModel):
@@ -463,9 +479,6 @@ class StorageTechnology(BaseModel):
         100,
         description="Maximum number of years a technology can be active once installed. Units: yr.",
     )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
-    )
     financial_data: TechnologyFinancialData = Field(
         ..., description="Struct containing relevant financial information for a technology."
     )
@@ -532,9 +545,6 @@ class SupplyTechnology(BaseModel):
         100,
         description="Maximum number of years a technology can be active once installed. Units: yr.",
     )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
-    )
     financial_data: TechnologyFinancialData = Field(
         ..., description="Struct containing relevant financial information for a technology."
     )
@@ -545,6 +555,102 @@ class TopologyMapping(BaseModel):
     buses: list[str] | None = Field(
         None, description="List of buses in the base system that are associated with a zone."
     )
+
+
+class AverageRateCurveModel(RootModel[AverageRateCurve]):
+    root: AverageRateCurve
+
+
+class ChargeDischargeModel(RootModel[ChargeDischarge]):
+    root: ChargeDischarge
+
+
+class CostCurveModel(RootModel[CostCurve]):
+    root: CostCurve
+
+
+class FuelCurveModel(RootModel[FuelCurve]):
+    root: FuelCurve
+
+
+class FunctionDataModel(RootModel[FunctionData]):
+    root: FunctionData
+
+
+class HydroGenerationCostModel(RootModel[HydroGenerationCost]):
+    root: HydroGenerationCost
+
+
+class IncrementalCurveModel(RootModel[IncrementalCurve]):
+    root: IncrementalCurve
+
+
+class InputOutputCurveModel(RootModel[InputOutputCurve]):
+    root: InputOutputCurve
+
+
+class LinearFunctionDataModel(RootModel[LinearFunctionData]):
+    root: LinearFunctionData
+
+
+class PiecewiseLinearDataModel(RootModel[PiecewiseLinearData]):
+    root: PiecewiseLinearData
+
+
+class PiecewiseStepDataModel(RootModel[PiecewiseStepData]):
+    root: PiecewiseStepData
+
+
+class QuadraticFunctionDataModel(RootModel[QuadraticFunctionData]):
+    root: QuadraticFunctionData
+
+
+class RenewableGenerationCostModel(RootModel[RenewableGenerationCost]):
+    root: RenewableGenerationCost
+
+
+class StartUpStagesModel(RootModel[StartUpStages]):
+    root: StartUpStages
+
+
+class ThermalGenerationCostModel(RootModel[ThermalGenerationCost]):
+    root: ThermalGenerationCost
+
+
+class TimeSeriesAverageRateCurveModel(RootModel[TimeSeriesAverageRateCurve]):
+    root: TimeSeriesAverageRateCurve
+
+
+class TimeSeriesIncrementalCurveModel(RootModel[TimeSeriesIncrementalCurve]):
+    root: TimeSeriesIncrementalCurve
+
+
+class TimeSeriesInputOutputCurveModel(RootModel[TimeSeriesInputOutputCurve]):
+    root: TimeSeriesInputOutputCurve
+
+
+class TimeSeriesLinearFunctionDataModel(RootModel[TimeSeriesLinearFunctionData]):
+    root: TimeSeriesLinearFunctionData
+
+
+class TimeSeriesPiecewiseLinearDataModel(RootModel[TimeSeriesPiecewiseLinearData]):
+    root: TimeSeriesPiecewiseLinearData
+
+
+class TimeSeriesPiecewiseStepDataModel(RootModel[TimeSeriesPiecewiseStepData]):
+    root: TimeSeriesPiecewiseStepData
+
+
+class TimeSeriesQuadraticFunctionDataModel(RootModel[TimeSeriesQuadraticFunctionData]):
+    root: TimeSeriesQuadraticFunctionData
+
+
+class UnitSystemModel(RootModel[UnitSystem]):
+    root: UnitSystem
+
+
+class XYCoordsModel(RootModel[XYCoords]):
+    root: XYCoords
 
 
 class AggregateTransportTechnology(BaseModel):
@@ -572,9 +678,6 @@ class AggregateTransportTechnology(BaseModel):
     unit_size: float | None = Field(
         None,
         description="Used for integer investment decisions. Represents the rating capacity of individual new lines. Units: MW.",
-    )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
     )
     financial_data: TechnologyFinancialData = Field(
         ..., description="Struct containing relevant financial information for a technology."

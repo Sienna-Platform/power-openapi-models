@@ -239,11 +239,46 @@ def fix_feature_property_count(content: str) -> tuple[str, bool]:
     return new_content, n > 0
 
 
+def drop_redundant_root_aliases(content: str) -> tuple[str, bool]:
+    """Drop `class X1(RootModel[X]): root: X` aliases.
+
+    A selector declares every schema its domain reaches, shared types a base
+    package owns included, so datamodel-codegen meets a component whose target
+    it has already mapped to an import (--external-ref-mapping). Rather than
+    reuse the imported name it emits a RootModel alias under a digit-suffixed
+    one. The alias wraps the imported type and nothing else, and nothing
+    references it: it is dead public surface, and `MinMax1` sitting beside
+    `MinMax` is exactly the confusion the Julia side's dedup pass exists to
+    prevent.
+
+    Only the exact alias shape is matched, and only when the suffixed name
+    appears nowhere else in the file, so a real digit-suffixed type
+    (`SteamTurbineGov1`) is never touched.
+    """
+    pattern = re.compile(
+        r"^class (?P<alias>(?P<base>\w+?)\d+)\(RootModel\[(?P=base)\]\):\n"
+        r"    root: (?P=base)\n(?:\n\n|\Z)",
+        re.MULTILINE,
+    )
+    removed = False
+
+    def drop(match: re.Match) -> str:
+        nonlocal removed
+        alias = match.group("alias")
+        if len(re.findall(rf"\b{alias}\b", content)) > 1:
+            return match.group(0)
+        removed = True
+        return ""
+
+    return pattern.sub(drop, content), removed
+
+
 FIXES = [
     fix_thermal_generation_cost_start_up,
     fix_missing_composite_defaults,
     fix_costcurve_power_units_default,
     fix_feature_property_count,
+    drop_redundant_root_aliases,
 ]
 
 
