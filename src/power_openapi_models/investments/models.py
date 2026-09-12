@@ -124,9 +124,6 @@ class ColocatedSupplyStorageTechnology(BaseModel):
     inverter_supply_ratio: float = Field(
         ..., description="Ratio of generation capacity to grid connection capacity. Units: 1."
     )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
-    )
 
 
 class DemandRequirement(BaseModel):
@@ -164,9 +161,6 @@ class DemandRequirement(BaseModel):
     unserved_demand_curve: ValueCurve | None = Field(
         None,
         description="Piecewise curve to scale the cost of unserved load based on the value of lost load. Units: USD/MWh.",
-    )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
     )
 
 
@@ -217,9 +211,6 @@ class DemandSideTechnology(BaseModel):
     )
     max_demand_curtailment: float | None = Field(
         None, description="Maximum fraction of demand that can be curtailed. Units: 1."
-    )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
     )
 
 
@@ -308,9 +299,6 @@ class NodalACTransportTechnology(BaseModel):
         description="Used for integer investment decisions. Represents the rating capacity of individual new lines. Units: MW.",
     )
     reactance: float | None = Field(0.0, description="Series reactance for a line. Units: ohm.")
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
-    )
     financial_data: TechnologyFinancialData = Field(
         ..., description="Struct containing relevant financial information for a technology."
     )
@@ -343,9 +331,6 @@ class NodalHVDCTransportTechnology(BaseModel):
         None,
         description="Used for integer investment decisions. Represents the rating capacity of individual new lines. Units: MW.",
     )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
-    )
     financial_data: TechnologyFinancialData = Field(
         ..., description="Struct containing relevant financial information for a technology."
     )
@@ -364,6 +349,13 @@ class PortfolioFinancialData(BaseModel):
         ...,
         description="Base economic year. All costs will be converted to a net present value in this year.",
     )
+
+
+class RequirementAssociation(BaseModel):
+    requirement_id: int = Field(
+        ..., description="ID of the policy requirement the membership belongs to."
+    )
+    entity_id: int = Field(..., description="ID of the member the requirement applies to.")
 
 
 class RetirementPotential(BaseModel):
@@ -463,9 +455,6 @@ class StorageTechnology(BaseModel):
         100,
         description="Maximum number of years a technology can be active once installed. Units: yr.",
     )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
-    )
     financial_data: TechnologyFinancialData = Field(
         ..., description="Struct containing relevant financial information for a technology."
     )
@@ -532,9 +521,6 @@ class SupplyTechnology(BaseModel):
         100,
         description="Maximum number of years a technology can be active once installed. Units: yr.",
     )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
-    )
     financial_data: TechnologyFinancialData = Field(
         ..., description="Struct containing relevant financial information for a technology."
     )
@@ -572,9 +558,6 @@ class AggregateTransportTechnology(BaseModel):
     unit_size: float | None = Field(
         None,
         description="Used for integer investment decisions. Represents the rating capacity of individual new lines. Units: MW.",
-    )
-    requirements: list[int] | None = Field(
-        [], description="List of requirement IDs associated with the component."
     )
     financial_data: TechnologyFinancialData = Field(
         ..., description="Struct containing relevant financial information for a technology."

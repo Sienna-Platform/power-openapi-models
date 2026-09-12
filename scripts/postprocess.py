@@ -239,11 +239,53 @@ def fix_feature_property_count(content: str) -> tuple[str, bool]:
     return new_content, n > 0
 
 
+def drop_redundant_root_aliases(content: str) -> tuple[str, bool]:
+    """Drop `class A(RootModel[B]): root: B` wrappers that nothing references.
+
+    A selector declares every schema its domain reaches, shared types a base
+    package owns included, so datamodel-codegen meets a component whose target
+    it has already mapped to an import (--external-ref-mapping). It cannot
+    reuse the imported name, so it emits a wrapper under a disambiguated one --
+    `MinMax1` where the collision is positional, `AverageRateCurveModel` where
+    it is by name. The wrapper adds nothing to the imported type and nothing
+    refers to it: dead public surface, and `MinMax1` sitting beside `MinMax`
+    is exactly the confusion the Julia side's dedup pass exists to prevent.
+
+    Matched on shape rather than on either suffix, so a scheme this generator
+    version does not use yet is caught too: a wrapper whose root is one bare
+    name, under a different name, referenced nowhere else in the file. Three
+    guards keep real types out of it -- a union or subscripted root
+    (`RootModel[CostCurve | FuelCurve]`, `RootModel[dict[str, MinMax]]`) is
+    not a bare name; a named scalar still used as an annotation (`Period`,
+    `ElementType`, `TimeReference`) is referenced; and a genuine
+    digit-suffixed type (`SteamTurbineGov1`) is not a RootModel at all.
+    """
+    pattern = re.compile(
+        r"^class (?P<alias>\w+)\(RootModel\[(?P<base>\w+)\]\):\n"
+        r"    root: (?P=base)\n(?:\n\n|\Z)",
+        re.MULTILINE,
+    )
+    removed = False
+
+    def drop(match: re.Match) -> str:
+        nonlocal removed
+        alias, base = match.group("alias"), match.group("base")
+        if alias == base:
+            return match.group(0)
+        if len(re.findall(rf"\b{alias}\b", content)) > 1:
+            return match.group(0)
+        removed = True
+        return ""
+
+    return pattern.sub(drop, content), removed
+
+
 FIXES = [
     fix_thermal_generation_cost_start_up,
     fix_missing_composite_defaults,
     fix_costcurve_power_units_default,
     fix_feature_property_count,
+    drop_redundant_root_aliases,
 ]
 
 
