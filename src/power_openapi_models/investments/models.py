@@ -3,46 +3,22 @@
 
 from __future__ import annotations
 from power_openapi_models.core.models import (
-    AverageRateCurve,
     CapitalCost,
-    ChargeDischarge,
-    CostCurve,
-    FuelCurve,
-    FunctionData,
     GenericOperationCost,
-    HydroGenerationCost,
     InOut,
-    IncrementalCurve,
-    InputOutputCurve,
-    LinearFunctionData,
     MinMax,
     MinMaxByKey,
     OutageFactors,
-    PiecewiseLinearData,
-    PiecewiseStepData,
     PrimeMovers,
     ProductionVariableCostCurve,
-    QuadraticFunctionData,
-    RenewableGenerationCost,
-    StartUpStages,
     StorageCapitalCost,
     StorageCost,
     StorageTech,
     ThermalFuels,
-    ThermalGenerationCost,
-    TimeSeriesAverageRateCurve,
-    TimeSeriesIncrementalCurve,
-    TimeSeriesInputOutputCurve,
-    TimeSeriesLinearFunctionData,
-    TimeSeriesPiecewiseLinearData,
-    TimeSeriesPiecewiseStepData,
-    TimeSeriesQuadraticFunctionData,
-    UnitSystem,
     UpDown,
     ValueCurve,
-    XYCoords,
 )
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, Field
 
 
 class TechnologyFinancialData(BaseModel):
@@ -555,102 +531,6 @@ class TopologyMapping(BaseModel):
     buses: list[str] | None = Field(
         None, description="List of buses in the base system that are associated with a zone."
     )
-
-
-class AverageRateCurveModel(RootModel[AverageRateCurve]):
-    root: AverageRateCurve
-
-
-class ChargeDischargeModel(RootModel[ChargeDischarge]):
-    root: ChargeDischarge
-
-
-class CostCurveModel(RootModel[CostCurve]):
-    root: CostCurve
-
-
-class FuelCurveModel(RootModel[FuelCurve]):
-    root: FuelCurve
-
-
-class FunctionDataModel(RootModel[FunctionData]):
-    root: FunctionData
-
-
-class HydroGenerationCostModel(RootModel[HydroGenerationCost]):
-    root: HydroGenerationCost
-
-
-class IncrementalCurveModel(RootModel[IncrementalCurve]):
-    root: IncrementalCurve
-
-
-class InputOutputCurveModel(RootModel[InputOutputCurve]):
-    root: InputOutputCurve
-
-
-class LinearFunctionDataModel(RootModel[LinearFunctionData]):
-    root: LinearFunctionData
-
-
-class PiecewiseLinearDataModel(RootModel[PiecewiseLinearData]):
-    root: PiecewiseLinearData
-
-
-class PiecewiseStepDataModel(RootModel[PiecewiseStepData]):
-    root: PiecewiseStepData
-
-
-class QuadraticFunctionDataModel(RootModel[QuadraticFunctionData]):
-    root: QuadraticFunctionData
-
-
-class RenewableGenerationCostModel(RootModel[RenewableGenerationCost]):
-    root: RenewableGenerationCost
-
-
-class StartUpStagesModel(RootModel[StartUpStages]):
-    root: StartUpStages
-
-
-class ThermalGenerationCostModel(RootModel[ThermalGenerationCost]):
-    root: ThermalGenerationCost
-
-
-class TimeSeriesAverageRateCurveModel(RootModel[TimeSeriesAverageRateCurve]):
-    root: TimeSeriesAverageRateCurve
-
-
-class TimeSeriesIncrementalCurveModel(RootModel[TimeSeriesIncrementalCurve]):
-    root: TimeSeriesIncrementalCurve
-
-
-class TimeSeriesInputOutputCurveModel(RootModel[TimeSeriesInputOutputCurve]):
-    root: TimeSeriesInputOutputCurve
-
-
-class TimeSeriesLinearFunctionDataModel(RootModel[TimeSeriesLinearFunctionData]):
-    root: TimeSeriesLinearFunctionData
-
-
-class TimeSeriesPiecewiseLinearDataModel(RootModel[TimeSeriesPiecewiseLinearData]):
-    root: TimeSeriesPiecewiseLinearData
-
-
-class TimeSeriesPiecewiseStepDataModel(RootModel[TimeSeriesPiecewiseStepData]):
-    root: TimeSeriesPiecewiseStepData
-
-
-class TimeSeriesQuadraticFunctionDataModel(RootModel[TimeSeriesQuadraticFunctionData]):
-    root: TimeSeriesQuadraticFunctionData
-
-
-class UnitSystemModel(RootModel[UnitSystem]):
-    root: UnitSystem
-
-
-class XYCoordsModel(RootModel[XYCoords]):
-    root: XYCoords
 
 
 class AggregateTransportTechnology(BaseModel):

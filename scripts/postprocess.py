@@ -240,23 +240,28 @@ def fix_feature_property_count(content: str) -> tuple[str, bool]:
 
 
 def drop_redundant_root_aliases(content: str) -> tuple[str, bool]:
-    """Drop `class X1(RootModel[X]): root: X` aliases.
+    """Drop `class A(RootModel[B]): root: B` wrappers that nothing references.
 
     A selector declares every schema its domain reaches, shared types a base
     package owns included, so datamodel-codegen meets a component whose target
-    it has already mapped to an import (--external-ref-mapping). Rather than
-    reuse the imported name it emits a RootModel alias under a digit-suffixed
-    one. The alias wraps the imported type and nothing else, and nothing
-    references it: it is dead public surface, and `MinMax1` sitting beside
-    `MinMax` is exactly the confusion the Julia side's dedup pass exists to
-    prevent.
+    it has already mapped to an import (--external-ref-mapping). It cannot
+    reuse the imported name, so it emits a wrapper under a disambiguated one --
+    `MinMax1` where the collision is positional, `AverageRateCurveModel` where
+    it is by name. The wrapper adds nothing to the imported type and nothing
+    refers to it: dead public surface, and `MinMax1` sitting beside `MinMax`
+    is exactly the confusion the Julia side's dedup pass exists to prevent.
 
-    Only the exact alias shape is matched, and only when the suffixed name
-    appears nowhere else in the file, so a real digit-suffixed type
-    (`SteamTurbineGov1`) is never touched.
+    Matched on shape rather than on either suffix, so a scheme this generator
+    version does not use yet is caught too: a wrapper whose root is one bare
+    name, under a different name, referenced nowhere else in the file. Three
+    guards keep real types out of it -- a union or subscripted root
+    (`RootModel[CostCurve | FuelCurve]`, `RootModel[dict[str, MinMax]]`) is
+    not a bare name; a named scalar still used as an annotation (`Period`,
+    `ElementType`, `TimeReference`) is referenced; and a genuine
+    digit-suffixed type (`SteamTurbineGov1`) is not a RootModel at all.
     """
     pattern = re.compile(
-        r"^class (?P<alias>(?P<base>\w+?)\d+)\(RootModel\[(?P=base)\]\):\n"
+        r"^class (?P<alias>\w+)\(RootModel\[(?P<base>\w+)\]\):\n"
         r"    root: (?P=base)\n(?:\n\n|\Z)",
         re.MULTILINE,
     )
@@ -264,7 +269,9 @@ def drop_redundant_root_aliases(content: str) -> tuple[str, bool]:
 
     def drop(match: re.Match) -> str:
         nonlocal removed
-        alias = match.group("alias")
+        alias, base = match.group("alias"), match.group("base")
+        if alias == base:
+            return match.group(0)
         if len(re.findall(rf"\b{alias}\b", content)) > 1:
             return match.group(0)
         removed = True
