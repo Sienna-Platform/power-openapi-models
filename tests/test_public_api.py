@@ -9,6 +9,7 @@ cannot resolve an anonymous inline schema to a named component.
 
 import importlib
 import pathlib
+import re
 
 import pytest
 
@@ -80,4 +81,49 @@ def test_no_digit_suffix_alias_classes(name):
         f"{name}: generated alias classes {leaked} -- give each a named "
         f"$defs entry in SiennaSchemas, or collapse it in "
         f"scripts/postprocess.py if it is a pure RootModel wrapper"
+    )
+
+
+@pytest.mark.parametrize("name", MODULES)
+def test_no_pure_root_model_aliases(name):
+    """No `class A(RootModel[B])` where B is another generated type.
+
+    The suffix such a wrapper gets is the generator's choice and has changed:
+    a positional collision yields `MinMax1`, a collision by name yields
+    `AverageRateCurveModel`. Keying on the shape rather than either suffix is
+    what makes this gate hold when that choice changes again --
+    `test_no_digit_suffix_alias_classes` above only sees the first form, and
+    45 wrappers of the second form reached the package once because of it.
+
+    Read from the source rather than the imported module: every generated
+    module carries `from __future__ import annotations`, so a wrapper's root
+    is an unresolved `ForwardRef` at runtime and a namespace-based check
+    silently matches nothing.
+
+    A root that is one bare non-builtin name is the alias shape. A union or
+    map root (`RootModel[CostCurve | FuelCurve]`, `RootModel[dict[str,
+    MinMax]]`) is a real type, and so is a named scalar over a builtin
+    (`Period`, `ElementType`, `TimeReference`), which the schemas declare and
+    field annotations use.
+
+    The cure is upstream, never an edit to the generated file:
+    `scripts/postprocess.py`'s `drop_redundant_root_aliases` removes the ones
+    nothing references. One that survives that pass is referenced, and then
+    the schema is what needs fixing.
+    """
+    source = (
+        pathlib.Path(__file__).parent.parent / "src" / "power_openapi_models" / name / "models.py"
+    ).read_text()
+    leaked = [
+        f"{alias} -> {base}"
+        for alias, base in re.findall(
+            r"^class (\w+)\(RootModel\[(\w+)\]\):\n    root: \2\n",
+            source,
+            re.MULTILINE,
+        )
+        if alias != base and base not in {"str", "int", "float", "bool", "bytes"}
+    ]
+    assert not leaked, (
+        f"{name}: pure RootModel aliases {leaked} -- drop them in "
+        f"scripts/postprocess.py's drop_redundant_root_aliases"
     )
