@@ -139,3 +139,63 @@ jobs:
         working-directory: typescript
       - run: npm publish --dry-run --access public
         working-directory: typescript
+
+  cross-language:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 -m pip install -e "./python[dev]"
+
+      # The Julia package is compared from its generated SOURCES, so no Julia
+      # toolchain is needed here.
+      - uses: actions/checkout@v4
+        with:
+          repository: Sienna-Platform/PowerOpenAPIModels
+          path: PowerOpenAPIModels
+
+      # Backs the default-value comparator's schema-declares-no-default
+      # normalization (see check_cross_language.py's load_schema_property_
+      # defaults / --schema-dir). Without this checkout that normalization is
+      # disabled -- every None/absent or value/absent default split then
+      # reports as a divergence, which would fail this blocking gate on
+      # comparator artifacts that aren't real differences.
+      - id: schema-version
+        run: |
+          short_sha=$(cat .schema-version)
+          response=$(curl -fsSL -H "Authorization: Bearer ${{ github.token }}" \
+            "https://api.github.com/repos/Sienna-Platform/SiennaSchemas/commits/${short_sha}" || true)
+          full_sha=""
+          if [ -n "$response" ]; then
+            full_sha=$(printf '%s' "$response" | python3 -c "import json, sys; print(json.load(sys.stdin).get('sha', ''))")
+          fi
+          if [ -z "$full_sha" ]; then
+            echo "::error::Could not resolve full sha for SiennaSchemas commit '${short_sha}' (from .schema-version) via the GitHub API" >&2
+            exit 1
+          fi
+          echo "sha=$full_sha" >> "$GITHUB_OUTPUT"
+        shell: bash
+      - uses: actions/checkout@v4
+        with:
+          repository: Sienna-Platform/SiennaSchemas
+          ref: ${{ steps.schema-version.outputs.sha }}
+          path: SiennaSchemas
+
+      # Python<->TypeScript is the BLOCKING gate: the two packages are
+      # generated from one schema and must not disagree about field sets,
+      # requiredness, enum values, kinds, or defaults.
+      #
+      # Python<->Julia runs report-only. Its divergences are one confirmed
+      # pre-existing bug in PowerOpenAPIModels -- an omitted defaulted field
+      # decodes to ABSENT there where Python materializes the schema default --
+      # which is not fixable by editing generated code in this repo. It still
+      # prints in full on every run, so the count cannot quietly grow.
+      - name: Python<->TypeScript (blocking) and Python<->Julia (report-only)
+        run: |
+          python3 scripts/check_cross_language.py \
+            --ts typescript/ \
+            --julia PowerOpenAPIModels \
+            --schema-dir SiennaSchemas \
+            --julia-report-only

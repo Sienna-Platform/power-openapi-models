@@ -7,8 +7,8 @@
  */
 import * as zod from "zod";
 
-const agcInitialAceDefault = 0;
-export const Agc = zod
+const aGCInitialAceDefault = 0;
+export const AGC = zod
   .object({
     id: zod.int().describe("Unique integer identifier for this component."),
     name: zod
@@ -32,15 +32,15 @@ export const Agc = zod
       .describe("ID of the area controlled by the AGC."),
     initial_ace: zod
       .number()
-      .default(agcInitialAceDefault)
+      .default(aGCInitialAceDefault)
       .describe("Initial condition for ACE."),
   })
   .describe(
     'Automatic generation control (AGC) for the system or a certain `Area` within the system. This model uses a proportional-integral-derivative (PID) control to simulate a "smooth" response of the AGC to the area control error (ACE).',
   );
 
-export type Agc = zod.input<typeof Agc>;
-export type AgcOutput = zod.output<typeof Agc>;
+export type AGC = zod.input<typeof AGC>;
+export type AGCOutput = zod.output<typeof AGC>;
 
 export const AreaInterchange = zod
   .object({
@@ -926,6 +926,7 @@ export const EnergyReservoirStorage = zod
     energy_units: zod
       .enum(["MWH", "MWMIN"])
       .optional()
+      .default("MWH")
       .describe(
         "Unit basis a stored-energy quantity is recorded in (distinct from EnergyUnit, which names fuel energy content). MWH: megawatt-hours, the conventional interchange form. MWMIN: megawatt-minutes, consistent with the minutes basis used for operational durations, so a duration computed as energy over power comes out in minutes with no hidden factor of 60. Defaults to MWH: MWMIN is supported, not preferred.",
       ),
@@ -7221,6 +7222,7 @@ export const ExponentialLoad = zod
     conformity: zod
       .enum(["NON_CONFORMING", "CONFORMING", "UNDEFINED"])
       .optional()
+      .default("UNDEFINED")
       .describe(
         "WECC classification of how a load tracks voltage and frequency variation, used in dynamic studies to decide how it is modeled during a disturbance. `CONFORMING` responds predictably and follows standard load modeling practice; `NON_CONFORMING` does not, as with a constant power load or one behind a complex control system; `UNDEFINED` leaves the classification unstated.",
       ),
@@ -7262,6 +7264,7 @@ export const FACTSControlDevice = zod
     voltage_setpoint_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
+      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints — PSS/E RAW native for FACTS VSET — and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.",
       ),
@@ -7341,6 +7344,7 @@ export const FixedAdmittance = zod
     admittance_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_MVAR"])
       .optional()
+      .default("COMPONENT_MVAR")
       .describe(
         "Subset of AdmittanceUnitBasis for fixed and switched shunts: omits COMPONENT_BASE because a shunt has no device MVA rating to per-unitize against. NATURAL_UNITS: physical siemens. COMPONENT_MVAR: reactive power at unity voltage (Mvar for susceptance, MW for conductance) — PSS/E RAW native for shunts.",
       ),
@@ -7369,7 +7373,7 @@ export const FixedAdmittance = zod
 export type FixedAdmittance = zod.input<typeof FixedAdmittance>;
 export type FixedAdmittanceOutput = zod.output<typeof FixedAdmittance>;
 
-const fixedForcedOutageMonitoredComponentsDefault = [];
+const fixedForcedOutageMonitoredComponentsDefault: never[] = [];
 const fixedForcedOutageIdentifierDefault = null;
 export const FixedForcedOutage = zod
   .object({
@@ -8198,6 +8202,7 @@ export const GenericArcImpedance = zod
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
+      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
@@ -8221,7 +8226,7 @@ export type GenericArcImpedanceOutput = zod.output<typeof GenericArcImpedance>;
 
 const geometricDistributionForcedOutageMeanTimeToRecoveryDefault = 0;
 const geometricDistributionForcedOutageOutageTransitionProbabilityDefault = 0;
-const geometricDistributionForcedOutageMonitoredComponentsDefault = [];
+const geometricDistributionForcedOutageMonitoredComponentsDefault: never[] = [];
 const geometricDistributionForcedOutageIdentifierDefault = null;
 export const GeometricDistributionForcedOutage = zod
   .object({
@@ -10737,6 +10742,7 @@ export const HydroDispatch = zod
     status: zod
       .enum(["OFFLINE", "ONLINE", "STARTUP", "SHUTDOWN"])
       .optional()
+      .default("OFFLINE")
       .describe(
         "The running on/off lifecycle of an in-service committable unit, mutually exclusive. OFFLINE: shut down and not synchronized. ONLINE: synchronized and able to produce. STARTUP: in its start-up sequence. SHUTDOWN: in its shut-down sequence. Availability is not one of these values: a unit on outage is `available = false`; an OFFLINE unit with `available = true` is in service and eligible for re-commitment and off-line ancillary services.",
       ),
@@ -17575,6 +17581,7 @@ export const HydroPumpTurbine = zod
     status: zod
       .enum(["OFFLINE", "ONLINE", "STARTUP", "SHUTDOWN"])
       .optional()
+      .default("OFFLINE")
       .describe(
         "The running on/off lifecycle of an in-service committable unit, mutually exclusive. OFFLINE: shut down and not synchronized. ONLINE: synchronized and able to produce. STARTUP: in its start-up sequence. SHUTDOWN: in its shut-down sequence. Availability is not one of these values: a unit on outage is `available = false`; an OFFLINE unit with `available = true` is in service and eligible for re-commitment and off-line ancillary services.",
       ),
@@ -23758,6 +23765,7 @@ export const HydroPumpTurbine = zod
         pump: zod.number(),
       })
       .optional()
+      .default({ turbine: 1 as const, pump: 1 as const })
       .describe(
         "A pair of values, one for the turbine (generating) mode and one for the pump (charging) mode of a pumped hydro unit.",
       ),
@@ -23767,6 +23775,7 @@ export const HydroPumpTurbine = zod
         pump: zod.number(),
       })
       .optional()
+      .default({ turbine: 0 as const, pump: 0 as const })
       .describe(
         "A pair of values, one for the turbine (generating) mode and one for the pump (charging) mode of a pumped hydro unit.",
       ),
@@ -23776,6 +23785,7 @@ export const HydroPumpTurbine = zod
         pump: zod.number(),
       })
       .optional()
+      .default({ turbine: 0 as const, pump: 0 as const })
       .describe(
         "A pair of values, one for the turbine (generating) mode and one for the pump (charging) mode of a pumped hydro unit.",
       ),
@@ -23801,6 +23811,7 @@ export const HydroPumpTurbine = zod
         "MUST_RUN",
       ])
       .optional()
+      .default("COMMITTED")
       .describe(
         "Why a committable unit is (or would be) committed, orthogonal to its operational state. UNCOMMITTED: not committed, offline but available. COMMITTED: committed by the scheduling process (a planning model's commitment decision or a cleared schedule). SELF_SCHEDULED: scheduled by its owner rather than by the scheduling process. RELIABILITY: committed by the system operator for reliability rather than by the scheduling process. MUST_RUN: required to run by contract or operating constraint.",
       ),
@@ -23831,6 +23842,7 @@ export const HydroPumpTurbine = zod
         "WS",
       ])
       .optional()
+      .default("PS")
       .describe(
         "Prime mover of a generating unit — the engine, turbine, water wheel, or similar machine that drives the generator — using the code set from the EIA Form 923 instructions. `PVe` is photovoltaic, spelled that way so it does not collide with the `PV` bus type.",
       ),
@@ -28042,6 +28054,7 @@ export const HydroTurbine = zod
     status: zod
       .enum(["OFFLINE", "ONLINE", "STARTUP", "SHUTDOWN"])
       .optional()
+      .default("OFFLINE")
       .describe(
         "The running on/off lifecycle of an in-service committable unit, mutually exclusive. OFFLINE: shut down and not synchronized. ONLINE: synchronized and able to produce. STARTUP: in its start-up sequence. SHUTDOWN: in its shut-down sequence. Availability is not one of these values: a unit on outage is `available = false`; an OFFLINE unit with `available = true` is in service and eligible for re-commitment and off-line ancillary services.",
       ),
@@ -28060,6 +28073,7 @@ export const HydroTurbine = zod
         "MUST_RUN",
       ])
       .optional()
+      .default("COMMITTED")
       .describe(
         "Why a committable unit is (or would be) committed, orthogonal to its operational state. UNCOMMITTED: not committed, offline but available. COMMITTED: committed by the scheduling process (a planning model's commitment decision or a cleared schedule). SELF_SCHEDULED: scheduled by its owner rather than by the scheduling process. RELIABILITY: committed by the system operator for reliability rather than by the scheduling process. MUST_RUN: required to run by contract or operating constraint.",
       ),
@@ -34304,6 +34318,7 @@ export const HydroTurbine = zod
         "WS",
       ])
       .optional()
+      .default("HY")
       .describe(
         "Prime mover of a generating unit — the engine, turbine, water wheel, or similar machine that drives the generator — using the code set from the EIA Form 923 instructions. `PVe` is photovoltaic, spelled that way so it does not collide with the `PV` bus type.",
       ),
@@ -34584,18 +34599,21 @@ export const InterconnectingConverter = zod
     dc_control: zod
       .enum(["DC_POWER", "DC_VOLTAGE", "DC_VOLTAGE_DROOP"])
       .optional()
+      .default("DC_VOLTAGE")
       .describe(
         "DC-side control mode of a voltage-source-converter (VSC) terminal. DC_POWER: converter controls active power transferred to the DC side. DC_VOLTAGE: converter controls the DC-side voltage. DC_VOLTAGE_DROOP: P-Vdc droop, V_dc = dc_setpoint - droop_gain * P_c.",
       ),
     ac_control: zod
       .enum(["AC_REACTIVE_POWER", "AC_VOLTAGE"])
       .optional()
+      .default("AC_REACTIVE_POWER")
       .describe(
         "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.",
       ),
     voltage_setpoint_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
+      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints — PSS/E RAW native for FACTS VSET — and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.",
       ),
@@ -34642,6 +34660,7 @@ export const InterconnectingConverter = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 999.9 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -40579,6 +40598,7 @@ export const InterruptiblePowerLoad = zod
     conformity: zod
       .enum(["NON_CONFORMING", "CONFORMING", "UNDEFINED"])
       .optional()
+      .default("UNDEFINED")
       .describe(
         "WECC classification of how a load tracks voltage and frequency variation, used in dynamic studies to decide how it is modeled during a disturbance. `CONFORMING` responds predictably and follows standard load modeling practice; `NON_CONFORMING` does not, as with a constant power load or one behind a complex control system; `UNDEFINED` leaves the classification unstated.",
       ),
@@ -46518,6 +46538,7 @@ export const InterruptibleStandardLoad = zod
     conformity: zod
       .enum(["NON_CONFORMING", "CONFORMING", "UNDEFINED"])
       .optional()
+      .default("UNDEFINED")
       .describe(
         "WECC classification of how a load tracks voltage and frequency variation, used in dynamic studies to decide how it is modeled during a disturbance. `CONFORMING` responds predictably and follows standard load modeling practice; `NON_CONFORMING` does not, as with a constant power load or one behind a complex control system; `UNDEFINED` leaves the classification unstated.",
       ),
@@ -46658,6 +46679,7 @@ export const Line = zod
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
+      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
@@ -46701,6 +46723,7 @@ export const Line = zod
         to: zod.number().optional(),
       })
       .optional()
+      .default({ from: 0 as const, to: 0 as const })
       .describe(
         "A pair of values, one at the `from` end and one at the `to` end of a directed edge.",
       ),
@@ -46759,6 +46782,7 @@ export const MonitoredLine = zod
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
+      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
@@ -46809,6 +46833,7 @@ export const MonitoredLine = zod
         to: zod.number().optional(),
       })
       .optional()
+      .default({ from: 0 as const, to: 0 as const })
       .describe(
         "A pair of values, one at the `from` end and one at the `to` end of a directed edge.",
       ),
@@ -48479,7 +48504,7 @@ export const OnlineReserve = zod
 export type OnlineReserve = zod.input<typeof OnlineReserve>;
 export type OnlineReserveOutput = zod.output<typeof OnlineReserve>;
 
-const plannedOutageMonitoredComponentsDefault = [];
+const plannedOutageMonitoredComponentsDefault: never[] = [];
 const plannedOutageIdentifierDefault = null;
 export const PlannedOutage = zod
   .object({
@@ -52188,6 +52213,7 @@ export const PowerLoad = zod
     conformity: zod
       .enum(["NON_CONFORMING", "CONFORMING", "UNDEFINED"])
       .optional()
+      .default("UNDEFINED")
       .describe(
         "WECC classification of how a load tracks voltage and frequency variation, used in dynamic studies to decide how it is modeled during a disturbance. `CONFORMING` responds predictably and follows standard load modeling practice; `NON_CONFORMING` does not, as with a constant power load or one behind a complex control system; `UNDEFINED` leaves the classification unstated.",
       ),
@@ -65335,6 +65361,7 @@ const sourceOperationCostThreeExportOfferCurvesVomCostDefault = {
 const sourceOperationCostDefault = {
   cost_type: "IMPORTEXPORT" as const,
   import_offer_curves: {
+    power_units: "NATURAL_UNITS" as const,
     variable_cost_type: "COST" as const,
     value_curve: {
       curve_type: "INPUT_OUTPUT" as const,
@@ -65354,6 +65381,7 @@ const sourceOperationCostDefault = {
     },
   },
   export_offer_curves: {
+    power_units: "NATURAL_UNITS" as const,
     variable_cost_type: "COST" as const,
     value_curve: {
       curve_type: "INPUT_OUTPUT" as const,
@@ -65409,6 +65437,7 @@ export const Source = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -65418,12 +65447,14 @@ export const Source = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
+      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
@@ -70108,6 +70139,7 @@ export const StandardLoad = zod
     conformity: zod
       .enum(["NON_CONFORMING", "CONFORMING", "UNDEFINED"])
       .optional()
+      .default("UNDEFINED")
       .describe(
         "WECC classification of how a load tracks voltage and frequency variation, used in dynamic studies to decide how it is modeled during a disturbance. `CONFORMING` responds predictably and follows standard load modeling practice; `NON_CONFORMING` does not, as with a constant power load or one behind a complex control system; `UNDEFINED` leaves the classification unstated.",
       ),
@@ -70163,6 +70195,7 @@ export const SwitchedAdmittance = zod
     admittance_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_MVAR"])
       .optional()
+      .default("COMPONENT_MVAR")
       .describe(
         "Subset of AdmittanceUnitBasis for fixed and switched shunts: omits COMPONENT_BASE because a shunt has no device MVA rating to per-unitize against. NATURAL_UNITS: physical siemens. COMPONENT_MVAR: reactive power at unity voltage (Mvar for susceptance, MW for conductance) — PSS/E RAW native for shunts.",
       ),
@@ -70203,6 +70236,7 @@ export const SwitchedAdmittance = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 1 as const, min: 1 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -70217,6 +70251,7 @@ export const SwitchedAdmittance = zod
         "DISCRETE_ADMITTANCE_REMOTE",
       ])
       .optional()
+      .default("FIXED")
       .describe(
         "Control mode of a switched shunt admittance. `UNDEFINED` leaves the mode unspecified; `FIXED` holds the admittance at a constant value; `CONTINUOUS_VOLTAGE` adjusts it continuously to control voltage. The `DISCRETE_*` modes switch blocks in discrete steps to control voltage, a plant's reactive power, a voltage-source-converter terminal's reactive power, or a remote bus's admittance, respectively.",
       ),
@@ -70328,6 +70363,7 @@ export const TModelHVDCLine = zod
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
+      .default("NATURAL_UNITS")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
@@ -70949,6 +70985,7 @@ export const ThermalMultiStart = zod
         "MUST_RUN",
       ])
       .optional()
+      .default("COMMITTED")
       .describe(
         "Why a committable unit is (or would be) committed, orthogonal to its operational state. UNCOMMITTED: not committed, offline but available. COMMITTED: committed by the scheduling process (a planning model's commitment decision or a cleared schedule). SELF_SCHEDULED: scheduled by its owner rather than by the scheduling process. RELIABILITY: committed by the system operator for reliability rather than by the scheduling process. MUST_RUN: required to run by contract or operating constraint.",
       ),
@@ -77888,6 +77925,7 @@ export const ThermalStandard = zod
         "MUST_RUN",
       ])
       .optional()
+      .default("COMMITTED")
       .describe(
         "Why a committable unit is (or would be) committed, orthogonal to its operational state. UNCOMMITTED: not committed, offline but available. COMMITTED: committed by the scheduling process (a planning model's commitment decision or a cleared schedule). SELF_SCHEDULED: scheduled by its owner rather than by the scheduling process. RELIABILITY: committed by the system operator for reliability rather than by the scheduling process. MUST_RUN: required to run by contract or operating constraint.",
       ),
@@ -84157,6 +84195,7 @@ export const ThermalStandard = zod
         "WS",
       ])
       .optional()
+      .default("OT")
       .describe(
         "Prime mover of a generating unit — the engine, turbine, water wheel, or similar machine that drives the generator — using the code set from the EIA Form 923 instructions. `PVe` is photovoltaic, spelled that way so it does not collide with the `PV` bus type.",
       ),
@@ -84198,6 +84237,7 @@ export const ThermalStandard = zod
         "OTHER",
       ])
       .optional()
+      .default("OTHER")
       .describe(
         "Thermal fuels that reflect options in the EIA annual energy review.",
       ),
@@ -84250,6 +84290,7 @@ export const ThreeWindingTransformer = zod
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
+      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
@@ -84310,6 +84351,7 @@ export const ThreeWindingTransformer = zod
     admittance_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_MVAR", "COMPONENT_BASE"])
       .optional()
+      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a shunt admittance is stored in. NATURAL_UNITS: physical siemens. COMPONENT_MVAR: reactive power at unity voltage (Mvar for susceptance, MW for conductance). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base) — a per-unit base, not a power at unity voltage, and not an alternative spelling of COMPONENT_MVAR; components whose per-unit data was historically on the system base record that system base in base_power. Fixed and switched shunts use ShuntAdmittanceUnitBasis instead, which omits COMPONENT_BASE because a shunt has no device MVA rating.",
       ),
@@ -84319,10 +84361,12 @@ export const ThreeWindingTransformer = zod
         imag: zod.number().optional(),
       })
       .optional()
+      .default({ real: 0 as const, imag: 0 as const })
       .describe("A complex number, given as its `real` and `imag` parts."),
     shunt_location: zod
       .enum(["PRIMARY", "STAR"])
       .optional()
+      .default("PRIMARY")
       .describe(
         "Placement of a `ThreeWindingTransformer`'s magnetizing shunt admittance in the equivalent star model. PRIMARY: the full magnetizing shunt is applied on the winding-1 (primary) terminal side. STAR: the full magnetizing shunt is applied at the star node.",
       ),
@@ -84401,6 +84445,7 @@ export const TransformerCircuit = zod
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
+      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
@@ -84432,6 +84477,7 @@ export const TransformerCircuit = zod
         "ASYMMETRIC_ACTIVE_POWER_FLOW",
       ])
       .optional()
+      .default("UNDEFINED")
       .describe(
         "Control objective of a transformer tap changer or phase shifter: a fixed tap position with no automatic adjustment (`FIXED`), or regulation of voltage magnitude at the controlled bus, reactive power flow, active power flow, asymmetric active power flow, or a DC line. Each regulating objective has a paired `_DISABLED` value naming the same control block while it is out of service, and `UNDEFINED` means no control objective is stated.",
       ),
@@ -84445,6 +84491,7 @@ export const TransformerCircuit = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 1.1 as const, min: 0.9 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -84454,6 +84501,7 @@ export const TransformerCircuit = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 1.1 as const, min: 0.9 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -84855,6 +84903,7 @@ export const TwoTerminalLCCLine = zod
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
+      .default("NATURAL_UNITS")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
@@ -84871,6 +84920,7 @@ export const TwoTerminalLCCLine = zod
     dc_voltage_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
+      .default("NATURAL_UNITS")
       .describe(
         "Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints — PSS/E RAW native for FACTS VSET — and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.",
       ),
@@ -84967,6 +85017,7 @@ export const TwoTerminalLCCLine = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 1.5 as const, min: 0.51 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -85000,6 +85051,7 @@ export const TwoTerminalLCCLine = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 1.5 as const, min: 0.51 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -85023,6 +85075,7 @@ export const TwoTerminalLCCLine = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -85032,6 +85085,7 @@ export const TwoTerminalLCCLine = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -85041,6 +85095,7 @@ export const TwoTerminalLCCLine = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -85050,6 +85105,7 @@ export const TwoTerminalLCCLine = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -85169,6 +85225,17 @@ export const TwoTerminalLCCLine = zod
           ),
       })
       .optional()
+      .default({
+        power_units: "NATURAL_UNITS" as const,
+        value_curve: {
+          curve_type: "INPUT_OUTPUT" as const,
+          function_data: {
+            function_type: "LINEAR" as const,
+            constant_term: 0 as const,
+            proportional_term: 0 as const,
+          },
+        },
+      })
       .describe(
         "Losses of a device as a function of the flow through it, together with the power basis the curve is expressed in. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched.",
       ),
@@ -85304,6 +85371,7 @@ export const TwoTerminalVSCLine = zod
     admittance_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_MVAR", "COMPONENT_BASE"])
       .optional()
+      .default("NATURAL_UNITS")
       .describe(
         "Unit basis a shunt admittance is stored in. NATURAL_UNITS: physical siemens. COMPONENT_MVAR: reactive power at unity voltage (Mvar for susceptance, MW for conductance). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base) — a per-unit base, not a power at unity voltage, and not an alternative spelling of COMPONENT_MVAR; components whose per-unit data was historically on the system base record that system base in base_power. Fixed and switched shunts use ShuntAdmittanceUnitBasis instead, which omits COMPONENT_BASE because a shunt has no device MVA rating.",
       ),
@@ -85328,18 +85396,21 @@ export const TwoTerminalVSCLine = zod
     dc_control_from: zod
       .enum(["DC_POWER", "DC_VOLTAGE", "DC_VOLTAGE_DROOP"])
       .optional()
+      .default("DC_VOLTAGE")
       .describe(
         "DC-side control mode of a voltage-source-converter (VSC) terminal. DC_POWER: converter controls active power transferred to the DC side. DC_VOLTAGE: converter controls the DC-side voltage. DC_VOLTAGE_DROOP: P-Vdc droop, V_dc = dc_setpoint - droop_gain * P_c.",
       ),
     ac_control_from: zod
       .enum(["AC_REACTIVE_POWER", "AC_VOLTAGE"])
       .optional()
+      .default("AC_VOLTAGE")
       .describe(
         "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.",
       ),
     setpoint_voltage_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
+      .default("NATURAL_UNITS")
       .describe(
         "Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints — PSS/E RAW native for FACTS VSET — and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.",
       ),
@@ -85481,6 +85552,17 @@ export const TwoTerminalVSCLine = zod
           ),
       })
       .optional()
+      .default({
+        power_units: "NATURAL_UNITS" as const,
+        value_curve: {
+          curve_type: "INPUT_OUTPUT" as const,
+          function_data: {
+            function_type: "LINEAR" as const,
+            constant_term: 0 as const,
+            proportional_term: 0 as const,
+          },
+        },
+      })
       .describe(
         "Losses of a device as a function of the flow through it, together with the power basis the curve is expressed in. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched.",
       ),
@@ -85500,6 +85582,7 @@ export const TwoTerminalVSCLine = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -85512,6 +85595,7 @@ export const TwoTerminalVSCLine = zod
     voltage_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
+      .default("NATURAL_UNITS")
       .describe(
         "Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints — PSS/E RAW native for FACTS VSET — and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.",
       ),
@@ -85521,6 +85605,7 @@ export const TwoTerminalVSCLine = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 999.9 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -85539,12 +85624,14 @@ export const TwoTerminalVSCLine = zod
     dc_control_to: zod
       .enum(["DC_POWER", "DC_VOLTAGE", "DC_VOLTAGE_DROOP"])
       .optional()
+      .default("DC_VOLTAGE")
       .describe(
         "DC-side control mode of a voltage-source-converter (VSC) terminal. DC_POWER: converter controls active power transferred to the DC side. DC_VOLTAGE: converter controls the DC-side voltage. DC_VOLTAGE_DROOP: P-Vdc droop, V_dc = dc_setpoint - droop_gain * P_c.",
       ),
     ac_control_to: zod
       .enum(["AC_REACTIVE_POWER", "AC_VOLTAGE"])
       .optional()
+      .default("AC_VOLTAGE")
       .describe(
         "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.",
       ),
@@ -85686,6 +85773,17 @@ export const TwoTerminalVSCLine = zod
           ),
       })
       .optional()
+      .default({
+        power_units: "NATURAL_UNITS" as const,
+        value_curve: {
+          curve_type: "INPUT_OUTPUT" as const,
+          function_data: {
+            function_type: "LINEAR" as const,
+            constant_term: 0 as const,
+            proportional_term: 0 as const,
+          },
+        },
+      })
       .describe(
         "Losses of a device as a function of the flow through it, together with the power basis the curve is expressed in. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched.",
       ),
@@ -85705,6 +85803,7 @@ export const TwoTerminalVSCLine = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -85720,6 +85819,7 @@ export const TwoTerminalVSCLine = zod
         min: zod.number().optional(),
       })
       .optional()
+      .default({ max: 999.9 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -85795,6 +85895,7 @@ export const TwoWindingTransformer = zod
     admittance_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_MVAR", "COMPONENT_BASE"])
       .optional()
+      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a shunt admittance is stored in. NATURAL_UNITS: physical siemens. COMPONENT_MVAR: reactive power at unity voltage (Mvar for susceptance, MW for conductance). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base) — a per-unit base, not a power at unity voltage, and not an alternative spelling of COMPONENT_MVAR; components whose per-unit data was historically on the system base record that system base in base_power. Fixed and switched shunts use ShuntAdmittanceUnitBasis instead, which omits COMPONENT_BASE because a shunt has no device MVA rating.",
       ),
@@ -85804,10 +85905,12 @@ export const TwoWindingTransformer = zod
         imag: zod.number().optional(),
       })
       .optional()
+      .default({ real: 0 as const, imag: 0 as const })
       .describe("A complex number, given as its `real` and `imag` parts."),
     shunt_location: zod
       .enum(["PRIMARY", "SECONDARY", "SPLIT"])
       .optional()
+      .default("PRIMARY")
       .describe(
         "Placement of a `TwoWindingTransformer`'s magnetizing shunt admittance on the two sides of its single circuit arc. PRIMARY: the full magnetizing shunt is applied on the primary (from) side. SECONDARY: the full magnetizing shunt is applied on the secondary (to) side. SPLIT: the full complex magnetizing shunt value is applied on BOTH sides.",
       ),

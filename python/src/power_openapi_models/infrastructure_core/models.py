@@ -49,30 +49,30 @@ class FromToToFrom(BaseModel):
 
 class LinearFunctionData(BaseModel):
     constant_term: float
-    function_type: Literal["LINEAR"]
+    function_type: Literal["LINEAR"] = "LINEAR"
     proportional_term: float
 
 
 class PiecewiseLinearData(BaseModel):
-    function_type: Literal["PIECEWISE_LINEAR"]
+    function_type: Literal["PIECEWISE_LINEAR"] = "PIECEWISE_LINEAR"
     points: list[XYCoords]
 
 
 class PiecewiseStepData(BaseModel):
-    function_type: Literal["PIECEWISE_STEP"]
+    function_type: Literal["PIECEWISE_STEP"] = "PIECEWISE_STEP"
     x_coords: list[float]
     y_coords: list[float]
 
 
 class QuadraticFunctionData(BaseModel):
     constant_term: float
-    function_type: Literal["QUADRATIC"]
+    function_type: Literal["QUADRATIC"] = "QUADRATIC"
     proportional_term: float
     quadratic_term: float
 
 
 class TimeSeriesLinearFunctionData(BaseModel):
-    function_type: Literal["TIME_SERIES_LINEAR"]
+    function_type: Literal["TIME_SERIES_LINEAR"] = "TIME_SERIES_LINEAR"
     association_id: int = Field(
         ...,
         description="Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
@@ -80,7 +80,7 @@ class TimeSeriesLinearFunctionData(BaseModel):
 
 
 class TimeSeriesPiecewiseLinearData(BaseModel):
-    function_type: Literal["TIME_SERIES_PIECEWISE_LINEAR"]
+    function_type: Literal["TIME_SERIES_PIECEWISE_LINEAR"] = "TIME_SERIES_PIECEWISE_LINEAR"
     association_id: int = Field(
         ...,
         description="Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
@@ -88,7 +88,7 @@ class TimeSeriesPiecewiseLinearData(BaseModel):
 
 
 class TimeSeriesPiecewiseStepData(BaseModel):
-    function_type: Literal["TIME_SERIES_PIECEWISE_STEP"]
+    function_type: Literal["TIME_SERIES_PIECEWISE_STEP"] = "TIME_SERIES_PIECEWISE_STEP"
     association_id: int = Field(
         ...,
         description="Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
@@ -96,7 +96,7 @@ class TimeSeriesPiecewiseStepData(BaseModel):
 
 
 class TimeSeriesQuadraticFunctionData(BaseModel):
-    function_type: Literal["TIME_SERIES_QUADRATIC"]
+    function_type: Literal["TIME_SERIES_QUADRATIC"] = "TIME_SERIES_QUADRATIC"
     association_id: int = Field(
         ...,
         description="Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",

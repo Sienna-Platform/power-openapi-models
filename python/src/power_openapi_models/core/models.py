@@ -343,7 +343,7 @@ class ACBus(BaseModel):
 
 
 class AverageRateCurve(BaseModel):
-    curve_type: Literal["AVERAGE_RATE"]
+    curve_type: Literal["AVERAGE_RATE"] = "AVERAGE_RATE"
     function_data: LinearFunctionData | PiecewiseStepData = Field(
         ..., discriminator="function_type"
     )
@@ -352,7 +352,7 @@ class AverageRateCurve(BaseModel):
 
 
 class IncrementalCurve(BaseModel):
-    curve_type: Literal["INCREMENTAL"]
+    curve_type: Literal["INCREMENTAL"] = "INCREMENTAL"
     function_data: LinearFunctionData | PiecewiseStepData = Field(
         ..., discriminator="function_type"
     )
@@ -389,7 +389,7 @@ class Area(BaseModel):
 
 
 class InputOutputCurve(BaseModel):
-    curve_type: Literal["INPUT_OUTPUT"]
+    curve_type: Literal["INPUT_OUTPUT"] = "INPUT_OUTPUT"
     function_data: QuadraticFunctionData | LinearFunctionData | PiecewiseLinearData = Field(
         ..., discriminator="function_type"
     )
@@ -398,23 +398,24 @@ class InputOutputCurve(BaseModel):
 
 class LossValueCurve(RootModel[InputOutputCurve | IncrementalCurve]):
     root: InputOutputCurve | IncrementalCurve = Field(
-        {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
-            },
-        },
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
         description="The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
         discriminator="curve_type",
         title="LossValueCurve",
-        validate_default=True,
     )
 
 
 class TimeSeriesAverageRateCurve(BaseModel):
-    curve_type: Literal["TIME_SERIES_AVERAGE_RATE"]
+    curve_type: Literal["TIME_SERIES_AVERAGE_RATE"] = "TIME_SERIES_AVERAGE_RATE"
     function_data: FunctionData = Field(
         ...,
         description="Only TIME_SERIES_LINEAR or TIME_SERIES_PIECEWISE_STEP is admissible here; all other FunctionData variants, static or time-series-backed, are rejected by the consuming constructor.",
@@ -430,7 +431,7 @@ class TimeSeriesAverageRateCurve(BaseModel):
 
 
 class TimeSeriesIncrementalCurve(BaseModel):
-    curve_type: Literal["TIME_SERIES_INCREMENTAL"]
+    curve_type: Literal["TIME_SERIES_INCREMENTAL"] = "TIME_SERIES_INCREMENTAL"
     function_data: FunctionData = Field(
         ...,
         description="Only TIME_SERIES_LINEAR or TIME_SERIES_PIECEWISE_STEP is admissible here; all other FunctionData variants, static or time-series-backed, are rejected by the consuming constructor.",
@@ -446,7 +447,7 @@ class TimeSeriesIncrementalCurve(BaseModel):
 
 
 class TimeSeriesInputOutputCurve(BaseModel):
-    curve_type: Literal["TIME_SERIES_INPUT_OUTPUT"]
+    curve_type: Literal["TIME_SERIES_INPUT_OUTPUT"] = "TIME_SERIES_INPUT_OUTPUT"
     function_data: FunctionData = Field(
         ...,
         description="Only TIME_SERIES_LINEAR, TIME_SERIES_QUADRATIC, or TIME_SERIES_PIECEWISE_LINEAR is admissible here; the static variants and TIME_SERIES_PIECEWISE_STEP are invalid and rejected by the consuming constructor.",
@@ -458,8 +459,18 @@ class TimeSeriesInputOutputCurve(BaseModel):
 
 
 class LossCurve(BaseModel):
-    power_units: UnitSystem
-    value_curve: LossValueCurve
+    power_units: UnitSystem = UnitSystem.NATURAL_UNITS
+    value_curve: LossValueCurve = Field(
+        {
+            "curve_type": "INPUT_OUTPUT",
+            "function_data": {
+                "function_type": "LINEAR",
+                "constant_term": 0,
+                "proportional_term": 0,
+            },
+        },
+        validate_default=True,
+    )
 
 
 class ValueCurve(
@@ -491,14 +502,25 @@ class StorageCapitalCost(BaseModel):
     charge_capital_cost: ValueCurve
     discharge_capital_cost: ValueCurve
     energy_capital_cost: ValueCurve
-    interconnection_cost: float
+    interconnection_cost: float = 0.0
 
 
 class CostCurve(BaseModel):
     power_units: UnitSystem = UnitSystem.NATURAL_UNITS
     value_curve: ValueCurve
-    variable_cost_type: Literal["COST"]
-    vom_cost: InputOutputCurve
+    variable_cost_type: Literal["COST"] = "COST"
+    vom_cost: InputOutputCurve = Field(
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        )
+    )
 
 
 class EmissionsData(BaseModel):
@@ -546,33 +568,44 @@ class FuelCurve(BaseModel):
         None, description="Fuel consumed during startup, as a curve in the unit's fuel units."
     )
     value_curve: ValueCurve
-    variable_cost_type: Literal["FUEL"]
-    vom_cost: InputOutputCurve
+    variable_cost_type: Literal["FUEL"] = "FUEL"
+    vom_cost: InputOutputCurve = Field(
+        {
+            "curve_type": "INPUT_OUTPUT",
+            "function_data": {
+                "function_type": "LINEAR",
+                "constant_term": 0,
+                "proportional_term": 0,
+            },
+        },
+        validate_default=True,
+    )
 
 
 class RenewableGenerationCost(BaseModel):
     cost_type: Literal["RENEWABLE"] = "RENEWABLE"
     curtailment_cost: CostCurve | None = Field(
-        {
-            "variable_cost_type": "COST",
-            "value_curve": {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
+        default_factory=lambda: CostCurve.model_validate(
+            {
+                "variable_cost_type": "COST",
+                "value_curve": {
+                    "curve_type": "INPUT_OUTPUT",
+                    "function_data": {
+                        "function_type": "LINEAR",
+                        "constant_term": 0,
+                        "proportional_term": 0,
+                    },
                 },
-            },
-            "vom_cost": {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
+                "vom_cost": {
+                    "curve_type": "INPUT_OUTPUT",
+                    "function_data": {
+                        "function_type": "LINEAR",
+                        "constant_term": 0,
+                        "proportional_term": 0,
+                    },
                 },
-            },
-        },
-        validate_default=True,
+            }
+        )
     )
     variable_operation_cost: CostCurve
     fixed: float | None = 0.0
@@ -591,9 +624,9 @@ class StorageCost(BaseModel):
     cost_type: Literal["STORAGE"] = "STORAGE"
     charge_variable_cost: CostCurve | None = None
     discharge_variable_cost: CostCurve | None = None
-    fixed: float
-    shut_down: float
-    start_up: float | ChargeDischarge
+    fixed: float = 0.0
+    shut_down: float = 0.0
+    start_up: float | ChargeDischarge = 0.0
     energy_shortage_cost: float | None = 0.0
     energy_surplus_cost: float | None = 0.0
 
@@ -613,7 +646,7 @@ class ImportExportCost(BaseModel):
 
 
 class ImportExportTimeSeriesCost(BaseModel):
-    cost_type: Literal["IMPORT_EXPORT_TIME_SERIES"]
+    cost_type: Literal["IMPORT_EXPORT_TIME_SERIES"] = "IMPORT_EXPORT_TIME_SERIES"
     import_offer_curves: CostCurve = Field(
         ...,
         description="Import price curves whose value curve admits only the TIME_SERIES_INCREMENTAL variant; any other variant is rejected by the consuming constructor.",
@@ -640,7 +673,7 @@ class LoadCost(BaseModel):
 
 
 class MarketBidTimeSeriesCost(BaseModel):
-    cost_type: Literal["MARKET_BID_TIME_SERIES"]
+    cost_type: Literal["MARKET_BID_TIME_SERIES"] = "MARKET_BID_TIME_SERIES"
     minimum_energy_offer: TimeSeriesInputOutputCurve = Field(
         ...,
         description="Minimum-energy offer: cost to operate at minimum stable level, in $/MWh at the curve's minimum power, stored as submitted. $/h sources convert at parse (MEO = no-load cost / P_min). Time-series-backed linear curve; only the TIME_SERIES_LINEAR function-data variant is admissible here — the consuming constructor rejects any other.",
@@ -690,14 +723,32 @@ class CapitalCost(BaseModel):
 class MarketBidCost(BaseModel):
     cost_type: Literal["MARKET_BID"] = "MARKET_BID"
     minimum_energy_offer: InputOutputCurve = Field(
-        ...,
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
         description="Minimum-energy offer: cost to operate at minimum stable level, in $/MWh at the curve's minimum power, stored as submitted. $/h sources convert at parse (MEO = no-load cost / P_min). Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     start_up: StartUpStages = Field(
         ..., description="Start-up cost at different stages of the thermal cycle (hot, warm, cold)."
     )
     shut_down: InputOutputCurve = Field(
-        ...,
+        default_factory=lambda: InputOutputCurve.model_validate(
+            {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            }
+        ),
         description="Shut-down cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     incremental_offer_curves: CostCurve = Field(
@@ -741,7 +792,8 @@ class ThermalGenerationCost(BaseModel):
     )
     shut_down: float = Field(..., description="Cost to turn the unit off")
     start_up: float | StartUpStages = Field(
-        ..., description="Start-up cost can take linear or multi-stage cost"
+        ...,
+        description="Start-up cost can take linear or multi-stage cost",
     )
     variable_operation_cost: ProductionVariableCostCurve
 

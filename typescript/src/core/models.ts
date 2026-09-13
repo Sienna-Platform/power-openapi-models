@@ -4566,6 +4566,7 @@ export const CostCurve = zod
   .object({
     power_units: zod
       .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
+      .default("NATURAL_UNITS")
       .describe(
         "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
       ),
@@ -5998,6 +5999,7 @@ export const EmissionsData = zod
       mass_unit: zod
         .enum(["KG", "LB", "SHORT_TON", "METRIC_TON"])
         .optional()
+        .default("KG")
         .describe(
           "Mass unit an emission quantity is reported in: kilograms, pounds, short tons (2000 lb), or metric tons (1000 kg).",
         ),
@@ -6081,14 +6083,6 @@ const fuelCurveStartupFuelOfftakeCurveTypeDefault = `INPUT_OUTPUT`;
 const fuelCurveStartupFuelOfftakeFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const fuelCurveStartupFuelOfftakeFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const fuelCurveStartupFuelOfftakeFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const fuelCurveStartupFuelOfftakeDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const fuelCurveValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const fuelCurveValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const fuelCurveValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
@@ -6223,7 +6217,7 @@ export const FuelCurve = zod
         ]),
         input_at_zero: zod.number().optional(),
       })
-      .default(fuelCurveStartupFuelOfftakeDefault)
+      .optional()
       .describe(
         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
       ),
@@ -20371,6 +20365,7 @@ export const LossCurve = zod
   .object({
     power_units: zod
       .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
+      .default("NATURAL_UNITS")
       .describe(
         "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
       ),
@@ -24892,6 +24887,26 @@ export const RenewableGenerationCost = zod
           ),
       })
       .optional()
+      .default({
+        power_units: "NATURAL_UNITS" as const,
+        value_curve: {
+          curve_type: "INPUT_OUTPUT" as const,
+          function_data: {
+            function_type: "LINEAR" as const,
+            constant_term: 0 as const,
+            proportional_term: 0 as const,
+          },
+        },
+        variable_cost_type: "COST" as const,
+        vom_cost: {
+          curve_type: "INPUT_OUTPUT" as const,
+          function_data: {
+            function_type: "LINEAR" as const,
+            constant_term: 0 as const,
+            proportional_term: 0 as const,
+          },
+        },
+      })
       .describe(
         "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term.",
       ),

@@ -9,18 +9,37 @@ After applying fixes, the script scans for potential new issues and warns
 about them without attempting an automatic fix.
 """
 
+import json
+import os
 import re
 import subprocess
 import sys
 from pathlib import Path
 
-PKG_DIR = Path(__file__).parent.parent.parent / "python" / "src" / "power_openapi_models"
+REPO_ROOT = Path(__file__).parent.parent.parent
+PKG_DIR = REPO_ROOT / "python" / "src" / "power_openapi_models"
 
 PRIMITIVES = {"float", "int", "str", "bool"}
 
 CORE_MODELS = PKG_DIR / "core" / "models.py"
 INFRASTRUCTURE_CORE_MODELS = PKG_DIR / "infrastructure_core" / "models.py"
 INFRASTRUCTURE_CORE_IMPORT = "power_openapi_models.infrastructure_core.models"
+
+# Same default the Makefile's SCHEMA_DIR uses, so running this file directly
+# (outside `make generate-python`) still finds a sibling checkout.
+SCHEMA_DIR = Path(os.environ.get("SCHEMA_DIR", "../SiennaSchemas"))
+# The six generated entry specs `make generate-python` feeds to datamodel-codegen.
+# Every one of a spec's `components.schemas` entries is a bare `$ref` -- never an
+# inline definition -- into Core/common.json or a per-type file under Operations/,
+# Investments/, Dynamics/, TimeSeries/ (verified against every current entry).
+SCHEMA_ENTRY_SPECS = (
+    "openapi-infrastructure-core.json",
+    "openapi-core.json",
+    "openapi-operations.json",
+    "openapi-investments.json",
+    "openapi-dynamics.json",
+    "openapi-timeseries.json",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -194,27 +213,228 @@ def fix_missing_composite_defaults(content: str) -> tuple[str, bool]:
     return content, changed
 
 
-def fix_costcurve_power_units_default(content: str) -> tuple[str, bool]:
-    """Restore `CostCurve.power_units`'s schema default, dropped by datamodel-codegen.
+# ---------------------------------------------------------------------------
+# Schema registry -- backs fix_required_fields_with_schema_defaults below.
+# ---------------------------------------------------------------------------
 
-    `CostCurve.power_units` is schema-`required` *and* schema-`default:
-    NATURAL_UNITS` (Core/common.json). Julia's `@kwdef` constructor honors
-    the field-level default regardless of the required-list, so omitting
-    `power_units` is harmless there. datamodel-codegen drops the default
-    entirely for this required-with-default enum $ref (unlike the sibling
-    `variable_cost_type`/`vom_cost` fields on the same model, which keep
-    theirs), so any literal that omits `power_units` — including
-    `CostCurve`'s own embedded defaults on `RenewableGenerationCost.
-    curtailment_cost`, `MarketBidCost.incremental_offer_curves`, et al. —
-    raises `ValidationError` on first use instead of falling back like
-    Julia does. Only `CostCurve` itself (not `FuelCurve`, whose schema
-    `power_units` has no sibling default) is affected.
+_schema_json_cache: dict[Path, dict] = {}
+
+
+def _load_schema_json(path: Path) -> dict:
+    """Read and cache one schema file, keyed by its resolved path so the same
+    file reached via two different relative `$ref`s is only parsed once."""
+    path = path.resolve()
+    if path not in _schema_json_cache:
+        _schema_json_cache[path] = json.loads(path.read_text())
+    return _schema_json_cache[path]
+
+
+def _resolve_schema_ref(ref: str, base_file: Path) -> tuple[dict, Path]:
+    """Resolve one `$ref` written in `base_file`: a same-file JSON pointer
+    (`#/$defs/X`), a bare path to another schema file (the whole file is the
+    schema), or a path-plus-pointer combination -- resolved relative to the
+    file the `$ref` was written in, exactly as datamodel-codegen itself
+    resolves the same-filesystem external refs the Makefile relies on.
     """
-    pattern = re.compile(r"(class CostCurve\(BaseModel\):\n)(    power_units: UnitSystem\n)")
-    new_content, n = pattern.subn(
-        r"\1    power_units: UnitSystem = UnitSystem.NATURAL_UNITS\n", content
-    )
-    return new_content, n > 0
+    file_part, _, pointer = ref.partition("#")
+    target_file = (base_file.parent / file_part).resolve() if file_part else base_file
+    node = _load_schema_json(target_file)
+    for part in filter(None, pointer.split("/")):
+        node = node[part]
+    return node, target_file
+
+
+_registry_cache: dict[str, dict] | None = None
+
+
+def _schema_type_registry() -> dict[str, dict]:
+    """Map every schema type name to `{"node": ..., "file": ...}`, built by
+    walking the six generated entry specs' `components.schemas` and
+    following each entry's `$ref` (never inlined -- see SCHEMA_ENTRY_SPECS).
+
+    A name already seen from an earlier spec is left alone: the same schema
+    name reachable from two domains is guaranteed byte-identical by
+    dedupe_core_against_infrastructure_core / the cross-language dedup
+    contract, so re-resolving it a second time would just re-read the same
+    file. Returns an empty registry (every fix below becomes a no-op,
+    same as a missing INFRASTRUCTURE_CORE_MODELS file) rather than raising
+    when SCHEMA_DIR isn't checked out -- postprocess.py has no other
+    dependency on it existing.
+    """
+    global _registry_cache
+    if _registry_cache is not None:
+        return _registry_cache
+    registry: dict[str, dict] = {}
+    for entry_name in SCHEMA_ENTRY_SPECS:
+        entry_file = SCHEMA_DIR / entry_name
+        if not entry_file.exists():
+            continue
+        doc = _load_schema_json(entry_file)
+        for name, node in doc.get("components", {}).get("schemas", {}).items():
+            if name in registry:
+                continue
+            src_file = entry_file
+            seen_refs: set[tuple[str, str]] = set()
+            while isinstance(node, dict) and "$ref" in node:
+                key = (str(src_file), node["$ref"])
+                if key in seen_refs:
+                    break
+                seen_refs.add(key)
+                node, src_file = _resolve_schema_ref(node["$ref"], src_file)
+            registry[name] = {"node": node, "file": src_file}
+    _registry_cache = registry
+    return registry
+
+
+def _required_field_default(registry: dict[str, dict], type_name: str, field: str):
+    """The effective schema default for `type_name.field`, or `None` if the
+    field isn't schema-`required`, has no property, or no default is
+    discoverable.
+
+    Checks the property node's own `default` first (`CostCurve.
+    variable_cost_type`, `CostCurve.vom_cost`, `CostCurve.power_units`); when
+    that property is itself a bare `$ref` with no sibling default, resolves
+    one hop to the referenced type's own top-level `default`
+    (`FuelCurve.vom_cost` -> `InputOutputCurve`, `LossCurve.value_curve` ->
+    `LossValueCurve`) -- the same one-hop lookup
+    fix_missing_composite_defaults already does for a handful of *optional*
+    fields, needed here for required ones instead. Also reports whether the
+    `$ref` target is itself an enum schema, so the caller can render a proper
+    `EnumType.MEMBER` rather than a bare string a plain `Enum` (not
+    `str, Enum`) can't accept as a literal default.
+
+    Returns `(default_value, enum_type_name_or_None)`.
+    """
+    entry = registry.get(type_name)
+    if entry is None:
+        return None
+    node, src_file = entry["node"], entry["file"]
+    if field not in node.get("required", ()):
+        return None
+    prop = node.get("properties", {}).get(field)
+    if prop is None:
+        return None
+    target = None
+    if "$ref" in prop:
+        target, _ = _resolve_schema_ref(prop["$ref"], src_file)
+    if "default" in prop:
+        default = prop["default"]
+    elif target is not None and "default" in target:
+        default = target["default"]
+    else:
+        return None
+    enum_type = None
+    if target is not None and isinstance(target.get("enum"), list):
+        enum_type = target.get("title")
+    return default, enum_type
+
+
+def _default_literal(prop_type: str | None, default, enum_type: str | None) -> tuple[str, bool]:
+    """Render a schema default as Python source, and report whether it needs
+    `validate_default=True` to become the real type rather than a bare dict.
+
+    Pydantic v2 does not validate a class-level default against its field's
+    annotation (`validate_default` defaults to `False`), so a raw dict
+    assigned as a `BaseModel`-typed field's default stays a dict at
+    construction time -- silently wrong, and a `model_dump()` serializer
+    warning waiting to happen. `CostCurve.vom_cost` and the other composite
+    (dict/list) defaults here need `validate_default=True` so pydantic
+    actually builds the nested model; a scalar (str for a `Literal`, float
+    for a `float` field) already has the correct Python type and needs
+    nothing extra. An enum-schema `$ref` target (`CostCurve.power_units` ->
+    `UnitSystem`) renders as `EnumType.MEMBER`, matching this generator's own
+    convention of a member name identical to its value -- verified against
+    every enum currently generated (UnitSystem, PrimeMovers, ...).
+    """
+    if enum_type is not None:
+        return f"{enum_type}.{default}", False
+    if isinstance(default, (dict, list)):
+        return repr(default), True
+    if prop_type == "number" and isinstance(default, int) and not isinstance(default, bool):
+        default = float(default)
+    return repr(default), False
+
+
+def _inject_required_default(
+    block: str, field: str, literal: str, needs_validate: bool
+) -> tuple[str, bool]:
+    """Add `literal` as `field`'s default inside one class block's text,
+    matching whichever of the two shapes datamodel-codegen emits for a
+    required field with no default: a bare `field: Type` line, or
+    `field: Type = Field(\\n    ...,\\n    <other kwargs>,\\n)` (or the
+    single-line form of the same call). `validate_default=True` is added
+    alongside the default, never in place of it, so an already-present
+    `description=...`/`discriminator=...` kwarg survives untouched.
+    """
+    esc = re.escape(field)
+    validate_kwarg = " validate_default=True," if needs_validate else ""
+
+    field_call_re = re.compile(rf"({esc}: [^\n=]+ = Field\(\s*)\.\.\.,")
+    new_block, n = field_call_re.subn(rf"\g<1>{literal},{validate_kwarg}", block, count=1)
+    if n:
+        return new_block, True
+
+    # `_class_blocks` strips each block's trailing whitespace, so the last field
+    # of the last class in a file has no trailing newline left to anchor on --
+    # `(?:\n|\Z)` accepts end-of-block too (StorageCapitalCost.interconnection_cost
+    # is exactly this case: the final field in its class).
+    bare_re = re.compile(rf"(?m)^(    {esc}: [^\n=]+)(?:\n|\Z)")
+
+    def _sub_bare(m: re.Match) -> str:
+        if needs_validate:
+            return f"{m.group(1)} = Field({literal}, validate_default=True)\n"
+        return f"{m.group(1)} = {literal}\n"
+
+    new_block, n = bare_re.subn(_sub_bare, block, count=1)
+    return new_block, bool(n)
+
+
+def fix_required_fields_with_schema_defaults(content: str) -> tuple[str, bool]:
+    """Materialize a schema default for any property that is both
+    schema-`required` and schema-`default`-bearing, wherever
+    datamodel-codegen dropped it.
+
+    `Core/common.json`'s `CostCurve` is the type this was found on:
+    `vom_cost` is `"required": [..., "vom_cost", ...]` *and*
+    `"default": {"curve_type": "INPUT_OUTPUT", ...}` in the same property
+    node, so datamodel-codegen's usual "drop `required` once a default is
+    present" rule should apply -- but for a required-with-default field it
+    instead honours `required` and drops the default outright, making
+    `CostCurve(...)` omitting `vom_cost` raise `ValidationError` where the
+    schema (and Julia's `@kwdef`, which always applies its field default
+    regardless of `required`) says the omission is fine. This is the same
+    shape `fix_costcurve_power_units_default` (now folded in here) fixed for
+    one field on one type by hand; SiennaSchemas turns out to use the
+    pattern across every domain -- discriminator consts (`AverageRateCurve.
+    curve_type`), plain numeric fields (`PortfolioFinancialData.
+    discount_rate`, `Substation.grounding_resistance`), and composite `$ref`
+    fields, both with the default written on the property itself
+    (`CostCurve.vom_cost`) and one hop away on the referenced type
+    (`FuelCurve.vom_cost`, `LossCurve.value_curve`) -- so this reads
+    SCHEMA_DIR directly and fixes every instance the same way instead of
+    growing one hand-written function per field.
+    """
+    registry = _schema_type_registry()
+    blocks = _class_blocks(content)
+    changed = False
+    for class_name, old_block in blocks.items():
+        entry = registry.get(class_name)
+        if entry is None:
+            continue
+        new_block = old_block
+        for field in entry["node"].get("required", ()):
+            resolved = _required_field_default(registry, class_name, field)
+            if resolved is None:
+                continue
+            default, enum_type = resolved
+            prop_type = entry["node"].get("properties", {}).get(field, {}).get("type")
+            literal, needs_validate = _default_literal(prop_type, default, enum_type)
+            new_block, applied = _inject_required_default(new_block, field, literal, needs_validate)
+            if applied:
+                changed = True
+        if new_block != old_block:
+            content = content.replace(old_block, new_block, 1)
+    return content, changed
 
 
 def fix_feature_property_count(content: str) -> tuple[str, bool]:
@@ -283,7 +503,7 @@ def drop_redundant_root_aliases(content: str) -> tuple[str, bool]:
 FIXES = [
     fix_thermal_generation_cost_start_up,
     fix_missing_composite_defaults,
-    fix_costcurve_power_units_default,
+    fix_required_fields_with_schema_defaults,
     fix_feature_property_count,
     drop_redundant_root_aliases,
 ]
@@ -369,6 +589,15 @@ def main() -> None:
                 print(f"  Fixed ({fix.__name__}): {models_file}")
 
         _ruff_fix_imports(models_file)
+        # fix_required_fields_with_schema_defaults inserts a schema default's raw
+        # `repr()` (a one-line dict literal for the composite cases) rather than
+        # hand-formatted source, since its shapes range from a bare string to a
+        # multi-level nested object -- ruff-format normalizes whatever it produced
+        # into the same style datamodel-codegen's own `--formatters ruff-format`
+        # pass already applies, and running it here keeps a second `make
+        # generate-python` a no-op instead of reformatting on every other run.
+        subprocess.run(["ruff", "format", str(models_file)], check=True, capture_output=True)
+        content = models_file.read_text()
 
         for warn in WARNINGS:
             warnings += warn(content, models_file)

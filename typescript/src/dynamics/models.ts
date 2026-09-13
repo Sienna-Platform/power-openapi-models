@@ -423,8 +423,8 @@ export const RoundRotorMachine = zod
 export type RoundRotorMachine = zod.input<typeof RoundRotorMachine>;
 export type RoundRotorMachineOutput = zod.output<typeof RoundRotorMachine>;
 
-const sexsVRefDefault = 1;
-export const Sexs = zod
+const sEXSVRefDefault = 1;
+export const SEXS = zod
   .object({
     id: zod.int().describe("Unique integer identifier for this component."),
     Ta_Tb: zod.number().describe("Ratio of lead and lag time constants."),
@@ -441,13 +441,13 @@ export const Sexs = zod
       ),
     V_ref: zod
       .number()
-      .default(sexsVRefDefault)
+      .default(sEXSVRefDefault)
       .describe("Reference Voltage Set-point."),
   })
   .describe("Parameters of Simplified Excitation System Model - SEXS in PSSE.");
 
-export type Sexs = zod.input<typeof Sexs>;
-export type SexsOutput = zod.output<typeof Sexs>;
+export type SEXS = zod.input<typeof SEXS>;
+export type SEXSOutput = zod.output<typeof SEXS>;
 
 export const SteamTurbineGov1 = zod
   .object({

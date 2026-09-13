@@ -74,7 +74,7 @@ class NonSequentialTimeSeries(BaseModel):
         ..., description="Whether the owner is a component or a supplemental attribute."
     )
     time_series_type: Literal["NonSequentialTimeSeries"] = Field(
-        ...,
+        "NonSequentialTimeSeries",
         description="Discriminator. Fixed to NonSequentialTimeSeries for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
     )
     name: str = Field(
@@ -157,7 +157,7 @@ class Deterministic(BaseModel):
         ..., description="Whether the owner is a component or a supplemental attribute."
     )
     time_series_type: Literal["Deterministic"] = Field(
-        ...,
+        "Deterministic",
         description="Discriminator. Fixed to Deterministic for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
     )
     name: str = Field(
@@ -249,7 +249,7 @@ class DeterministicSingleTimeSeries(BaseModel):
         ..., description="Whether the owner is a component or a supplemental attribute."
     )
     time_series_type: Literal["DeterministicSingleTimeSeries"] = Field(
-        ...,
+        "DeterministicSingleTimeSeries",
         description="Discriminator. Fixed to DeterministicSingleTimeSeries for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
     )
     name: str = Field(
@@ -341,7 +341,7 @@ class Probabilistic(BaseModel):
         ..., description="Whether the owner is a component or a supplemental attribute."
     )
     time_series_type: Literal["Probabilistic"] = Field(
-        ...,
+        "Probabilistic",
         description="Discriminator. Fixed to Probabilistic for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
     )
     name: str = Field(
@@ -438,7 +438,7 @@ class Scenarios(BaseModel):
         ..., description="Whether the owner is a component or a supplemental attribute."
     )
     time_series_type: Literal["Scenarios"] = Field(
-        ...,
+        "Scenarios",
         description="Discriminator. Fixed to Scenarios for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
     )
     name: str = Field(
@@ -534,7 +534,7 @@ class SingleTimeSeries(BaseModel):
         ..., description="Whether the owner is a component or a supplemental attribute."
     )
     time_series_type: Literal["SingleTimeSeries"] = Field(
-        ...,
+        "SingleTimeSeries",
         description="Discriminator. Fixed to SingleTimeSeries for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
     )
     name: str = Field(

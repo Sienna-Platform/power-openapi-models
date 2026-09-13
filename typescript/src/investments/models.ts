@@ -9857,6 +9857,7 @@ export const StorageTechnology = zod
         "WS",
       ])
       .optional()
+      .default("OT")
       .describe(
         "Prime mover of a generating unit — the engine, turbine, water wheel, or similar machine that drives the generator — using the code set from the EIA Form 923 instructions. `PVe` is photovoltaic, spelled that way so it does not collide with the `PV` bus type.",
       ),
@@ -13784,6 +13785,7 @@ export const SupplyTechnology = zod
         "WS",
       ])
       .optional()
+      .default("OT")
       .describe(
         "Prime mover of a generating unit — the engine, turbine, water wheel, or similar machine that drives the generator — using the code set from the EIA Form 923 instructions. `PVe` is photovoltaic, spelled that way so it does not collide with the `PV` bus type.",
       ),

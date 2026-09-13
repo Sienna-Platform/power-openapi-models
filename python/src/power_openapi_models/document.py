@@ -130,7 +130,27 @@ def read_document(path: str | Path) -> SystemDocument:
 def write_document(doc: SystemDocument, path: str | Path, *, indent: int | None = 2) -> None:
     """Write `doc` to `path` as JSON, with `components` keys sorted for
     deterministic output — the schema requires the same.
+
+    `exclude_unset=True` keeps an omitted field omitted. Without it
+    `model_dump` materializes `name`, `description`, and `frequency` as
+    explicit `null`s, so reading a document and writing it straight back added
+    three keys it never had — and put Python at odds with the Julia package,
+    whose `_encode` skips absent fields.
+
+    `exclude_unset`, not `exclude_none`: `time_series_storage_file` is
+    *required* and is legitimately `null` in real documents, so dropping every
+    None would strip a required key and produce a document that no longer
+    validates. What should be omitted is what the input never carried, which is
+    what `model_fields_set` records.
     """
-    data = doc.model_dump(mode="json")
+    data = doc.model_dump(mode="json", exclude_unset=True)
     data["components"] = {key: data["components"][key] for key in sorted(data["components"])}
-    Path(path).write_text(json.dumps(data, indent=indent))
+    # Sort the top level too, not just `components`. Field-declaration order is
+    # an artifact of how the model happens to be written; sorting makes the
+    # output a function of the data alone, so re-writing a document is a no-op
+    # in diff and two producers agree byte for byte.
+    data = {key: data[key] for key in sorted(data)}
+    # Trailing newline: POSIX text-file convention, and it makes read -> write
+    # byte-identical against documents produced by other tools in this
+    # ecosystem, which all emit one.
+    Path(path).write_text(json.dumps(data, indent=indent) + "\n")

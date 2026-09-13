@@ -339,11 +339,11 @@ class NodalHVDCTransportTechnology(BaseModel):
 class PortfolioFinancialData(BaseModel):
     id: int = Field(..., description="ID for individual component.")
     discount_rate: float = Field(
-        ..., description="Discount rate for financial calculations. Units: 1."
+        0.0, description="Discount rate for financial calculations. Units: 1."
     )
-    inflation_rate: float = Field(..., description="Inflation rate for cost adjustments. Units: 1.")
+    inflation_rate: float = Field(0.0, description="Inflation rate for cost adjustments. Units: 1.")
     interest_rate: float = Field(
-        ..., description="Interest rate for financing calculations. Units: 1."
+        0.0, description="Interest rate for financing calculations. Units: 1."
     )
     base_year: int = Field(
         ...,

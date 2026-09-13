@@ -255,5 +255,3 @@ class SteamTurbineGov1(BaseModel):
         ..., description="Turbine Rate. If zero, generator base is used. Units: MW."
     )
     P_ref: float | None = Field(None, description="Reference Power Set-point.")
-
-

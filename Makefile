@@ -68,7 +68,7 @@ generate-python:
 	  --output $(PKG_DIR)/timeseries/models.py
 
 	@echo "==> Post-processing"
-	python3 codegen/python/postprocess.py
+	SCHEMA_DIR=$(SCHEMA_DIR) python3 codegen/python/postprocess.py
 
 	@# Keep the packaged copy of .schema-version in sync so
 	@# power_openapi_models.__schema_version__ never goes stale after a regen.
@@ -90,10 +90,12 @@ generate-typescript:
 	@# Rewrites cross-domain duplicate schemas (orval has no ref-to-module
 	@# mapping, unlike datamodel-codegen's --external-ref-mapping the Python
 	@# side relies on) into re-exports of their canonical owner -- failing
-	@# loudly, never guessing, if a "duplicate" isn't actually identical. See
-	@# codegen/typescript/postprocess.ts.
+	@# loudly, never guessing, if a "duplicate" isn't actually identical. Also
+	@# reads $(SCHEMA_DIR) directly (same as gen-orval-config.ts above) to
+	@# restore schema defaults orval drops and to rename an orval-mangled
+	@# acronym export back to its schema title. See codegen/typescript/postprocess.ts.
 	@echo "==> Post-processing"
-	npx tsx codegen/typescript/postprocess.ts
+	SCHEMA_DIR=$(SCHEMA_DIR) npx tsx codegen/typescript/postprocess.ts
 
 	@echo "==> Formatting"
 	npx prettier --write "typescript/orval.config.ts" "typescript/src/**/*.ts"
