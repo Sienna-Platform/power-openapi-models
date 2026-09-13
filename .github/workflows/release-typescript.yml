@@ -59,16 +59,10 @@ jobs:
           npm pack --dry-run
           npm publish --dry-run --access public
 
-      # FIRST RELEASE: unlike PyPI, npm has NO pending-publisher flow -- a
-      # trusted publisher can only be attached to a package that already
-      # exists. So 0.1.0 must be published once manually:
-      #
-      #   cd typescript && npm publish --access public
-      #
-      # then add this repo + this workflow as a trusted publisher on the
-      # @sienna-platform org, after which every later release runs here with no
-      # token. Until that is done this step fails, which is the correct
-      # behaviour: it refuses rather than falling back to a stored secret.
+      # npm has no pending-publisher flow, so 0.1.0 must be published by hand
+      # once before a trusted publisher can be attached. Until then this step
+      # fails rather than falling back to a stored secret, which is intended.
+      # See CONTRIBUTING.md, "First publish, once per registry".
       - name: Publish to npm
         working-directory: typescript
         run: npm publish --access public --provenance

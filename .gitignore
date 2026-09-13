@@ -214,3 +214,6 @@ node_modules/
 typescript/dist/
 *.tsbuildinfo
 .turbo/
+
+# typescript/tests/readme.test.ts scratch
+typescript/.readme-tmp/

@@ -39,7 +39,25 @@
  * refuses to guess silently.
  */
 import { readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, resolve } from "node:path";
+import { DOMAIN_SPECS } from "./domains";
+
+/**
+ * One parse per schema file, keyed by resolved path. `Core/common.json` is
+ * reached by dozens of `$ref`s; without this it was re-read and re-parsed on
+ * every hop. Mirrors `_schema_json_cache` in codegen/python/postprocess.py.
+ */
+const schemaJsonCache = new Map<string, unknown>();
+
+function loadSchemaJson(filePath: string): unknown {
+  const key = resolve(filePath);
+  let doc = schemaJsonCache.get(key);
+  if (doc === undefined) {
+    doc = JSON.parse(readFileSync(key, "utf8"));
+    schemaJsonCache.set(key, doc);
+  }
+  return doc;
+}
 
 const SRC_DIR = "typescript/src";
 
@@ -50,20 +68,6 @@ const SRC_DIR = "typescript/src";
 // as cwd (invoked as `npx tsx codegen/typescript/postprocess.ts` from the
 // Makefile), so a relative SCHEMA_DIR needs no extra `../` adjustment here.
 const SCHEMA_DIR = process.env.SCHEMA_DIR ?? "../SiennaSchemas";
-
-// The six generated entry specs `make generate-typescript` feeds to orval.
-// Every one of a spec's `components.schemas` entries is a bare `$ref` --
-// never an inline definition -- into Core/common.json or a per-type file
-// under Operations/, Investments/, Dynamics/, TimeSeries/ (same fact the
-// Python side's postprocess.py documents for its own SCHEMA_ENTRY_SPECS).
-const DOMAIN_SPECS = [
-  "openapi-infrastructure-core.json",
-  "openapi-core.json",
-  "openapi-operations.json",
-  "openapi-investments.json",
-  "openapi-dynamics.json",
-  "openapi-timeseries.json",
-];
 
 // Precedence order for canonical schema ownership -- earlier domains win.
 // The remaining four domains are a tied, ownerless group: none of them owns
@@ -107,7 +111,7 @@ function loadCanonicalSchemaNames(schemaDir: string): {
   for (const specName of DOMAIN_SPECS) {
     const specPath = join(schemaDir, specName);
     if (!existsSync(specPath)) continue;
-    const spec = JSON.parse(readFileSync(specPath, "utf8"));
+    const spec = loadSchemaJson(specPath) as any;
     for (const name of Object.keys(spec?.components?.schemas ?? {})) {
       names.add(name);
     }
@@ -464,7 +468,7 @@ function fixEmptyArrayDefaults(content: string, fixes: number): [string, number]
  * longer satisfies the very schema it is the default for.
  *
  * This is the TypeScript analogue of the Python side's
- * `fix_costcurve_power_units_default`, and restores the same value both the
+ * `fix_required_fields_with_schema_defaults`, and restores the same value both the
  * bundled spec and the Julia side already agree on.
  *
  * Recognition is deliberately narrow: an object literal that OPENS with the
@@ -523,7 +527,7 @@ function resolveRef(ref: string, ctx: RefContext): { node: unknown; ctx: RefCont
   let dir = ctx.dir;
   if (filePart) {
     const filePath = join(ctx.dir, filePart);
-    doc = JSON.parse(readFileSync(filePath, "utf8"));
+    doc = loadSchemaJson(filePath);
     dir = dirname(filePath);
   }
   let node: any = doc;
@@ -605,7 +609,7 @@ function resolveTopLevelSchemas(schemaDir: string): Map<string, ResolvedSchema> 
   for (const specName of DOMAIN_SPECS) {
     const specPath = join(schemaDir, specName);
     if (!existsSync(specPath)) continue;
-    const spec = JSON.parse(readFileSync(specPath, "utf8"));
+    const spec = loadSchemaJson(specPath) as any;
     const schemas = spec?.components?.schemas ?? {};
     const specCtx: RefContext = { doc: spec, dir: schemaDir };
     for (const [name, node] of Object.entries(schemas as Record<string, any>)) {

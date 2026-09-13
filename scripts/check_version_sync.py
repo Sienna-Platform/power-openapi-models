@@ -36,36 +36,33 @@ def read_package_json(path: Path) -> str:
     return json.loads(path.read_text())["version"]
 
 
-def read_pyproject(path: Path) -> str:
+def _read_toml_version(path: Path, section: str) -> str:
+    """`[section].version` from a TOML file.
+
+    The regex fallback exists because this repo supports Python 3.10, which has
+    no tomllib. The version is a plain top-level key under a top-level table,
+    so a scoped regex is exact here.
+    """
     try:
         import tomllib
     except ImportError:
-        # Python 3.10 has no tomllib and this repo supports it. The [project]
-        # version is a plain top-level key, so a scoped regex is exact here.
         match = re.search(
-            r"^\[project\]$.*?^version\s*=\s*[\"']([^\"']+)[\"']",
+            rf"^\[{section}\]$.*?^version\s*=\s*[\"']([^\"']+)[\"']",
             path.read_text(),
             re.MULTILINE | re.DOTALL,
         )
         if match is None:
-            fail(f"{path}: no [project] version found")
+            fail(f"{path}: no [{section}] version found")
         return match.group(1)
-    return tomllib.loads(path.read_text())["project"]["version"]
+    return tomllib.loads(path.read_text())[section]["version"]
+
+
+def read_pyproject(path: Path) -> str:
+    return _read_toml_version(path, "project")
 
 
 def read_cargo(path: Path) -> str:
-    try:
-        import tomllib
-    except ImportError:
-        match = re.search(
-            r"^\[package\]$.*?^version\s*=\s*[\"']([^\"']+)[\"']",
-            path.read_text(),
-            re.MULTILINE | re.DOTALL,
-        )
-        if match is None:
-            fail(f"{path}: no [package] version found")
-        return match.group(1)
-    return tomllib.loads(path.read_text())["package"]["version"]
+    return _read_toml_version(path, "package")
 
 
 READERS = {

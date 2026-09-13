@@ -10,14 +10,19 @@ format, not the tool.
 
 ## Packages
 
-| Language | Package | Where |
-|---|---|---|
-| Python | [`power-openapi-models`](https://pypi.org/project/power-openapi-models/) on PyPI | [`python/`](python/) |
-| TypeScript | [`@sienna-platform/power-openapi-models`](https://www.npmjs.com/package/@sienna-platform/power-openapi-models) on npm | [`typescript/`](typescript/) |
-| Rust | planned | [`rust/`](rust/) |
+| Language | Package | Status | README |
+|---|---|---|---|
+| Python | [`power-openapi-models`](https://pypi.org/project/power-openapi-models/) on PyPI | Released | [`python/`](python/README.md) |
+| TypeScript | [`@sienna-platform/power-openapi-models`](https://www.npmjs.com/package/@sienna-platform/power-openapi-models) on npm | Released | [`typescript/`](typescript/README.md) |
+| Rust | — | **Upcoming** | [`rust/`](rust/README.md) |
 
-Each package's own README covers install, quickstart, and API details for
-that language.
+Each package's own README covers install, quickstart, concepts, and API
+details for that language. Start there; this file is only a router.
+
+The packages are not merely generated from one schema — a CI gate compares
+the generated surfaces field by field (names, requiredness, enum values,
+scalar kinds, defaults) and fails the build when they disagree. See
+[`scripts/check_cross_language.py`](scripts/check_cross_language.py).
 
 ## One schema, every language
 

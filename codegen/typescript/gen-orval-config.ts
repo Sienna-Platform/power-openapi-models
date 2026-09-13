@@ -25,6 +25,7 @@
  */
 import { readdirSync, statSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, relative, sep } from "node:path";
+import { DOMAINS } from "./domains";
 
 const SCHEMA_DIR = process.env.SCHEMA_DIR ?? "../SiennaSchemas";
 const OUTPUT_PATH = "typescript/orval.config.ts";
@@ -32,17 +33,6 @@ const OUTPUT_PATH = "typescript/orval.config.ts";
 // Directories that may contain a `$ref` target. Mirrors the Makefile's own
 // six-domain selector set (Core/ backs infrastructure_core AND core).
 const REF_ROOTS = ["Core", "Operations", "Dynamics", "Investments", "TimeSeries"];
-
-// Domain key (also the orval project name) -> [spec filename, output dir].
-// Directory names mirror python/src/power_openapi_models/<domain> exactly.
-const DOMAINS: ReadonlyArray<{ key: string; spec: string; dir: string }> = [
-  { key: "infrastructure_core", spec: "openapi-infrastructure-core.json", dir: "infrastructure_core" },
-  { key: "core", spec: "openapi-core.json", dir: "core" },
-  { key: "operations", spec: "openapi-operations.json", dir: "operations" },
-  { key: "investments", spec: "openapi-investments.json", dir: "investments" },
-  { key: "dynamics", spec: "openapi-dynamics.json", dir: "dynamics" },
-  { key: "timeseries", spec: "openapi-timeseries.json", dir: "timeseries" },
-];
 
 function toPosix(path: string): string {
   return path.split(sep).join("/");
@@ -99,7 +89,7 @@ function renderConfig(schemaDir: string, allowlist: readonly string[]): string {
   const schemaDirFromConfig = isAbsolute(schemaDir) ? schemaDir : join("..", schemaDir);
 
   const projectsLiteral = DOMAINS.map(
-    ({ key, spec, dir }) => `  ${key}: {
+    ({ key, spec }) => `  ${key}: {
     input: {
       target: '${toPosix(join(schemaDirFromConfig, spec))}',
       parserOptions: {
@@ -107,7 +97,7 @@ function renderConfig(schemaDir: string, allowlist: readonly string[]): string {
       },
     },
     output: {
-      target: 'src/${dir}/models.ts',
+      target: 'src/${key}/models.ts',
       client: 'zod',
       mode: 'single',
     },

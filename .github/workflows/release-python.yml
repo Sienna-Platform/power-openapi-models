@@ -63,11 +63,9 @@ jobs:
           path: dist/
       # Emits PEP 740 provenance attestations by default. Leave that on.
       #
-      # FIRST RELEASE: power-openapi-models is unclaimed on PyPI, so there is no
-      # project for OIDC to attach to. Configure a PENDING PUBLISHER on PyPI
-      # before tagging 0.1.0 -- PyPI supports this precisely so a first upload
-      # needs no manual token publish. (npm has no equivalent; see
-      # release-typescript.yml.)
+      # PyPI supports a pending publisher; configure one before tagging 0.1.0,
+      # since the project does not exist yet for OIDC to attach to. See
+      # CONTRIBUTING.md, "First publish, once per registry".
       - uses: pypa/gh-action-pypi-publish@release/v1
         # Uncomment for a TestPyPI dry run, then remove before a real release:
         # with:

@@ -96,18 +96,10 @@ export const SystemDocument = zod
       .describe(
         "Time series metadata rows, one per (series, owner) association. Values themselves never appear here.",
       ),
-    // KNOWN ASYMMETRY: `ext` is keyed by a stringified component id, so its
-    // keys usually look like integers. ECMAScript's object model enumerates
-    // any integer-index-like own-property key in ascending numeric order,
-    // unconditionally, ahead of every other string key -- regardless of
-    // insertion order, and regardless of how the object was built (object
-    // literal, JSON.parse, spread, ...). `JSON.parse`'s reviver `context`
-    // exposes original source text only for primitive values, not for
-    // objects, so there is no JSON-API way to recover or preserve `ext`'s
-    // original key order once it exists as a plain JS object. A document
-    // whose `ext` keys were not already written in ascending numeric order
-    // will not round-trip byte-identically through this field; every other
-    // field does.
+    // ext's key order is not preserved on round-trip: ECMAScript enumerates
+    // integer-like keys in ascending numeric order regardless of insertion
+    // order, and no JSON API recovers the original. See README, Known
+    // limitations.
     ext: zod
       .record(zod.string(), genericRecord)
       .default({})

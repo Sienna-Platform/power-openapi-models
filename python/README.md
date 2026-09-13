@@ -97,6 +97,11 @@ assert isinstance(parsed.root, LinearFunctionData)
 print(parsed.root.proportional_term)
 ```
 
+> [!IMPORTANT]
+> **This differs from the TypeScript package**, where the same types are zod
+> unions and `parse` returns the variant directly, with no `.root`. Porting
+> code between the two languages, this is the first thing that breaks.
+
 ### Components reference each other by integer id
 
 There are no object references on the wire. `ThermalStandard.bus`, for
@@ -125,6 +130,13 @@ outright, since every component already carries its own basis.
 `time_series_associations` carries only the metadata rows; the values live
 in the sidecar named by `time_series_storage_file`, and reading it is the
 consumer's job.
+
+## Round-tripping
+
+`read_document` followed by `write_document` reproduces the input byte for
+byte. Fields the input never carried stay omitted rather than being written
+back as explicit nulls, top-level keys are sorted, and the file ends with a
+newline.
 
 ## Worked example
 
@@ -182,6 +194,7 @@ release the models were built from.
 ## Links
 
 - [SiennaSchemas](https://github.com/Sienna-Platform/SiennaSchemas) — the schemas these models are generated from, and where schema bugs belong
+- [@sienna-platform/power-openapi-models](../typescript/README.md) — the TypeScript package generated from the same schemas, kept in lockstep by a CI equivalence gate
 - [PowerOpenAPIModels.jl](https://github.com/Sienna-Platform/PowerOpenAPIModels) — the Julia packages generated from the same schemas
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — regenerating, and why you must not edit the models by hand
 - [CHANGELOG.md](../CHANGELOG.md)

@@ -40,15 +40,21 @@ const bus = ACBus.parse({
 console.log(bus.name, bus.bustype, bus.base_voltage);
 ```
 
-Bad data throws a `ZodError` naming the field and the rule:
+Bad data is rejected, naming the field and the rule. `safeParse` returns
+a result rather than throwing; `parse` throws a `ZodError` instead:
 
 ```ts
 import { ACBus } from "@sienna-platform/power-openapi-models/core";
 
-try {
-  ACBus.parse({ id: 1, name: "bus-1", available: true, number: 1, bustype: "NOT_A_TYPE" });
-} catch (err) {
-  console.log(err.issues[0].path, err.issues[0].code);
+const result = ACBus.safeParse({
+  id: 1,
+  name: "bus-1",
+  available: true,
+  number: 1,
+  bustype: "NOT_A_TYPE",
+});
+if (!result.success) {
+  console.log(result.error.issues[0].path, result.error.issues[0].code);
 }
 ```
 
@@ -74,6 +80,45 @@ Many component fields carry a sibling `*_units` field (for example
 power-family field on that same component. There is no document-level unit
 system: each component blob is self-describing.
 
+### Discriminated unions parse to the variant directly
+
+Several types are one of several shapes, chosen by a discriminator field.
+`parse` returns the matching variant itself — read its fields directly.
+
+```ts
+import { FunctionData } from "@sienna-platform/power-openapi-models/infrastructure_core";
+
+const parsed = FunctionData.parse({
+  function_type: "LINEAR",
+  proportional_term: 2.0,
+  constant_term: 5.0,
+});
+console.log(parsed.function_type, parsed.proportional_term);
+```
+
+> [!IMPORTANT]
+> **This differs from the Python package.** There, the same types are pydantic
+> `RootModel`s and the variant is reached through `.root`
+> (`parsed.root.proportional_term`). In TypeScript there is no `.root` — the
+> value *is* the variant. Porting code between the two languages, this is the
+> first thing that breaks.
+
+### Components reference each other by integer id
+
+There are no object references on the wire. `ThermalStandard.bus`, for
+example, names its bus by id, and resolving it is the reader's job.
+
+```ts
+import { ACBus } from "@sienna-platform/power-openapi-models/core";
+
+const buses = [
+  ACBus.parse({ id: 1, name: "a", available: true, number: 1, base_voltage: 230.0 }),
+  ACBus.parse({ id: 2, name: "b", available: true, number: 2, base_voltage: 230.0 }),
+];
+const byId = new Map(buses.map((b) => [b.id, b]));
+console.log(byId.get(2)?.name);
+```
+
 ### The document envelope
 
 A serialized system is one object: `components` keyed by type name, a flat
@@ -93,6 +138,50 @@ console.log(`${buses.length} buses`);
 **Time series values never appear in the document.**
 `time_series_associations` carries only the metadata rows; the values live
 in the sidecar named by `time_series_storage_file`.
+
+## Worked example
+
+```ts
+import { readDocument } from "@sienna-platform/power-openapi-models/document";
+
+const doc = readDocument("../fixtures/case14_operations.NATURAL_UNITS.json");
+
+const buses = doc.components["ACBus"];
+const generators = doc.components["ThermalStandard"];
+console.log(`${buses.length} buses, ${generators.length} thermal generators`);
+
+const gen = generators[0];
+console.log(gen.name, "active power limits (MW):", gen.active_power_limits.min, "-", gen.active_power_limits.max);
+```
+
+## Validation
+
+Bad data is rejected with issues naming the field and the rule:
+
+```ts
+import { LinearFunctionData } from "@sienna-platform/power-openapi-models/infrastructure_core";
+
+const result = LinearFunctionData.safeParse({
+  function_type: "NOT_A_TYPE",
+  proportional_term: 1.0,
+  constant_term: 0.0,
+});
+if (!result.success) {
+  console.log(result.error.issues.length, "issue(s)");
+  console.log(result.error.issues[0].path, result.error.issues[0].code);
+}
+```
+
+This is the reason the package ships zod schemas rather than bare TypeScript
+types: a malformed document fails loudly here, the way it does in Python.
+Types alone would erase at build time and let bad data through as a
+wrongly-shaped object.
+
+## Round-tripping
+
+`readDocument` followed by `writeDocument` reproduces the input byte for
+byte, including each number's exact literal formatting (`138.0` stays
+`138.0`, not `138`) — with the single documented exception below.
 
 ## Known limitations
 

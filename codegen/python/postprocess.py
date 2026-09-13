@@ -159,64 +159,6 @@ def fix_thermal_generation_cost_start_up(content: str) -> tuple[str, bool]:
     return fixed, fixed != content
 
 
-INPUT_OUTPUT_CURVE_ZERO_DEFAULT = """{
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
-            },
-        }"""
-
-# (unique description substring, field name, type) -> the JSON-literal default
-# that should replace the bare `None` datamodel-codegen emitted.
-MISSING_TYPE_LEVEL_DEFAULTS = {
-    "Linear or quadratic loss function with respect to the converter current.": (
-        "loss_function",
-        "InputOutputCurve",
-    ),
-    "Loss model coefficients. It accepts a linear model with a constant loss "
-    "and a proportional loss rate (MW of loss per MW of flow). It also "
-    "accepts a Piecewise loss, with N segments to specify different "
-    "proportional losses for different segments.": ("loss", "TwoTerminalLoss"),
-}
-
-
-def fix_missing_composite_defaults(content: str) -> tuple[str, bool]:
-    """Materialize a $ref field's type-level default when the property omits it.
-
-    `InputOutputCurve` and `TwoTerminalLoss` each carry their own top-level
-    `default` in the schema. Every *other* property that references them
-    bare (e.g. `TwoTerminalLCCLine.loss`, `CostCurve.vom_cost`) repeats that
-    default at the property level, so datamodel-codegen picks it up directly.
-    `InterconnectingConverter.loss_function` and `TwoTerminalGenericHVDCLine.loss`
-    are the two exceptions — they reference the type with no property-level
-    default. SiennaSchemas' spec bundler inlines a bare `$ref`'s target
-    schema (including its default) at the usage site, so the Julia side
-    (which reads the bundled spec) picks it up; datamodel-codegen resolves
-    `$ref`s from the unbundled spec and does not inherit a sibling-less
-    type's own default, so it falls back to `None`. This restores parity
-    with the value both the bundled spec and the Julia side already agree
-    on, without touching SiennaSchemas.
-    """
-    changed = False
-    for description, (field, type_name) in MISSING_TYPE_LEVEL_DEFAULTS.items():
-        pattern = re.compile(
-            rf"(    {re.escape(field)}: {re.escape(type_name)} \| None = Field\(\n)"
-            rf"(        None,\n)"
-            rf'(        description="{re.escape(description)}",\n    \))'
-        )
-        new_content, n = pattern.subn(rf"\1        {INPUT_OUTPUT_CURVE_ZERO_DEFAULT},\n\3", content)
-        if n:
-            content = new_content
-            changed = True
-    return content, changed
-
-
-# ---------------------------------------------------------------------------
-# Schema registry -- backs fix_required_fields_with_schema_defaults below.
-# ---------------------------------------------------------------------------
-
 _schema_json_cache: dict[Path, dict] = {}
 
 
@@ -297,7 +239,7 @@ def _required_field_default(registry: dict[str, dict], type_name: str, field: st
     one hop to the referenced type's own top-level `default`
     (`FuelCurve.vom_cost` -> `InputOutputCurve`, `LossCurve.value_curve` ->
     `LossValueCurve`) -- the same one-hop lookup
-    fix_missing_composite_defaults already does for a handful of *optional*
+    an earlier hand-written fix once did for a handful of *optional*
     fields, needed here for required ones instead. Also reports whether the
     `$ref` target is itself an enum schema, so the caller can render a proper
     `EnumType.MEMBER` rather than a bare string a plain `Enum` (not
@@ -403,7 +345,7 @@ def fix_required_fields_with_schema_defaults(content: str) -> tuple[str, bool]:
     `CostCurve(...)` omitting `vom_cost` raise `ValidationError` where the
     schema (and Julia's `@kwdef`, which always applies its field default
     regardless of `required`) says the omission is fine. This is the same
-    shape `fix_costcurve_power_units_default` (now folded in here) fixed for
+    shape this previously fixed only for
     one field on one type by hand; SiennaSchemas turns out to use the
     pattern across every domain -- discriminator consts (`AverageRateCurve.
     curve_type`), plain numeric fields (`PortfolioFinancialData.
@@ -502,7 +444,6 @@ def drop_redundant_root_aliases(content: str) -> tuple[str, bool]:
 
 FIXES = [
     fix_thermal_generation_cost_start_up,
-    fix_missing_composite_defaults,
     fix_required_fields_with_schema_defaults,
     fix_feature_property_count,
     drop_redundant_root_aliases,

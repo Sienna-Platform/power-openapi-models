@@ -39,7 +39,7 @@ flag: it is always a hard gate.
 
 A small, named set of Julia<->Python divergences is EXEMPTED (see
 `EXEMPTIONS` below) rather than fixed: each entry is a specific `type.field`,
-carries a one-line reason, and a removal condition — never a category or a
+carries a reason and a removal condition — never a category or a
 wildcard. An exempted divergence still prints, under its own heading, so it
 stays visible; it just does not fail the Julia<->Python comparison.
 EXEMPTIONS is never applied to Python<->TypeScript -- every entry's reason is
@@ -1107,36 +1107,6 @@ def python_default_value(info):
 # --------------------------------------------------------------------------- #
 
 EXEMPTIONS = {
-    ("MarketBidCost1", None): {
-        "reason": (
-            "openapi-generator (Java/julia-client) emits a duplicate struct "
-            "when a schema is reused as a discriminated oneOf branch — "
-            "HybridSystem.operation_cost references MarketBidCost via a "
-            "discriminator mapping, so Julia gets a second, field-identical "
-            "MarketBidCost1. datamodel-codegen reuses the single MarketBidCost "
-            "class for the same field instead of duplicating it (verified: "
-            "Python HybridSystem.operation_cost is typed plain MarketBidCost). "
-            "No surface is actually missing on the Python side."
-        ),
-        "remove_when": (
-            "openapi-generator stops duplicating discriminator-mapped schemas, "
-            "or this checker resolves Julia struct identity by shape instead of "
-            "by name for the type-only-in-Julia category."
-        ),
-    },
-    ("StorageCostStartUpOneOf", None): {
-        "reason": (
-            "Anonymous oneOf branch on StorageCost.start_up. openapi-generator "
-            "names it from parent+field (StorageCostStartUpOneOf); "
-            "datamodel-codegen names the identical-shape model from the "
-            "schema's own title (StartUp). Verified field-for-field identical: "
-            "both have exactly {charge: float|None, discharge: float|None}."
-        ),
-        "remove_when": (
-            "the two generators agree on a naming convention for anonymous "
-            "oneOf branches, or this checker matches by shape instead of name."
-        ),
-    },
     ("CostCurve", "vom_cost"): {
         "reason": (
             "vom_cost is schema-required with a schema-default. Julia's "
@@ -1160,18 +1130,10 @@ EXEMPTIONS = {
             "(NATURAL_UNITS). Same root cause as CostCurve.vom_cost: Julia's "
             "check_required still tests it for `=== nothing` even though its "
             "kwdef default is never nothing; datamodel-codegen (once "
-            "postprocess.py's fix_costcurve_power_units_default restores the "
+            "postprocess.py's fix_required_fields_with_schema_defaults restores the "
             "default) correctly drops `required`. Verified no runtime "
             "divergence: CostCurve(...) "
             "omitting power_units resolves to NATURAL_UNITS on both sides."
-        ),
-        "remove_when": "same as CostCurve.vom_cost.",
-    },
-    ("MarketBidCost", "no_load_cost"): {
-        "reason": (
-            "Same required-with-default pattern as CostCurve.vom_cost. "
-            "Verified no runtime divergence: MarketBidCost(...) omitting "
-            "no_load_cost succeeds and passes check_required on both sides."
         ),
         "remove_when": "same as CostCurve.vom_cost.",
     },
@@ -1674,6 +1636,24 @@ def main():
 
     julia_failures = [(key, msg) for key, msg in julia_problems if key not in EXEMPTIONS]
     julia_exempted = [(key, msg) for key, msg in julia_problems if key in EXEMPTIONS]
+
+    # An exemption whose divergence no longer occurs is rot: the field was
+    # renamed or the generator fixed, and the entry now waives nothing while
+    # still reading as deliberate coverage. Nothing else notices, because
+    # exemptions are only ever looked up FROM detected problems -- the same
+    # shape as this script's own "surfaces agree" bug, where a check stayed
+    # green by matching nothing.
+    unused = sorted(set(EXEMPTIONS) - {key for key, _ in julia_problems})
+    if unused:
+        print(f"ERROR: {len(unused)} EXEMPTIONS entr(ies) matched no divergence:")
+        for type_name, field in unused:
+            label = type_name if field is None else f"{type_name}.{field}"
+            print(f"  {label}")
+        print(
+            "Each waives nothing. Delete it, or fix the key if the field was renamed.\n",
+            file=sys.stderr,
+        )
+        return 3
 
     _print_notes(julia_notes)
 

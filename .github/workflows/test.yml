@@ -13,21 +13,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  python:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-        include:
-          - os: macos-latest
-            python-version: "3.12"
-          - os: windows-latest
-            python-version: "3.12"
+  # Resolved once and fanned out. The python job alone runs a 7-way matrix, so
+  # doing this per job meant 9 API calls resolving the same commit -- and three
+  # copies of the same 14 lines to keep in step.
+  schema-sha:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
-      - id: schema-version
+      - id: resolve
+        shell: bash
         run: |
           short_sha=$(cat .schema-version)
           response=$(curl -fsSL -H "Authorization: Bearer ${{ github.token }}" \
@@ -41,11 +37,26 @@ jobs:
             exit 1
           fi
           echo "sha=$full_sha" >> "$GITHUB_OUTPUT"
-        shell: bash
+
+  python:
+    needs: schema-sha
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        include:
+          - os: macos-latest
+            python-version: "3.12"
+          - os: windows-latest
+            python-version: "3.12"
+    steps:
+      - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
           repository: Sienna-Platform/SiennaSchemas
-          ref: ${{ steps.schema-version.outputs.sha }}
+          ref: ${{ needs.schema-sha.outputs.sha }}
           path: SiennaSchemas
       - uses: actions/setup-python@v5
         with:
@@ -87,6 +98,7 @@ jobs:
       - run: python3 scripts/check_version_sync.py
 
   typescript:
+    needs: schema-sha
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -98,25 +110,10 @@ jobs:
       # The committed orval.config.ts must match what gen-orval-config.ts
       # produces from the pinned schemas. A hand-edited config would otherwise
       # generate output nobody can reproduce.
-      - id: schema-version
-        shell: bash
-        run: |
-          short_sha=$(cat .schema-version)
-          response=$(curl -fsSL -H "Authorization: Bearer ${{ github.token }}" \
-            "https://api.github.com/repos/Sienna-Platform/SiennaSchemas/commits/${short_sha}" || true)
-          full_sha=""
-          if [ -n "$response" ]; then
-            full_sha=$(printf '%s' "$response" | python3 -c "import json, sys; print(json.load(sys.stdin).get('sha', ''))")
-          fi
-          if [ -z "$full_sha" ]; then
-            echo "::error::Could not resolve full sha for SiennaSchemas commit '${short_sha}' (from .schema-version) via the GitHub API" >&2
-            exit 1
-          fi
-          echo "sha=$full_sha" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
         with:
           repository: Sienna-Platform/SiennaSchemas
-          ref: ${{ steps.schema-version.outputs.sha }}
+          ref: ${{ needs.schema-sha.outputs.sha }}
           path: SiennaSchemas
 
       # Regeneration must be a no-op against the committed tree. A diff here
@@ -141,6 +138,7 @@ jobs:
         working-directory: typescript
 
   cross-language:
+    needs: schema-sha
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -162,25 +160,10 @@ jobs:
       # disabled -- every None/absent or value/absent default split then
       # reports as a divergence, which would fail this blocking gate on
       # comparator artifacts that aren't real differences.
-      - id: schema-version
-        run: |
-          short_sha=$(cat .schema-version)
-          response=$(curl -fsSL -H "Authorization: Bearer ${{ github.token }}" \
-            "https://api.github.com/repos/Sienna-Platform/SiennaSchemas/commits/${short_sha}" || true)
-          full_sha=""
-          if [ -n "$response" ]; then
-            full_sha=$(printf '%s' "$response" | python3 -c "import json, sys; print(json.load(sys.stdin).get('sha', ''))")
-          fi
-          if [ -z "$full_sha" ]; then
-            echo "::error::Could not resolve full sha for SiennaSchemas commit '${short_sha}' (from .schema-version) via the GitHub API" >&2
-            exit 1
-          fi
-          echo "sha=$full_sha" >> "$GITHUB_OUTPUT"
-        shell: bash
       - uses: actions/checkout@v4
         with:
           repository: Sienna-Platform/SiennaSchemas
-          ref: ${{ steps.schema-version.outputs.sha }}
+          ref: ${{ needs.schema-sha.outputs.sha }}
           path: SiennaSchemas
 
       # Python<->TypeScript is the BLOCKING gate: the two packages are
