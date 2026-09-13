@@ -14,7 +14,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-PKG_DIR = Path(__file__).parent.parent / "src" / "power_openapi_models"
+PKG_DIR = Path(__file__).parent.parent.parent / "python" / "src" / "power_openapi_models"
 
 PRIMITIVES = {"float", "int", "str", "bool"}
 

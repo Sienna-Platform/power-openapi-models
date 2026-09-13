@@ -1,0 +1,74 @@
+name: Release TypeScript
+
+# Fires from the SAME `v*` tag as release-python.yml -- see the lockstep note
+# there. Both gate on scripts/check_version_sync.py.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Versions agree and match the tag
+        run: |
+          python3 scripts/check_version_sync.py \
+            --tag "${{ github.ref_name }}" \
+            --require python,typescript
+
+  publish:
+    needs: guard
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      # OIDC for npm trusted publishing AND for --provenance. No token stored.
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      # npm's OIDC trusted publishing needs a recent npm; the version bundled
+      # with the Node runtime lags it.
+      - run: npm install --global npm@latest
+
+      - run: npm ci
+
+      # Build from the generated tree that is committed, NOT by regenerating.
+      # Regenerating during a release would let a drifted local SiennaSchemas
+      # checkout publish models that never passed CI.
+      - run: npm run build
+        working-directory: typescript
+
+      # Fail before publishing rather than after, if the tarball is wrong.
+      - name: Inspect the tarball
+        working-directory: typescript
+        run: |
+          npm pack --dry-run
+          npm publish --dry-run --access public
+
+      # FIRST RELEASE: unlike PyPI, npm has NO pending-publisher flow -- a
+      # trusted publisher can only be attached to a package that already
+      # exists. So 0.1.0 must be published once manually:
+      #
+      #   cd typescript && npm publish --access public
+      #
+      # then add this repo + this workflow as a trusted publisher on the
+      # @sienna-platform org, after which every later release runs here with no
+      # token. Until that is done this step fails, which is the correct
+      # behaviour: it refuses rather than falling back to a stored secret.
+      - name: Publish to npm
+        working-directory: typescript
+        run: npm publish --access public --provenance

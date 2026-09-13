@@ -15,9 +15,12 @@ checks that the two surfaces actually agree, comparing per shared type:
   * defaults              a differing default silently changes an omitted field
 
 The Julia side is read from the generated sources rather than a live session, so
-this runs without a Julia install: `Base.@kwdef mutable struct` for fields and
-defaults, `check_required` for required fields, and the `validate_param(...,
-:enum, ...)` calls for allowed values.
+this runs without a Julia install: `Base.@kwdef struct ... <: APIModel` for fields
+and defaults — a field with no kwdef default is required, since the generator no
+longer emits a separate `check_required` runtime helper — and `struct ... <:
+EnumAPIModel`'s inner `value in (...)` constructor check for allowed enum values
+(enums are their own validated wrapper type now, not a bare `const X = String`
+alias checked by a separate `validate_param(..., :enum, ...)` call).
 
 One asymmetry is structural rather than a defect, and is reported separately as
 NOTE: Julia emits each schema enum as `const X = String` and enforces the allowed
@@ -26,7 +29,9 @@ when the caller validates. Pydantic makes it an `Enum` and rejects it during
 construction. Both honour the schema; only Julia can be bypassed.
 
 Exit status is non-zero when a real divergence is found, so this is usable as a
-gate. NOTEs alone do not fail the run.
+gate. NOTEs alone do not fail the run. Pass `--julia-report-only` to keep
+printing every divergence in full while exiting 0 for this Julia<->Python
+comparison specifically -- see that flag's help for why.
 
 A small, named set of divergences is EXEMPTED (see `EXEMPTIONS` below) rather
 than fixed: each entry is a specific `type.field`, carries a one-line reason,
@@ -39,6 +44,8 @@ import argparse
 import importlib
 import re
 import sys
+from dataclasses import dataclass
+from dataclasses import field as dataclass_field
 from enum import Enum
 from pathlib import Path
 
@@ -76,82 +83,321 @@ JULIA_KIND = {
 PY_KIND = {int: "integer", float: "number", str: "string", bool: "boolean"}
 
 
+@dataclass
+class Surface:
+    """One language's parsed model surface, with enough provenance that a caller
+    never has to *infer* whether real parsing happened.
+
+    `types` maps type name -> its field/required/enum surface (the shape
+    `compare()` expects). `files_scanned` is the number of source files actually
+    read — independent of how many types came out of them — so "0 types" from
+    "0 files" (an empty or wrong path) and "0 types" from "50 files" (a parser
+    that no longer matches what those files contain) are told apart instead of
+    both quietly reading as one empty surface. This is exactly the distinction
+    `_require_real_surface` needs, and it generalizes to any future language
+    arm (a TypeScript surface reuses the same shape and the same guard rather
+    than re-deriving "did this actually check anything" from scratch).
+    `detail` carries any language-specific extra stat worth printing (Julia:
+    how many enum registry entries were found) without forcing every language
+    into one fixed schema.
+    """
+
+    language: str
+    types: dict
+    files_scanned: int
+    detail: dict = dataclass_field(default_factory=dict)
+
+
 # --------------------------------------------------------------------------- #
 # Julia side: parse the generated sources
 # --------------------------------------------------------------------------- #
 
+# A field declaration, one per logical line (see `_join_field_lines`):
+#     id::Int64                                   (required: no default)
+#     angle::Union{Absent, Float64, Nothing} = ABSENT   (optional)
+#     variable_cost_type::String = "COST"          (required-shape constant)
+# The type capture is non-greedy, so it stops at the first `=` that isn't
+# nested inside the type's own braces/parens — safe here because no Julia
+# type in these generated files contains a literal `=`.
+FIELD_RE = re.compile(r"^\s*(\w+)::(.+?)(?:\s*=\s*(.+))?$")
 
-def parse_julia_model(text):
-    """Extract one generated model's surface, or None if the file defines no struct."""
-    struct = re.search(
-        r"Base\.@kwdef mutable struct (\w+) <: OpenAPI\.APIModel\n(.*?)\n\s*function ",
+
+def _join_field_lines(body):
+    """Re-join a struct body's field declarations into one logical line each.
+
+    The Julia formatter wraps a field across multiple physical lines when its
+    type or default doesn't fit (a long `Union{Absent, ..., Nothing}`, or an
+    `additional_properties` default split after its `=`). Track paren/brace
+    depth (and a trailing bare `=`) to know when a declaration is still open,
+    so a per-line field regex can keep working unchanged.
+    """
+    logical_lines, buf, depth = [], [], 0
+    for raw_line in body.splitlines():
+        stripped = raw_line.strip()
+        if not stripped:
+            continue
+        buf.append(raw_line if not buf else stripped)
+        depth += stripped.count("{") + stripped.count("(")
+        depth -= stripped.count("}") + stripped.count(")")
+        if depth <= 0 and not stripped.endswith("="):
+            logical_lines.append(" ".join(buf))
+            buf, depth = [], 0
+    if buf:
+        logical_lines.append(" ".join(buf))
+    return logical_lines
+
+
+def _core_julia_type(type_text):
+    """Strip an Absent/Nothing optionality wrapper down to the underlying type.
+
+    `Union{Absent, Float64, Nothing}` compares like plain `Float64`;
+    `Union{Absent, Union{Nothing, String}}` (a nested wrapper) unwraps the
+    same way. A real multi-type oneOf union with no null-ability (`Union{MinMax,
+    MinMaxByKey}`) has no single underlying type, so it is returned unchanged —
+    `JULIA_KIND.get` on it later simply misses, which is the existing,
+    correct behavior for any type text it doesn't recognize.
+    """
+    m = re.match(r"^Union\{(.*)\}$", type_text.strip(), re.DOTALL)
+    if m is None:
+        return type_text
+    args = [a.strip() for a in _split_top_level(m.group(1), ",") if a.strip()]
+    core = [a for a in args if a not in ("Absent", "Nothing")]
+    if len(core) == 1:
+        return _core_julia_type(core[0])
+    return type_text
+
+
+def _parse_kwdef_fields(body):
+    """Parse a `Base.@kwdef struct` body into (fields, required).
+
+    A field written `name::Type` (no `= ...`) has no kwdef default, so it is
+    required at construction — the only signal left for requiredness now that
+    the generator's separate `check_required` runtime helper is gone. A field
+    written `name::Type = EXPR` is optional; EXPR is `ABSENT` (the schema
+    property was simply omitted from the JSON — Julia's distinct "not present"
+    sentinel), `nothing` (an explicit null), or a literal (a discriminator
+    constant such as `"COST"`). `ABSENT` and `nothing` both normalize to `None`
+    here: for the purposes of this comparison — "what does an omitted field
+    load as" — Julia's absent/null distinction and Python's single `None`
+    default mean the same thing.
+
+    `additional_properties` is generator scaffolding, not a schema-authored
+    property: every struct gets one (named identically, typed after whatever
+    the schema's `additionalProperties` sub-schema allows), so it is dropped
+    here rather than reported as a per-type divergence against Python (which
+    has no such field at all — see the NOTE `main()` prints once, up front,
+    instead of repeating "additional_properties: in Julia, missing from
+    Python" for every shared type).
+    """
+    fields, required = {}, set()
+    for line in _join_field_lines(body):
+        m = FIELD_RE.match(line)
+        if m is None:
+            continue
+        field, jtype, default = m.group(1), _core_julia_type(m.group(2).strip()), m.group(3)
+        if field == "additional_properties":
+            continue
+        if default is None:
+            required.add(field)
+        else:
+            default = default.strip().rstrip(",")
+            if default in ("nothing", "ABSENT"):
+                default = None
+        fields[field] = {"type": jtype, "default": default}
+    return fields, required
+
+
+def parse_julia_object_struct(text):
+    """Extract one generated object model's surface, or None if the file
+    defines no `Base.@kwdef` struct (an `EnumAPIModel` struct, a bare oneOf/
+    Union type alias, or a file with no struct at all).
+
+    Matches `Base.@kwdef struct NAME <: APIModel` (optionally `@kwdef` without
+    the `Base.` prefix, `mutable` before `struct`, and `OpenAPI.APIModel`
+    qualified) — the shapes openapi-generator's Julia template has emitted;
+    verified against every current `model_*.jl` in PowerOpenAPIModels, which
+    today emits exactly `Base.@kwdef struct NAME <: APIModel` (immutable,
+    unqualified supertype). The struct's own closing `end` (a bare line, never
+    reached earlier since these bodies hold only field declarations, no
+    control flow) is the anchor, not whatever statement happens to follow it —
+    the previous anchor (`\\n\\s*function `) broke the moment the generator
+    started emitting a one-line `_decode(::Type{NAME}, value) = ...` there
+    instead.
+    """
+    m = re.search(
+        r"(?:Base\.)?@kwdef (?:mutable )?struct (\w+) <: (?:OpenAPI\.)?APIModel\n(.*?)\nend\n",
         text,
         re.DOTALL,
     )
-    if struct is None:
+    if m is None:
         return None
-    name, body = struct.group(1), struct.group(2)
+    name, body = m.group(1), m.group(2)
+    fields, required = _parse_kwdef_fields(body)
+    return name, fields, required
 
-    fields = {}
-    for raw_line in body.splitlines():
-        # A field can carry both an annotation and a trailing spec-type comment:
-        #     cofire_start_limits::Union{Nothing, Dict} = nothing # spec type: ...
-        # Keep the comment only when it is the sole source of the type.
-        line = raw_line
-        if "::" in raw_line.split("#", 1)[0]:
-            line = raw_line.split("#", 1)[0].rstrip()
-        # Two shapes. Scalars carry the annotation inline:
-        #     angle::Union{Nothing, Float64} = nothing
-        # while a $ref-typed field is emitted untyped, with the type in a
-        # trailing comment, so it must be read from there:
-        #     voltage_limits = nothing # spec type: Union{ Nothing, MinMax }
-        m = re.match(r"\s*(\w+)::Union\{Nothing,\s*(.+?)\}\s*(?:=\s*(.+?))?\s*$", line)
+
+def parse_julia_enum_struct(text):
+    """Extract a schema-enum struct's name and allowed values, or None.
+
+    The generator emits an enum as `struct NAME <: EnumAPIModel` wrapping a
+    single `value::String` field, validated by an inner constructor
+    (`value in (...) || throw(...)`) — replacing the old `const NAME = String`
+    alias plus a separate `validate_param(..., :enum, ...)` call this checker
+    used to read. The `in (` / tuple can itself be line-wrapped (`value in\\n
+    ("A", "B")`), hence `\\s*` rather than a literal space before the `(`.
+    """
+    m = re.search(
+        r"struct (\w+) <: (?:OpenAPI\.)?EnumAPIModel\b.*?value in\s*\((.*?)\)",
+        text,
+        re.DOTALL,
+    )
+    if m is None:
+        return None
+    name = m.group(1)
+    values = [parse_julia_expr(v) for v in _split_top_level(m.group(2), ",") if v.strip()]
+    return name, values
+
+
+# The generator snake_cases every Julia struct field (`ta_tb`) while the JSON
+# wire key is whatever the schema named it (`"Ta_Tb"`) — both `_decode` and
+# `_encode` read/write the schema key, so the wire format is correct and the
+# two languages round-trip fine. Comparing the Julia *identifier* against
+# Python's field name therefore compares the wrong thing; every Julia field
+# must be re-keyed by its JSON wire key before it is compared to Python.
+#
+# `_encode` is the source: one `isa Absent` line per field, naming both the
+# field and the literal JSON key it writes under, on one physical line or
+# wrapped across two:
+#     _openapi_value.ta_tb isa Absent ||
+#         (_openapi_output["Ta_Tb"] = _encode(_openapi_value.ta_tb))
+ENCODE_FUNC_RE = re.compile(
+    r"function _encode\(_openapi_value::(\w+)\)\n(.*?)\n(?=function |\Z)",
+    re.DOTALL,
+)
+ENCODE_FIELD_RE = re.compile(
+    r"_openapi_value\.(\w+) isa Absent \|\|\s*"
+    r'\(\s*_openapi_output\["([^"]+)"\]\s*=\s*_encode\(_openapi_value\.(\w+)\)\s*\)'
+)
+
+# Independent cross-check source: `_decode`'s `additional_properties` skip-list
+# enumerates the full JSON key set for the same struct (`String(_openapi_key)
+# in ("id", "Ta_Tb", ...) && continue`), from a different function than
+# `_encode`. Agreement between the two is what lets a field-name-derived key
+# be trusted instead of guessed.
+DECODE_SKIP_LIST_RE = re.compile(
+    r"function _decode\(::Type\{(\w+)\}, _openapi_raw,.*?\n(.*?)\nend\n",
+    re.DOTALL,
+)
+DECODE_SKIP_KEYS_RE = re.compile(r"String\(_openapi_key\) in \((.*?)\)\s*&&\s*continue", re.DOTALL)
+
+
+def parse_julia_json_keys(text):
+    """Map each struct in `text` -> {julia_field: JSON wire key}, from `_encode`."""
+    mapping = {}
+    for struct_name, body in ENCODE_FUNC_RE.findall(text):
+        field_to_key = {}
+        for field, key, field_again in ENCODE_FIELD_RE.findall(body):
+            if field != field_again:
+                raise ValueError(
+                    f"{struct_name}: _encode's isa-Absent field {field!r} doesn't "
+                    f"match the field it encodes ({field_again!r}) -- the "
+                    f"`_encode` shape this parser assumes no longer holds."
+                )
+            field_to_key[field] = key
+        mapping[struct_name] = field_to_key
+    return mapping
+
+
+def parse_julia_decode_skip_keys(text):
+    """Map each struct in `text` -> its full JSON key set, from `_decode`'s
+    additional_properties skip-list. Cross-check only; see `parse_julia_json_keys`.
+    """
+    mapping = {}
+    for struct_name, body in DECODE_SKIP_LIST_RE.findall(text):
+        m = DECODE_SKIP_KEYS_RE.search(body)
         if m is not None:
-            field, jtype, default = m.group(1), m.group(2).strip(), m.group(3)
-        else:
-            m = re.match(
-                r"\s*(\w+)\s*=\s*(.+?)\s*#\s*spec type:\s*Union\{\s*Nothing,\s*(.+?)\s*\}\s*$",
-                line,
-            )
-            if m is None:
-                continue
-            field, default, jtype = m.group(1), m.group(2), m.group(3).strip()
-        if default is not None:
-            default = default.strip().rstrip(",")
-            if default == "nothing":
-                default = None
-        fields[field] = {"type": jtype, "default": default}
+            mapping[struct_name] = set(re.findall(r'"([^"]+)"', m.group(1)))
+    return mapping
 
-    required = set(re.findall(r"o\.(\w+) === nothing && \(return false\)", text))
-    enums = {}
-    for m in re.finditer(r'validate_param\(name, "\w+", :enum, val, \[(.*?)\]\)', text, re.DOTALL):
-        # Reuse the same expression parser as defaults: an allowed-value list
-        # is either quoted strings (`["MARKET_BID"]`) or bare integers
-        # (`[0, 1, 2]`), and a naive quoted-string extraction silently drops
-        # the latter instead of raising.
-        values = [parse_julia_expr(v) for v in _split_top_level(m.group(1), ",") if v.strip()]
-        # The enclosing `if name === Symbol("field")` names the field.
-        prefix = text[: m.start()]
-        field = re.findall(r'if name === Symbol\("(\w+)"\)', prefix)
-        if field:
-            enums[field[-1]] = values
-    return name, {"fields": fields, "required": required, "enums": enums}
+
+def _json_key_for(struct_name, field, field_to_key, decode_keys):
+    """The JSON wire key for one Julia struct field, verified two ways.
+
+    Raises rather than falling back to the bare identifier: a silent fallback
+    here is exactly how the field-name/JSON-key mixup this function exists to
+    fix went unnoticed in the first place.
+    """
+    if field not in field_to_key:
+        raise ValueError(
+            f"{struct_name}.{field}: no JSON key discoverable from _encode -- "
+            f"refusing to fall back to the Julia field name."
+        )
+    key = field_to_key[field]
+    if decode_keys is not None and key not in decode_keys:
+        raise ValueError(
+            f"{struct_name}.{field}: _encode writes JSON key {key!r}, but "
+            f"_decode's additional_properties skip-list {sorted(decode_keys)} "
+            f"doesn't contain it -- the two parses of the same struct disagree."
+        )
+    return key
 
 
 def load_julia_surface(julia_root):
-    """Map type name -> surface, across all generated Julia packages."""
+    """Parse every generated Julia package under `julia_root` into a Surface.
+
+    Three passes over the same file list: first the enum registry (type name
+    -> allowed values) from every `EnumAPIModel` struct, since a field can
+    reference an enum type defined in a different package's file than the
+    struct using it; then the JSON-key registry (see `parse_julia_json_keys`);
+    then every object struct, re-keying its fields/required/enums by JSON key
+    and attaching each field's enum values by resolving its (Absent/Nothing-
+    stripped) type against the enum registry — reproducing the shape the old
+    inline `validate_param` parsing produced, so `compare()` needs no changes
+    beyond now receiving JSON keys instead of Julia identifiers.
+    """
+    paths = sorted(Path(julia_root).glob("*.jl/src/models/model_*.jl"))
+    texts = [(path, path.read_text()) for path in paths]
+
+    enum_registry = {}
+    json_key_registry = {}
+    decode_skip_registry = {}
+    for _, text in texts:
+        parsed = parse_julia_enum_struct(text)
+        if parsed is not None:
+            enum_registry[parsed[0]] = parsed[1]
+        json_key_registry.update(parse_julia_json_keys(text))
+        decode_skip_registry.update(parse_julia_decode_skip_keys(text))
+
     surface = {}
-    aliases = {}
-    for models_dir in sorted(Path(julia_root).glob("*.jl/src/models")):
-        for path in sorted(models_dir.glob("model_*.jl")):
-            text = path.read_text()
-            alias = re.search(r"const (\w+) = String", text)
-            if alias is not None:
-                aliases[alias.group(1)] = "String"
-            parsed = parse_julia_model(text)
-            if parsed is not None:
-                surface.setdefault(parsed[0], parsed[1])
-    return surface, aliases
+    for _, text in texts:
+        parsed = parse_julia_object_struct(text)
+        if parsed is None:
+            continue
+        name, fields, required = parsed
+        field_to_key = json_key_registry.get(name, {})
+        decode_keys = decode_skip_registry.get(name)
+        keyed_fields = {
+            _json_key_for(name, field, field_to_key, decode_keys): info
+            for field, info in fields.items()
+        }
+        keyed_required = {
+            _json_key_for(name, field, field_to_key, decode_keys) for field in required
+        }
+        enums = {
+            _json_key_for(name, field, field_to_key, decode_keys): enum_registry[info["type"]]
+            for field, info in fields.items()
+            if info["type"] in enum_registry
+        }
+        surface.setdefault(
+            name, {"fields": keyed_fields, "required": keyed_required, "enums": enums}
+        )
+
+    return Surface(
+        language="Julia",
+        types=surface,
+        files_scanned=len(paths),
+        detail={"enum_types_found": len(enum_registry)},
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -173,8 +419,10 @@ def _py_kind(annotation):
 
 def load_python_surface():
     surface = {}
+    files_scanned = 0
     for domain in DOMAINS:
         module = importlib.import_module(f"power_openapi_models.{domain}.models")
+        files_scanned += 1
         for attr in dir(module):
             obj = getattr(module, attr)
             if not (isinstance(obj, type) and hasattr(obj, "model_fields")):
@@ -198,7 +446,7 @@ def load_python_surface():
                 if members is not None:
                     enums[alias] = [m.value for m in members.values()]
             surface.setdefault(attr, {"fields": fields, "required": required, "enums": enums})
-    return surface
+    return Surface(language="Python", types=surface, files_scanned=files_scanned)
 
 
 # --------------------------------------------------------------------------- #
@@ -523,9 +771,56 @@ def compare(julia, python):
     return problems, notes, shared
 
 
+def _require_real_surface(surface):
+    """Refuse to let a broken parser or a wrong path masquerade as agreement.
+
+    This is the fix for the actual defect that motivated this file: a parser
+    regex that silently matched nothing produced `Julia structs: 0`, `Compared
+    0 shared types`, and then *still* printed "Surfaces agree" and exited 0 —
+    a parity gate that was green because it never compared anything. A
+    surface that scanned zero files, or scanned files and parsed zero types
+    out of them, means nothing was actually checked for that language; name
+    which one and why, loudly, and refuse to proceed. Takes a `Surface` (not a
+    bare dict) so every language arm — this file's Julia and Python today, a
+    TypeScript arm next — inherits the same guard instead of each having to
+    reproduce it, or re-derive "did this actually check anything" by
+    inference from a plain type count.
+    """
+    if surface.files_scanned == 0:
+        print(
+            f"ERROR: {surface.language} surface scanned 0 source files — the "
+            f"path is empty, wrong, or nothing matched the expected file "
+            f"pattern. No {surface.language} type was even attempted, so any "
+            f"'surfaces agree' verdict from this run would be meaningless."
+        )
+        return False
+    if not surface.types:
+        print(
+            f"ERROR: {surface.language} surface scanned {surface.files_scanned} "
+            f"file(s) but parsed 0 types out of them. The parser's pattern no "
+            f"longer matches what those files contain (most likely a generator/"
+            f"template change) — fix the parser. Do not let this pass."
+        )
+        return False
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--julia", default=str(DEFAULT_JULIA))
+    parser.add_argument(
+        "--julia-report-only",
+        action="store_true",
+        help=(
+            "Print every Julia<->Python divergence in full, but exit 0 instead of "
+            "failing on them. Julia leaves an omitted defaulted field ABSENT where "
+            "Python materializes the schema default -- a confirmed pre-existing bug "
+            "in the Julia generator, filed separately, that this repo's CI must not "
+            "block on. Does not affect the empty-surface/no-shared-types guards, "
+            "which still fail the run, and has no effect on any other language pair "
+            "this script may compare (e.g. Python<->TypeScript remains a hard gate)."
+        ),
+    )
     args = parser.parse_args()
 
     julia_root = Path(args.julia).resolve()
@@ -550,13 +845,42 @@ def main():
         )
     print()
 
-    julia, aliases = load_julia_surface(julia_root)
-    python = load_python_surface()
-    print(f"Julia structs:  {len(julia)}")
-    print(f"Python models:  {len(python)}")
-    print(f"Julia enums emitted as bare String aliases: {len(aliases)}\n")
+    julia_surface = load_julia_surface(julia_root)
+    python_surface = load_python_surface()
+    print(
+        f"Julia structs:  {len(julia_surface.types)} "
+        f"(from {julia_surface.files_scanned} file(s); "
+        f"{julia_surface.detail.get('enum_types_found', 0)} of them enum types)"
+    )
+    print(
+        f"Python models:  {len(python_surface.types)} "
+        f"(from {python_surface.files_scanned} file(s))\n"
+    )
 
-    all_problems, notes, shared = compare(julia, python)
+    if not _require_real_surface(julia_surface) or not _require_real_surface(python_surface):
+        return 3
+
+    print(
+        "NOTE: every Julia struct also carries an `additional_properties` "
+        "passthrough field (captures JSON keys the schema didn't name) that "
+        "the parser drops before comparison rather than reporting for every "
+        "shared type — Python's generated models have no counterpart and "
+        "silently discard unrecognized keys under pydantic's default config. "
+        "This is a structural difference between the two generators, not a "
+        "per-type divergence: an unknown extra key round-trips through Julia "
+        "and vanishes going through Python.\n"
+    )
+
+    all_problems, notes, shared = compare(julia_surface.types, python_surface.types)
+    if not shared:
+        print(
+            f"ERROR: 0 shared types even though both surfaces parsed real "
+            f"types ({len(julia_surface.types)} Julia, {len(python_surface.types)} "
+            f"Python) — every type name differs, so nothing was actually "
+            f"compared. Check DOMAINS / naming assumptions before trusting any "
+            f"verdict from this run."
+        )
+        return 3
     print(f"Compared {len(shared)} shared types.\n")
 
     failures = [(key, msg) for key, msg in all_problems if key not in EXEMPTIONS]
@@ -583,6 +907,19 @@ def main():
         for _, msg in failures:
             print(f"  {msg}")
         print(f"\n{len(failures)} divergence(s) would break bi-directional loading.")
+        if args.julia_report_only:
+            print(
+                f"\nREPORT-ONLY MODE: the {len(failures)} Julia<->Python "
+                f"divergence(s) above do NOT fail this run. Almost all of them are "
+                f"one confirmed, pre-existing Julia generator bug -- an omitted "
+                f"defaulted field decodes to ABSENT in Julia where Python "
+                f"materializes the schema default (e.g. SEXS without V_ref: "
+                f"ABSENT in Julia, 1.0 in Python) -- tracked separately, not fixable "
+                f"by editing generated code in this repo. Python<->TypeScript is "
+                f"the blocking gate for this repo's CI. Run without "
+                f"--julia-report-only to make these divergences fail the build."
+            )
+            return 0
         return 1
 
     print(

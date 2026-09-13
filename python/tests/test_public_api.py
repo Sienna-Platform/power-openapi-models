@@ -66,7 +66,7 @@ def test_no_digit_suffix_alias_classes(name):
       name instead of a generator-assigned suffix;
     - a pure wrapper (`class <Base><N>(RootModel[<Base>]): root: <Base>`,
       e.g. `UnitSystem1`) should be collapsed by `--collapse-root-models`
-      (see the Makefile) or, failing that, a `scripts/postprocess.py` pass.
+      (see the Makefile) or, failing that, a `codegen/python/postprocess.py` pass.
 
     There is no generator-config workaround for this -- name the schema
     properly at the source instead.
@@ -80,7 +80,7 @@ def test_no_digit_suffix_alias_classes(name):
     assert not leaked, (
         f"{name}: generated alias classes {leaked} -- give each a named "
         f"$defs entry in SiennaSchemas, or collapse it in "
-        f"scripts/postprocess.py if it is a pure RootModel wrapper"
+        f"codegen/python/postprocess.py if it is a pure RootModel wrapper"
     )
 
 
@@ -107,7 +107,7 @@ def test_no_pure_root_model_aliases(name):
     field annotations use.
 
     The cure is upstream, never an edit to the generated file:
-    `scripts/postprocess.py`'s `drop_redundant_root_aliases` removes the ones
+    `codegen/python/postprocess.py`'s `drop_redundant_root_aliases` removes the ones
     nothing references. One that survives that pass is referenced, and then
     the schema is what needs fixing.
     """
@@ -125,5 +125,5 @@ def test_no_pure_root_model_aliases(name):
     ]
     assert not leaked, (
         f"{name}: pure RootModel aliases {leaked} -- drop them in "
-        f"scripts/postprocess.py's drop_redundant_root_aliases"
+        f"codegen/python/postprocess.py's drop_redundant_root_aliases"
     )

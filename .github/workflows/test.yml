@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  python:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -52,19 +52,90 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python3 -m pip install --upgrade pip
       - run: python3 -m pip install -e ".[dev]"
-      - run: ruff check .
-      - run: ruff format --check .
+        working-directory: python
+      - run: ruff check python/ scripts/ codegen/
+      - run: ruff format --check python/ scripts/ codegen/
       - run: pytest tests/ -q
+        working-directory: python
         env:
           SIENNA_SCHEMAS_DIR: ${{ github.workspace }}/SiennaSchemas
       # Makes the py.typed marker honest. A marker over an incomplete
       # annotation surface tells every downstream type checker something
-      # false. scripts/check_typecompleteness.py runs pyright --verifytypes
-      # itself (with PYTHONPATH=src -- an editable install alone does not
-      # let --verifytypes find a src/-layout package) and enforces a
-      # completeness floor explicitly: pyright's raw exit code reflects
-      # whether it printed any diagnostic, not whether the score cleared a
-      # bar, so it is not on its own an honest gate.
+      # false. python/scripts/check_typecompleteness.py runs pyright
+      # --verifytypes itself (with PYTHONPATH=python/src -- an editable
+      # install alone does not let --verifytypes find a src/-layout package)
+      # and enforces a completeness floor explicitly: pyright's raw exit
+      # code reflects whether it printed any diagnostic, not whether the
+      # score cleared a bar, so it is not on its own an honest gate.
       - run: python3 scripts/check_typecompleteness.py
+        working-directory: python
       - run: python3 -m build
+        working-directory: python
       - run: python3 -m twine check dist/*
+        working-directory: python
+
+  version-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # No --require here: on a PR that adds a language, its manifest may not
+      # exist yet and that is not an error. The RELEASE workflows pass
+      # --require, where an absent manifest genuinely is one.
+      - run: python3 scripts/check_version_sync.py
+
+  typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+
+      # The committed orval.config.ts must match what gen-orval-config.ts
+      # produces from the pinned schemas. A hand-edited config would otherwise
+      # generate output nobody can reproduce.
+      - id: schema-version
+        shell: bash
+        run: |
+          short_sha=$(cat .schema-version)
+          response=$(curl -fsSL -H "Authorization: Bearer ${{ github.token }}" \
+            "https://api.github.com/repos/Sienna-Platform/SiennaSchemas/commits/${short_sha}" || true)
+          full_sha=""
+          if [ -n "$response" ]; then
+            full_sha=$(printf '%s' "$response" | python3 -c "import json, sys; print(json.load(sys.stdin).get('sha', ''))")
+          fi
+          if [ -z "$full_sha" ]; then
+            echo "::error::Could not resolve full sha for SiennaSchemas commit '${short_sha}' (from .schema-version) via the GitHub API" >&2
+            exit 1
+          fi
+          echo "sha=$full_sha" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          repository: Sienna-Platform/SiennaSchemas
+          ref: ${{ steps.schema-version.outputs.sha }}
+          path: SiennaSchemas
+
+      # Regeneration must be a no-op against the committed tree. A diff here
+      # means the committed models do not correspond to the pinned schemas --
+      # exactly the drift this repo exists to prevent.
+      - name: Generated output is up to date
+        run: |
+          make generate-typescript SCHEMA_DIR="${{ github.workspace }}/SiennaSchemas"
+          if ! git diff --quiet -- typescript/; then
+            echo "::error::typescript/ is stale. Run 'make generate-typescript' and commit the result." >&2
+            git diff --stat -- typescript/
+            exit 1
+          fi
+
+      - run: npx tsc --noEmit
+        working-directory: typescript
+      - run: npm test
+        working-directory: typescript
+      - run: npm run build
+        working-directory: typescript
+      - run: npm publish --dry-run --access public
+        working-directory: typescript

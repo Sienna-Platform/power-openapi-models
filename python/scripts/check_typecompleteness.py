@@ -28,18 +28,18 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).parent.parent
+PACKAGE_ROOT = Path(__file__).parent.parent
 PACKAGE = "power_openapi_models"
 THRESHOLD = 0.75
 
 
 def main() -> int:
     env = dict(os.environ)
-    env["PYTHONPATH"] = str(REPO_ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = str(PACKAGE_ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
 
     proc = subprocess.run(
         [sys.executable, "-m", "pyright", "--outputjson", "--verifytypes", PACKAGE],
-        cwd=REPO_ROOT,
+        cwd=PACKAGE_ROOT,
         env=env,
         capture_output=True,
         text=True,

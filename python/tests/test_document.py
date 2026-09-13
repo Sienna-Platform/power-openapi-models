@@ -17,7 +17,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+PACKAGE_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = PACKAGE_ROOT.parent
 SCHEMAS_DIR = Path(os.environ.get("SIENNA_SCHEMAS_DIR", str(REPO_ROOT.parent / "SiennaSchemas")))
 SCHEMA_PATH = SCHEMAS_DIR / "Core" / "SystemDocument.json"
 
@@ -25,7 +26,7 @@ SCHEMA_PATH = SCHEMAS_DIR / "Core" / "SystemDocument.json"
 def _load_document_module():
     spec = importlib.util.spec_from_file_location(
         "power_openapi_models.document",
-        REPO_ROOT / "src" / "power_openapi_models" / "document.py",
+        PACKAGE_ROOT / "src" / "power_openapi_models" / "document.py",
     )
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module

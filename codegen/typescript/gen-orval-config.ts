@@ -1,0 +1,141 @@
+#!/usr/bin/env -S node --experimental-strip-types
+/**
+ * Generates typescript/orval.config.ts from a SiennaSchemas checkout.
+ *
+ * Orval rejects glob patterns for external `$ref` targets (verified against
+ * orval 8.32.0): every document a spec's `$ref`s can reach must be
+ * enumerated explicitly, or generation fails with "Refused to read external
+ * file". Hand-maintaining that list would drift the moment SiennaSchemas
+ * gains a file, so this walks $SCHEMA_DIR (default `../SiennaSchemas`) for
+ * every `*.json` under `Core/ Operations/ Dynamics/ Investments/
+ * TimeSeries/` and bakes the full set in as the allowlist -- a superset of
+ * what any one domain's spec currently references. A superset only grants
+ * permission to read a file if something references it, so it is harmless,
+ * and it means the allowlist never needs hand-editing when a domain's own
+ * `$ref` graph changes shape.
+ *
+ * Also emits six orval projects, one per `openapi-*.json` domain, each
+ * `client: 'zod'` / `mode: 'single'`, targeting
+ * `typescript/src/<domain>/models.ts`. Domain directory names mirror the
+ * Python package layout exactly, including the `infrastructure_core`
+ * underscore.
+ *
+ * Output is deterministic: the allowlist is sorted, so regenerating twice
+ * against the same SCHEMA_DIR produces a byte-identical file.
+ */
+import { readdirSync, statSync, writeFileSync } from "node:fs";
+import { isAbsolute, join, relative, sep } from "node:path";
+
+const SCHEMA_DIR = process.env.SCHEMA_DIR ?? "../SiennaSchemas";
+const OUTPUT_PATH = "typescript/orval.config.ts";
+
+// Directories that may contain a `$ref` target. Mirrors the Makefile's own
+// six-domain selector set (Core/ backs infrastructure_core AND core).
+const REF_ROOTS = ["Core", "Operations", "Dynamics", "Investments", "TimeSeries"];
+
+// Domain key (also the orval project name) -> [spec filename, output dir].
+// Directory names mirror python/src/power_openapi_models/<domain> exactly.
+const DOMAINS: ReadonlyArray<{ key: string; spec: string; dir: string }> = [
+  { key: "infrastructure_core", spec: "openapi-infrastructure-core.json", dir: "infrastructure_core" },
+  { key: "core", spec: "openapi-core.json", dir: "core" },
+  { key: "operations", spec: "openapi-operations.json", dir: "operations" },
+  { key: "investments", spec: "openapi-investments.json", dir: "investments" },
+  { key: "dynamics", spec: "openapi-dynamics.json", dir: "dynamics" },
+  { key: "timeseries", spec: "openapi-timeseries.json", dir: "timeseries" },
+];
+
+function toPosix(path: string): string {
+  return path.split(sep).join("/");
+}
+
+function walkJsonFiles(root: string): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    const full = join(root, entry.name);
+    if (entry.isDirectory()) {
+      out.push(...walkJsonFiles(full));
+    } else if (entry.isFile() && entry.name.endsWith(".json")) {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+function buildAllowlist(schemaDir: string): string[] {
+  const relPaths = new Set<string>();
+  for (const root of REF_ROOTS) {
+    const rootPath = join(schemaDir, root);
+    let isDir: boolean;
+    try {
+      isDir = statSync(rootPath).isDirectory();
+    } catch {
+      isDir = false;
+    }
+    if (!isDir) continue;
+    for (const file of walkJsonFiles(rootPath)) {
+      relPaths.add(toPosix(relative(schemaDir, file)));
+    }
+  }
+  if (relPaths.size === 0) {
+    throw new Error(
+      `No schema files found under ${schemaDir} (Core/ Operations/ Dynamics/ Investments/ TimeSeries/) -- check SCHEMA_DIR.`,
+    );
+  }
+  return [...relPaths].sort();
+}
+
+function renderConfig(schemaDir: string, allowlist: readonly string[]): string {
+  const allowlistLiteral = allowlist.map((entry) => `  '${entry}',\n`).join("");
+
+  // orval resolves every relative path in the config against the config
+  // file's OWN directory (typescript/), not the process cwd -- confirmed by
+  // reading orval's CLI source (`workspace = dirname(configFilePath)`), not
+  // assumed. SCHEMA_DIR follows this repo's existing convention (see the
+  // Python Makefile's `SCHEMA_DIR ?= ../SiennaSchemas`) of being expressed
+  // relative to the repo root, one level above typescript/, so a relative
+  // SCHEMA_DIR needs one extra `../` to reach it from there; an absolute
+  // SCHEMA_DIR is used as-is. Output targets drop the leading `typescript/`
+  // for the same reason -- the config already lives inside that directory.
+  const schemaDirFromConfig = isAbsolute(schemaDir) ? schemaDir : join("..", schemaDir);
+
+  const projectsLiteral = DOMAINS.map(
+    ({ key, spec, dir }) => `  ${key}: {
+    input: {
+      target: '${toPosix(join(schemaDirFromConfig, spec))}',
+      parserOptions: {
+        externalRefs: { allow: EXTERNAL_REFS_ALLOW },
+      },
+    },
+    output: {
+      target: 'src/${dir}/models.ts',
+      client: 'zod',
+      mode: 'single',
+    },
+  },
+`,
+  ).join("");
+
+  return `// Generated by codegen/typescript/gen-orval-config.ts. DO NOT EDIT BY HAND.
+// Regenerate with: SCHEMA_DIR=${schemaDir} node codegen/typescript/gen-orval-config.ts
+import { defineConfig } from 'orval';
+
+// Every *.json file under Core/, Operations/, Dynamics/, Investments/, and
+// TimeSeries/ in the schema checkout -- see the generator's header comment
+// for why this is a superset rather than each domain's exact $ref set.
+const EXTERNAL_REFS_ALLOW = [
+${allowlistLiteral}];
+
+export default defineConfig({
+${projectsLiteral}});
+`;
+}
+
+function main(): void {
+  const allowlist = buildAllowlist(SCHEMA_DIR);
+  writeFileSync(OUTPUT_PATH, renderConfig(SCHEMA_DIR, allowlist));
+  console.log(
+    `Wrote ${OUTPUT_PATH} (${allowlist.length} allowed external refs, ${DOMAINS.length} projects)`,
+  );
+}
+
+main();

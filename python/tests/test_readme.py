@@ -1,12 +1,12 @@
-"""Execute every fenced `python` block in the README.
+"""Execute every fenced `python` block in the Python package README.
 
 The README shipped several false claims before 0.1.0 -- classes and modules
 that never existed, a make target that never existed. Prose rots silently;
 this makes it fail loudly instead. A block that should not run (illustrative
 pseudo-code, a deliberate error) must be fenced as `text`, not `python`.
 
-Run from the repo root (as the project's documented gate command does): the
-worked-example block reads ``tests/fixtures/case14_operations.NATURAL_UNITS.json``
+Run from ``python/`` (as the project's documented gate command does): the
+worked-example block reads ``../fixtures/case14_operations.NATURAL_UNITS.json``
 by a path relative to the current working directory, not to this file.
 """
 

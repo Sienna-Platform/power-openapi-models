@@ -1,0 +1,74 @@
+name: Release Python
+
+# Versioning is LOCKSTEP: one version, one `v*` tag, fanned out to every
+# registry. This workflow and release-typescript.yml fire from the SAME tag and
+# both gate on scripts/check_version_sync.py, so a tag can never publish one
+# language at a version the others do not carry.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # --require names every language that must actually be present. Without it
+      # an absent manifest is merely skipped, and a release that published
+      # nothing would still pass a check called "version sync".
+      - name: Versions agree and match the tag
+        run: |
+          python3 scripts/check_version_sync.py \
+            --tag "${{ github.ref_name }}" \
+            --require python,typescript
+
+  build:
+    needs: guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 -m pip install --upgrade pip
+      - run: python3 -m pip install build twine
+      - run: python3 -m build
+        working-directory: python
+      - run: python3 -m twine check dist/*
+        working-directory: python
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: python/dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      # Trusted publishing (OIDC). No API token is stored anywhere.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      # Emits PEP 740 provenance attestations by default. Leave that on.
+      #
+      # FIRST RELEASE: power-openapi-models is unclaimed on PyPI, so there is no
+      # project for OIDC to attach to. Configure a PENDING PUBLISHER on PyPI
+      # before tagging 0.1.0 -- PyPI supports this precisely so a first upload
+      # needs no manual token publish. (npm has no equivalent; see
+      # release-typescript.yml.)
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        # Uncomment for a TestPyPI dry run, then remove before a real release:
+        # with:
+        #   repository-url: https://test.pypi.org/legacy/

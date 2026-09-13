@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Check that OpenAPI JSON documents are compatible in both directions.
 
-  python3 scripts/check_json_compat.py
-  python3 scripts/check_json_compat.py --input ../PowerFlowFileParser.jl/inspection_output
-  python3 scripts/check_json_compat.py --skip-selftest
+  python3 python/scripts/check_json_compat.py
+  python3 python/scripts/check_json_compat.py --input ../PowerFlowFileParser.jl/inspection_output
+  python3 python/scripts/check_json_compat.py --skip-selftest
 
 Two directions are checked.
 
@@ -30,7 +30,8 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+PACKAGE_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = PACKAGE_ROOT.parent
 DEFAULT_INPUT = REPO_ROOT / ".." / "PowerFlowFileParser.jl" / "inspection_output"
 DOMAINS = ("core", "operations", "investments", "dynamics")
 # Mirrors Core/SystemDocument.json's `required` list.

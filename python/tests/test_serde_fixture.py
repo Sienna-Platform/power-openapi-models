@@ -13,11 +13,11 @@ import pytest
 from power_openapi_models.core import models as core_models
 from power_openapi_models.operations import models as operations_models
 
-FIXTURES_DIR = Path(__file__).parent / "fixtures"
+FIXTURES_DIR = Path(__file__).resolve().parent.parent.parent / "fixtures"
 EXPECTED_COMPONENT_COUNT = 119
 
 # Mirrors Core/SystemDocument.json's `required`/optional keys
-# (see scripts/check_json_compat.py, which this test's comparison logic follows).
+# (see python/scripts/check_json_compat.py, which this test's comparison logic follows).
 # No document-level `base_power`/`unit_system`: each component carries its own
 # `power_units` instead (only on types with a power-family field).
 REQUIRED_ENVELOPE_KEYS = {
