@@ -74,7 +74,33 @@ interface Entry {
  * not a real divergence).
  */
 function normalizedText(entry: Entry): string {
-  return entry.preambleConsts.map((c) => c.line + "\n").join("") + entry.body;
+  return canonicalizeSingletonEnums(
+    entry.preambleConsts.map((c) => c.line + "\n").join("") + entry.body,
+  );
+}
+
+/**
+ * Rewrite `zod.enum(['X'])` to `zod.literal("X")`.
+ *
+ * Orval renders a single-valued schema enum either way depending on whether
+ * that schema also appears as a discriminated-union member elsewhere in the
+ * *importing project's own* spec -- so the same `$ref` (e.g.
+ * `Core/common.json#/$defs/StorageCost`) comes out as `zod.enum(['STORAGE'])`
+ * in `core` and `zod.literal("STORAGE")` in `operations`. It is a rendering
+ * difference in the generator, not a difference in the schema.
+ *
+ * The two forms are interchangeable, verified rather than assumed:
+ *   - runtime: both accept only "X" and reject everything else, returning the
+ *     same value ('STORAGE', 'storage', 'THERMAL', '', 1, null, undefined, {}
+ *     all agree)
+ *   - types:  `zod.input` of each is mutually assignable, i.e. the same type
+ *
+ * Deliberately narrow: ONLY a one-element enum collapses. A two-element enum
+ * is a real difference and must still fail loudly, which is the whole contract
+ * of this comparator.
+ */
+function canonicalizeSingletonEnums(text: string): string {
+  return text.replace(/zod\.enum\(\[\s*'([^']*)'\s*\]\)/g, (_m, value) => `zod.literal("${value}")`);
 }
 
 interface ParsedFile {
