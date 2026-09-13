@@ -75,7 +75,7 @@ generate-typescript:
 	SCHEMA_DIR=$(SCHEMA_DIR) npx tsx codegen/typescript/gen-orval-config.ts
 
 	@echo "==> Running orval"
-	npx orval --config typescript/orval.config.ts
+	SCHEMA_DIR=$(SCHEMA_DIR) npx orval --config typescript/orval.config.ts
 
 	@# Rewrites cross-domain duplicate schemas (orval has no ref-to-module
 	@# mapping, unlike datamodel-codegen's --external-ref-mapping the Python
