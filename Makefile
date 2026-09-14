@@ -1,6 +1,6 @@
 SCHEMA_DIR ?= ../SiennaSchemas
 CODEGEN_IMAGE ?= ghcr.io/sienna-platform/power-openapi-models/codegen:latest
-PKG_DIR := src/power_openapi_models
+PKG_DIR := python/src/power_openapi_models
 # `--allow-remote-refs` (previously passed to the infrastructure_core and core
 # invocations below) does not exist in datamodel-code-generator 0.55.0 (the Dockerfile's
 # pin) and fails immediately: "unrecognized arguments: --allow-remote-refs". Confirmed
@@ -13,9 +13,11 @@ CODEGEN := datamodel-codegen --input-file-type openapi \
 	--disable-timestamp
 CORE_REF := --external-ref-mapping "Core/common.json=power_openapi_models.core.models"
 
-.PHONY: generate generate-docker clean validate lint typecheck check
+.PHONY: generate generate-python generate-typescript generate-docker clean validate lint typecheck check
 
-generate:
+generate: generate-python
+
+generate-python:
 	@# infrastructure_core is its own subpackage, generated straight from
 	@# openapi-infrastructure-core.json -- see SiennaSchemas' six-package
 	@# contract (openapi-infrastructure-core.json, scripts/check_layering.py
@@ -25,21 +27,11 @@ generate:
 	  --input $(SCHEMA_DIR)/openapi-infrastructure-core.json \
 	  --output $(PKG_DIR)/infrastructure_core/models.py
 
-	@# core is generated straight from openapi-core.json, no merge. Its own
-	@# schema graph still reaches into Core/common.json for several of
-	@# infrastructure_core's 20 types (UnitSystem, the function-data family,
-	@# XY_Coords, ...) -- common.json is the $defs home for BOTH selectors,
-	@# and datamodel-codegen's --external-ref-mapping keys on a $ref's *file
-	@# path*, not the individual $def, so mapping that file wholesale to
-	@# power_openapi_models.infrastructure_core.models would misroute core's
-	@# own types (CostCurve, StartUp, CurveStyle, ...) that live in the same
-	@# file but aren't part of infrastructure_core's selection. There is no
-	@# per-$def mapping in this datamodel-codegen version, so core is
-	@# generated with no ref mapping at all: it locally redefines whichever
-	@# of the 20 infrastructure_core types its own schema graph reaches, and
-	@# scripts/postprocess.py rewrites those duplicate class bodies into
-	@# imports afterward -- failing loudly if a body it finds in both files
-	@# ever differs -- so nothing is defined twice in the committed output.
+	@# core is generated with no ref mapping: --external-ref-mapping keys on a
+	@# $$ref's file path, not the individual $$def, so mapping Core/common.json
+	@# wholesale would misroute core's own types that live in the same file.
+	@# postprocess.py's dedupe_core_against_infrastructure_core rewrites the
+	@# resulting duplicates into imports -- see its docstring for why.
 	@echo "==> Generating core"
 	$(CODEGEN) \
 	  --input $(SCHEMA_DIR)/openapi-core.json \
@@ -66,11 +58,37 @@ generate:
 	  --output $(PKG_DIR)/timeseries/models.py
 
 	@echo "==> Post-processing"
-	python3 scripts/postprocess.py
+	SCHEMA_DIR=$(SCHEMA_DIR) python3 codegen/python/postprocess.py
 
 	@# Keep the packaged copy of .schema-version in sync so
 	@# power_openapi_models.__schema_version__ never goes stale after a regen.
 	cp .schema-version $(PKG_DIR)/_schema_version.txt
+
+generate-typescript:
+	@# gen-orval-config.ts walks $(SCHEMA_DIR) itself (Core/ Operations/
+	@# Dynamics/ Investments/ TimeSeries/) to build orval's required
+	@# external-$ref allowlist -- orval rejects globs, unlike datamodel-codegen
+	@# -- and to emit the six per-domain projects. Regenerated every run so a
+	@# non-default SCHEMA_DIR is always reflected, even though the result is
+	@# also committed (see typescript/orval.config.ts).
+	@echo "==> Generating typescript/orval.config.ts"
+	SCHEMA_DIR=$(SCHEMA_DIR) npx tsx codegen/typescript/gen-orval-config.ts
+
+	@echo "==> Running orval"
+	SCHEMA_DIR=$(SCHEMA_DIR) npx orval --config typescript/orval.config.ts
+
+	@# Rewrites cross-domain duplicate schemas (orval has no ref-to-module
+	@# mapping, unlike datamodel-codegen's --external-ref-mapping the Python
+	@# side relies on) into re-exports of their canonical owner -- failing
+	@# loudly, never guessing, if a "duplicate" isn't actually identical. Also
+	@# reads $(SCHEMA_DIR) directly (same as gen-orval-config.ts above) to
+	@# restore schema defaults orval drops and to rename an orval-mangled
+	@# acronym export back to its schema title. See codegen/typescript/postprocess.ts.
+	@echo "==> Post-processing"
+	SCHEMA_DIR=$(SCHEMA_DIR) npx tsx codegen/typescript/postprocess.ts
+
+	@echo "==> Formatting"
+	npx prettier --write "typescript/orval.config.ts" "typescript/src/**/*.ts"
 
 generate-docker:
 	docker run --rm \
@@ -82,20 +100,20 @@ clean:
 	rm -f $(PKG_DIR)/*/models.py
 
 validate:
-	python3 -c "import power_openapi_models; print('Import OK')"
-	pytest tests/ -v
+	cd python && python3 -c "import power_openapi_models; print('Import OK')"
+	cd python && pytest tests/ -v
 
 lint:
-	ruff check .
-	ruff format --check .
+	ruff check python/ scripts/ codegen/
+	ruff format --check python/ scripts/ codegen/
 
 typecheck:
-	@# scripts/check_typecompleteness.py runs `pyright --verifytypes` itself
-	@# (with PYTHONPATH=src -- an editable install alone does not let
-	@# --verifytypes find a src/-layout package) and enforces a completeness
-	@# floor explicitly, rather than trusting pyright's raw exit code: that
-	@# exit code reflects whether any diagnostic was printed, not whether the
-	@# score cleared a bar, so it is not on its own an honest gate.
-	python3 scripts/check_typecompleteness.py
+	@# python/scripts/check_typecompleteness.py runs `pyright --verifytypes`
+	@# itself (with PYTHONPATH=python/src -- an editable install alone does
+	@# not let --verifytypes find a src/-layout package) and enforces a
+	@# completeness floor explicitly, rather than trusting pyright's raw exit
+	@# code: that exit code reflects whether any diagnostic was printed, not
+	@# whether the score cleared a bar, so it is not on its own an honest gate.
+	cd python && python3 scripts/check_typecompleteness.py
 
 check: lint typecheck validate

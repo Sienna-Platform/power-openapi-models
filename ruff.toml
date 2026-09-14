@@ -1,0 +1,8 @@
+# Governs the repo-root-level Python (scripts/, codegen/) that sits outside
+# python/'s own project config. python/pyproject.toml's [tool.ruff] section
+# is authoritative for everything under python/ -- ruff's config discovery
+# stops there and never reaches this file for those paths.
+line-length = 100
+
+[lint]
+select = ["E", "F", "I", "UP", "B", "W"]

@@ -1,0 +1,81 @@
+{
+  "name": "@sienna-platform/power-openapi-models",
+  "version": "0.1.0",
+  "description": "Typed TypeScript models for the Sienna power system data format",
+  "type": "module",
+  "license": "BSD-3-Clause",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
+  "files": ["dist"],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./infrastructure_core": {
+      "types": "./dist/infrastructure_core.d.ts",
+      "import": "./dist/infrastructure_core.js",
+      "require": "./dist/infrastructure_core.cjs"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js",
+      "require": "./dist/core.cjs"
+    },
+    "./operations": {
+      "types": "./dist/operations.d.ts",
+      "import": "./dist/operations.js",
+      "require": "./dist/operations.cjs"
+    },
+    "./investments": {
+      "types": "./dist/investments.d.ts",
+      "import": "./dist/investments.js",
+      "require": "./dist/investments.cjs"
+    },
+    "./dynamics": {
+      "types": "./dist/dynamics.d.ts",
+      "import": "./dist/dynamics.js",
+      "require": "./dist/dynamics.cjs"
+    },
+    "./timeseries": {
+      "types": "./dist/timeseries.d.ts",
+      "import": "./dist/timeseries.js",
+      "require": "./dist/timeseries.cjs"
+    },
+    "./document": {
+      "types": "./dist/document.d.ts",
+      "import": "./dist/document.js",
+      "require": "./dist/document.cjs"
+    }
+  },
+  "peerDependencies": {
+    "zod": "^4"
+  },
+  "keywords": [
+    "power-systems",
+    "energy",
+    "openapi",
+    "zod",
+    "sienna",
+    "time-series"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sienna-Platform/power-openapi-models.git"
+  },
+  "homepage": "https://github.com/Sienna-Platform/power-openapi-models",
+  "bugs": {
+    "url": "https://github.com/Sienna-Platform/power-openapi-models/issues"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  }
+}
