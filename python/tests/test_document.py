@@ -1,4 +1,5 @@
-"""Tests for the hand-written SystemDocument container (src/power_openapi_models/document.py).
+"""Tests for the hand-written SystemDocument and PortfolioDocument containers
+(src/power_openapi_models/document.py).
 
 `document.py` is loaded standalone via importlib rather than through the normal
 `power_openapi_models` package import: today's regenerated `core/models.py` dropped
@@ -21,6 +22,7 @@ PACKAGE_ROOT = Path(__file__).resolve().parent.parent
 REPO_ROOT = PACKAGE_ROOT.parent
 SCHEMAS_DIR = Path(os.environ.get("SIENNA_SCHEMAS_DIR", str(REPO_ROOT.parent / "SiennaSchemas")))
 SCHEMA_PATH = SCHEMAS_DIR / "Core" / "SystemDocument.json"
+PORTFOLIO_SCHEMA_PATH = SCHEMAS_DIR / "Investments" / "PortfolioDocument.json"
 
 
 def _load_document_module():
@@ -47,6 +49,16 @@ def schema():
             "SiennaSchemas checkout (defaults to the sibling ../SiennaSchemas)."
         )
     return json.loads(SCHEMA_PATH.read_text())
+
+
+@pytest.fixture(scope="module")
+def portfolio_schema():
+    if not PORTFOLIO_SCHEMA_PATH.is_file():
+        pytest.fail(
+            f"Schema file not found at {PORTFOLIO_SCHEMA_PATH}. Set SIENNA_SCHEMAS_DIR to a "
+            "SiennaSchemas checkout (defaults to the sibling ../SiennaSchemas)."
+        )
+    return json.loads(PORTFOLIO_SCHEMA_PATH.read_text())
 
 
 def test_field_set_matches_schema_properties(document_module, schema):
@@ -141,3 +153,67 @@ def test_write_document_sorts_component_keys(document_module, tmp_path):
 
     raw = json.loads(out_path.read_text())
     assert list(raw["components"].keys()) == ["ACBus", "ThermalStandard"]
+
+
+def test_portfolio_field_set_matches_schema_properties(document_module, portfolio_schema):
+    model_fields = set(document_module.PortfolioDocument.model_fields)
+    assert model_fields == set(portfolio_schema["properties"])
+
+
+def test_portfolio_required_fields_match_schema_required(document_module, portfolio_schema):
+    required = {
+        name
+        for name, field in document_module.PortfolioDocument.model_fields.items()
+        if field.is_required()
+    }
+    assert required == set(portfolio_schema["required"])
+
+
+def test_portfolio_rejects_unknown_top_level_key(document_module):
+    """The undeclared `requirements` key a producer might reach for belongs in
+    `requirements_associations`; the container must reject it rather than carry it.
+    """
+    minimal = {
+        "aggregation": "Area",
+        "components": {},
+        "supplemental_attributes": [],
+        "supplemental_attribute_associations": [],
+        "requirements_associations": [],
+        "time_series_associations": [],
+        "base_system_file": None,
+        "time_series_storage_file": None,
+    }
+    document_module.PortfolioDocument.model_validate(minimal)
+    with pytest.raises(ValidationError):
+        document_module.PortfolioDocument.model_validate({**minimal, "requirements": []})
+
+
+def test_portfolio_write_read_roundtrip(document_module, tmp_path):
+    doc = document_module.PortfolioDocument(
+        name="minimal portfolio",
+        aggregation="Area",
+        components={
+            "SupplyTechnology": [{"id": 1, "name": "wind"}],
+            "CarbonCaps": [{"id": 2, "name": "cap 2030"}],
+        },
+        supplemental_attributes=[{"id": 3, "buses": ["bus1"]}],
+        supplemental_attribute_associations=[
+            {
+                "component_id": 1,
+                "component_type": "SupplyTechnology",
+                "attribute_id": 3,
+                "attribute_type": "TopologyMapping",
+            }
+        ],
+        requirements_associations=[{"requirement_id": 2, "entity_id": 1}],
+        time_series_associations=[],
+        ext={},
+        base_system_file="base_system.json",
+        time_series_storage_file=None,
+    )
+
+    out_path = tmp_path / "portfolio.json"
+    document_module.write_portfolio_document(doc, out_path)
+    reloaded = document_module.read_portfolio_document(out_path)
+
+    assert reloaded == doc

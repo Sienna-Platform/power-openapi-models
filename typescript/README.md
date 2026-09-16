@@ -21,7 +21,7 @@ npm install @sienna-platform/power-openapi-models zod
 `zod` is a peer dependency (`^4`), not a transitive one, so a consumer never
 ends up with two copies of it.
 
-Requires **Node.js >=22**: `readDocument`/`writeDocument` depend on
+Requires **Node.js >=22**: the document readers and writers depend on
 `JSON.rawJSON` and `JSON.parse`'s reviver `context` argument.
 
 ## Quickstart
@@ -62,14 +62,14 @@ if (!result.success) {
 
 | Import from | Holds | Reach for it when |
 |---|---|---|
-| `@sienna-platform/power-openapi-models` | Every domain, namespaced (`core.ACBus`, `document.SystemDocument`, ...) | You want one import instead of several |
+| `@sienna-platform/power-openapi-models` | Every domain, namespaced (`core.ACBus`, `document.SystemDocument`, `document.PortfolioDocument`, ...) | You want one import instead of several |
 | `.../infrastructure_core` | Units (`UnitSystem`), function data, shared value shapes (`MinMax`, `UpDown`, ...) | You need a domain-neutral building block used across every other module |
 | `.../core` | Power enums, curves, costs, buses | You are working with shared power types or need `ACBus`/`DCBus` |
 | `.../operations` | Topology, branches, injections, services, market | You are working with the grid itself |
 | `.../investments` | Technologies, financials, requirements, regions | You are doing capacity expansion |
 | `.../dynamics` | Dynamic generator and inverter components | You are doing transient stability |
 | `.../timeseries` | The six time series association types | You are handling forecasts or profiles |
-| `.../document` | `SystemDocument`, the hand-written envelope, plus `readDocument`/`writeDocument` | You are loading or saving a whole serialized system |
+| `.../document` | `SystemDocument` and `PortfolioDocument`, the hand-written envelopes, plus `readDocument`/`writeDocument` and `readPortfolioDocument`/`writePortfolioDocument` | You are loading or saving a whole serialized system or investment portfolio |
 
 ## Concepts worth knowing before you start
 

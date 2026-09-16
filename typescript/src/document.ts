@@ -1,10 +1,17 @@
 /**
- * Hand-written (NOT generated): the SystemDocument container and its JSON I/O.
+ * Hand-written (NOT generated): the SystemDocument and PortfolioDocument
+ * containers and their JSON I/O.
  *
  * Counterpart of `power_openapi_models/document.py` and
- * `PowerOpenAPIModels.jl/src/document.jl`. `Core/SystemDocument.json` in
- * SiennaSchemas is authoritative for the shape; this module mirrors its
- * properties and `required` list field for field.
+ * `PowerOpenAPIModels.jl/src/system_document.jl` + `portfolio_document.jl`.
+ * `Core/SystemDocument.json` and `Investments/PortfolioDocument.json` in
+ * SiennaSchemas are authoritative for the two shapes; this module mirrors
+ * their properties and `required` lists field for field.
+ *
+ * Both are hand-written for the same reason the schemas record: `components`
+ * is a map from type name to an array of heterogeneous objects, which the
+ * generator cannot express as typed buckets, so it skips the whole document
+ * type.
  *
  * There is no document-level `unit_system` or `base_power`: every value is
  * interpretable from its own component blob alone, via that blob's own
@@ -37,6 +44,10 @@ import {
   ServiceAssociation,
   TradingHubAssociation,
 } from "./operations/models";
+import {
+  PortfolioFinancialData,
+  RequirementAssociation,
+} from "./investments/models";
 import { TimeSeriesAssociation } from "./timeseries/models";
 
 const genericRecord = zod.record(zod.string(), zod.unknown());
@@ -120,6 +131,93 @@ export const SystemDocument = zod
 
 export type SystemDocument = zod.input<typeof SystemDocument>;
 export type SystemDocumentOutput = zod.output<typeof SystemDocument>;
+
+export const PortfolioDocument = zod
+  .object({
+    name: zod
+      .string()
+      .nullable()
+      .optional()
+      .describe("Optional portfolio name."),
+    description: zod
+      .string()
+      .nullable()
+      .optional()
+      .describe("Optional free-text description of the portfolio."),
+    data_source: zod
+      .string()
+      .nullable()
+      .optional()
+      .describe(
+        "Optional identifier of the source the portfolio data was drawn from.",
+      ),
+    aggregation: zod
+      .string()
+      .describe(
+        "Qualified type name of the regional aggregation the portfolio groups its regions by. A type identifier resolved by the consumer, not a component in the document.",
+      ),
+    financial_data: PortfolioFinancialData.optional().describe(
+      "Portfolio-wide financial parameters: the base economic year every cost is discounted to a net present value in, and the discount, inflation, and interest rates used in that conversion. Absent when the portfolio carries no financial data.",
+    ),
+    components: zod
+      .record(zod.string(), zod.array(genericRecord))
+      .describe(
+        'Components grouped by type name, e.g. `{"SupplyTechnology": [...], "StorageTechnology": [...]}`. Keys are the referenced schema\'s `title` and must be emitted in sorted order.',
+      ),
+    supplemental_attributes: zod
+      .array(genericRecord)
+      .describe(
+        "Supplemental attributes in one flat array rather than bucketed by type; `supplemental_attribute_associations` carries the `attribute_type` discriminator a consumer needs to pick a converter. Examples: RetirementPotential, RetrofitPotential, ExistingDevices, TopologyMapping.",
+      ),
+    supplemental_attribute_associations: zod
+      .array(SupplementalAttributeAssociation)
+      .describe(
+        "Links each supplemental attribute to the entity it describes. One row per (attribute, entity) pair.",
+      ),
+    requirements_associations: zod
+      .array(RequirementAssociation)
+      .describe(
+        "Links each policy requirement to one member subject to it: `requirement_id` names the requirement and `entity_id` names the member. One row per (requirement, member) pair.",
+      ),
+    investment_schedule: genericRecord
+      .nullable()
+      .optional()
+      .describe(
+        "Optional investment decisions container: the schedule of capacity installations produced by solving the portfolio. A model output rather than an input, absent from an inputs-only portfolio, and carried opaquely.",
+      ),
+    time_series_associations: zod
+      .array(TimeSeriesAssociation)
+      .describe(
+        "Time series metadata rows, one per (series, owner) association. Values themselves never appear here.",
+      ),
+    // Same integer-like key-order caveat as SystemDocument.ext; see the
+    // comment there.
+    ext: zod
+      .record(zod.string(), genericRecord)
+      .default({})
+      .describe(
+        "Source data no schema field claims, keyed by the stringified component id it belongs to.",
+      ),
+    base_system_file: zod
+      .string()
+      .nullable()
+      .describe(
+        "Basename of the sidecar holding the base power system this portfolio expands, serialized as its own system document, or null when the portfolio has no base system.",
+      ),
+    time_series_storage_file: zod
+      .string()
+      .nullable()
+      .describe(
+        "Basename of the HDF5 sidecar holding time series values, or null when the portfolio has no time series.",
+      ),
+  })
+  .strict()
+  .describe(
+    "A whole serialized investment portfolio: the candidate technologies, regional aggregations, and policy requirements that make up an expansion problem, the supplemental attributes describing them, the association tables linking them, and the names of the sidecar files holding the base power system and the time series values. Mirrors `Investments/PortfolioDocument.json`.",
+  );
+
+export type PortfolioDocument = zod.input<typeof PortfolioDocument>;
+export type PortfolioDocumentOutput = zod.output<typeof PortfolioDocument>;
 
 // --- Byte-identical round-tripping -----------------------------------------
 //
@@ -206,46 +304,69 @@ function sortKeys<T extends Record<string, unknown>>(obj: T): T {
   return sorted as T;
 }
 
+const RAW_NUMBER_TREE = Symbol("power-openapi-models:rawNumberTree");
+
 /**
- * Read a `SystemDocument` from a JSON file.
+ * Read and validate one document, preserving numeric literals.
  *
- * Validates the parsed JSON against the schema (throwing on invalid input,
- * the same as Python's `model_validate_json`) and returns a value that reads
- * like ordinary parsed JSON (numbers are plain `number`s) but secretly
- * carries, alongside it, the exact source text of every number it contained.
- * `writeDocument` uses that to reproduce the original numeric literals
- * exactly; nothing else about the returned object's shape depends on it.
+ * Shared by both container types: the raw-number machinery above is about
+ * JSON, not about which document is being read, so parameterizing on the zod
+ * schema keeps one implementation rather than two that can drift.
+ *
+ * Validates the parsed JSON against `schema` (throwing on invalid input, the
+ * same as Python's `model_validate_json`) and returns a value that reads like
+ * ordinary parsed JSON (numbers are plain `number`s) but secretly carries,
+ * alongside it, the exact source text of every number it contained. `write`
+ * uses that to reproduce the original numeric literals exactly; nothing else
+ * about the returned object's shape depends on it.
  */
-export function readDocument(path: string): SystemDocumentOutput {
+function read<T>(schema: { parse(value: unknown): unknown }, path: string): T {
   assertRawNumberSupport();
   const text = readFileSync(path, "utf-8");
   const raw: unknown = JSON.parse(text);
-  SystemDocument.parse(raw);
+  schema.parse(raw);
   const rawNumberTree = parseWithContext(text, reviveRawNumbers);
   Object.defineProperty(raw as object, RAW_NUMBER_TREE, {
     value: rawNumberTree,
     enumerable: false,
     configurable: true,
   });
-  return raw as SystemDocumentOutput;
+  return raw as T;
 }
 
-const RAW_NUMBER_TREE = Symbol("power-openapi-models:rawNumberTree");
+/**
+ * Read a `SystemDocument` from a JSON file.
+ */
+export function readDocument(path: string): SystemDocumentOutput {
+  return read<SystemDocumentOutput>(SystemDocument, path);
+}
 
 /**
- * Write `doc` to `path` as JSON, matching Python's `write_document`: both
- * `components` and the top-level object have their keys sorted, a field the
- * input never carried is not materialized into the output, and the file ends
- * with a trailing newline. When `doc` came from `readDocument`, the exact
- * original numeric literals (e.g. `138.0` rather than `138`) are reproduced
- * as well; a `doc` built by hand has no original source text to draw on, so
- * its numbers serialize with ordinary `JSON.stringify` formatting.
+ * Read a `PortfolioDocument` from a JSON file.
  */
-export function writeDocument(doc: SystemDocument, path: string): void {
-  assertRawNumberSupport();
-  SystemDocument.parse(doc);
+export function readPortfolioDocument(path: string): PortfolioDocumentOutput {
+  return read<PortfolioDocumentOutput>(PortfolioDocument, path);
+}
 
-  const rawNumberTree = (doc as unknown as Record<PropertyKey, unknown>)[
+/**
+ * Write one document to `path` as JSON, matching Python's `write_document` /
+ * `write_portfolio_document`: both `components` and the top-level object have
+ * their keys sorted, a field the input never carried is not materialized into
+ * the output, and the file ends with a trailing newline. When `doc` came from
+ * the matching reader, the exact original numeric literals (e.g. `138.0`
+ * rather than `138`) are reproduced as well; a `doc` built by hand has no
+ * original source text to draw on, so its numbers serialize with ordinary
+ * `JSON.stringify` formatting.
+ */
+function write(
+  schema: { parse(value: unknown): unknown },
+  doc: unknown,
+  path: string,
+): void {
+  assertRawNumberSupport();
+  schema.parse(doc);
+
+  const rawNumberTree = (doc as Record<PropertyKey, unknown>)[
     RAW_NUMBER_TREE
   ] as Record<string, unknown> | undefined;
   const source = (rawNumberTree ?? doc) as Record<string, unknown>;
@@ -256,4 +377,21 @@ export function writeDocument(doc: SystemDocument, path: string): void {
   const data = sortKeys({ ...source, components: sortedComponents });
 
   writeFileSync(path, JSON.stringify(data, null, 2) + "\n");
+}
+
+/**
+ * Write a `SystemDocument` to `path` as JSON.
+ */
+export function writeDocument(doc: SystemDocument, path: string): void {
+  write(SystemDocument, doc, path);
+}
+
+/**
+ * Write a `PortfolioDocument` to `path` as JSON.
+ */
+export function writePortfolioDocument(
+  doc: PortfolioDocument,
+  path: string,
+): void {
+  write(PortfolioDocument, doc, path);
 }
