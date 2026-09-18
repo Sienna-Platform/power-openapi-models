@@ -1644,6 +1644,10 @@ class ThermalMultiStart(BaseModel):
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
     )
+    switching_times: UpDown | None = Field(
+        None,
+        description="Time it takes the unit to switch ONLINE (`up`) or OFFLINE (`down`) after a start or shut-down is initiated. Set to `null` if not modeled. Units: min.",
+    )
 
 
 class ThermalPowerPlant(BaseModel):
@@ -1715,6 +1719,10 @@ class ThermalStandard(BaseModel):
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
+    )
+    switching_times: UpDown | None = Field(
+        None,
+        description="Time it takes the unit to switch ONLINE (`up`) or OFFLINE (`down`) after a start or shut-down is initiated. Set to `null` if not modeled. Units: min.",
     )
 
 
