@@ -208,3 +208,15 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Node / TypeScript
+node_modules/
+typescript/dist/
+*.tsbuildinfo
+.turbo/
+
+# typescript/tests/readme.test.ts scratch
+typescript/.readme-tmp/
+
+# Design docs and drafts are local working notes, not repo content.
+.claude/plans/

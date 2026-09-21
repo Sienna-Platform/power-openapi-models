@@ -61,11 +61,30 @@ jobs:
         with:
           python-version: "3.12"
 
+      # TypeScript regenerates on the runner rather than in the codegen
+      # container: the container pins datamodel-code-generator and ruff because
+      # both shape the Python output, and adding a node toolchain to it would
+      # couple two independent generators into one image rebuild. orval is
+      # pinned exactly in the root package.json for the same reproducibility
+      # reason.
+      - uses: actions/setup-node@v4
+        if: steps.schema.outputs.changed == 'true'
+        with:
+          node-version: "22"
+
+      - name: Regenerate TypeScript models
+        if: steps.schema.outputs.changed == 'true'
+        run: |
+          npm ci
+          make generate-typescript SCHEMA_DIR=/tmp/schemas
+
       - name: Validate
         if: steps.schema.outputs.changed == 'true'
         run: |
-          pip install -e ".[dev]"
+          pip install -e "./python[dev]"
           make validate
+          python3 scripts/check_version_sync.py
+          npx tsc --noEmit --project typescript
 
       - name: Open Pull Request
         if: steps.schema.outputs.changed == 'true'
@@ -77,6 +96,6 @@ jobs:
             Auto-generated from [SiennaSchemas ${{ steps.schema.outputs.latest }}](https://github.com/Sienna-Platform/SiennaSchemas/releases/tag/${{ steps.schema.outputs.latest }}).
 
             **Review checklist:**
-            - [ ] Generated models look correct
+            - [ ] Generated models look correct in BOTH python/ and typescript/
             - [ ] Tests pass
           commit-message: "chore: regenerate models from schema ${{ steps.schema.outputs.latest }}"

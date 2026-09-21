@@ -13,21 +13,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-        include:
-          - os: macos-latest
-            python-version: "3.12"
-          - os: windows-latest
-            python-version: "3.12"
+  # Resolved once and fanned out. The python job alone runs a 7-way matrix, so
+  # doing this per job meant 9 API calls resolving the same commit -- and three
+  # copies of the same 14 lines to keep in step.
+  schema-sha:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
-      - id: schema-version
+      - id: resolve
+        shell: bash
         run: |
           short_sha=$(cat .schema-version)
           response=$(curl -fsSL -H "Authorization: Bearer ${{ github.token }}" \
@@ -41,30 +37,148 @@ jobs:
             exit 1
           fi
           echo "sha=$full_sha" >> "$GITHUB_OUTPUT"
-        shell: bash
+
+  python:
+    needs: schema-sha
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        include:
+          - os: macos-latest
+            python-version: "3.12"
+          - os: windows-latest
+            python-version: "3.12"
+    steps:
+      - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
           repository: Sienna-Platform/SiennaSchemas
-          ref: ${{ steps.schema-version.outputs.sha }}
+          ref: ${{ needs.schema-sha.outputs.sha }}
           path: SiennaSchemas
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - run: python3 -m pip install --upgrade pip
       - run: python3 -m pip install -e ".[dev]"
-      - run: ruff check .
-      - run: ruff format --check .
+        working-directory: python
+      - run: ruff check python/ scripts/ codegen/
+      - run: ruff format --check python/ scripts/ codegen/
       - run: pytest tests/ -q
+        working-directory: python
         env:
           SIENNA_SCHEMAS_DIR: ${{ github.workspace }}/SiennaSchemas
       # Makes the py.typed marker honest. A marker over an incomplete
       # annotation surface tells every downstream type checker something
-      # false. scripts/check_typecompleteness.py runs pyright --verifytypes
-      # itself (with PYTHONPATH=src -- an editable install alone does not
-      # let --verifytypes find a src/-layout package) and enforces a
-      # completeness floor explicitly: pyright's raw exit code reflects
-      # whether it printed any diagnostic, not whether the score cleared a
-      # bar, so it is not on its own an honest gate.
+      # false. python/scripts/check_typecompleteness.py runs pyright
+      # --verifytypes itself (with PYTHONPATH=python/src -- an editable
+      # install alone does not let --verifytypes find a src/-layout package)
+      # and enforces a completeness floor explicitly: pyright's raw exit
+      # code reflects whether it printed any diagnostic, not whether the
+      # score cleared a bar, so it is not on its own an honest gate.
       - run: python3 scripts/check_typecompleteness.py
+        working-directory: python
       - run: python3 -m build
+        working-directory: python
       - run: python3 -m twine check dist/*
+        working-directory: python
+
+  version-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # No --require here: on a PR that adds a language, its manifest may not
+      # exist yet and that is not an error. The RELEASE workflows pass
+      # --require, where an absent manifest genuinely is one.
+      - run: python3 scripts/check_version_sync.py
+
+  typescript:
+    needs: schema-sha
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+
+      # The committed orval.config.ts must match what gen-orval-config.ts
+      # produces from the pinned schemas. A hand-edited config would otherwise
+      # generate output nobody can reproduce.
+      - uses: actions/checkout@v4
+        with:
+          repository: Sienna-Platform/SiennaSchemas
+          ref: ${{ needs.schema-sha.outputs.sha }}
+          path: SiennaSchemas
+
+      # Regeneration must be a no-op against the committed tree. A diff here
+      # means the committed models do not correspond to the pinned schemas --
+      # exactly the drift this repo exists to prevent.
+      - name: Generated output is up to date
+        run: |
+          make generate-typescript SCHEMA_DIR="${{ github.workspace }}/SiennaSchemas"
+          if ! git diff --quiet -- typescript/; then
+            echo "::error::typescript/ is stale. Run 'make generate-typescript' and commit the result." >&2
+            git diff --stat -- typescript/
+            exit 1
+          fi
+
+      - run: npx tsc --noEmit
+        working-directory: typescript
+      - run: npm test
+        working-directory: typescript
+      - run: npm run build
+        working-directory: typescript
+      - run: npm publish --dry-run --access public
+        working-directory: typescript
+
+  cross-language:
+    needs: schema-sha
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 -m pip install -e "./python[dev]"
+
+      # The Julia package is compared from its generated SOURCES, so no Julia
+      # toolchain is needed here.
+      - uses: actions/checkout@v4
+        with:
+          repository: Sienna-Platform/PowerOpenAPIModels
+          path: PowerOpenAPIModels
+
+      # Backs the default-value comparator's schema-declares-no-default
+      # normalization (see check_cross_language.py's load_schema_property_
+      # defaults / --schema-dir). Without this checkout that normalization is
+      # disabled -- every None/absent or value/absent default split then
+      # reports as a divergence, which would fail this blocking gate on
+      # comparator artifacts that aren't real differences.
+      - uses: actions/checkout@v4
+        with:
+          repository: Sienna-Platform/SiennaSchemas
+          ref: ${{ needs.schema-sha.outputs.sha }}
+          path: SiennaSchemas
+
+      # Python<->TypeScript is the BLOCKING gate: the two packages are
+      # generated from one schema and must not disagree about field sets,
+      # requiredness, enum values, kinds, or defaults.
+      #
+      # Python<->Julia runs report-only. Its divergences are one confirmed
+      # pre-existing bug in PowerOpenAPIModels -- an omitted defaulted field
+      # decodes to ABSENT there where Python materializes the schema default --
+      # which is not fixable by editing generated code in this repo. It still
+      # prints in full on every run, so the count cannot quietly grow.
+      - name: Python<->TypeScript (blocking) and Python<->Julia (report-only)
+        run: |
+          python3 scripts/check_cross_language.py \
+            --ts typescript/ \
+            --julia PowerOpenAPIModels \
+            --schema-dir SiennaSchemas \
+            --julia-report-only

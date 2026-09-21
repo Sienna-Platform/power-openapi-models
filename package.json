@@ -1,0 +1,15 @@
+{
+  "name": "power-openapi-models-codegen",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "orval": "8.32.0",
+    "typescript": "^6.0.3",
+    "tsx": "^4.19.2",
+    "prettier": "^3.3.3",
+    "zod": "^4.0.0",
+    "tsup": "^8.5.1",
+    "vitest": "^5.0.0",
+    "@types/node": "^26.5.1"
+  }
+}
