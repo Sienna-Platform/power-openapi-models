@@ -76,11 +76,10 @@ def test_required_fields_match_schema_required(document_module, schema):
     assert required == set(schema["required"])
 
 
-def test_trading_hub_associations_defaults_to_empty_list(document_module, schema):
-    field = document_module.SystemDocument.model_fields["trading_hub_associations"]
-    assert (
-        field.default_factory() == schema["properties"]["trading_hub_associations"]["default"] == []
-    )
+@pytest.mark.parametrize("name", ["trading_hub_associations", "voltage_control_associations"])
+def test_optional_association_arrays_default_to_empty_list(document_module, schema, name):
+    field = document_module.SystemDocument.model_fields[name]
+    assert field.default_factory() == schema["properties"][name]["default"] == []
 
 
 def test_rejects_top_level_unit_system_and_base_power(document_module):
@@ -122,6 +121,9 @@ def test_write_read_roundtrip(document_module, tmp_path):
         combined_cycle_associations=[],
         service_associations=[],
         trading_hub_associations=[],
+        voltage_control_associations=[
+            {"control_id": 3, "entity_id": 2, "weight": 0.5, "terminal": None}
+        ],
         time_series_associations=[],
         ext={},
         time_series_storage_file=None,

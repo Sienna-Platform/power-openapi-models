@@ -35,6 +35,7 @@ OPTIONAL_ENVELOPE_KEYS = {
     "description",
     "frequency",
     "trading_hub_associations",
+    "voltage_control_associations",
 }
 ENVELOPE_KEYS = REQUIRED_ENVELOPE_KEYS | OPTIONAL_ENVELOPE_KEYS
 

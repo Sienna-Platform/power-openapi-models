@@ -50,6 +50,12 @@ def test_version_metadata():
     assert power_openapi_models.__schema_version__
 
 
+# Digit-suffixed names that are their own schemas rather than generator aliases of the
+# unsuffixed one: DEGOV1 is the Woodward diesel governor with a different block diagram
+# from DEGOV, and both are selected by name in openapi-dynamics.json.
+DISTINCT_MODELS = {"DEGOV1"}
+
+
 @pytest.mark.parametrize("name", MODULES)
 def test_no_digit_suffix_alias_classes(name):
     """A `<Base><N>` class whose `<Base>` also exists is a codegen alias leak.
@@ -76,7 +82,11 @@ def test_no_digit_suffix_alias_classes(name):
     """
     models = importlib.import_module(f"power_openapi_models.{name}.models")
     names = {n for n in dir(models) if not n.startswith("_")}
-    leaked = [n for n in sorted(names) if n[-1].isdigit() and n.rstrip("0123456789") in names]
+    leaked = [
+        n
+        for n in sorted(names)
+        if n[-1].isdigit() and n.rstrip("0123456789") in names and n not in DISTINCT_MODELS
+    ]
     assert not leaked, (
         f"{name}: generated alias classes {leaked} -- give each a named "
         f"$defs entry in SiennaSchemas, or collapse it in "

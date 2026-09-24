@@ -35,7 +35,7 @@ from power_openapi_models.core.models import (
     UnitSystem,
     UpDown,
 )
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PositiveFloat
 from enum import Enum
 
 
@@ -205,105 +205,9 @@ class DiscreteControlledACBranch(BaseModel):
     )
 
 
-class EnergyReservoirStorage(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    bus: int = Field(..., description="ID of the bus that this component is connected to.")
-    prime_mover_type: PrimeMovers = Field(
-        ..., description="Prime mover technology according to EIA 923."
-    )
-    storage_technology_type: StorageTech = Field(
-        ..., description="Storage Technology Complementary to EIA 923."
-    )
-    storage_capacity: float = Field(
-        ...,
-        description="Maximum storage capacity (can be in units of, e.g., MWh for batteries or liters for hydrogen). Divided by base_power this gives an approximate duration, assuming unity power factor: in hours under MWH, in minutes under MWMIN. Units: per energy_units — MWH: MWh, MWMIN: MWmin .",
-    )
-    energy_units: EnergyUnitBasis | None = Field(
-        "MWH",
-        description="Unit basis for `storage_capacity`. MWH is the default interchange form; MWMIN records the same energy on the minutes basis used by operational durations.",
-    )
-    storage_level_limits: MinMax = Field(
-        ...,
-        description="Minimum and maximum allowable storage levels [0, 1], which can be used to model derates or other restrictions, such as state-of-charge restrictions on battery cycling.",
-    )
-    initial_storage_capacity_level: float = Field(
-        ...,
-        description="Initial storage capacity level as a ratio [0, 1.0] of `storage_capacity`. Units: 1.",
-    )
-    rating: float = Field(
-        ...,
-        description="Maximum AC side output power rating of the unit. Not to be confused with base_power. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-    )
-    active_power: float = Field(
-        ...,
-        description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    input_active_power_limits: MinMax = Field(
-        ...,
-        description="Minimum and maximum limits on the input active power (i.e., charging). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    output_active_power_limits: MinMax = Field(
-        ...,
-        description="Minimum and maximum limits on the output active power (i.e., discharging). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    efficiency: InOut = Field(
-        ...,
-        description="Average efficiency [0, 1] `in` (charging/filling) and `out` (discharging/consuming) of the storage system.",
-    )
-    reactive_power: float = Field(
-        ...,
-        description="Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    reactive_power_limits: MinMax | None = Field(
-        None,
-        description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    base_power: float = Field(
-        ..., description="Base power of the unit for per unitization. Units: MVA."
-    )
-    power_units: UnitSystem = Field(
-        ...,
-        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
-    )
-    operation_cost: (
-        StorageCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
-    ) = Field(
-        ..., description="Operating cost of storage. or MarketBidCost", discriminator="cost_type"
-    )
-    conversion_factor: float | None = Field(
-        1.0,
-        description="Conversion factor of `storage_capacity` to MWh, if different than 1.0. For example, X MWh/liter hydrogen. Units: 1.",
-    )
-    storage_target: float | None = Field(
-        0.0,
-        description="Storage target at the end of simulation as ratio of storage capacity. Units: 1.",
-    )
-    cycle_limits: int | None = Field(
-        10000, description="Storage Maximum number of cycles per year. Units: 1."
-    )
-    ramp_limits: UpDown | None = Field(
-        None,
-        description="Ramp up and ramp down limits. Units: per power_units — NATURAL_UNITS: MW/min, COMPONENT_BASE: pu/min .",
-    )
-    self_discharge: float | None = Field(
-        0.0,
-        description="Self-discharge (leakage loss) as a fraction of the stored energy lost per minute (pu/min of storage_capacity), modeled as E[t] = (1 - self_discharge * dt) * E[t-1]; dt must be on the same minutes basis. Units: 1/min.",
-    )
-    standing_loss: float | None = Field(
-        0.0,
-        description="Constant standing-loss power drawn by the storage system. Reduces the effective charging power (p_in - standing_loss) and increases the power drawn from the storage when discharging (p_out + standing_loss). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    dynamic_injector: int | None = Field(
-        None, description="ID of the corresponding dynamic injection device, if any."
-    )
+class VoltageUnitBasis(Enum):
+    NATURAL_UNITS = "NATURAL_UNITS"
+    COMPONENT_BASE = "COMPONENT_BASE"
 
 
 class LoadConformity(Enum):
@@ -321,11 +225,6 @@ class FACTSControlDeviceControlMode(Enum):
     OOS = "OOS"
     NML = "NML"
     BYP = "BYP"
-
-
-class VoltageUnitBasis(Enum):
-    NATURAL_UNITS = "NATURAL_UNITS"
-    COMPONENT_BASE = "COMPONENT_BASE"
 
 
 class FixedAdmittance(BaseModel):
@@ -458,6 +357,18 @@ class HydroDispatch(BaseModel):
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
     bus: int = Field(..., description="ID of the bus that this component is connected to.")
+    remote_regulated_bus_id: int | None = Field(
+        None,
+        description="ID of the bus whose voltage this unit regulates when that bus is not its own (PSS/E IREG). Null means the unit regulates the bus it is connected to; a value equal to that bus is invalid, so local regulation has exactly one representation. An available voltage droop controller the unit belongs to overrides this target.",
+    )
+    voltage_setpoint_units: VoltageUnitBasis | None = Field(
+        "COMPONENT_BASE",
+        description="Unit basis for voltage_setpoint. COMPONENT_BASE (per-unit on the base voltage of the bus the unit regulates) is PSS/E RAW native (VS).",
+    )
+    voltage_setpoint: float | None = Field(
+        1.0,
+        description="Voltage magnitude the unit holds at the bus it regulates while its bus type marks it as voltage regulating (PSS/E VS). Ignored while the unit belongs to an available voltage droop controller. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+    )
     active_power: float = Field(
         ...,
         description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -507,7 +418,6 @@ class HydroDispatch(BaseModel):
     ) = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
-        discriminator="cost_type",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -575,9 +485,7 @@ class HydroReservoir(BaseModel):
     upstream_turbines: list[int] | None = None
     downstream_turbines: list[int] | None = None
     upstream_reservoirs: list[int] | None = None
-    operation_cost: HydroReservoirCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost = (
-        Field(..., discriminator="cost_type")
-    )
+    operation_cost: HydroReservoirCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
     evaporative_loss: float | None = Field(
         0.0,
         description="Standing loss from evaporation as a fraction of the reservoir's stored volume/energy lost per hour. Units: 1.",
@@ -609,6 +517,18 @@ class HydroTurbine(BaseModel):
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
     bus: int = Field(..., description="ID of the bus that this component is connected to.")
+    remote_regulated_bus_id: int | None = Field(
+        None,
+        description="ID of the bus whose voltage this unit regulates when that bus is not its own (PSS/E IREG). Null means the unit regulates the bus it is connected to; a value equal to that bus is invalid, so local regulation has exactly one representation. An available voltage droop controller the unit belongs to overrides this target.",
+    )
+    voltage_setpoint_units: VoltageUnitBasis | None = Field(
+        "COMPONENT_BASE",
+        description="Unit basis for voltage_setpoint. COMPONENT_BASE (per-unit on the base voltage of the bus the unit regulates) is PSS/E RAW native (VS).",
+    )
+    voltage_setpoint: float | None = Field(
+        1.0,
+        description="Voltage magnitude the unit holds at the bus it regulates while its bus type marks it as voltage regulating (PSS/E VS). Ignored while the unit belongs to an available voltage droop controller. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+    )
     active_power: float = Field(
         ...,
         description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -651,7 +571,6 @@ class HydroTurbine(BaseModel):
     ) = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
-        discriminator="cost_type",
     )
     powerhouse_elevation: float | None = Field(
         0.0,
@@ -751,11 +670,7 @@ class InterruptiblePowerLoad(BaseModel):
     )
     operation_cost: (
         LoadCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
-    ) = Field(
-        ...,
-        description="Operational cost of interrupting load. or MarketBidCost",
-        discriminator="cost_type",
-    )
+    ) = Field(..., description="Operational cost of interrupting load. or MarketBidCost")
     conformity: LoadConformity | None = Field(
         "UNDEFINED",
         description="Indicates whether the specified load is conforming or non-conforming.",
@@ -785,11 +700,7 @@ class InterruptibleStandardLoad(BaseModel):
     )
     operation_cost: (
         LoadCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
-    ) = Field(
-        ...,
-        description="Operational cost of interrupting load. or MarketBidCost",
-        discriminator="cost_type",
-    )
+    ) = Field(..., description="Operational cost of interrupting load. or MarketBidCost")
     conformity: LoadConformity | None = Field(
         "UNDEFINED",
         description="Indicates whether the specified load is conforming or non-conforming.",
@@ -1124,6 +1035,11 @@ class PlantAssociation(BaseModel):
     )
 
 
+class ReactivePowerSharing(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this supplemental attribute.")
+    name: str = Field(..., description="Name of the sharing group.")
+
+
 class PointToPointBid(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
@@ -1146,7 +1062,6 @@ class PointToPointBid(BaseModel):
     spread_bid: MarketBidCost | MarketBidTimeSeriesCost = Field(
         ...,
         description="Willingness-to-pay curve on the to-minus-from price spread, as an offer-curve operating cost (incremental side only).",
-        discriminator="cost_type",
     )
     price_limits: MinMax = Field(
         ..., description="Tariff bid-price bounds on the spread. Units: USD/MWh."
@@ -1211,6 +1126,18 @@ class RenewableDispatch(BaseModel):
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
     bus: int = Field(..., description="ID of the bus that this component is connected to.")
+    remote_regulated_bus_id: int | None = Field(
+        None,
+        description="ID of the bus whose voltage this unit regulates when that bus is not its own (PSS/E IREG). Null means the unit regulates the bus it is connected to; a value equal to that bus is invalid, so local regulation has exactly one representation. An available voltage droop controller the unit belongs to overrides this target.",
+    )
+    voltage_setpoint_units: VoltageUnitBasis | None = Field(
+        "COMPONENT_BASE",
+        description="Unit basis for voltage_setpoint. COMPONENT_BASE (per-unit on the base voltage of the bus the unit regulates) is PSS/E RAW native (VS).",
+    )
+    voltage_setpoint: float | None = Field(
+        1.0,
+        description="Voltage magnitude the unit holds at the bus it regulates while its bus type marks it as voltage regulating (PSS/E VS). Ignored while the unit belongs to an available voltage droop controller. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+    )
     active_power: float = Field(
         ...,
         description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -1239,9 +1166,7 @@ class RenewableDispatch(BaseModel):
         | MarketBidCost
         | MarketBidTimeSeriesCost
         | ImportExportTimeSeriesCost
-    ) = Field(
-        ..., description="Operating cost of generation. or MarketBidCost", discriminator="cost_type"
-    )
+    ) = Field(..., description="Operating cost of generation. or MarketBidCost")
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
     )
@@ -1351,11 +1276,7 @@ class ShiftablePowerLoad(BaseModel):
     )
     operation_cost: (
         LoadCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
-    ) = Field(
-        ...,
-        description="Operational cost of interrupting load. or MarketBidCost",
-        discriminator="cost_type",
-    )
+    ) = Field(..., description="Operational cost of interrupting load. or MarketBidCost")
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
     )
@@ -1372,6 +1293,18 @@ class Source(BaseModel):
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
     bus: int = Field(..., description="ID of the bus that this component is connected to.")
+    remote_regulated_bus_id: int | None = Field(
+        None,
+        description="ID of the bus whose voltage this unit regulates when that bus is not its own (PSS/E IREG). Null means the unit regulates the bus it is connected to; a value equal to that bus is invalid, so local regulation has exactly one representation. An available voltage droop controller the unit belongs to overrides this target.",
+    )
+    voltage_setpoint_units: VoltageUnitBasis | None = Field(
+        "COMPONENT_BASE",
+        description="Unit basis for voltage_setpoint. COMPONENT_BASE (per-unit on the base voltage of the bus the unit regulates) is PSS/E RAW native (VS).",
+    )
+    voltage_setpoint: float | None = Field(
+        1.0,
+        description="Voltage magnitude the unit holds at the bus it regulates while its bus type marks it as voltage regulating (PSS/E VS). Ignored while the unit belongs to an available voltage droop controller. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+    )
     active_power: float | None = Field(
         0.0,
         description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -1455,7 +1388,6 @@ class Source(BaseModel):
         },
         validate_default=True,
         description="Cost of importing and exporting power at the source. or MarketBidCost",
-        discriminator="cost_type",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -1567,6 +1499,18 @@ class SynchronousCondenser(BaseModel):
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
     bus: int = Field(..., description="ID of the bus that this component is connected to.")
+    remote_regulated_bus_id: int | None = Field(
+        None,
+        description="ID of the bus whose voltage this unit regulates when that bus is not its own (PSS/E IREG). Null means the unit regulates the bus it is connected to; a value equal to that bus is invalid, so local regulation has exactly one representation. An available voltage droop controller the unit belongs to overrides this target.",
+    )
+    voltage_setpoint_units: VoltageUnitBasis | None = Field(
+        "COMPONENT_BASE",
+        description="Unit basis for voltage_setpoint. COMPONENT_BASE (per-unit on the base voltage of the bus the unit regulates) is PSS/E RAW native (VS).",
+    )
+    voltage_setpoint: float | None = Field(
+        1.0,
+        description="Voltage magnitude the unit holds at the bus it regulates while its bus type marks it as voltage regulating (PSS/E VS). Ignored while the unit belongs to an available voltage droop controller. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+    )
     reactive_power: float = Field(
         ...,
         description="Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
@@ -1652,6 +1596,18 @@ class ThermalMultiStart(BaseModel):
         "COMMITTED", description="Commitment mode of the unit."
     )
     bus: int = Field(..., description="ID of the bus that this component is connected to.")
+    remote_regulated_bus_id: int | None = Field(
+        None,
+        description="ID of the bus whose voltage this unit regulates when that bus is not its own (PSS/E IREG). Null means the unit regulates the bus it is connected to; a value equal to that bus is invalid, so local regulation has exactly one representation. An available voltage droop controller the unit belongs to overrides this target.",
+    )
+    voltage_setpoint_units: VoltageUnitBasis | None = Field(
+        "COMPONENT_BASE",
+        description="Unit basis for voltage_setpoint. COMPONENT_BASE (per-unit on the base voltage of the bus the unit regulates) is PSS/E RAW native (VS).",
+    )
+    voltage_setpoint: float | None = Field(
+        1.0,
+        description="Voltage magnitude the unit holds at the bus it regulates while its bus type marks it as voltage regulating (PSS/E VS). Ignored while the unit belongs to an available voltage droop controller. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+    )
     active_power: float = Field(
         ...,
         description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -1696,9 +1652,7 @@ class ThermalMultiStart(BaseModel):
     )
     operation_cost: (
         ThermalGenerationCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
-    ) = Field(
-        ..., description="Operating cost of generation. or MarketBidCost", discriminator="cost_type"
-    )
+    ) = Field(..., description="Operating cost of generation. or MarketBidCost")
     base_power: float = Field(
         ..., description="Base power of the unit for per unitization. Units: MVA."
     )
@@ -1736,6 +1690,18 @@ class ThermalStandard(BaseModel):
         "COMMITTED", description="Commitment mode of the unit."
     )
     bus: int = Field(..., description="ID of the bus that this component is connected to.")
+    remote_regulated_bus_id: int | None = Field(
+        None,
+        description="ID of the bus whose voltage this unit regulates when that bus is not its own (PSS/E IREG). Null means the unit regulates the bus it is connected to; a value equal to that bus is invalid, so local regulation has exactly one representation. An available voltage droop controller the unit belongs to overrides this target.",
+    )
+    voltage_setpoint_units: VoltageUnitBasis | None = Field(
+        "COMPONENT_BASE",
+        description="Unit basis for voltage_setpoint. COMPONENT_BASE (per-unit on the base voltage of the bus the unit regulates) is PSS/E RAW native (VS).",
+    )
+    voltage_setpoint: float | None = Field(
+        1.0,
+        description="Voltage magnitude the unit holds at the bus it regulates while its bus type marks it as voltage regulating (PSS/E VS). Ignored while the unit belongs to an available voltage droop controller. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+    )
     active_power: float = Field(
         ...,
         description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -1762,11 +1728,7 @@ class ThermalStandard(BaseModel):
     )
     operation_cost: (
         ThermalGenerationCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
-    ) = Field(
-        ...,
-        description="Operating cost of generation, or a MarketBidCost.",
-        discriminator="cost_type",
-    )
+    ) = Field(..., description="Operating cost of generation, or a MarketBidCost.")
     base_power: float = Field(
         ...,
         description="Base power of the unit for per unitization. Must be positive; a zero base would make per-unit conversion undefined. Units: MVA.",
@@ -1822,6 +1784,11 @@ class TransformerControlObjective(Enum):
     ACTIVE_POWER_FLOW = "ACTIVE_POWER_FLOW"
     CONTROL_OF_DC_LINE = "CONTROL_OF_DC_LINE"
     ASYMMETRIC_ACTIVE_POWER_FLOW = "ASYMMETRIC_ACTIVE_POWER_FLOW"
+
+
+class TransformerRegulatedBusSide(Enum):
+    CONTROLLING_WINDING = "CONTROLLING_WINDING"
+    OPPOSITE_WINDING = "OPPOSITE_WINDING"
 
 
 class TransmissionInterface(BaseModel):
@@ -2029,6 +1996,22 @@ class TwoTerminalLCCLine(BaseModel):
     inverter_capacitor_reactance: float | None = Field(
         0.0,
         description="Commutating inverter capacitor reactance magnitude per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+    )
+    rectifier_commutating_bus_id: int | None = Field(
+        None,
+        description="ID of the bus whose voltage angle the rectifier firing angle is measured against (PSS/E ICR). Null means the rectifier's own bus. Must be null for a capacitor-commutated line.",
+    )
+    inverter_commutating_bus_id: int | None = Field(
+        None,
+        description="ID of the bus whose voltage angle the inverter extinction angle is measured against (PSS/E ICI). Null means the inverter's own bus. Must be null for a capacitor-commutated line.",
+    )
+    rectifier_tap_transformer_id: int | None = Field(
+        None,
+        description="ID of the TwoWindingTransformer whose tap this line adjusts on the rectifier side (PSS/E IFR, ITR, IDR). Null means the line's own rectifier tap fields describe the tap. The referenced circuit's `control_objective` must be `CONTROL_OF_DC_LINE`. Must be null for a capacitor-commutated line.",
+    )
+    inverter_tap_transformer_id: int | None = Field(
+        None,
+        description="ID of the TwoWindingTransformer whose tap this line adjusts on the inverter side (PSS/E IFI, ITI, IDI). Null means the line's own inverter tap fields describe the tap. The referenced circuit's `control_objective` must be `CONTROL_OF_DC_LINE`. Must be null for a capacitor-commutated line.",
     )
     active_power_limits_from: MinMax | None = Field(
         {"min": 0.0, "max": 0.0},
@@ -2238,21 +2221,13 @@ class TwoTerminalVSCLine(BaseModel):
         0.0,
         description="Rated (base) DC voltage of the link in kV. Used as the DC voltage base for interpreting DC-voltage setpoints; 0.0 means unspecified (DC-voltage setpoints are taken as per-unit directly). Units: kV.",
     )
-    remote_bus_control_from: int | None = Field(
+    remote_regulated_bus_id_from: int | None = Field(
         None,
-        description="Number of the AC bus whose voltage the `from` converter regulates when `ac_control_from` is `AC_VOLTAGE`; null regulates its own terminal bus.",
+        description="ID of the AC bus whose voltage the `from` converter regulates when `ac_control_from` is `AC_VOLTAGE` and that bus is not its own terminal bus. Null means the `from` terminal bus; a value equal to that bus is invalid.",
     )
-    remote_bus_control_to: int | None = Field(
+    remote_regulated_bus_id_to: int | None = Field(
         None,
-        description="Number of the AC bus whose voltage the `to` converter regulates when `ac_control_to` is `AC_VOLTAGE`; null regulates its own terminal bus.",
-    )
-    rmpct_from: float | None = Field(
-        100.0,
-        description="Percent of the total Mvar required to hold the voltage at the bus regulated by the `from` converter that is contributed by this converter. Units: 1.",
-    )
-    rmpct_to: float | None = Field(
-        100.0,
-        description="Percent of the total Mvar required to hold the voltage at the bus regulated by the `to` converter that is contributed by this converter. Units: 1.",
+        description="ID of the AC bus whose voltage the `to` converter regulates when `ac_control_to` is `AC_VOLTAGE` and that bus is not its own terminal bus. Null means the `to` terminal bus; a value equal to that bus is invalid.",
     )
     base_power: float = Field(
         ...,
@@ -2291,7 +2266,45 @@ class VirtualParticipant(BaseModel):
         ..., description="Maximum envelope for the decremental (demand) side. Units: MW."
     )
     operation_cost: MarketBidCost | MarketBidTimeSeriesCost = Field(
-        ..., description="Bid curves as an offer-curve operating cost.", discriminator="cost_type"
+        ..., description="Bid curves as an offer-curve operating cost."
+    )
+
+
+class VoltageControlTerminal(Enum):
+    FROM = "FROM"
+    TO = "TO"
+
+
+class VoltageDroopControl(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this supplemental attribute.")
+    name: str = Field(..., description="Name of the voltage droop controller.")
+    available: bool | None = Field(
+        True,
+        description="Whether the controller is in service (PSS/E STATUS). While false, members regulate their own targets.",
+    )
+    regulated_bus_id: int = Field(
+        ...,
+        description="ID of the bus whose reactive power the controller regulates; overrides every member's own regulated bus while the controller is available.",
+    )
+    reactive_power_limits: MinMax = Field(
+        ...,
+        description="Reactive power held below `voltage_limits.min` (max, PSS/E QMAX) and above `voltage_limits.max` (min, PSS/E QMIN). Units: MVAr.",
+    )
+    deadband_reactive_power: float = Field(
+        ...,
+        description="Reactive power held while the regulated bus voltage is inside `deadband_voltage_limits` (PSS/E QDB). Must lie strictly between `reactive_power_limits.min` and `reactive_power_limits.max`. Units: MVAr.",
+    )
+    voltage_units: VoltageUnitBasis | None = Field(
+        "COMPONENT_BASE",
+        description="Unit basis for the voltage fields. COMPONENT_BASE (per-unit on the regulated bus base voltage) is PSS/E RAW native.",
+    )
+    deadband_voltage_limits: MinMax = Field(
+        ...,
+        description="Voltage band inside which the controller holds `deadband_reactive_power` (PSS/E VDBLOW, VDBHIGH). Must lie inside `voltage_limits`. Units: per voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+    )
+    voltage_limits: MinMax = Field(
+        ...,
+        description="Voltages at which the characteristic reaches `reactive_power_limits.max` (min, PSS/E VLOW) and `reactive_power_limits.min` (max, PSS/E VHIGH). Units: per voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
     )
 
 
@@ -2337,6 +2350,117 @@ class CombinedCycleBlock(BaseModel):
     configuration: CombinedCycleConfiguration
     heat_recovery_to_steam_factor: float | None = Field(
         0.0, description="Factor for heat recovery to steam conversion"
+    )
+
+
+class EnergyReservoirStorage(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+    )
+    bus: int = Field(..., description="ID of the bus that this component is connected to.")
+    remote_regulated_bus_id: int | None = Field(
+        None,
+        description="ID of the bus whose voltage this unit regulates when that bus is not its own (PSS/E IREG). Null means the unit regulates the bus it is connected to; a value equal to that bus is invalid, so local regulation has exactly one representation. An available voltage droop controller the unit belongs to overrides this target.",
+    )
+    voltage_setpoint_units: VoltageUnitBasis | None = Field(
+        "COMPONENT_BASE",
+        description="Unit basis for voltage_setpoint. COMPONENT_BASE (per-unit on the base voltage of the bus the unit regulates) is PSS/E RAW native (VS).",
+    )
+    voltage_setpoint: float | None = Field(
+        1.0,
+        description="Voltage magnitude the unit holds at the bus it regulates while its bus type marks it as voltage regulating (PSS/E VS). Ignored while the unit belongs to an available voltage droop controller. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+    )
+    prime_mover_type: PrimeMovers = Field(
+        ..., description="Prime mover technology according to EIA 923."
+    )
+    storage_technology_type: StorageTech = Field(
+        ..., description="Storage Technology Complementary to EIA 923."
+    )
+    storage_capacity: float = Field(
+        ...,
+        description="Maximum storage capacity (can be in units of, e.g., MWh for batteries or liters for hydrogen). Divided by base_power this gives an approximate duration, assuming unity power factor: in hours under MWH, in minutes under MWMIN. Units: per energy_units — MWH: MWh, MWMIN: MWmin .",
+    )
+    energy_units: EnergyUnitBasis | None = Field(
+        "MWH",
+        description="Unit basis for `storage_capacity`. MWH is the default interchange form; MWMIN records the same energy on the minutes basis used by operational durations.",
+    )
+    storage_level_limits: MinMax = Field(
+        ...,
+        description="Minimum and maximum allowable storage levels [0, 1], which can be used to model derates or other restrictions, such as state-of-charge restrictions on battery cycling.",
+    )
+    initial_storage_capacity_level: float = Field(
+        ...,
+        description="Initial storage capacity level as a ratio [0, 1.0] of `storage_capacity`. Units: 1.",
+    )
+    rating: float = Field(
+        ...,
+        description="Maximum AC side output power rating of the unit. Not to be confused with base_power. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    active_power: float = Field(
+        ...,
+        description="Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    input_active_power_limits: MinMax = Field(
+        ...,
+        description="Minimum and maximum limits on the input active power (i.e., charging). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    output_active_power_limits: MinMax = Field(
+        ...,
+        description="Minimum and maximum limits on the output active power (i.e., discharging). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    efficiency: InOut = Field(
+        ...,
+        description="Average efficiency [0, 1] `in` (charging/filling) and `out` (discharging/consuming) of the storage system.",
+    )
+    reactive_power: float = Field(
+        ...,
+        description="Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    reactive_power_limits: MinMax | None = Field(
+        None,
+        description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    base_power: float = Field(
+        ..., description="Base power of the unit for per unitization. Units: MVA."
+    )
+    power_units: UnitSystem = Field(
+        ...,
+        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
+    )
+    operation_cost: (
+        StorageCost | MarketBidCost | MarketBidTimeSeriesCost | ImportExportTimeSeriesCost
+    ) = Field(..., description="Operating cost of storage. or MarketBidCost")
+    conversion_factor: float | None = Field(
+        1.0,
+        description="Conversion factor of `storage_capacity` to MWh, if different than 1.0. For example, X MWh/liter hydrogen. Units: 1.",
+    )
+    storage_target: float | None = Field(
+        0.0,
+        description="Storage target at the end of simulation as ratio of storage capacity. Units: 1.",
+    )
+    cycle_limits: int | None = Field(
+        10000, description="Storage Maximum number of cycles per year. Units: 1."
+    )
+    ramp_limits: UpDown | None = Field(
+        None,
+        description="Ramp up and ramp down limits. Units: per power_units — NATURAL_UNITS: MW/min, COMPONENT_BASE: pu/min .",
+    )
+    self_discharge: float | None = Field(
+        0.0,
+        description="Self-discharge (leakage loss) as a fraction of the stored energy lost per minute (pu/min of storage_capacity), modeled as E[t] = (1 - self_discharge * dt) * E[t-1]; dt must be on the same minutes basis. Units: 1/min.",
+    )
+    standing_loss: float | None = Field(
+        0.0,
+        description="Constant standing-loss power drawn by the storage system. Reduces the effective charging power (p_in - standing_loss) and increases the power drawn from the storage when discharging (p_out + standing_loss). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    dynamic_injector: int | None = Field(
+        None, description="ID of the corresponding dynamic injection device, if any."
     )
 
 
@@ -2411,15 +2535,15 @@ class FACTSControlDevice(BaseModel):
     )
     voltage_setpoint: float = Field(
         ...,
-        description="Voltage setpoint at the sending end bus in kV, it has to be a `PV` bus. Units: kV. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+        description="Voltage setpoint at the regulated bus: the remote regulated bus when one is set, otherwise the sending end bus (PSS/E VSET). Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
     )
     max_shunt_current: float = Field(
         ...,
         description="Maximum shunt current at the sending end bus; entered at unity voltage. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
     )
-    reactive_power_required: float = Field(
-        ...,
-        description="Total reactive power required to hold voltage at sending bus, as a fraction in the range 0-1. Units: 1.",
+    reactive_power_required: float | None = Field(
+        0.0,
+        description="Delivered reactive power after a solve, written by the power flow (an output, not parsed from input). Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
     max_reactive_power: float | None = Field(
         9999.0,
@@ -2428,9 +2552,9 @@ class FACTSControlDevice(BaseModel):
     shunt_control_type: ShuntControlType | None = Field(
         "STATCOM", description="Device class selecting the reactive-limit law (SVC vs STATCOM)."
     )
-    regulated_bus_number: int | None = Field(
-        0,
-        description="Bus whose voltage this device regulates; 0 means local (sending) bus (PSS/E FCREG). Units: 1.",
+    remote_regulated_bus_id: int | None = Field(
+        None,
+        description="ID of the bus whose voltage this device regulates when that bus is not its sending end bus (PSS/E FCREG). Null means the sending end bus; a value equal to that bus is invalid.",
     )
     base_power: float = Field(
         ...,
@@ -2551,6 +2675,18 @@ class HydroPumpTurbine(BaseModel):
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
     bus: int = Field(..., description="ID of the bus that this component is connected to.")
+    remote_regulated_bus_id: int | None = Field(
+        None,
+        description="ID of the bus whose voltage this unit regulates when that bus is not its own (PSS/E IREG). Null means the unit regulates the bus it is connected to; a value equal to that bus is invalid, so local regulation has exactly one representation. An available voltage droop controller the unit belongs to overrides this target.",
+    )
+    voltage_setpoint_units: VoltageUnitBasis | None = Field(
+        "COMPONENT_BASE",
+        description="Unit basis for voltage_setpoint. COMPONENT_BASE (per-unit on the base voltage of the bus the unit regulates) is PSS/E RAW native (VS).",
+    )
+    voltage_setpoint: float | None = Field(
+        1.0,
+        description="Voltage magnitude the unit holds at the bus it regulates while its bus type marks it as voltage regulating (PSS/E VS). Ignored while the unit belongs to an available voltage droop controller. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+    )
     active_power: float = Field(
         ...,
         description="Initial active power set point of the turbine unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -2614,7 +2750,6 @@ class HydroPumpTurbine(BaseModel):
     ) = Field(
         ...,
         description="Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)",
-        discriminator="cost_type",
     )
     active_power_pump: float | None = Field(
         0.0,
@@ -2712,13 +2847,9 @@ class InterconnectingConverter(BaseModel):
         0.0,
         description="DC-voltage droop gain relating DC voltage to converter active power as `V_dc = dc_setpoint - dc_voltage_droop * P_c`. A value of 0.0 disables droop. Units: pu.",
     )
-    remote_bus_control: int | None = Field(
+    remote_regulated_bus_id: int | None = Field(
         None,
-        description="Number of the AC bus whose voltage the converter regulates when `ac_control` is `AC_VOLTAGE`; null regulates its own terminal bus.",
-    )
-    rmpct: float | None = Field(
-        100.0,
-        description="Percent of the total Mvar required to hold the voltage at the bus regulated by this converter that is contributed by this converter. Units: 1.",
+        description="ID of the AC bus whose voltage the converter regulates when `ac_control` is `AC_VOLTAGE` and that bus is not its own terminal bus. Null means the converter's own AC bus; a value equal to that bus is invalid.",
     )
     power_factor_weighting_fraction: float | None = Field(
         1.0,
@@ -2771,9 +2902,9 @@ class SwitchedAdmittance(BaseModel):
     control_mode: SwitchedAdmittanceControlMode | None = Field(
         "FIXED", description="Switched-shunt control mode."
     )
-    regulated_bus_number: int | None = Field(
-        0,
-        description="Bus number whose voltage/quantity this shunt regulates; 0 means local bus (PSS/E SWREM/NREG). Units: 1.",
+    remote_regulated_bus_id: int | None = Field(
+        None,
+        description="ID of the bus this shunt regulates in every control mode (PSS/E SWREG): the bus whose voltage it holds in the voltage modes, or the bus of the device whose reactive power it tracks in the other modes, which downstream modeling interprets per mode. Null means the shunt's own bus; a value equal to that bus is invalid.",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection model for admittance, if any."
@@ -2884,8 +3015,17 @@ class TransformerCircuit(BaseModel):
         "UNDEFINED",
         description="Tap-changer / phase-shifter control objective (PSS/E COD). `UNDEFINED` means this circuit has no control block.",
     )
-    regulated_bus_number: int | None = Field(
-        0, description="Controlled bus number (PSS/E CONT; sign = regulation side)."
+    regulated_bus_id: int | None = Field(
+        None,
+        description="ID of the bus whose voltage this circuit's tap changer regulates (PSS/E CONT). Set exactly when `control_objective` is `VOLTAGE` or `VOLTAGE_DISABLED`, null otherwise.",
+    )
+    regulated_bus_side: TransformerRegulatedBusSide | None = Field(
+        None,
+        description="Side of the controlling winding on which the regulated bus lies, replacing the sign of PSS/E CONT. Set only when the regulated bus is not one of the transformer's own terminal buses; when it is, the side follows from the connections and this must be null.",
+    )
+    load_drop_compensation: ComplexNumber | None = Field(
+        {"real": 0.0, "imag": 0.0},
+        description="Load drop compensation impedance for voltage control (PSS/E CR + jCX): the regulated voltage is compensated by this impedance times the circuit current. Zero means no compensation. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     control_limits: MinMax | None = Field(
         {"min": 0.9, "max": 1.1},
@@ -2955,4 +3095,20 @@ class TwoWindingTransformer(BaseModel):
     shunt_location: TwoWindingTransformerShuntLocation | None = Field(
         "PRIMARY",
         description="Placement of `magnetizing_shunt` on the two sides of the circuit arc.",
+    )
+
+
+class VoltageControlAssociation(BaseModel):
+    control_id: int = Field(
+        ...,
+        description="ID of the VoltageDroopControl or ReactivePowerSharing attribute the member belongs to.",
+    )
+    entity_id: int = Field(..., description="ID of the member device.")
+    weight: PositiveFloat | None = Field(
+        1.0,
+        description="Positive relative weight of this member. Its share of the reactive power required at the regulated bus is weight divided by the sum of the weights of the members in service. Units: 1.",
+    )
+    terminal: VoltageControlTerminal | None = Field(
+        None,
+        description="Converter of a two-terminal member this row refers to; required for a TwoTerminalVSCLine member and null for every other member.",
     )

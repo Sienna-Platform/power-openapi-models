@@ -20,12 +20,13 @@ own `base_power`. `SystemDocument` forbids both fields outright.
 heterogeneous objects keyed or discriminated by a type name this package cannot enumerate
 statically.
 
-The other five association arrays (`supplemental_attribute_associations`,
+The other six association arrays (`supplemental_attribute_associations`,
 `plant_associations`, `combined_cycle_associations`, `service_associations`,
-`trading_hub_associations`) and `time_series_associations` all have generated
+`trading_hub_associations`, `voltage_control_associations`) and
+`time_series_associations` all have generated
 classes (`infrastructure_core.models.SupplementalAttributeAssociation`,
 `operations.models.{PlantAssociation, CombinedCycleAssociation,
-ServiceAssociation, TradingHubAssociation}`,
+ServiceAssociation, TradingHubAssociation, VoltageControlAssociation}`,
 `timeseries.models.TimeSeriesAssociation`), so those fields are typed with
 them — imported defensively, so this module still degrades to `list[dict]`
 rather than failing to import if a future regeneration ever drops one of
@@ -52,9 +53,12 @@ try:
         PlantAssociation,
         ServiceAssociation,
         TradingHubAssociation,
+        VoltageControlAssociation,
     )
 except ImportError:
-    CombinedCycleAssociation = PlantAssociation = ServiceAssociation = TradingHubAssociation = dict
+    CombinedCycleAssociation = PlantAssociation = ServiceAssociation = TradingHubAssociation = (
+        VoltageControlAssociation
+    ) = dict
 
 try:
     from power_openapi_models.timeseries.models import TimeSeriesAssociation
@@ -119,6 +123,13 @@ class SystemDocument(BaseModel):
         default_factory=list,
         description="Links a trading hub to one associated entity. Added after the "
         "other association arrays, so older documents omit it.",
+    )
+    voltage_control_associations: list[VoltageControlAssociation] = Field(
+        default_factory=list,
+        description="Links a voltage control group (VoltageDroopControl or "
+        "ReactivePowerSharing) to one member device with its relative reactive "
+        "power weight and, for a two-terminal member, the converter terminal. "
+        "Optional like `trading_hub_associations`, so older documents omit it.",
     )
     time_series_associations: list[TimeSeriesAssociation] = Field(
         ...,

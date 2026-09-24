@@ -526,13 +526,6 @@ class SupplyTechnology(BaseModel):
     )
 
 
-class TopologyMapping(BaseModel):
-    id: int = Field(..., description="ID for individual component.")
-    buses: list[str] | None = Field(
-        None, description="List of buses in the base system that are associated with a zone."
-    )
-
-
 class AggregateTransportTechnology(BaseModel):
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
