@@ -1954,7 +1954,7 @@
         "x": 0.0001,
         "control_objective": "FIXED",
         "regulated_bus_id": null,
-        "regulated_bus_side": null,
+        "regulated_bus_side": "UNDEFINED",
         "load_drop_compensation_r": 0.0,
         "load_drop_compensation_x": 0.0,
         "control_limits": {
@@ -1985,7 +1985,7 @@
         "x": 0.0001,
         "control_objective": "FIXED",
         "regulated_bus_id": null,
-        "regulated_bus_side": null,
+        "regulated_bus_side": "UNDEFINED",
         "load_drop_compensation_r": 0.0,
         "load_drop_compensation_x": 0.0,
         "control_limits": {
@@ -2016,7 +2016,7 @@
         "x": 0.0001,
         "control_objective": "FIXED",
         "regulated_bus_id": null,
-        "regulated_bus_side": null,
+        "regulated_bus_side": "UNDEFINED",
         "load_drop_compensation_r": 0.0,
         "load_drop_compensation_x": 0.0,
         "control_limits": {
@@ -2047,7 +2047,7 @@
         "x": 0.0001,
         "control_objective": "FIXED",
         "regulated_bus_id": null,
-        "regulated_bus_side": null,
+        "regulated_bus_side": "UNDEFINED",
         "load_drop_compensation_r": 0.0,
         "load_drop_compensation_x": 0.0,
         "control_limits": {
@@ -2078,7 +2078,7 @@
         "x": 0.0001,
         "control_objective": "FIXED",
         "regulated_bus_id": null,
-        "regulated_bus_side": null,
+        "regulated_bus_side": "UNDEFINED",
         "load_drop_compensation_r": 0.0,
         "load_drop_compensation_x": 0.0,
         "control_limits": {
@@ -2109,7 +2109,7 @@
         "x": 0.0001,
         "control_objective": "FIXED",
         "regulated_bus_id": null,
-        "regulated_bus_side": null,
+        "regulated_bus_side": "UNDEFINED",
         "load_drop_compensation_r": 0.0,
         "load_drop_compensation_x": 0.0,
         "control_limits": {
@@ -2140,7 +2140,7 @@
         "x": 0.0001,
         "control_objective": "FIXED",
         "regulated_bus_id": null,
-        "regulated_bus_side": null,
+        "regulated_bus_side": "UNDEFINED",
         "load_drop_compensation_r": 0.0,
         "load_drop_compensation_x": 0.0,
         "control_limits": {
@@ -2171,7 +2171,7 @@
         "x": 0.0001,
         "control_objective": "FIXED",
         "regulated_bus_id": null,
-        "regulated_bus_side": null,
+        "regulated_bus_side": "UNDEFINED",
         "load_drop_compensation_r": 0.0,
         "load_drop_compensation_x": 0.0,
         "control_limits": {
@@ -2202,7 +2202,7 @@
         "x": 0.0001,
         "control_objective": "FIXED",
         "regulated_bus_id": null,
-        "regulated_bus_side": null,
+        "regulated_bus_side": "UNDEFINED",
         "load_drop_compensation_r": 0.0,
         "load_drop_compensation_x": 0.0,
         "control_limits": {

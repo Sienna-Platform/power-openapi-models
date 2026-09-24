@@ -108964,7 +108964,6 @@ const transformerCircuitAlphaDefault = 0;
 const transformerCircuitRDefault = 0;
 const transformerCircuitXDefault = 0;
 const transformerCircuitRegulatedBusIdDefault = null;
-const transformerCircuitRegulatedBusSideDefault = null;
 const transformerCircuitLoadDropCompensationRDefault = 0;
 const transformerCircuitLoadDropCompensationXDefault = 0;
 const transformerCircuitNumberOfTapPositionsDefault = 33;
@@ -109041,17 +109040,11 @@ export const TransformerCircuit = zod
         "ID of the bus whose voltage this circuit's tap changer regulates (PSS/E CONT). Set exactly when `control_objective` is `VOLTAGE` or `VOLTAGE_DISABLED`, null otherwise.",
       ),
     regulated_bus_side: zod
-      .union([
-        zod
-          .enum(["CONTROLLING_WINDING", "OPPOSITE_WINDING"])
-          .describe(
-            "Side of a transformer circuit's controlling winding on which the regulated bus lies, stated when the regulated bus is not one of the transformer's own terminal buses. CONTROLLING_WINDING: the regulated bus lies beyond the tapped (controlling) winding's terminal, PSS/E's negative CONT. OPPOSITE_WINDING: the regulated bus lies beyond the other winding's terminal, PSS/E's positive CONT.",
-          ),
-        zod.null(),
-      ])
-      .default(transformerCircuitRegulatedBusSideDefault)
+      .enum(["UNDEFINED", "CONTROLLING_WINDING", "OPPOSITE_WINDING"])
+      .optional()
+      .default("UNDEFINED")
       .describe(
-        "Side of the controlling winding on which the regulated bus lies, replacing the sign of PSS/E CONT. Set only when the regulated bus is not one of the transformer's own terminal buses; when it is, the side follows from the connections and this must be null.",
+        "Side of a transformer circuit's controlling winding on which the regulated bus lies, stated when the regulated bus is not one of the transformer's own terminal buses. UNDEFINED: no side is stated, because the regulated bus is one of the circuit's own arc ends (or there is no regulated bus) and the side follows from the connections. CONTROLLING_WINDING: the regulated bus lies beyond the tapped (controlling) winding's terminal, PSS/E's negative CONT. OPPOSITE_WINDING: the regulated bus lies beyond the other winding's terminal, PSS/E's positive CONT.",
       ),
     load_drop_compensation_r: zod
       .number()
@@ -115416,7 +115409,6 @@ export type VirtualParticipantOutput = zod.output<typeof VirtualParticipant>;
 const voltageControlAssociationWeightDefault = 1;
 export const voltageControlAssociationWeightExclusiveMin = 0;
 
-const voltageControlAssociationTerminalDefault = null;
 export const VoltageControlAssociation = zod
   .object({
     control_id: zod
@@ -115433,17 +115425,11 @@ export const VoltageControlAssociation = zod
         "Positive relative weight of this member. Its share of the reactive power required at the regulated bus is weight divided by the sum of the weights of the members in service. Units: 1.",
       ),
     terminal: zod
-      .union([
-        zod
-          .enum(["FROM", "TO"])
-          .describe(
-            "Which converter of a two-terminal line a voltage control membership refers to. FROM: the converter at the arc's `from` bus. TO: the converter at the arc's `to` bus.",
-          ),
-        zod.null(),
-      ])
-      .default(voltageControlAssociationTerminalDefault)
+      .enum(["UNDEFINED", "FROM", "TO"])
+      .optional()
+      .default("UNDEFINED")
       .describe(
-        "Converter of a two-terminal member this row refers to; required for a TwoTerminalVSCLine member and null for every other member.",
+        "Which converter of a two-terminal line a voltage control membership refers to. UNDEFINED: the member is a single-bus device, so no converter is named. FROM: the converter at the arc's `from` bus. TO: the converter at the arc's `to` bus.",
       ),
   })
   .describe(
@@ -115626,9 +115612,9 @@ export type TransformerControlObjectiveOutput = zod.output<
 >;
 
 export const TransformerRegulatedBusSide = zod
-  .enum(["CONTROLLING_WINDING", "OPPOSITE_WINDING"])
+  .enum(["UNDEFINED", "CONTROLLING_WINDING", "OPPOSITE_WINDING"])
   .describe(
-    "Side of a transformer circuit's controlling winding on which the regulated bus lies, stated when the regulated bus is not one of the transformer's own terminal buses. CONTROLLING_WINDING: the regulated bus lies beyond the tapped (controlling) winding's terminal, PSS/E's negative CONT. OPPOSITE_WINDING: the regulated bus lies beyond the other winding's terminal, PSS/E's positive CONT.",
+    "Side of a transformer circuit's controlling winding on which the regulated bus lies, stated when the regulated bus is not one of the transformer's own terminal buses. UNDEFINED: no side is stated, because the regulated bus is one of the circuit's own arc ends (or there is no regulated bus) and the side follows from the connections. CONTROLLING_WINDING: the regulated bus lies beyond the tapped (controlling) winding's terminal, PSS/E's negative CONT. OPPOSITE_WINDING: the regulated bus lies beyond the other winding's terminal, PSS/E's positive CONT.",
   );
 
 export type TransformerRegulatedBusSide = zod.input<
@@ -115674,9 +115660,9 @@ export type VoltageUnitBasis = zod.input<typeof VoltageUnitBasis>;
 export type VoltageUnitBasisOutput = zod.output<typeof VoltageUnitBasis>;
 
 export const VoltageControlTerminal = zod
-  .enum(["FROM", "TO"])
+  .enum(["UNDEFINED", "FROM", "TO"])
   .describe(
-    "Which converter of a two-terminal line a voltage control membership refers to. FROM: the converter at the arc's `from` bus. TO: the converter at the arc's `to` bus.",
+    "Which converter of a two-terminal line a voltage control membership refers to. UNDEFINED: the member is a single-bus device, so no converter is named. FROM: the converter at the arc's `from` bus. TO: the converter at the arc's `to` bus.",
   );
 
 export type VoltageControlTerminal = zod.input<typeof VoltageControlTerminal>;

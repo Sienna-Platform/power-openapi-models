@@ -1787,6 +1787,7 @@ class TransformerControlObjective(Enum):
 
 
 class TransformerRegulatedBusSide(Enum):
+    UNDEFINED = "UNDEFINED"
     CONTROLLING_WINDING = "CONTROLLING_WINDING"
     OPPOSITE_WINDING = "OPPOSITE_WINDING"
 
@@ -2271,6 +2272,7 @@ class VirtualParticipant(BaseModel):
 
 
 class VoltageControlTerminal(Enum):
+    UNDEFINED = "UNDEFINED"
     FROM = "FROM"
     TO = "TO"
 
@@ -3020,8 +3022,8 @@ class TransformerCircuit(BaseModel):
         description="ID of the bus whose voltage this circuit's tap changer regulates (PSS/E CONT). Set exactly when `control_objective` is `VOLTAGE` or `VOLTAGE_DISABLED`, null otherwise.",
     )
     regulated_bus_side: TransformerRegulatedBusSide | None = Field(
-        None,
-        description="Side of the controlling winding on which the regulated bus lies, replacing the sign of PSS/E CONT. Set only when the regulated bus is not one of the transformer's own terminal buses; when it is, the side follows from the connections and this must be null.",
+        "UNDEFINED",
+        description="Side of the controlling winding on which the regulated bus lies, replacing the sign of PSS/E CONT. Set only when the regulated bus is not one of the transformer's own terminal buses; when it is, the side follows from the connections and this must be UNDEFINED.",
     )
     load_drop_compensation_r: float | None = Field(
         0.0,
@@ -3113,6 +3115,6 @@ class VoltageControlAssociation(BaseModel):
         description="Positive relative weight of this member. Its share of the reactive power required at the regulated bus is weight divided by the sum of the weights of the members in service. Units: 1.",
     )
     terminal: VoltageControlTerminal | None = Field(
-        None,
-        description="Converter of a two-terminal member this row refers to; required for a TwoTerminalVSCLine member and null for every other member.",
+        "UNDEFINED",
+        description="Converter of a two-terminal member this row refers to; required for a TwoTerminalVSCLine member and UNDEFINED for every other member.",
     )

@@ -837,35 +837,15 @@ def _ts_field_info(calls, const_registry):
         arr = _ts_bracketed_body(core_args, core_mask, "[")
         if arr is not None:
             inner, inner_mask = arr
-            # Two shapes carry an enum: every branch a `literal` (a numeric
-            # schema enum), or one `enum([...])` branch beside `null()` branches
-            # (a nullable schema enum, `oneOf: [{$ref: <enum>}, {type: null}]`).
-            # Anything else is a real oneOf-of-objects union with no enum entry.
-            values, all_enum = [], True
+            values, all_literal = [], True
             for a, b in _ts_split_top_level_spans(inner, inner_mask):
                 branch_calls, _ = _ts_parse_call_chain(inner[a:b], inner_mask[a:b], 0)
-                if not branch_calls:
-                    all_enum = False
-                    break
-                head, head_args, head_mask = branch_calls[0]
-                if head == "null":
-                    continue
-                if head == "literal" and len(branch_calls) == 1:
-                    values.append(_ts_parse_js_value(head_args, const_registry))
-                elif head == "enum":
-                    arr = _ts_bracketed_body(head_args, head_mask, "[")
-                    if arr is None:
-                        all_enum = False
-                        break
-                    enum_inner, enum_mask = arr
-                    values.extend(
-                        _ts_parse_js_value(enum_inner[c:d], const_registry)
-                        for c, d in _ts_split_top_level_spans(enum_inner, enum_mask)
-                    )
+                if len(branch_calls) == 1 and branch_calls[0][0] == "literal":
+                    values.append(_ts_parse_js_value(branch_calls[0][1], const_registry))
                 else:
-                    all_enum = False
+                    all_literal = False
                     break
-            if all_enum and values:
+            if all_literal and values:
                 enums = values
     return {"kind": kind, "default": default, "required": required, "enums": enums}
 
