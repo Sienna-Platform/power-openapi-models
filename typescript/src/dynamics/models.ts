@@ -7,6 +7,361 @@
  */
 import * as zod from "zod";
 
+export const AverageConverter = zod
+  .object({
+    rated_voltage: zod.number().describe("Rated voltage (V)"),
+    rated_current: zod.number().describe("Rated current (A)"),
+  })
+  .describe("Parameters of an average converter model");
+
+export type AverageConverter = zod.input<typeof AverageConverter>;
+export type AverageConverterOutput = zod.output<typeof AverageConverter>;
+
+const renewableEnergyConverterTypeAQRefDefault = 1;
+const renewableEnergyConverterTypeARSourceDefault = 0;
+const renewableEnergyConverterTypeAXSourceDefault = 100000;
+export const RenewableEnergyConverterTypeA = zod
+  .object({
+    T_g: zod.number().describe("Converter time constant. Units: s."),
+    Rrpwr: zod
+      .number()
+      .describe("Low Voltage Power Logic (LVPL) ramp rate limit."),
+    Brkpt: zod.number().describe("LVPL characteristic voltage 2."),
+    Zerox: zod.number().describe("LVPL characteristic voltage 1."),
+    Lvpl1: zod.number().describe("LVPL gain."),
+    Vo_lim: zod
+      .number()
+      .describe("Voltage limit for high voltage reactive current management."),
+    Lv_pnts: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Io_lim: zod
+      .number()
+      .describe(
+        "Current limit for high voltage reactive current management (specified as a negative value).",
+      ),
+    T_fltr: zod
+      .number()
+      .describe(
+        "Voltage filter time constant for low voltage active current management. Units: s.",
+      ),
+    K_hv: zod
+      .number()
+      .describe(
+        "Overvoltage compensation gain used in the high voltage reactive current management.",
+      ),
+    Iqr_lims: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Accel: zod.number().describe("Acceleration factor."),
+    Lvpl_sw: zod
+      .int()
+      .describe(
+        "Low voltage power logic (LVPL) switch. (0: LVPL not present, 1: LVPL present).",
+      ),
+    Q_ref: zod
+      .number()
+      .default(renewableEnergyConverterTypeAQRefDefault)
+      .describe("Initial condition of reactive power from power flow."),
+    R_source: zod
+      .number()
+      .default(renewableEnergyConverterTypeARSourceDefault)
+      .describe("Output resistor used for the Thevenin Equivalent."),
+    X_source: zod
+      .number()
+      .default(renewableEnergyConverterTypeAXSourceDefault)
+      .describe("Output reactance used for the Thevenin Equivalent."),
+  })
+  .describe(
+    "Parameters of a renewable energy generator/converter model, this model corresponds to REGCA1 in PSSE.",
+  );
+
+export type RenewableEnergyConverterTypeA = zod.input<
+  typeof RenewableEnergyConverterTypeA
+>;
+export type RenewableEnergyConverterTypeAOutput = zod.output<
+  typeof RenewableEnergyConverterTypeA
+>;
+
+const renewableEnergyVoltageConverterTypeAQRefDefault = 1;
+export const RenewableEnergyVoltageConverterTypeA = zod
+  .object({
+    T_g: zod.number().describe("Converter time constant. Units: s."),
+    Rrpwr: zod
+      .number()
+      .describe("Low Voltage Power Logic (LVPL) ramp rate limit."),
+    Brkpt: zod.number().describe("LVPL characteristic voltage 2."),
+    Zerox: zod.number().describe("LVPL characteristic voltage 1."),
+    Lvpl1: zod.number().describe("LVPL gain."),
+    Vo_lim: zod
+      .number()
+      .describe("Voltage limit for high voltage reactive current management."),
+    Lv_pnts: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Io_lim: zod
+      .number()
+      .describe(
+        "Current limit for high voltage reactive current management (specified as a negative value).",
+      ),
+    T_fltr: zod
+      .number()
+      .describe(
+        "Voltage filter time constant for low voltage active current management. Units: s.",
+      ),
+    K_hv: zod
+      .number()
+      .describe(
+        "Overvoltage compensation gain used in the high voltage reactive current management.",
+      ),
+    Iqr_lims: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Accel: zod.number().describe("Acceleration factor."),
+    Lvpl_sw: zod
+      .int()
+      .describe(
+        "Low voltage power logic (LVPL) switch. (0: LVPL not present, 1: LVPL present).",
+      ),
+    Q_ref: zod
+      .number()
+      .default(renewableEnergyVoltageConverterTypeAQRefDefault)
+      .describe("Initial condition of reactive power from power flow."),
+  })
+  .describe(
+    "Parameters of a renewable energy generator/converter model, this model corresponds to REGCA1 in PSSE, but to be interfaced using a Voltage Source instead of a Current Source",
+  );
+
+export type RenewableEnergyVoltageConverterTypeA = zod.input<
+  typeof RenewableEnergyVoltageConverterTypeA
+>;
+export type RenewableEnergyVoltageConverterTypeAOutput = zod.output<
+  typeof RenewableEnergyVoltageConverterTypeA
+>;
+
+export const FixedDCSource = zod
+  .object({
+    voltage: zod.number().describe("Voltage (V)"),
+  })
+  .describe("Parameters of a Fixed DC Source that returns a fixed DC voltage");
+
+export type FixedDCSource = zod.input<typeof FixedDCSource>;
+export type FixedDCSourceOutput = zod.output<typeof FixedDCSource>;
+
+const zeroOrderBESSVdcRefDefault = 1.1;
+export const ZeroOrderBESS = zod
+  .object({
+    rated_voltage: zod.number().describe("Rated voltage (V)"),
+    rated_current: zod.number().describe("Rated current (A)"),
+    battery_voltage: zod.number().describe("Battery voltage"),
+    battery_resistance: zod.number().describe("Rated current (A)"),
+    dc_dc_inductor: zod.number().describe("DC/DC inductance"),
+    dc_link_capacitance: zod.number().describe("DC-link capacitance"),
+    fs: zod.number().describe("DC/DC converter switching frequency"),
+    kpv: zod.number().describe("Voltage controller proportional gain"),
+    kiv: zod.number().describe("Voltage controller integral gain"),
+    kpi: zod.number().describe("Current controller proportional gain"),
+    kii: zod.number().describe("Current controller integral gain"),
+    Vdc_ref: zod
+      .number()
+      .default(zeroOrderBESSVdcRefDefault)
+      .describe("Reference DC-voltage set-point"),
+  })
+  .describe(
+    "Parameters for the DC-side with a Battery Energy Storage System from 'Grid-Coupled Dynamic Response of Battery-Driven Voltage Source Converters'",
+  );
+
+export type ZeroOrderBESS = zod.input<typeof ZeroOrderBESS>;
+export type ZeroOrderBESSOutput = zod.output<typeof ZeroOrderBESS>;
+
+export const LCFilter = zod
+  .object({
+    lf: zod.number().describe("Filter inductance"),
+    rf: zod.number().describe("Filter resistance"),
+    cf: zod.number().describe("Filter capacitance"),
+  })
+  .describe("Parameters of a LCL filter outside the converter");
+
+export type LCFilter = zod.input<typeof LCFilter>;
+export type LCFilterOutput = zod.output<typeof LCFilter>;
+
+export const LCLFilter = zod
+  .object({
+    lf: zod.number().describe("Series inductance of converter filter"),
+    rf: zod.number().describe("Series resistance of converter filter"),
+    cf: zod.number().describe("Shunt capacitance of converter filter"),
+    lg: zod
+      .number()
+      .describe("Series inductance of converter filter to the grid"),
+    rg: zod
+      .number()
+      .describe("Series resistance of converter filter to the grid"),
+  })
+  .describe(
+    "Parameters of a LCL filter outside the converter, the states are in the grid's reference frame",
+  );
+
+export type LCLFilter = zod.input<typeof LCLFilter>;
+export type LCLFilterOutput = zod.output<typeof LCLFilter>;
+
+export const RLFilter = zod
+  .object({
+    rf: zod
+      .number()
+      .describe("Series resistance in p.u. of converter filter to the grid"),
+    lf: zod
+      .number()
+      .describe("Series inductance in p.u. of converter filter to the grid"),
+  })
+  .describe("Parameters of RL series filter in algebraic representation");
+
+export type RLFilter = zod.input<typeof RLFilter>;
+export type RLFilterOutput = zod.output<typeof RLFilter>;
+
+const fixedFrequencyFrequencyDefault = 1;
+export const FixedFrequency = zod
+  .object({
+    frequency: zod
+      .number()
+      .default(fixedFrequencyFrequencyDefault)
+      .describe("Reference frequency"),
+  })
+  .describe("Parameters of a Fixed Frequency Estimator (i.e. no PLL)");
+
+export type FixedFrequency = zod.input<typeof FixedFrequency>;
+export type FixedFrequencyOutput = zod.output<typeof FixedFrequency>;
+
+export const KauraPLL = zod
+  .object({
+    omega_lp: zod.number().describe("PLL low-pass filter frequency"),
+    kp_pll: zod.number().describe("PLL proportional gain"),
+    ki_pll: zod.number().describe("PLL integral gain"),
+  })
+  .describe(
+    "Parameters of a Phase-Locked Loop (PLL) based on 'Operation of a phase locked loop system under distorted utility conditions' by Vikram Kaura, and Vladimir Blasko",
+  );
+
+export type KauraPLL = zod.input<typeof KauraPLL>;
+export type KauraPLLOutput = zod.output<typeof KauraPLL>;
+
+export const ReducedOrderPLL = zod
+  .object({
+    omega_lp: zod.number().describe("PLL low-pass filter frequency"),
+    kp_pll: zod.number().describe("PLL proportional gain"),
+    ki_pll: zod.number().describe("PLL integral gain"),
+  })
+  .describe(
+    "Parameters of a Phase-Locked Loop (PLL) based on 'Reduced-order Structure-preserving Model for Parallel-connected Three-phase Grid-tied Inverters'",
+  );
+
+export type ReducedOrderPLL = zod.input<typeof ReducedOrderPLL>;
+export type ReducedOrderPLLOutput = zod.output<typeof ReducedOrderPLL>;
+
+export const CurrentModeControl = zod.object({
+  kpc: zod.number(),
+  kic: zod.number(),
+  kffv: zod.number(),
+});
+
+export type CurrentModeControl = zod.input<typeof CurrentModeControl>;
+export type CurrentModeControlOutput = zod.output<typeof CurrentModeControl>;
+
+export const RECurrentControlB = zod.object({
+  Q_Flag: zod.boolean(),
+  PQ_Flag: zod.boolean(),
+  Vdip_lim: zod
+    .object({
+      max: zod.number().optional(),
+      min: zod.number().optional(),
+    })
+    .describe(
+      "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+    ),
+  T_rv: zod.number(),
+  dbd_pnts: zod
+    .object({
+      dbd1: zod.number().optional(),
+      dbd2: zod.number().optional(),
+    })
+    .describe(
+      "A pair of deadband thresholds `(dbd1, dbd2)` on a voltage or reactive-power error signal, inside which the controller does not act.",
+    ),
+  K_qv: zod.number(),
+  Iqinj_lim: zod
+    .object({
+      max: zod.number().optional(),
+      min: zod.number().optional(),
+    })
+    .describe(
+      "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+    ),
+  V_ref0: zod.number(),
+  K_vp: zod.number(),
+  K_vi: zod.number(),
+  T_iq: zod.number(),
+  I_max: zod.number(),
+});
+
+export type RECurrentControlB = zod.input<typeof RECurrentControlB>;
+export type RECurrentControlBOutput = zod.output<typeof RECurrentControlB>;
+
+export const VoltageModeControl = zod.object({
+  kpv: zod.number(),
+  kiv: zod.number(),
+  kffv: zod.number(),
+  rv: zod.number(),
+  lv: zod.number(),
+  kpc: zod.number(),
+  kic: zod.number(),
+  kffi: zod.number(),
+  omegaad: zod.number(),
+  kad: zod.number(),
+});
+
+export type VoltageModeControl = zod.input<typeof VoltageModeControl>;
+export type VoltageModeControlOutput = zod.output<typeof VoltageModeControl>;
+
+const activePowerDroopPRefDefault = 1;
+export const ActivePowerDroop = zod.object({
+  Rp: zod.number(),
+  omegaz: zod.number(),
+  P_ref: zod.number().default(activePowerDroopPRefDefault),
+});
+
+export type ActivePowerDroop = zod.input<typeof ActivePowerDroop>;
+export type ActivePowerDroopOutput = zod.output<typeof ActivePowerDroop>;
+
+const activePowerPIPRefDefault = 1;
+export const ActivePowerPI = zod.object({
+  Kp_p: zod.number(),
+  Ki_p: zod.number(),
+  omegaz: zod.number(),
+  P_ref: zod.number().default(activePowerPIPRefDefault),
+});
+
+export type ActivePowerPI = zod.input<typeof ActivePowerPI>;
+export type ActivePowerPIOutput = zod.output<typeof ActivePowerPI>;
+
 const activeRenewableControllerABPRefDefault = 1;
 export const ActiveRenewableControllerAB = zod
   .object({
@@ -101,66 +456,40 @@ export type ActiveRenewableControllerABOutput = zod.output<
   typeof ActiveRenewableControllerAB
 >;
 
-export const RECurrentControlB = zod
-  .object({
-    Q_Flag: zod.boolean().describe("Q Flag used for I_qinj."),
-    PQ_Flag: zod
-      .boolean()
-      .describe("PQ Flag used for the Current Limit Logic."),
-    Vdip_lim: zod
-      .object({
-        max: zod.number().optional(),
-        min: zod.number().optional(),
-      })
-      .describe(
-        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-      ),
-    T_rv: zod.number().describe("Voltage Filter Time Constant. Units: s."),
-    dbd_pnts: zod
-      .object({
-        dbd1: zod.number().optional(),
-        dbd2: zod.number().optional(),
-      })
-      .describe(
-        "A pair of deadband thresholds `(dbd1, dbd2)` on a voltage or reactive-power error signal, inside which the controller does not act.",
-      ),
-    K_qv: zod
-      .number()
-      .describe(
-        "Reactive current injection gain during over and undervoltage conditions.",
-      ),
-    Iqinj_lim: zod
-      .object({
-        max: zod.number().optional(),
-        min: zod.number().optional(),
-      })
-      .describe(
-        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-      ),
-    V_ref0: zod
-      .number()
-      .describe(
-        "User defined reference. If 0, `PowerSimulationsDynamics.jl` initializes to initial terminal voltage.",
-      ),
-    K_vp: zod
-      .number()
-      .describe("Voltage regulator proportional gain (used when QFlag = 1)."),
-    K_vi: zod
-      .number()
-      .describe("Voltage regulator integral gain (used when QFlag = 1)."),
-    T_iq: zod
-      .number()
-      .describe(
-        "Time constant for low-pass filter for state q_V when QFlag = 0. Units: s.",
-      ),
-    I_max: zod.number().describe("Maximum limit on total converter current."),
-  })
-  .describe(
-    "Parameters of the Inner Control part of the REECB model in PSS/E.",
-  );
+const activeVirtualOscillatorPRefDefault = 1;
+export const ActiveVirtualOscillator = zod.object({
+  k1: zod.number(),
+  psi: zod.number().optional(),
+  P_ref: zod.number().default(activeVirtualOscillatorPRefDefault),
+});
 
-export type RECurrentControlB = zod.input<typeof RECurrentControlB>;
-export type RECurrentControlBOutput = zod.output<typeof RECurrentControlB>;
+export type ActiveVirtualOscillator = zod.input<typeof ActiveVirtualOscillator>;
+export type ActiveVirtualOscillatorOutput = zod.output<
+  typeof ActiveVirtualOscillator
+>;
+
+const reactivePowerDroopVRefDefault = 1;
+export const ReactivePowerDroop = zod.object({
+  kq: zod.number(),
+  omegaf: zod.number(),
+  V_ref: zod.number().default(reactivePowerDroopVRefDefault),
+});
+
+export type ReactivePowerDroop = zod.input<typeof ReactivePowerDroop>;
+export type ReactivePowerDroopOutput = zod.output<typeof ReactivePowerDroop>;
+
+const reactivePowerPIVRefDefault = 1;
+const reactivePowerPIQRefDefault = 1;
+export const ReactivePowerPI = zod.object({
+  Kp_q: zod.number(),
+  Ki_q: zod.number(),
+  omegaf: zod.number(),
+  V_ref: zod.number().default(reactivePowerPIVRefDefault),
+  Q_ref: zod.number().default(reactivePowerPIQRefDefault),
+});
+
+export type ReactivePowerPI = zod.input<typeof ReactivePowerPI>;
+export type ReactivePowerPIOutput = zod.output<typeof ReactivePowerPI>;
 
 const reactiveRenewableControllerABQRefDefault = 1;
 const reactiveRenewableControllerABVRefDefault = 1;
@@ -298,138 +627,1102 @@ export type ReactiveRenewableControllerABOutput = zod.output<
   typeof ReactiveRenewableControllerAB
 >;
 
-const renewableEnergyConverterTypeAQRefDefault = 1;
-const renewableEnergyConverterTypeARSourceDefault = 0;
-const renewableEnergyConverterTypeAXSourceDefault = 100000;
-export const RenewableEnergyConverterTypeA = zod
+const reactiveVirtualOscillatorVRefDefault = 1;
+const reactiveVirtualOscillatorQRefDefault = 1;
+export const ReactiveVirtualOscillator = zod.object({
+  k2: zod.number(),
+  V_ref: zod.number().default(reactiveVirtualOscillatorVRefDefault),
+  Q_ref: zod.number().default(reactiveVirtualOscillatorQRefDefault),
+});
+
+export type ReactiveVirtualOscillator = zod.input<
+  typeof ReactiveVirtualOscillator
+>;
+export type ReactiveVirtualOscillatorOutput = zod.output<
+  typeof ReactiveVirtualOscillator
+>;
+
+const virtualInertiaPRefDefault = 1;
+export const VirtualInertia = zod.object({
+  Ta: zod.number(),
+  kd: zod.number(),
+  komega: zod.number(),
+  P_ref: zod.number().default(virtualInertiaPRefDefault),
+});
+
+export type VirtualInertia = zod.input<typeof VirtualInertia>;
+export type VirtualInertiaOutput = zod.output<typeof VirtualInertia>;
+
+export const HybridOutputCurrentLimiter = zod
   .object({
-    T_g: zod.number().describe("Converter time constant. Units: s."),
-    Rrpwr: zod
+    I_max: zod
       .number()
-      .describe("Low Voltage Power Logic (LVPL) ramp rate limit."),
-    Brkpt: zod.number().describe("LVPL characteristic voltage 2."),
-    Zerox: zod.number().describe("LVPL characteristic voltage 1."),
-    Lvpl1: zod.number().describe("LVPL gain."),
-    Vo_lim: zod
-      .number()
-      .describe("Voltage limit for high voltage reactive current management."),
-    Lv_pnts: zod
-      .object({
-        max: zod.number().optional(),
-        min: zod.number().optional(),
-      })
-      .describe(
-        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-      ),
-    Io_lim: zod
-      .number()
-      .describe(
-        "Current limit for high voltage reactive current management (specified as a negative value).",
-      ),
-    T_fltr: zod
-      .number()
-      .describe(
-        "Voltage filter time constant for low voltage active current management. Units: s.",
-      ),
-    K_hv: zod
-      .number()
-      .describe(
-        "Overvoltage compensation gain used in the high voltage reactive current management.",
-      ),
-    Iqr_lims: zod
-      .object({
-        max: zod.number().optional(),
-        min: zod.number().optional(),
-      })
-      .describe(
-        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-      ),
-    Accel: zod.number().describe("Acceleration factor."),
-    Lvpl_sw: zod
-      .boolean()
-      .describe(
-        "Low voltage power logic (LVPL) switch. (`false`: LVPL not present, `true`: LVPL present).",
-      ),
-    Q_ref: zod
-      .number()
-      .default(renewableEnergyConverterTypeAQRefDefault)
-      .describe("Initial condition of reactive power from power flow."),
-    R_source: zod
-      .number()
-      .default(renewableEnergyConverterTypeARSourceDefault)
-      .describe("Output resistor used for the Thevenin Equivalent."),
-    X_source: zod
-      .number()
-      .default(renewableEnergyConverterTypeAXSourceDefault)
-      .describe("Output reactance used for the Thevenin Equivalent."),
+      .describe("Maximum limit on current controller input current"),
+    rv: zod.number().describe("Real part of the virtual impedance"),
+    lv: zod.number().describe("Imaginary part of the virtual impedance"),
   })
   .describe(
-    "Parameters of a renewable energy generator/converter model, this model corresponds to REGCA1 in PSSE.",
+    "Parameters of Hybrid Current Controller Limiter. Regulates the magnitude of the inverter output current, but with a closed loop feedback regulated by a virtual impedance which provides ant-windup. Described in: Novel Hybrid Current Limiter for Grid-Forming Inverter Control During Unbalanced Faults by Baeckland and Seo, 2023",
   );
 
-export type RenewableEnergyConverterTypeA = zod.input<
-  typeof RenewableEnergyConverterTypeA
+export type HybridOutputCurrentLimiter = zod.input<
+  typeof HybridOutputCurrentLimiter
 >;
-export type RenewableEnergyConverterTypeAOutput = zod.output<
-  typeof RenewableEnergyConverterTypeA
+export type HybridOutputCurrentLimiterOutput = zod.output<
+  typeof HybridOutputCurrentLimiter
 >;
 
-export const roundRotorMachineSeMin = 2;
-export const roundRotorMachineSeMax = 2;
-
-export const RoundRotorMachine = zod
+export const InstantaneousOutputCurrentLimiter = zod
   .object({
-    id: zod.int().describe("Unique integer identifier for this component."),
-    R: zod.number().describe("Armature resistance."),
-    Td0_p: zod
+    Id_max: zod
       .number()
-      .describe("Time constant of transient d-axis voltage. Units: s."),
-    Td0_pp: zod
+      .describe("Maximum limit on d-axis current controller input current"),
+    Iq_max: zod
       .number()
-      .describe("Time constant of sub-transient d-axis voltage. Units: s."),
-    Tq0_p: zod
+      .describe("Maximum limit on q-axis current controller input current"),
+  })
+  .describe(
+    "Parameters of Instantaneous (Square) Current Controller Limiter. Regulates inverter output current on the d and q axis separately",
+  );
+
+export type InstantaneousOutputCurrentLimiter = zod.input<
+  typeof InstantaneousOutputCurrentLimiter
+>;
+export type InstantaneousOutputCurrentLimiterOutput = zod.output<
+  typeof InstantaneousOutputCurrentLimiter
+>;
+
+export const MagnitudeOutputCurrentLimiter = zod
+  .object({
+    I_max: zod
       .number()
-      .describe("Time constant of transient q-axis voltage. Units: s."),
-    Tq0_pp: zod
+      .describe("Maximum limit on current controller input current"),
+  })
+  .describe(
+    "Parameters of Magnitude (Circular) Current Controller Limiter. Regulates only the magnitude of the inverter output current",
+  );
+
+export type MagnitudeOutputCurrentLimiter = zod.input<
+  typeof MagnitudeOutputCurrentLimiter
+>;
+export type MagnitudeOutputCurrentLimiterOutput = zod.output<
+  typeof MagnitudeOutputCurrentLimiter
+>;
+
+export const PriorityOutputCurrentLimiter = zod
+  .object({
+    I_max: zod
       .number()
-      .describe("Time constant of sub-transient q-axis voltage. Units: s."),
-    Xd: zod.number().describe("Reactance after EMF in d-axis."),
-    Xq: zod.number().describe("Reactance after EMF in q-axis."),
-    Xd_p: zod.number().describe("Transient reactance after EMF in d-axis."),
-    Xq_p: zod.number().describe("Transient reactance after EMF in q-axis."),
-    Xd_pp: zod
+      .describe("Maximum limit on current controller input current"),
+    phi_I: zod
       .number()
       .describe(
-        "Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp.",
+        "Pre-defined angle (measured against the d-axis) for Iref once limit Imax is hit",
       ),
-    Xl: zod.number().describe("Stator leakage reactance."),
+  })
+  .describe(
+    "Parameters of Priority-Based Current Controller Limiter. Regulates the magnitude of the inverter output current and prioritizes a specific angle for the resultant current signal",
+  );
+
+export type PriorityOutputCurrentLimiter = zod.input<
+  typeof PriorityOutputCurrentLimiter
+>;
+export type PriorityOutputCurrentLimiterOutput = zod.output<
+  typeof PriorityOutputCurrentLimiter
+>;
+
+export const SaturationOutputCurrentLimiter = zod
+  .object({
+    I_max: zod
+      .number()
+      .describe("Maximum limit on current controller input current"),
+    kw: zod.number().describe("Defined feedback gain"),
+  })
+  .describe(
+    "Parameters of Saturation Current Controller Limiter. Regulates the magnitude of the inverter output current, and applies a closed loop feedback regulated by a static gain which provides ant-windup",
+  );
+
+export type SaturationOutputCurrentLimiter = zod.input<
+  typeof SaturationOutputCurrentLimiter
+>;
+export type SaturationOutputCurrentLimiterOutput = zod.output<
+  typeof SaturationOutputCurrentLimiter
+>;
+
+const aVRFixedVRefDefault = 1;
+export const AVRFixed = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Vf: zod
+      .number()
+      .describe("Fixed voltage field applied to the rotor winding"),
+    V_ref: zod
+      .number()
+      .default(aVRFixedVRefDefault)
+      .describe("Reference Voltage Set-point"),
+  })
+  .describe(
+    "Parameters of a AVR that returns a fixed voltage to the rotor winding",
+  );
+
+export type AVRFixed = zod.input<typeof AVRFixed>;
+export type AVRFixedOutput = zod.output<typeof AVRFixed>;
+
+const aVRSimpleVRefDefault = 1;
+export const AVRSimple = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Kv: zod.number().describe("Proportional Gain"),
+    V_ref: zod
+      .number()
+      .default(aVRSimpleVRefDefault)
+      .describe("Reference Voltage Set-point"),
+  })
+  .describe(
+    "Parameters of a simple proportional AVR in the derivative of EMF i.e. an integrator controller on EMF",
+  );
+
+export type AVRSimple = zod.input<typeof AVRSimple>;
+export type AVRSimpleOutput = zod.output<typeof AVRSimple>;
+
+const aVRTypeIVRefDefault = 1;
+export const AVRTypeI = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Ka: zod.number().describe("Amplifier gain"),
+    Ke: zod.number().describe("Field circuit integral deviation"),
+    Kf: zod.number().describe("Stabilizer gain"),
+    Ta: zod.number().describe("Amplifier time constant"),
+    Te: zod.number().describe("Field circuit time constant"),
+    Tf: zod.number().describe("Stabilizer time constant"),
+    Tr: zod.number().describe("Voltage measurement time constant"),
+    Va_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Ae: zod.number().describe("1st ceiling coefficient"),
+    Be: zod.number().describe("2nd ceiling coefficient"),
+    V_ref: zod
+      .number()
+      .default(aVRTypeIVRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe(
+    "Parameters of an Automatic Voltage Regulator Type I - Resembles IEEE Type DC1",
+  );
+
+export type AVRTypeI = zod.input<typeof AVRTypeI>;
+export type AVRTypeIOutput = zod.output<typeof AVRTypeI>;
+
+const aVRTypeIIVRefDefault = 1;
+export const AVRTypeII = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    K0: zod.number().describe("Regulator gain"),
+    T1: zod.number().describe("First pole in s"),
+    T2: zod.number().describe("First zero in s"),
+    T3: zod.number().describe("First pole in s"),
+    T4: zod.number().optional().describe("First zero in s"),
+    Te: zod.number().describe("Field circuit time constant"),
+    Tr: zod.number().describe("Voltage measurement time constant"),
+    Va_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Ae: zod.number().describe("1st ceiling coefficient"),
+    Be: zod.number().describe("2nd ceiling coefficient"),
+    V_ref: zod
+      .number()
+      .default(aVRTypeIIVRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe(
+    "Parameters of an Automatic Voltage Regulator Type II - Typical static exciter model",
+  );
+
+export type AVRTypeII = zod.input<typeof AVRTypeII>;
+export type AVRTypeIIOutput = zod.output<typeof AVRTypeII>;
+
+export const eSAC1AESatMin = 2;
+export const eSAC1AESatMax = 2;
+
+export const eSAC1ASeMin = 2;
+export const eSAC1ASeMax = 2;
+
+const eSAC1AVRefDefault = 1;
+export const ESAC1A = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Tr: zod.number().describe("Regulator input filter time constant"),
+    Tb: zod.number().describe("Regulator denominator (lag) time constant"),
+    Tc: zod.number().describe("Regulator numerator (lead) time constant"),
+    Ka: zod.number().describe("Regulator output gain"),
+    Ta: zod.number().describe("Regulator output time constant"),
+    Va_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Te: zod.number().describe("Exciter field time constant"),
+    Kf: zod
+      .number()
+      .describe("Rate feedback excitation system stabilizer gain"),
+    Tf: zod.number().describe("Rate feedback time constant"),
+    Kc: zod
+      .number()
+      .describe(
+        "Rectifier loading factor proportional to commutating reactance",
+      ),
+    Kd: zod
+      .number()
+      .describe(
+        "Demagnetizing factor, function of exciter alternator reactances",
+      ),
+    Ke: zod.number().describe("Exciter field proportional constant"),
+    E_sat: zod
+      .array(zod.number())
+      .min(eSAC1AESatMin)
+      .max(eSAC1AESatMax)
+      .describe("Exciter output voltage for saturation factor"),
     Se: zod
       .array(zod.number())
-      .min(roundRotorMachineSeMin)
-      .max(roundRotorMachineSeMax)
+      .min(eSAC1ASeMin)
+      .max(eSAC1ASeMax)
+      .describe("Exciter saturation factor at exciter output voltage"),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
       .describe(
-        "Saturation factor at 1 and 1.2 pu flux: S(1.0) = B(|psi_pp|-A)^2.",
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
-    gamma_d1: zod.number().describe("Do not modify"),
-    gamma_q1: zod.number().describe("Do not modify"),
-    gamma_d2: zod.number().describe("Do not modify"),
-    gamma_q2: zod.number().describe("Do not modify"),
-    gamma_qd: zod.number().describe("Do not modify"),
+    V_ref: zod
+      .number()
+      .default(eSAC1AVRefDefault)
+      .describe("Reference voltage set-point"),
   })
   .describe(
-    "Parameters of 4-states round-rotor synchronous machine with quadratic/exponential saturation: IEEE Std 1110 5.3.2 (Model 2.2). GENROU or GENROE model in PSSE and PSLF.",
+    "This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A Excitacion System. This model corresponds to ESAC1A in PSSE and PSLF",
   );
 
-export type RoundRotorMachine = zod.input<typeof RoundRotorMachine>;
-export type RoundRotorMachineOutput = zod.output<typeof RoundRotorMachine>;
+export type ESAC1A = zod.input<typeof ESAC1A>;
+export type ESAC1AOutput = zod.output<typeof ESAC1A>;
+
+export const eSAC6AESatMin = 2;
+export const eSAC6AESatMax = 2;
+
+export const eSAC6ASeMin = 2;
+export const eSAC6ASeMax = 2;
+
+const eSAC6AVRefDefault = 1;
+export const ESAC6A = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Tr: zod.number().describe("Regulator input filter time constant"),
+    Ka: zod.number().describe("Regulator output gain"),
+    Ta: zod.number().describe("Regulator output lag time constant"),
+    Tk: zod.number().describe("Voltage regulator lead time constant"),
+    Tb: zod.number().describe("Regulator denominator (lag) time constant"),
+    Tc: zod.number().describe("Regulator numerator (lead) time constant"),
+    Va_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Te: zod.number().describe("Exciter field time constant"),
+    VFE_lim: zod.number().describe("Exciter field current limiter reference"),
+    Kh: zod.number().describe("Exciter field current regulator feedback gain"),
+    VH_max: zod
+      .number()
+      .describe("Exciter field current limiter maximum output"),
+    Th: zod
+      .number()
+      .describe(
+        "Exciter field current limiter denominator (lag) time constant",
+      ),
+    Tj: zod
+      .number()
+      .describe("Exciter field current limiter (lead) time constant"),
+    Kc: zod
+      .number()
+      .describe(
+        "Rectifier loading factor proportional to commutating reactance",
+      ),
+    Kd: zod
+      .number()
+      .describe(
+        "Demagnetizing factor, function of exciter alternator reactances",
+      ),
+    Ke: zod.number().describe("Exciter field proportional constant"),
+    E_sat: zod
+      .array(zod.number())
+      .min(eSAC6AESatMin)
+      .max(eSAC6AESatMax)
+      .describe("Exciter output voltage for saturation factor"),
+    Se: zod
+      .array(zod.number())
+      .min(eSAC6ASeMin)
+      .max(eSAC6ASeMax)
+      .describe("Exciter saturation factor at exciter output voltage"),
+    V_ref: zod
+      .number()
+      .default(eSAC6AVRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe(
+    "This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC6A Excitacion System. ESAC6A in PSSE and PSLF",
+  );
+
+export type ESAC6A = zod.input<typeof ESAC6A>;
+export type ESAC6AOutput = zod.output<typeof ESAC6A>;
+
+export const eSAC8BESatMin = 2;
+export const eSAC8BESatMax = 2;
+
+export const eSAC8BSeMin = 2;
+export const eSAC8BSeMax = 2;
+
+const eSAC8BVRefDefault = 1;
+export const ESAC8B = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Tr: zod.number().describe("Regulator input filter time constant"),
+    Kp: zod.number().describe("Regulator proportional PID gain"),
+    Ki: zod.number().describe("Regulator integral PID gain"),
+    Kd: zod.number().describe("Regulator derivative PID gain"),
+    Td: zod.number().describe("Regulator derivative PID time constant"),
+    Ka: zod.number().describe("Regulator output gain"),
+    Ta: zod.number().describe("Regulator output lag time constant"),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Te: zod.number().describe("Exciter field time constant"),
+    Ke: zod.number().describe("Exciter field proportional constant"),
+    E_sat: zod
+      .array(zod.number())
+      .min(eSAC8BESatMin)
+      .max(eSAC8BESatMax)
+      .describe("Exciter output voltage for saturation factor"),
+    Se: zod
+      .array(zod.number())
+      .min(eSAC8BSeMin)
+      .max(eSAC8BSeMax)
+      .describe("Exciter saturation factor at exciter output voltage"),
+    V_ref: zod
+      .number()
+      .default(eSAC8BVRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe(
+    "Excitation System AC8B. Used to represent the Basler Digital Excitation Control System (DECS) with PID controller in PSSE",
+  );
+
+export type ESAC8B = zod.input<typeof ESAC8B>;
+export type ESAC8BOutput = zod.output<typeof ESAC8B>;
+
+export const eSDC1AESatMin = 2;
+export const eSDC1AESatMax = 2;
+
+export const eSDC1ASeMin = 2;
+export const eSDC1ASeMax = 2;
+
+const eSDC1AVRefDefault = 1;
+export const ESDC1A = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Tr: zod.number().describe("Voltage measurement time constant"),
+    Ka: zod.number().describe("Amplifier gain"),
+    Ta: zod.number().describe("Amplifier time constant"),
+    Tb: zod.number().describe("Regulator input time constant"),
+    Tc: zod.number().describe("Regulator input time constant"),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Ke: zod.number().describe("Exciter constant related to self-excited field"),
+    Te: zod
+      .number()
+      .describe(
+        "Exciter time constant, integration rate associated with exciter control",
+      ),
+    Kf: zod.number().describe("Excitation control system stabilizer gain"),
+    Tf: zod
+      .number()
+      .describe("Excitation control system stabilizer time constant"),
+    switch: zod.int().describe("switch"),
+    E_sat: zod
+      .array(zod.number())
+      .min(eSDC1AESatMin)
+      .max(eSDC1AESatMax)
+      .describe("Exciter output voltage for saturation factor"),
+    Se: zod
+      .array(zod.number())
+      .min(eSDC1ASeMin)
+      .max(eSDC1ASeMax)
+      .describe("Exciter saturation factor at exciter output voltage"),
+    V_ref: zod
+      .number()
+      .default(eSDC1AVRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe(
+    "Self-excited shunt fields with the voltage regulator operating in a mode commonly termed buck-boost. Parameters of IEEE Std 421.5 Type DC1A Excitacion System. This model corresponds to ESDC1A in PSSE and PSLF",
+  );
+
+export type ESDC1A = zod.input<typeof ESDC1A>;
+export type ESDC1AOutput = zod.output<typeof ESDC1A>;
+
+export const eSDC2AESatMin = 2;
+export const eSDC2AESatMax = 2;
+
+export const eSDC2ASeMin = 2;
+export const eSDC2ASeMax = 2;
+
+const eSDC2AVRefDefault = 1;
+export const ESDC2A = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Tr: zod.number().describe("Voltage measurement time constant"),
+    Ka: zod.number().describe("Amplifier gain"),
+    Ta: zod.number().describe("Amplifier time constant"),
+    Tb: zod.number().describe("Regulator input time constant"),
+    Tc: zod.number().describe("Regulator input time constant"),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Ke: zod.number().describe("Exciter constant related to self-excited field"),
+    Te: zod
+      .number()
+      .describe(
+        "Exciter time constant, integration rate associated with exciter control",
+      ),
+    Kf: zod.number().describe("Excitation control system stabilizer gain"),
+    Tf: zod
+      .number()
+      .describe("Excitation control system stabilizer time constant"),
+    switch: zod.int().describe("switch"),
+    E_sat: zod
+      .array(zod.number())
+      .min(eSDC2AESatMin)
+      .max(eSDC2AESatMax)
+      .describe("Exciter output voltage for saturation factor"),
+    Se: zod
+      .array(zod.number())
+      .min(eSDC2ASeMin)
+      .max(eSDC2ASeMax)
+      .describe("Exciter saturation factor at exciter output voltage"),
+    V_ref: zod
+      .number()
+      .default(eSDC2AVRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe(
+    "Used to represent field-controlled dc commutator exciters with continuously acting voltage regulators having power supplies derived from the generator or auxiliaries bus. Parameters of IEEE Std 421.5 Type DC2A Excitacion System. This model corresponds to ESDC2A in PSSE and PSLF",
+  );
+
+export type ESDC2A = zod.input<typeof ESDC2A>;
+export type ESDC2AOutput = zod.output<typeof ESDC2A>;
+
+export const eSST1AViLimMin = 2;
+export const eSST1AViLimMax = 2;
+
+const eSST1AVRefDefault = 1;
+export const ESST1A = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    UEL_flags: zod
+      .int()
+      .describe("Code input for Underexcitization limiter (UEL) entry"),
+    PSS_flags: zod
+      .int()
+      .describe("Code input for Power System Stabilizer (PSS) or (VOS) entry"),
+    Tr: zod.number().describe("Regulator input filter time constant"),
+    Vi_lim: zod
+      .array(zod.number())
+      .min(eSST1AViLimMin)
+      .max(eSST1AViLimMax)
+      .describe("Voltage error limits (regulator input)"),
+    Tc: zod.number().describe("First regulator numerator (lead) time constant"),
+    Tb: zod
+      .number()
+      .describe("First regulator denominator (lag) time constant"),
+    Tc1: zod
+      .number()
+      .describe("Second regulator numerator (lead) time constant"),
+    Tb1: zod
+      .number()
+      .describe("Second regulator denominator (lag) time constant"),
+    Ka: zod.number().describe("Voltage regulator gain"),
+    Ta: zod.number().describe("Voltage regulator time constant"),
+    Va_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Kc: zod
+      .number()
+      .describe(
+        "Rectifier loading factor proportional to commutating reactance",
+      ),
+    Kf: zod.number().describe("Rate feedback gain"),
+    Tf: zod.number().describe("Rate feedback time constant"),
+    K_lr: zod.number().describe("Exciter output current limiter gain"),
+    I_lr: zod.number().describe("Exciter output current limit reference"),
+    V_ref: zod
+      .number()
+      .default(eSST1AVRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe(
+    "This excitation system supplies power through a transformer from the generator terminals and its regulated by a controlled rectifier (via thyristors). Parameters of IEEE Std 421.5 Type ST1A Excitacion System. ESST1A in PSSE and PSLF",
+  );
+
+export type ESST1A = zod.input<typeof ESST1A>;
+export type ESST1AOutput = zod.output<typeof ESST1A>;
+
+const eSST4BVRefDefault = 1;
+export const ESST4B = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    K_pr: zod.number().describe("Regulator proportional gain"),
+    K_ir: zod.number().describe("Regulator integral gain"),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Ta: zod.number().describe("Voltage regulator time constant"),
+    K_pm: zod.number().describe("Voltage regulator proportional gain output"),
+    K_im: zod.number().describe("Voltage regulator integral gain output"),
+    Vm_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Kg: zod
+      .number()
+      .describe("Feedback gain constant of the inner loop field regulator"),
+    Kp: zod.number().describe("Potential circuit (voltage) gain coefficient"),
+    Ki: zod.number().describe("Compound circuit (current) gain coefficient"),
+    VB_max: zod.number().describe("Maximum available exciter voltage"),
+    Kc: zod
+      .number()
+      .describe(
+        "Rectifier loading factor proportional to commutating reactance",
+      ),
+    Xl: zod.number().describe("Reactance associated with potential source"),
+    thetap: zod.number().describe("Potential circuit phase angle (degrees)"),
+    V_ref: zod
+      .number()
+      .default(eSST4BVRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe(
+    "In these excitation systems, voltage (and also current in compounded systems) is transformed to an appropriate level. Rectifiers, either controlled or non-controlled, provide the necessary direct current for the generator field. Parameters of IEEE Std 421.5 Type ST4B Excitacion System. ESST4B in PSSE and PSLF",
+  );
+
+export type ESST4B = zod.input<typeof ESST4B>;
+export type ESST4BOutput = zod.output<typeof ESST4B>;
+
+const eX4VSAVRefDefault = 1;
+export const EX4VSA = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Iflim: zod.number().describe("OEL field current limit"),
+    d: zod.number().describe("OEL parameter d"),
+    f: zod.number().describe("OEL parameter f"),
+    Spar: zod.number().describe("OEL parameter Spar"),
+    K1: zod.number().describe("OEL delay time constant"),
+    K2: zod.number().describe("OEL parameter K2"),
+    Oel_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    G: zod.number().describe("AVR exciter gain"),
+    Ta: zod.number().describe("Numerator lead-lag (lead) time constant"),
+    Tb: zod.number().describe("Denominator lead-lag (lag) time constant"),
+    Te: zod.number().describe("Exciter time constant"),
+    E_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    V_ref: zod
+      .number()
+      .default(eX4VSAVRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe("IEEE Excitation System for Voltage Security Assesment");
+
+export type EX4VSA = zod.input<typeof EX4VSA>;
+export type EX4VSAOutput = zod.output<typeof EX4VSA>;
+
+export const eXAC1ESatMin = 2;
+export const eXAC1ESatMax = 2;
+
+export const eXAC1SeMin = 2;
+export const eXAC1SeMax = 2;
+
+const eXAC1VRefDefault = 1;
+export const EXAC1 = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Tr: zod.number().describe("Regulator input filter time constant"),
+    Tb: zod.number().describe("Regulator denominator (lag) time constant"),
+    Tc: zod.number().describe("Regulator numerator (lead) time constant"),
+    Ka: zod.number().describe("Regulator output gain"),
+    Ta: zod.number().describe("Regulator output time constant"),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Te: zod.number().describe("Exciter field time constant"),
+    Kf: zod
+      .number()
+      .describe("Rate feedback excitation system stabilizer gain"),
+    Tf: zod.number().describe("Rate feedback time constant"),
+    Kc: zod
+      .number()
+      .describe(
+        "Rectifier loading factor proportional to commutating reactance",
+      ),
+    Kd: zod
+      .number()
+      .describe(
+        "Demagnetizing factor, function of exciter alternator reactances",
+      ),
+    Ke: zod.number().describe("Exciter field proportional constant"),
+    E_sat: zod
+      .array(zod.number())
+      .min(eXAC1ESatMin)
+      .max(eXAC1ESatMax)
+      .describe("Exciter output voltage for saturation factor"),
+    Se: zod
+      .array(zod.number())
+      .min(eXAC1SeMin)
+      .max(eXAC1SeMax)
+      .describe("Exciter saturation factor at exciter output voltage"),
+    V_ref: zod
+      .number()
+      .default(eXAC1VRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe(
+    "Modified ESAC1A. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A. EXAC1 in PSSE and PSLF",
+  );
+
+export type EXAC1 = zod.input<typeof EXAC1>;
+export type EXAC1Output = zod.output<typeof EXAC1>;
+
+export const eXAC1AESatMin = 2;
+export const eXAC1AESatMax = 2;
+
+export const eXAC1ASeMin = 2;
+export const eXAC1ASeMax = 2;
+
+const eXAC1AVRefDefault = 1;
+export const EXAC1A = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Tr: zod.number().describe("Regulator input filter time constant"),
+    Tb: zod.number().describe("Regulator denominator (lag) time constant"),
+    Tc: zod.number().describe("Regulator numerator (lead) time constant"),
+    Ka: zod.number().describe("Regulator output gain"),
+    Ta: zod.number().describe("Regulator output time constant"),
+    Va_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Te: zod.number().describe("Exciter field time constant"),
+    Kf: zod
+      .number()
+      .describe("Rate feedback excitation system stabilizer gain"),
+    Tf: zod.number().describe("Rate feedback time constant"),
+    Kc: zod
+      .number()
+      .describe(
+        "Rectifier loading factor proportional to commutating reactance",
+      ),
+    Kd: zod
+      .number()
+      .describe(
+        "Demagnetizing factor, function of exciter alternator reactances",
+      ),
+    Ke: zod.number().describe("Exciter field proportional constant"),
+    E_sat: zod
+      .array(zod.number())
+      .min(eXAC1AESatMin)
+      .max(eXAC1AESatMax)
+      .describe("Exciter output voltage for saturation factor"),
+    Se: zod
+      .array(zod.number())
+      .min(eXAC1ASeMin)
+      .max(eXAC1ASeMax)
+      .describe("Exciter saturation factor at exciter output voltage"),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    V_ref: zod
+      .number()
+      .default(eXAC1AVRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe(
+    "Modified ESAC1A. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A Excitacion System. EXAC1A in PSSE and PSLF",
+  );
+
+export type EXAC1A = zod.input<typeof EXAC1A>;
+export type EXAC1AOutput = zod.output<typeof EXAC1A>;
+
+export const eXAC2ESatMin = 2;
+export const eXAC2ESatMax = 2;
+
+export const eXAC2SeMin = 2;
+export const eXAC2SeMax = 2;
+
+const eXAC2VRefDefault = 1;
+export const EXAC2 = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Tr: zod.number().describe("Regulator input filter time constant"),
+    Tb: zod.number().describe("Regulator denominator (lag) time constant"),
+    Tc: zod.number().describe("Regulator numerator (lead) time constant"),
+    Ka: zod.number().describe("Regulator output gain"),
+    Ta: zod.number().describe("Regulator output time constant"),
+    Va_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Kb: zod.number().describe("Second stage regulator gain"),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Te: zod.number().describe("Exciter field time constant"),
+    Kl: zod.number().describe("Exciter field current limiter gain"),
+    Kh: zod.number().describe("Exciter field current regulator feedback gain"),
+    Kf: zod
+      .number()
+      .describe("Rate feedback excitation system stabilizer gain"),
+    Tf: zod.number().describe("Rate feedback time constant"),
+    Kc: zod
+      .number()
+      .describe(
+        "Rectifier loading factor proportional to commutating reactance",
+      ),
+    Kd: zod
+      .number()
+      .describe(
+        "Demagnetizing factor, function of exciter alternator reactances",
+      ),
+    Ke: zod.number().describe("Exciter field proportional constant"),
+    V_lr: zod.number().describe("Maximum exciter field current"),
+    E_sat: zod
+      .array(zod.number())
+      .min(eXAC2ESatMin)
+      .max(eXAC2ESatMax)
+      .describe("Exciter output voltage for saturation factor"),
+    Se: zod
+      .array(zod.number())
+      .min(eXAC2SeMin)
+      .max(eXAC2SeMax)
+      .describe("Exciter saturation factor at exciter output voltage"),
+    V_ref: zod
+      .number()
+      .default(eXAC2VRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe(
+    "Modified AC2. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC2A Excitacion System. The alternator main exciter is used, feeding its output via non-controlled rectifiers. The Type AC2C model is similar to that of Type AC1C except for the inclusion of exciter time constant compensation and exciter field current limiting elements. EXAC2 in PSSE and PSLF",
+  );
+
+export type EXAC2 = zod.input<typeof EXAC2>;
+export type EXAC2Output = zod.output<typeof EXAC2>;
+
+export const eXPIC1ESatMin = 2;
+export const eXPIC1ESatMax = 2;
+
+export const eXPIC1SeMin = 2;
+export const eXPIC1SeMax = 2;
+
+const eXPIC1VRefDefault = 1;
+export const EXPIC1 = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Tr: zod.number().describe("Regulator input filter time constant"),
+    Ka: zod.number().describe("Voltage regulator gain"),
+    Ta: zod.number().describe("Voltage regulator time constant"),
+    Va_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Ta_2: zod.number().describe("Voltage regulator time constant"),
+    Ta_3: zod.number().describe("Voltage regulator time constant"),
+    Ta_4: zod.number().describe("Voltage regulator time constant"),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Kf: zod
+      .number()
+      .describe("Rate feedback excitation system stabilizer gain"),
+    Tf_1: zod.number().describe("Rate feedback time constant"),
+    Tf_2: zod.number().describe("Rate feedback time constant"),
+    Efd_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Ke: zod.number().describe("Exciter constant"),
+    Te: zod.number().describe("Exciter time constant"),
+    E_sat: zod
+      .array(zod.number())
+      .min(eXPIC1ESatMin)
+      .max(eXPIC1ESatMax)
+      .describe("Exciter output voltage for saturation factor"),
+    Se: zod
+      .array(zod.number())
+      .min(eXPIC1SeMin)
+      .max(eXPIC1SeMax)
+      .describe("Exciter saturation factor at exciter output voltage"),
+    Kp: zod.number().describe("Potential source gain"),
+    Kc: zod.number().describe("Exciter regulator factor"),
+    V_ref: zod
+      .number()
+      .default(eXPIC1VRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe("Generic Proportional/Integral Excitation System");
+
+export type EXPIC1 = zod.input<typeof EXPIC1>;
+export type EXPIC1Output = zod.output<typeof EXPIC1>;
+
+const eXST1VRefDefault = 1;
+export const EXST1 = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Tr: zod.number().describe("Voltage measurement time constant"),
+    Vi_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Tc: zod.number().describe("Numerator lead-lag (lead) time constant"),
+    Tb: zod.number().describe("Denominator lead-lag (lag) time constant"),
+    Ka: zod.number().describe("Amplifier gain"),
+    Ta: zod.number().describe("Amplifier time constant"),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Kc: zod.number().describe("Current field constant limiter multiplier"),
+    Kf: zod.number().describe("Excitation control system stabilizer gain"),
+    Tf: zod
+      .number()
+      .describe("Excitation control system stabilizer time constant"),
+    V_ref: zod
+      .number()
+      .default(eXST1VRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe("IEEE Type ST1 Excitation System (PTI version)");
+
+export type EXST1 = zod.input<typeof EXST1>;
+export type EXST1Output = zod.output<typeof EXST1>;
+
+export const iEEET1ESatMin = 2;
+export const iEEET1ESatMax = 2;
+
+export const iEEET1SeMin = 2;
+export const iEEET1SeMax = 2;
+
+const iEEET1VRefDefault = 1;
+export const IEEET1 = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Tr: zod.number().describe("Voltage measurement time constant"),
+    Ka: zod.number().describe("Amplifier gain"),
+    Ta: zod.number().describe("Amplifier time constant"),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Ke: zod.number().describe("Exciter constant related to self-excited field"),
+    Te: zod
+      .number()
+      .describe(
+        "Exciter time constant, integration rate associated with exciter control",
+      ),
+    Kf: zod.number().describe("Excitation control system stabilizer gain"),
+    Tf: zod
+      .number()
+      .describe("Excitation control system stabilizer time constant"),
+    switch: zod.int().describe("Switch"),
+    E_sat: zod
+      .array(zod.number())
+      .min(iEEET1ESatMin)
+      .max(iEEET1ESatMax)
+      .describe("Exciter output voltage for saturation factor"),
+    Se: zod
+      .array(zod.number())
+      .min(iEEET1SeMin)
+      .max(iEEET1SeMax)
+      .describe("Exciter saturation factor at exciter output voltage"),
+    V_ref: zod
+      .number()
+      .default(iEEET1VRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe("1968 IEEE type 1 excitation system model");
+
+export type IEEET1 = zod.input<typeof IEEET1>;
+export type IEEET1Output = zod.output<typeof IEEET1>;
+
+const sCRXVRefDefault = 1;
+export const SCRX = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Ta_Tb: zod.number().describe("Lead input constant ratio"),
+    Tb: zod.number().describe("Lag input constant"),
+    K: zod.number().describe("Regulator gain"),
+    Te: zod.number().describe("Regulator time constant"),
+    Efd_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    switch: zod.int().describe("Switch"),
+    rc_rfd: zod
+      .number()
+      .describe(
+        "Field current capability. Set = 0 for negative current capability. Typical value 10",
+      ),
+    V_ref: zod
+      .number()
+      .default(sCRXVRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe(
+    "This exciter is based on an IEEE type SCRX solid state exciter. The output field voltage is varied by a control system to maintain the system voltage at Vref. Please note that this exciter model has no initialization capabilities - this means that it will respond to whatever inputs it receives regardless of the state of the machine model",
+  );
+
+export type SCRX = zod.input<typeof SCRX>;
+export type SCRXOutput = zod.output<typeof SCRX>;
 
 const sEXSVRefDefault = 1;
 export const SEXS = zod
   .object({
-    id: zod.int().describe("Unique integer identifier for this component."),
-    Ta_Tb: zod.number().describe("Ratio of lead and lag time constants."),
+    id: zod.int().describe("Unique integer identifier for this component"),
+    Ta_Tb: zod.number().describe("Ratio of lead and lag time constants"),
     Tb: zod.number().describe("Lag time constant. Units: s."),
-    K: zod.number().describe("Gain."),
+    K: zod.number().describe("Gain"),
     Te: zod.number().describe("Field circuit time constant. Units: s."),
     V_lim: zod
       .object({
@@ -442,17 +1735,1300 @@ export const SEXS = zod
     V_ref: zod
       .number()
       .default(sEXSVRefDefault)
-      .describe("Reference Voltage Set-point."),
+      .describe("Reference voltage set-point"),
   })
-  .describe("Parameters of Simplified Excitation System Model - SEXS in PSSE.");
+  .describe("Parameters of Simplified Excitation System Model - SEXS in PSSE");
 
 export type SEXS = zod.input<typeof SEXS>;
 export type SEXSOutput = zod.output<typeof SEXS>;
 
+const sT6BVRefDefault = 1;
+export const ST6B = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    OEL_Flag: zod
+      .int()
+      .describe("OEL Flag for ST6B: 1: before HV gate, 2: after HV gate"),
+    Tr: zod.number().describe("Regulator input filter time constant"),
+    K_pa: zod.number().describe("Regulator proportional gain"),
+    K_ia: zod.number().describe("Regulator integral gain"),
+    K_da: zod.number().describe("Regulator derivative gain"),
+    T_da: zod
+      .number()
+      .describe("Voltage regulator derivative channel time constant"),
+    Va_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    K_ff: zod
+      .number()
+      .describe("Pre-control gain of the inner loop field regulator"),
+    K_m: zod
+      .number()
+      .describe("Forward gain of the inner loop field regulator"),
+    K_ci: zod.number().describe("Exciter output current limit adjustment gain"),
+    K_lr: zod.number().describe("Exciter output current limiter gain"),
+    I_lr: zod.number().describe("Exciter current limiter reference"),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Kg: zod
+      .number()
+      .describe("Feedback gain constant of the inner loop field regulator"),
+    Tg: zod
+      .number()
+      .describe(
+        "Feedback time constant of the inner loop field voltage regulator",
+      ),
+    V_ref: zod
+      .number()
+      .default(sT6BVRefDefault)
+      .describe("Reference voltage set-point"),
+  })
+  .describe(
+    "In these excitation systems, voltage (and also current in compounded systems) is transformed to an appropriate level. Rectifiers, either controlled or non-controlled, provide the necessary direct current for the generator field. Parameters of IEEE Std 421.5 Type ST6B Excitacion System. ST6B in PSSE and PSLF",
+  );
+
+export type ST6B = zod.input<typeof ST6B>;
+export type ST6BOutput = zod.output<typeof ST6B>;
+
+const sT8CVRefDefault = 1;
+const sT8CIfdRefDefault = 1;
+export const ST8C = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    OEL_Flag: zod
+      .int()
+      .describe(
+        "OEL Flag for ST8C: <2: Summation at voltage error, 2: OEL takeover at gate",
+      ),
+    UEL_Flag: zod
+      .int()
+      .describe(
+        "UEL Flag for ST8C: <2: Summation at voltage error, 2: UEL takeover at gate",
+      ),
+    SCL_Flag: zod
+      .int()
+      .describe(
+        "SCL Flag for ST8C: <2: Summation at voltage error, 2: SCL takeover at UEL and OEL gates",
+      ),
+    SW1_Flag: zod
+      .int()
+      .describe(
+        "SW1 Flag for power source selector for ST8C: <2: Source from generator terminal voltage, 2: Independent power source",
+      ),
+    Tr: zod.number().describe("Regulator input filter time constant"),
+    K_pr: zod.number().describe("Regulator proportional gain"),
+    K_ir: zod.number().describe("Regulator integral gain"),
+    Vpi_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    K_pa: zod.number().describe("Field current regulator proportional gain"),
+    K_ia: zod.number().describe("Field current regulator integral gain"),
+    Va_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    K_a: zod.number().describe("Field current regulator proportional gain"),
+    T_a: zod
+      .number()
+      .describe("Controlled rectifier bridge equivalent time constant"),
+    Vr_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    K_f: zod.number().describe("Exciter field current feedback gain"),
+    T_f: zod.number().describe("Field current feedback time constant"),
+    K_c1: zod
+      .number()
+      .describe(
+        "Rectifier loading factor proportional to commutating reactance",
+      ),
+    K_p: zod.number().describe("Potential circuit (voltage) gain coefficient"),
+    K_i1: zod.number().describe("Potential circuit (current) gain coefficient"),
+    X_l: zod.number().describe("Reactance associated with potential source"),
+    theta_p: zod.number().describe("Potential circuit phase angle (degrees)"),
+    VB1_max: zod.number().describe("Maximum available exciter voltage"),
+    K_c2: zod
+      .number()
+      .describe(
+        "Rectifier loading factor proportional to commutating reactance",
+      ),
+    K_i2: zod.number().describe("Potential circuit (current) gain coefficient"),
+    VB2_max: zod.number().describe("Maximum available exciter voltage"),
+    V_ref: zod
+      .number()
+      .default(sT8CVRefDefault)
+      .describe("Reference voltage set-point"),
+    Ifd_ref: zod
+      .number()
+      .default(sT8CIfdRefDefault)
+      .describe("Reference field current set-point"),
+  })
+  .describe(
+    "In these excitation systems, voltage (and also current in compounded systems) is transformed to an appropriate level. Rectifiers, either controlled or non-controlled, provide the necessary direct current for the generator field. Parameters of IEEE Std 421.5 Type ST8C Excitacion System. ST8C in PSSE and PSLF",
+  );
+
+export type ST8C = zod.input<typeof ST8C>;
+export type ST8COutput = zod.output<typeof ST8C>;
+
+export const AndersonFouadMachine = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Resistance after EMF"),
+    Xd: zod.number().describe("Reactance after EMF in d-axis"),
+    Xq: zod.number().describe("Reactance after EMF in q-axis"),
+    Xd_p: zod.number().describe("Transient reactance after EMF in d-axis"),
+    Xq_p: zod.number().describe("Transient reactance after EMF in q-axis"),
+    Xd_pp: zod.number().describe("Sub-Transient reactance after EMF in d-axis"),
+    Xq_pp: zod.number().describe("Sub-Transient reactance after EMF in q-axis"),
+    Td0_p: zod
+      .number()
+      .describe("Time constant of transient d-axis voltage Units: s."),
+    Tq0_p: zod
+      .number()
+      .describe("Time constant of transient q-axis voltage Units: s."),
+    Td0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient d-axis voltage Units: s."),
+    Tq0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient q-axis voltage Units: s."),
+  })
+  .describe("Parameters of 6-states synchronous machine: Anderson-Fouad model");
+
+export type AndersonFouadMachine = zod.input<typeof AndersonFouadMachine>;
+export type AndersonFouadMachineOutput = zod.output<
+  typeof AndersonFouadMachine
+>;
+
+export const BaseMachine = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Resistance after EMF"),
+    Xd_p: zod.number().describe("Reactance after EMF"),
+    eq_p: zod.number().describe("Fixed EMF behind the impedance"),
+  })
+  .describe("Parameters of a Classic Machine: GENCLS in PSSE and PSLF");
+
+export type BaseMachine = zod.input<typeof BaseMachine>;
+export type BaseMachineOutput = zod.output<typeof BaseMachine>;
+
+export const FullMachine = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Resistance after EMF"),
+    R_f: zod.number().describe("Field rotor winding resistance"),
+    R_1d: zod
+      .number()
+      .describe(
+        "Damping rotor winding resistance on d-axis in per unit. This value is denoted as RD in Machowski",
+      ),
+    R_1q: zod
+      .number()
+      .describe(
+        "Damping rotor winding resistance on q-axis in per unit. This value is denoted as RQ in Machowski",
+      ),
+    L_d: zod
+      .number()
+      .describe(
+        "Inductance of fictitious damping that represent the effect of the three-phase stator winding in the d-axis of the rotor, in per unit. This value is denoted as Lad + Ll in Kundur (and Ld in Machowski)",
+      ),
+    L_q: zod
+      .number()
+      .describe(
+        "Inductance of fictitious damping that represent the effect of the three-phase stator winding in the q-axis of the rotor, in per unit. This value is denoted as Laq + Ll in Kundur (and Ld in Machowski)",
+      ),
+    L_ad: zod
+      .number()
+      .describe(
+        "Mutual inductance between stator winding and rotor field (and damping) winding inductance on d-axis, in per unit",
+      ),
+    L_aq: zod
+      .number()
+      .describe(
+        "Mutual inductance between stator winding and rotor damping winding inductance on q-axis, in per unit",
+      ),
+    L_f1d: zod
+      .number()
+      .describe(
+        "Mutual inductance between rotor field winding and rotor damping winding inductance on d-axis, in per unit",
+      ),
+    L_ff: zod.number().describe("Field rotor winding inductance, in per unit"),
+    L_1d: zod
+      .number()
+      .describe("Inductance of the d-axis rotor damping circuit, in per unit"),
+    L_1q: zod
+      .number()
+      .describe("Inductance of the q-axis rotor damping circuit, in per unit"),
+  })
+  .describe(
+    "Parameter of a full order flux stator-rotor model without zero sequence flux in the stator. The derivative of stator fluxes (ψd and ψq) is NOT neglected. Only one q-axis damping circuit is considered. All parameters are in machine per unit. Refer to Chapter 3 of Power System Stability and Control by P. Kundur or Chapter 11 of Power System Dynamics: Stability and Control, by J. Machowski, J. Bialek and J. Bumby, for more details. Note that the models are somewhat different (but equivalent) due to the different Park Transformation used in both books",
+  );
+
+export type FullMachine = zod.input<typeof FullMachine>;
+export type FullMachineOutput = zod.output<typeof FullMachine>;
+
+export const MarconatoMachine = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Resistance after EMF"),
+    Xd: zod.number().describe("Reactance after EMF in d-axis"),
+    Xq: zod.number().describe("Reactance after EMF in q-axis"),
+    Xd_p: zod.number().describe("Transient reactance after EMF in d-axis"),
+    Xq_p: zod.number().describe("Transient reactance after EMF in q-axis"),
+    Xd_pp: zod.number().describe("Sub-Transient reactance after EMF in d-axis"),
+    Xq_pp: zod.number().describe("Sub-Transient reactance after EMF in q-axis"),
+    Td0_p: zod.number().describe("Time constant of transient d-axis voltage"),
+    Tq0_p: zod.number().describe("Time constant of transient q-axis voltage"),
+    Td0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient d-axis voltage"),
+    Tq0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient q-axis voltage"),
+    T_AA: zod
+      .number()
+      .describe("Time constant of d-axis additional leakage, validation range"),
+  })
+  .describe("Parameters of 6-states synchronous machine: Marconato model");
+
+export type MarconatoMachine = zod.input<typeof MarconatoMachine>;
+export type MarconatoMachineOutput = zod.output<typeof MarconatoMachine>;
+
+export const OneDOneQMachine = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Resistance after EMF"),
+    Xd: zod.number().describe("Reactance after EMF in d-axis"),
+    Xq: zod.number().describe("Reactance after EMF in q-axis"),
+    Xd_p: zod.number().describe("Transient reactance after EMF in d-axis"),
+    Xq_p: zod.number().describe("Transient reactance after EMF in q-axis"),
+    Td0_p: zod.number().describe("Time constant of transient d-axis voltage"),
+    Tq0_p: zod.number().describe("Time constant of transient q-axis voltage"),
+  })
+  .describe(
+    "Parameters of 4-states synchronous machine: Simplified Marconato model The derivative of stator fluxes (ψd and ψq) is neglected and ωψd = ψd and ωψq = ψq is assumed (i.e. ω=1.0). This is standard when transmission network dynamics is neglected",
+  );
+
+export type OneDOneQMachine = zod.input<typeof OneDOneQMachine>;
+export type OneDOneQMachineOutput = zod.output<typeof OneDOneQMachine>;
+
+export const roundRotorExponentialSaturationCoeffsMin = 2;
+export const roundRotorExponentialSaturationCoeffsMax = 2;
+
+export const RoundRotorExponential = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    base_machine: zod.int().describe("Round Rotor machine parameters"),
+    saturation_coeffs: zod
+      .array(zod.number())
+      .min(roundRotorExponentialSaturationCoeffsMin)
+      .max(roundRotorExponentialSaturationCoeffsMax)
+      .describe(
+        "Derived saturation coefficients for the exponential saturation model, computed from the Se input",
+      ),
+  })
+  .describe(
+    "4-states round-rotor synchronous machine with exponential saturation: IEEE Std 1110 §5.3.2 (Model 2.2). GENROE model in PSSE and PSLF",
+  );
+
+export type RoundRotorExponential = zod.input<typeof RoundRotorExponential>;
+export type RoundRotorExponentialOutput = zod.output<
+  typeof RoundRotorExponential
+>;
+
+export const roundRotorMachineSeMin = 2;
+export const roundRotorMachineSeMax = 2;
+
+export const RoundRotorMachine = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Armature resistance"),
+    Td0_p: zod
+      .number()
+      .describe("Time constant of transient d-axis voltage. Units: s."),
+    Td0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient d-axis voltage. Units: s."),
+    Tq0_p: zod
+      .number()
+      .describe("Time constant of transient q-axis voltage. Units: s."),
+    Tq0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient q-axis voltage. Units: s."),
+    Xd: zod.number().describe("Reactance after EMF in d-axis"),
+    Xq: zod.number().describe("Reactance after EMF in q-axis"),
+    Xd_p: zod.number().describe("Transient reactance after EMF in d-axis"),
+    Xq_p: zod.number().describe("Transient reactance after EMF in q-axis"),
+    Xd_pp: zod
+      .number()
+      .describe(
+        "Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp",
+      ),
+    Xl: zod.number().describe("Stator leakage reactance"),
+    Se: zod
+      .array(zod.number())
+      .min(roundRotorMachineSeMin)
+      .max(roundRotorMachineSeMax)
+      .describe(
+        "Saturation factor at 1 and 1.2 pu flux: S(1.0) = B(|psi_pp|-A)^2",
+      ),
+  })
+  .describe(
+    "Parameters of 4-states round-rotor synchronous machine with quadratic/exponential saturation: IEEE Std 1110 5.3.2 (Model 2.2). GENROU or GENROE model in PSSE and PSLF",
+  );
+
+export type RoundRotorMachine = zod.input<typeof RoundRotorMachine>;
+export type RoundRotorMachineOutput = zod.output<typeof RoundRotorMachine>;
+
+export const roundRotorQuadraticSaturationCoeffsMin = 2;
+export const roundRotorQuadraticSaturationCoeffsMax = 2;
+
+export const RoundRotorQuadratic = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    base_machine: zod.int().describe("Round Rotor machine parameters"),
+    saturation_coeffs: zod
+      .array(zod.number())
+      .min(roundRotorQuadraticSaturationCoeffsMin)
+      .max(roundRotorQuadraticSaturationCoeffsMax)
+      .describe(
+        "Derived saturation coefficients for the quadratic saturation model, computed from the Se input",
+      ),
+  })
+  .describe(
+    "4-states round-rotor synchronous machine with quadratic saturation: IEEE Std 1110 §5.3.2 (Model 2.2). GENROU model in PSSE and PSLF",
+  );
+
+export type RoundRotorQuadratic = zod.input<typeof RoundRotorQuadratic>;
+export type RoundRotorQuadraticOutput = zod.output<typeof RoundRotorQuadratic>;
+
+export const salientPoleExponentialSaturationCoeffsMin = 2;
+export const salientPoleExponentialSaturationCoeffsMax = 2;
+
+export const SalientPoleExponential = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    base_machine: zod.int().describe("Salient pole machine parameters"),
+    saturation_coeffs: zod
+      .array(zod.number())
+      .min(salientPoleExponentialSaturationCoeffsMin)
+      .max(salientPoleExponentialSaturationCoeffsMax)
+      .describe(
+        "Derived saturation coefficients for the exponential saturation model, computed from the Se input",
+      ),
+  })
+  .describe(
+    "3-states salient-pole synchronous machine with exponential saturation: IEEE Std 1110 §5.3.2 (Model 2.1). GENSAE in PSSE and PSLF",
+  );
+
+export type SalientPoleExponential = zod.input<typeof SalientPoleExponential>;
+export type SalientPoleExponentialOutput = zod.output<
+  typeof SalientPoleExponential
+>;
+
+export const salientPoleMachineSeMin = 2;
+export const salientPoleMachineSeMax = 2;
+
+export const SalientPoleMachine = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Armature resistance"),
+    Td0_p: zod
+      .number()
+      .describe("Time constant of transient d-axis voltage Units: s."),
+    Td0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient d-axis voltage Units: s."),
+    Tq0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient q-axis voltage Units: s."),
+    Xd: zod.number().describe("Reactance after EMF in d-axis"),
+    Xq: zod.number().describe("Reactance after EMF in q-axis"),
+    Xd_p: zod.number().describe("Transient reactance after EMF in d-axis"),
+    Xd_pp: zod
+      .number()
+      .describe(
+        "Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp",
+      ),
+    Xl: zod.number().describe("Stator leakage reactance"),
+    Se: zod
+      .array(zod.number())
+      .min(salientPoleMachineSeMin)
+      .max(salientPoleMachineSeMax)
+      .describe("Saturation factor at 1 and 1.2 pu flux: Se(eqp) = B(eqp-A)^2"),
+  })
+  .describe(
+    "Parameters of 3-states salient-pole synchronous machine with quadratic/exponential saturation: IEEE Std 1110 §5.3.1 (Model 2.1). GENSAL or GENSAE model in PSSE and PSLF",
+  );
+
+export type SalientPoleMachine = zod.input<typeof SalientPoleMachine>;
+export type SalientPoleMachineOutput = zod.output<typeof SalientPoleMachine>;
+
+export const salientPoleQuadraticSaturationCoeffsMin = 2;
+export const salientPoleQuadraticSaturationCoeffsMax = 2;
+
+export const SalientPoleQuadratic = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    base_machine: zod.int().describe("Salient pole machine parameters"),
+    saturation_coeffs: zod
+      .array(zod.number())
+      .min(salientPoleQuadraticSaturationCoeffsMin)
+      .max(salientPoleQuadraticSaturationCoeffsMax)
+      .describe(
+        "Derived saturation coefficients for the quadratic saturation model, computed from the Se input",
+      ),
+  })
+  .describe(
+    "3-states salient-pole synchronous machine with quadratic saturation: IEEE Std 1110 §5.3.2 (Model 2.1). GENSAL in PSSE and PSLF",
+  );
+
+export type SalientPoleQuadratic = zod.input<typeof SalientPoleQuadratic>;
+export type SalientPoleQuadraticOutput = zod.output<
+  typeof SalientPoleQuadratic
+>;
+
+export const SauerPaiMachine = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Resistance after EMF"),
+    Xd: zod.number().describe("Reactance after EMF in d-axis"),
+    Xq: zod.number().describe("Reactance after EMF in q-axis"),
+    Xd_p: zod.number().describe("Transient reactance after EMF in d-axis"),
+    Xq_p: zod.number().describe("Transient reactance after EMF in q-axis"),
+    Xd_pp: zod.number().describe("Sub-Transient reactance after EMF in d-axis"),
+    Xq_pp: zod.number().describe("Sub-Transient reactance after EMF in q-axis"),
+    Xl: zod.number().describe("Stator leakage reactance"),
+    Td0_p: zod
+      .number()
+      .describe("Time constant of transient d-axis voltage Units: s."),
+    Tq0_p: zod
+      .number()
+      .describe("Time constant of transient q-axis voltage Units: s."),
+    Td0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient d-axis voltage Units: s."),
+    Tq0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient q-axis voltage Units: s."),
+  })
+  .describe("Parameters of synchronous machine: Sauer Pai model");
+
+export type SauerPaiMachine = zod.input<typeof SauerPaiMachine>;
+export type SauerPaiMachineOutput = zod.output<typeof SauerPaiMachine>;
+
+export const SimpleAFMachine = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Resistance after EMF"),
+    Xd: zod.number().describe("Reactance after EMF in d-axis"),
+    Xq: zod.number().describe("Reactance after EMF in q-axis"),
+    Xd_p: zod.number().describe("Transient reactance after EMF in d-axis"),
+    Xq_p: zod.number().describe("Transient reactance after EMF in q-axis"),
+    Xd_pp: zod.number().describe("Sub-Transient reactance after EMF in d-axis"),
+    Xq_pp: zod.number().describe("Sub-Transient reactance after EMF in q-axis"),
+    Td0_p: zod
+      .number()
+      .describe("Time constant of transient d-axis voltage Units: s."),
+    Tq0_p: zod
+      .number()
+      .describe("Time constant of transient q-axis voltage Units: s."),
+    Td0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient d-axis voltage Units: s."),
+    Tq0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient q-axis voltage Units: s."),
+  })
+  .describe(
+    "Parameters of 4-states simplified Anderson-Fouad (SimpleAFMachine) model. The derivative of stator fluxes (ψd and ψq) is neglected and ωψd = ψd and ωψq = ψq is assumed (i.e. ω=1.0). This is standard when transmission network dynamics is neglected. If transmission dynamics is considered use the full order Anderson Fouad model",
+  );
+
+export type SimpleAFMachine = zod.input<typeof SimpleAFMachine>;
+export type SimpleAFMachineOutput = zod.output<typeof SimpleAFMachine>;
+
+export const SimpleFullMachine = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Resistance after EMF"),
+    R_f: zod.number().describe("Field motor winding resistance"),
+    R_1d: zod
+      .number()
+      .describe(
+        "Damping rotor winding resistance on d-axis, denoted as RD in Machowski",
+      ),
+    R_1q: zod
+      .number()
+      .describe(
+        "Damping rotor winding resistance on q-axis, denoted as RQ in Machowski",
+      ),
+    L_d: zod
+      .number()
+      .describe(
+        "Inductance of fictitious damping that represent the effect of the three-phase stator winding in the d-axis of the rotor, in per unit. This value is denoted as Lad + Ll in Kundur (and Ld in Machowski)",
+      ),
+    L_q: zod
+      .number()
+      .describe(
+        "Inductance of fictitious damping that represent the effect of the three-phase stator winding in the q-axis of the rotor, in per unit. This value is denoted as Laq + Ll in Kundur",
+      ),
+    L_ad: zod
+      .number()
+      .describe(
+        "Mutual inductance between stator winding and rotor field (and damping) winding inductance on d-axis",
+      ),
+    L_aq: zod
+      .number()
+      .describe(
+        "Mutual inductance between stator winding and rotor damping winding inductance on q-axi",
+      ),
+    L_f1d: zod
+      .number()
+      .describe(
+        "Mutual inductance between rotor field winding and rotor damping winding inductance on d-axis",
+      ),
+    L_ff: zod.number().describe("Field rotor winding inductance"),
+    L_1d: zod
+      .number()
+      .describe("Inductance of the d-axis rotor damping circuit"),
+    L_1q: zod
+      .number()
+      .describe("Inductance of the q-axis rotor damping circuit"),
+  })
+  .describe(
+    "Parameter of a full order flux stator-rotor model without zero sequence flux in the stator. The derivative of stator fluxes (ψd and ψq) is neglected. This is standard when transmission network dynamics is neglected. Only one q-axis damping circuit is considered. All per unit are in machine per unit. Refer to Chapter 3 of Power System Stability and Control by P. Kundur or Chapter 11 of Power System Dynamics: Stability and Control, by J. Machowski, J. Bialek and J. Bumby, for more details. Note that the models are somewhat different (but equivalent) due to the different Park Transformation used in both books",
+  );
+
+export type SimpleFullMachine = zod.input<typeof SimpleFullMachine>;
+export type SimpleFullMachineOutput = zod.output<typeof SimpleFullMachine>;
+
+export const SimpleMarconatoMachine = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Resistance after EMF"),
+    Xd: zod.number().describe("Reactance after EMF in d-axis"),
+    Xq: zod.number().describe("Reactance after EMF in q-axis"),
+    Xd_p: zod.number().describe("Transient reactance after EMF in d-axis"),
+    Xq_p: zod.number().describe("Transient reactance after EMF in q-axis"),
+    Xd_pp: zod.number().describe("Sub-Transient reactance after EMF in d-axis"),
+    Xq_pp: zod.number().describe("Sub-Transient reactance after EMF in q-axis"),
+    Td0_p: zod.number().describe("Time constant of transient d-axis voltage"),
+    Tq0_p: zod.number().describe("Time constant of transient q-axis voltage"),
+    Td0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient d-axis voltage"),
+    Tq0_pp: zod
+      .number()
+      .describe("Time constant of sub-transient q-axis voltage"),
+    T_AA: zod.number().describe("Time constant of d-axis additional leakage"),
+  })
+  .describe(
+    "Parameters of 4-states synchronous machine: Simplified Marconato model The derivative of stator fluxes (ψd and ψq) is neglected and ωψd = ψd and ωψq = ψq is assumed (i.e. ω=1.0). This is standard when transmission network dynamics is neglected",
+  );
+
+export type SimpleMarconatoMachine = zod.input<typeof SimpleMarconatoMachine>;
+export type SimpleMarconatoMachineOutput = zod.output<
+  typeof SimpleMarconatoMachine
+>;
+
+export const iEEESTLsLimMin = 2;
+export const iEEESTLsLimMax = 2;
+
+export const IEEEST = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    input_code: zod.int().describe("Code input for stabilizer"),
+    remote_bus_control: zod
+      .int()
+      .describe(
+        "ACBus identification number for control. 0 identifies the bus connected to this component",
+      ),
+    A1: zod.number().describe("Filter coefficient"),
+    A2: zod.number().describe("Filter coefficient"),
+    A3: zod.number().describe("Filter coefficient"),
+    A4: zod.number().describe("Filter coefficient"),
+    A5: zod.number().describe("Filter coefficient"),
+    A6: zod.number().describe("Filter coefficient"),
+    T1: zod.number().describe("Time constant"),
+    T2: zod.number().describe("Time constant"),
+    T3: zod.number().describe("Time constant"),
+    T4: zod.number().describe("Time constant"),
+    T5: zod.number().describe("Time constant"),
+    T6: zod.number().describe("Time constant"),
+    Ks: zod.number().describe("Proportional gain"),
+    Ls_lim: zod
+      .array(zod.number())
+      .min(iEEESTLsLimMin)
+      .max(iEEESTLsLimMax)
+      .describe("PSS output limits for regulator output (Ls_min, Ls_max)"),
+    Vcu: zod.number().describe("Cutoff limiter upper bound"),
+    Vcl: zod.number().describe("Cutoff limiter lower bound"),
+  })
+  .describe("IEEE stabilizing model PSS");
+
+export type IEEEST = zod.input<typeof IEEEST>;
+export type IEEESTOutput = zod.output<typeof IEEEST>;
+
+export const pSS2AVstLimMin = 2;
+export const pSS2AVstLimMax = 2;
+
+export const PSS2A = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    input_code_1: zod.int().describe("First input code for stabilizer"),
+    remote_bus_control_1: zod
+      .int()
+      .describe(
+        "First input remote bus identification number for control. 0 identifies the local bus connected to this component",
+      ),
+    input_code_2: zod.int().describe("Second input code for stabilizer"),
+    remote_bus_control_2: zod
+      .int()
+      .describe(
+        "Second input remote bus identification number for control. 0 identifies the local bus connected to this component",
+      ),
+    M_rtf: zod.int().describe("M parameter for ramp tracking filter"),
+    N_rtf: zod.int().describe("N parameter for ramp tracking filter"),
+    Tw1: zod
+      .number()
+      .describe("Time constant for first washout filter for first input"),
+    Tw2: zod
+      .number()
+      .describe("Time constant for second washout filter for first input"),
+    T6: zod
+      .number()
+      .describe("Time constant for low-pass filter for first input"),
+    Tw3: zod
+      .number()
+      .describe("Time constant for first washout filter for second input"),
+    Tw4: zod
+      .number()
+      .describe("Time constant for second washout filter for second input"),
+    T7: zod
+      .number()
+      .describe("Time constant for low-pass filter for second input"),
+    Ks2: zod.number().describe("Gain for low-pass filter for second input"),
+    Ks3: zod.number().describe("Gain for second input"),
+    T8: zod.number().describe("Time constant for ramp tracking filter"),
+    T9: zod.number().describe("Time constant for ramp tracking filter"),
+    Ks1: zod.number().describe("Gain before lead-lag blocks"),
+    T1: zod.number().describe("Time constant for first lead-lag block"),
+    T2: zod.number().describe("Time constant for first lead-lag block"),
+    T3: zod.number().describe("Time constant for second lead-lag block"),
+    T4: zod.number().describe("Time constant for second lead-lag block"),
+    Vst_lim: zod
+      .array(zod.number())
+      .min(pSS2AVstLimMin)
+      .max(pSS2AVstLimMax)
+      .describe("PSS output limits (Vst_min, Vst_max)"),
+  })
+  .describe("IEEE dual-input stabilizer model");
+
+export type PSS2A = zod.input<typeof PSS2A>;
+export type PSS2AOutput = zod.output<typeof PSS2A>;
+
+export const pSS2BVs1LimMin = 2;
+export const pSS2BVs1LimMax = 2;
+
+export const pSS2BVs2LimMin = 2;
+export const pSS2BVs2LimMax = 2;
+
+export const pSS2BVstLimMin = 2;
+export const pSS2BVstLimMax = 2;
+
+export const PSS2B = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    input_code_1: zod.int().describe("First input code for stabilizer"),
+    remote_bus_control_1: zod
+      .int()
+      .describe(
+        "First input remote bus identification number for control. 0 identifies the local bus connected to this component",
+      ),
+    input_code_2: zod.int().describe("Second input code for stabilizer"),
+    remote_bus_control_2: zod
+      .int()
+      .describe(
+        "Second input remote bus identification number for control. 0 identifies the local bus connected to this component",
+      ),
+    M_rtf: zod.int().describe("M parameter for ramp tracking filter"),
+    N_rtf: zod.int().describe("N parameter for ramp tracking filter"),
+    Tw1: zod
+      .number()
+      .describe("Time constant for first washout filter for first input"),
+    Tw2: zod
+      .number()
+      .describe("Time constant for second washout filter for first input"),
+    T6: zod
+      .number()
+      .describe("Time constant for low-pass filter for first input"),
+    Tw3: zod
+      .number()
+      .describe("Time constant for first washout filter for second input"),
+    Tw4: zod
+      .number()
+      .describe("Time constant for second washout filter for second input"),
+    T7: zod
+      .number()
+      .describe("Time constant for low-pass filter for second input"),
+    Ks2: zod.number().describe("Gain for low-pass filter for second input"),
+    Ks3: zod.number().describe("Gain for second input"),
+    T8: zod.number().describe("Time constant for ramp tracking filter"),
+    T9: zod.number().describe("Time constant for ramp tracking filter"),
+    Ks1: zod.number().describe("Gain before lead-lag blocks"),
+    T1: zod.number().describe("Time constant for first lead-lag block"),
+    T2: zod.number().describe("Time constant for first lead-lag block"),
+    T3: zod.number().describe("Time constant for second lead-lag block"),
+    T4: zod.number().describe("Time constant for second lead-lag block"),
+    T10: zod.number().describe("Time constant for third lead-lag block"),
+    T11: zod.number().describe("Time constant for third lead-lag block"),
+    Vs1_lim: zod
+      .array(zod.number())
+      .min(pSS2BVs1LimMin)
+      .max(pSS2BVs1LimMax)
+      .describe("First input limits (Vs1_min, Vs1_max)"),
+    Vs2_lim: zod
+      .array(zod.number())
+      .min(pSS2BVs2LimMin)
+      .max(pSS2BVs2LimMax)
+      .describe("Second input limits (Vs2_min, Vs2_max)"),
+    Vst_lim: zod
+      .array(zod.number())
+      .min(pSS2BVstLimMin)
+      .max(pSS2BVstLimMax)
+      .describe("PSS output limits (Vst_min, Vst_max)"),
+  })
+  .describe("IEEE 421.5 2005 PSS2B IEEE Dual-Input Stabilizer Model");
+
+export type PSS2B = zod.input<typeof PSS2B>;
+export type PSS2BOutput = zod.output<typeof PSS2B>;
+
+export const pSS2CVs1LimMin = 2;
+export const pSS2CVs1LimMax = 2;
+
+export const pSS2CVs2LimMin = 2;
+export const pSS2CVs2LimMax = 2;
+
+export const pSS2CVstLimMin = 2;
+export const pSS2CVstLimMax = 2;
+
+export const pSS2CPSSHysteresisParamMin = 2;
+export const pSS2CPSSHysteresisParamMax = 2;
+
+const pSS2CHysteresisBinaryLogicDefault = 1;
+export const PSS2C = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    input_code_1: zod.int().describe("First input code for stabilizer"),
+    remote_bus_control_1: zod
+      .int()
+      .describe(
+        "First input remote bus identification number for control. 0 identifies the local bus connected to this component",
+      ),
+    input_code_2: zod.int().describe("Second input code for stabilizer"),
+    remote_bus_control_2: zod
+      .int()
+      .describe(
+        "Second input remote bus identification number for control. 0 identifies the local bus connected to this component",
+      ),
+    M_rtf: zod.int().describe("M parameter for ramp tracking filter"),
+    N_rtf: zod.int().describe("N parameter for ramp tracking filter"),
+    Tw1: zod
+      .number()
+      .describe("Time constant for first washout filter for first input"),
+    Tw2: zod
+      .number()
+      .describe("Time constant for second washout filter for first input"),
+    T6: zod
+      .number()
+      .describe("Time constant for low-pass filter for first input"),
+    Tw3: zod
+      .number()
+      .describe("Time constant for first washout filter for second input"),
+    Tw4: zod
+      .number()
+      .describe("Time constant for second washout filter for second input"),
+    T7: zod
+      .number()
+      .describe("Time constant for low-pass filter for second input"),
+    Ks2: zod.number().describe("Gain for low-pass filter for second input"),
+    Ks3: zod.number().describe("Gain for second input"),
+    T8: zod.number().describe("Time constant for ramp tracking filter"),
+    T9: zod.number().describe("Time constant for ramp tracking filter"),
+    Ks1: zod.number().describe("Gain before lead-lag blocks"),
+    T1: zod.number().describe("Time constant for first lead-lag block"),
+    T2: zod.number().describe("Time constant for first lead-lag block"),
+    T3: zod.number().describe("Time constant for second lead-lag block"),
+    T4: zod.number().describe("Time constant for second lead-lag block"),
+    T10: zod.number().describe("Time constant for third lead-lag block"),
+    T11: zod.number().describe("Time constant for third lead-lag block"),
+    Vs1_lim: zod
+      .array(zod.number())
+      .min(pSS2CVs1LimMin)
+      .max(pSS2CVs1LimMax)
+      .describe("First input limits (Vs1_min, Vs1_max)"),
+    Vs2_lim: zod
+      .array(zod.number())
+      .min(pSS2CVs2LimMin)
+      .max(pSS2CVs2LimMax)
+      .describe("Second input limits (Vs2_min, Vs2_max)"),
+    Vst_lim: zod
+      .array(zod.number())
+      .min(pSS2CVstLimMin)
+      .max(pSS2CVstLimMax)
+      .describe("PSS output limits (Vst_min, Vst_max)"),
+    T12: zod.number().describe("Time constant for fourth lead-lag block"),
+    T13: zod.number().describe("Time constant for fourth lead-lag block"),
+    PSS_Hysteresis_param: zod
+      .array(zod.number())
+      .min(pSS2CPSSHysteresisParamMin)
+      .max(pSS2CPSSHysteresisParamMax)
+      .describe("PSS output hysteresis parameters (PSSOFF, PSSON)"),
+    Xcomp: zod.number().describe("Stator leakage reactance"),
+    Tcomp: zod.number().describe("Time measured with compensated frequency"),
+    hysteresis_binary_logic: zod
+      .int()
+      .default(pSS2CHysteresisBinaryLogicDefault)
+      .describe("Hysteresis memory variable"),
+  })
+  .describe("IEEE 421.5 2016 PSS2C IEEE Dual-Input Stabilizer Model");
+
+export type PSS2C = zod.input<typeof PSS2C>;
+export type PSS2COutput = zod.output<typeof PSS2C>;
+
+export const PSSFixed = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    V_pss: zod.number().describe("Fixed voltage stabilization signal"),
+  })
+  .describe(
+    "Parameters of a PSS that returns a fixed voltage to add to the reference for the AVR",
+  );
+
+export type PSSFixed = zod.input<typeof PSSFixed>;
+export type PSSFixedOutput = zod.output<typeof PSSFixed>;
+
+export const PSSSimple = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    K_omega: zod.number().describe("Proportional gain for frequency"),
+    K_p: zod.number().describe("Proportional gain for active power"),
+  })
+  .describe(
+    "Parameters of a PSS that returns a proportional droop voltage to add to the reference for the AVR",
+  );
+
+export type PSSSimple = zod.input<typeof PSSSimple>;
+export type PSSSimpleOutput = zod.output<typeof PSSSimple>;
+
+export const STAB1 = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    KT: zod.number().describe("K/T for washout filter"),
+    T: zod.number().describe("Time constant for washout filter"),
+    T1T3: zod.number().describe("Time constant division T1/T3"),
+    T3: zod.number().describe("Time constant"),
+    T2T4: zod.number().describe("Time constant division T2/T4"),
+    T4: zod.number().describe("Time constant"),
+    H_lim: zod.number().describe("PSS output limit"),
+  })
+  .describe("Speed-sensitive stabilizing model");
+
+export type STAB1 = zod.input<typeof STAB1>;
+export type STAB1Output = zod.output<typeof STAB1>;
+
+export const FiveMassShaft = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    H: zod.number().describe("Rotor inertia constant in MWs/MVA"),
+    H_hp: zod
+      .number()
+      .describe("High pressure turbine inertia constant in MWs/MVA"),
+    H_ip: zod
+      .number()
+      .describe("Intermediate pressure turbine inertia constant in MWs/MVA"),
+    H_lp: zod
+      .number()
+      .describe("Low pressure turbine inertia constant in MWs/MVA"),
+    H_ex: zod.number().describe("Exciter inertia constant in MWs/MVA"),
+    D: zod.number().describe("Rotor natural damping"),
+    D_hp: zod.number().describe("High pressure turbine natural damping"),
+    D_ip: zod
+      .number()
+      .describe("Intermediate pressure turbine natural damping"),
+    D_lp: zod.number().describe("Low pressure turbine natural damping"),
+    D_ex: zod.number().describe("Exciter natural damping"),
+    D_12: zod.number().describe("High-intermediate pressure turbine damping"),
+    D_23: zod.number().describe("Intermediate-low pressure turbine damping"),
+    D_34: zod.number().describe("Low pressure turbine-rotor damping"),
+    D_45: zod.number().describe("Rotor-exciter damping"),
+    K_hp: zod.number().describe("High pressure turbine angle coefficient"),
+    K_ip: zod
+      .number()
+      .describe("Intermediate pressure turbine angle coefficient"),
+    K_lp: zod.number().describe("Low pressure turbine angle coefficient"),
+    K_ex: zod.number().describe("Exciter angle coefficient"),
+  })
+  .describe(
+    "Parameters of 5 mass-spring shaft model. It contains a High-Pressure (HP) steam turbine, Intermediate-Pressure (IP) steam turbine, Low-Pressure (LP) steam turbine, the Rotor and an Exciter (EX) mover",
+  );
+
+export type FiveMassShaft = zod.input<typeof FiveMassShaft>;
+export type FiveMassShaftOutput = zod.output<typeof FiveMassShaft>;
+
+export const SingleMass = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    H: zod.number().describe("Rotor inertia constant in MWs/MVA"),
+    D: zod.number().describe("Rotor natural damping"),
+  })
+  .describe(
+    "Parameters of single mass shaft model. Typically represents the rotor mass",
+  );
+
+export type SingleMass = zod.input<typeof SingleMass>;
+export type SingleMassOutput = zod.output<typeof SingleMass>;
+
+const dEGOVPRefDefault = 1;
+export const DEGOV = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    T1: zod.number().describe("Governor mechanism time constant"),
+    T2: zod.number().describe("Turbine power time constant"),
+    T3: zod.number().describe("Turbine exhaust temperature time constant"),
+    K: zod.number().describe("Governor gain (reciproical of droop)"),
+    T4: zod.number().describe("Governor lead time constant"),
+    T5: zod.number().describe("Governor lag time constant"),
+    T6: zod.number().describe("Actuator time constant"),
+    Td: zod.number().describe("Engine time delay"),
+    P_ref: zod
+      .number()
+      .default(dEGOVPRefDefault)
+      .describe("Reference power set-point"),
+  })
+  .describe("Parameters Woodward Diesel Governor Model. DEGOV in PowerWorld");
+
+export type DEGOV = zod.input<typeof DEGOV>;
+export type DEGOVOutput = zod.output<typeof DEGOV>;
+
+export const dEGOV1TLimMin = 2;
+export const dEGOV1TLimMax = 2;
+
+const dEGOV1PRefDefault = 1;
+export const DEGOV1 = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    droop_flag: zod
+      .int()
+      .optional()
+      .describe(
+        "Droop control Flag. 0 for throttle feedback and 1 for electric power feedback",
+      ),
+    T1: zod.number().describe("Governor mechanism time constant"),
+    T2: zod.number().describe("Turbine power time constant"),
+    T3: zod.number().describe("Turbine exhaust temperature time constant"),
+    K: zod.number().describe("Governor gain for actuator"),
+    T4: zod.number().describe("Governor lead time constant"),
+    T5: zod.number().describe("Governor lag time constant"),
+    T6: zod.number().describe("Actuator time constant"),
+    Td: zod.number().describe("Engine time delay"),
+    T_lim: zod
+      .array(zod.number())
+      .min(dEGOV1TLimMin)
+      .max(dEGOV1TLimMax)
+      .describe("Operational control limits on actuator (Tmin, Tmax)"),
+    R: zod.number().describe("Steady state droop parameter"),
+    Te: zod.number().describe("Power transducer time constant"),
+    P_ref: zod
+      .number()
+      .default(dEGOV1PRefDefault)
+      .describe("Reference power set-point"),
+  })
+  .describe("Parameters Woodward Diesel Governor Model. DEGOV1 in PSSE");
+
+export type DEGOV1 = zod.input<typeof DEGOV1>;
+export type DEGOV1Output = zod.output<typeof DEGOV1>;
+
+export const gasTGVLimMin = 2;
+export const gasTGVLimMax = 2;
+
+const gasTGPRefDefault = 1;
+export const GasTG = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Speed droop parameter"),
+    T1: zod.number().describe("Governor time constant"),
+    T2: zod.number().describe("Combustion chamber time constant"),
+    T3: zod
+      .number()
+      .describe("Load limit time constant (exhaust gas measurement time)"),
+    AT: zod.number().describe("Ambient temperature load limit"),
+    Kt: zod.number().describe("Load limit feedback gain"),
+    V_lim: zod
+      .array(zod.number())
+      .min(gasTGVLimMin)
+      .max(gasTGVLimMax)
+      .describe(
+        "Operational control limits on fuel valve opening (Vmin, Vmax)",
+      ),
+    D_turb: zod
+      .number()
+      .describe("Speed damping coefficient of gas turbine rotor"),
+    P_ref: zod
+      .number()
+      .default(gasTGPRefDefault)
+      .describe("Reference load set-point"),
+  })
+  .describe(
+    "Parameters of Gas Turbine-Governor. GAST in PSSE and GAST_PTI in PowerWorld",
+  );
+
+export type GasTG = zod.input<typeof GasTG>;
+export type GasTGOutput = zod.output<typeof GasTG>;
+
+const generalGovModelPRefDefault = 1;
+export const GeneralGovModel = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R_select: zod
+      .int()
+      .optional()
+      .describe("Feedback signal for governor droop"),
+    fuel_flag: zod.int().describe("Flag switch for fuel source characteristic"),
+    R: zod.number().optional().describe("Speed droop parameter"),
+    Tpelec: zod.number().describe("Electrical power transducer time constant"),
+    speed_error_signal: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Kp_gov: zod.number().describe("Governor proportional gain"),
+    Ki_gov: zod.number().describe("Governor integral gain"),
+    Kd_gov: zod.number().describe("Governor derivative gain"),
+    Td_gov: zod.number().describe("Governor derivative time constant"),
+    valve_position_limits: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    T_act: zod.number().describe("Actuator time constant"),
+    K_turb: zod.number().describe("Turbine gain"),
+    Wf_nl: zod.number().describe("No load fuel flow"),
+    Tb: zod.number().describe("Turbine lag time constant"),
+    Tc: zod.number().describe("Turbine lead time constant"),
+    T_eng: zod
+      .number()
+      .describe("Transport lag time constant for diesel engine"),
+    Tf_load: zod.number().describe("Load limiter time constant"),
+    Kp_load: zod
+      .number()
+      .describe("Load limiter proportional gain for PI controller"),
+    Ki_load: zod.number().describe("Load integral gain for PI controller"),
+    Ld_ref: zod
+      .number()
+      .describe("Load limiter integral gain for PI controller"),
+    Dm: zod.number().describe("Mechanical damping coefficient"),
+    R_open: zod.number().describe("Maximum valve opening rate"),
+    R_close: zod.number().describe("Maximum valve closing rate"),
+    Ki_mw: zod.number().describe("Power controller (reset) gain"),
+    A_set: zod.number().describe("Acceleration limiter setpoint"),
+    Ka: zod.number().describe("Acceleration limiter gain"),
+    Ta: zod.number().describe("Acceleration limiter time constant"),
+    T_rate: zod.number().describe("Turbine rating"),
+    db: zod.number().describe("Speed governor deadband"),
+    Tsa: zod.number().describe("Temperature detection lead time constant"),
+    Tsb: zod.number().describe("Temperature detection lag time constant"),
+    R_lim: zod
+      .object({
+        down: zod.number(),
+        up: zod.number(),
+      })
+      .describe(
+        "A pair of values, one for the upward (`up`) and one for the downward (`down`) direction of a quantity.",
+      ),
+    P_ref: zod
+      .number()
+      .default(generalGovModelPRefDefault)
+      .describe("Reference power set-point"),
+  })
+  .describe(
+    "GE General Governor/Turbine Model. The GeneralGovModel (GGOV1) model is a general purpose governor model used for a variety of prime movers controlled by proportional-integral-derivative (PID) governors including gas turbines",
+  );
+
+export type GeneralGovModel = zod.input<typeof GeneralGovModel>;
+export type GeneralGovModelOutput = zod.output<typeof GeneralGovModel>;
+
+const hydroTurbineGovPRefDefault = 1;
+export const HydroTurbineGov = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Permanent droop parameter"),
+    r: zod.number().describe("Temporary droop"),
+    Tr: zod.number().describe("Governor time constant"),
+    Tf: zod.number().describe("Filter time constant"),
+    Tg: zod.number().describe("Servo time constant"),
+    VELM: zod.number().describe("Gate velocity limit"),
+    gate_position_limits: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Tw: zod.number().describe("Water time constant"),
+    At: zod.number().describe("Turbine gain"),
+    D_T: zod.number().describe("Turbine damping"),
+    q_nl: zod.number().describe("No power flow"),
+    P_ref: zod
+      .number()
+      .default(hydroTurbineGovPRefDefault)
+      .describe("Reference load set-point"),
+  })
+  .describe("Hydro turbine-governor");
+
+export type HydroTurbineGov = zod.input<typeof HydroTurbineGov>;
+export type HydroTurbineGovOutput = zod.output<typeof HydroTurbineGov>;
+
+const iEEETurbineGov1PRefDefault = 1;
+export const IEEETurbineGov1 = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    K: zod.int().describe("Governor gain"),
+    T1: zod.int().describe("Input filter lag"),
+    T2: zod.number().describe("Input filter lead"),
+    T3: zod.number().describe("Valve position time constant"),
+    U0: zod.number().describe("Maximum valve opening rate"),
+    U_c: zod.number().describe("Maximum valve closing rate"),
+    valve_position_limits: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    T4: zod.number().describe("Time constant inlet steam"),
+    K1: zod.number().describe("Fraction of high pressure shaft power"),
+    K2: zod.number().describe("Fraction of low pressure shaft power"),
+    T5: zod.number().describe("Time constant for second boiler pass"),
+    K3: zod
+      .number()
+      .describe("Fraction of high pressure shaft power second boiler pass"),
+    K4: zod
+      .number()
+      .describe("Fraction of low pressure shaft power second boiler pass"),
+    T6: zod.number().describe("Time constant for third boiler pass"),
+    K5: zod
+      .number()
+      .describe("Fraction of high pressure shaft power third boiler pass"),
+    K6: zod
+      .number()
+      .describe("Fraction of low pressure shaft power third boiler pass"),
+    T7: zod.number().describe("Time constant for fourth boiler pass"),
+    K7: zod
+      .number()
+      .describe("Fraction of high pressure shaft power fourth boiler pass"),
+    K8: zod
+      .number()
+      .describe("Fraction of low pressure shaft power fourth boiler pass"),
+    P_ref: zod
+      .number()
+      .default(iEEETurbineGov1PRefDefault)
+      .describe("Reference power set-point"),
+  })
+  .describe("IEEE Type 1 Speed-Governing Model");
+
+export type IEEETurbineGov1 = zod.input<typeof IEEETurbineGov1>;
+export type IEEETurbineGov1Output = zod.output<typeof IEEETurbineGov1>;
+
+export const pIDGOVGateOpeningsMin = 3;
+export const pIDGOVGateOpeningsMax = 3;
+
+export const pIDGOVPowerGateOpeningsMin = 3;
+export const pIDGOVPowerGateOpeningsMax = 3;
+
+const pIDGOVPRefDefault = 1;
+export const PIDGOV = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    feedback_flag: zod
+      .int()
+      .describe(
+        "Feedback signal for governor droop: 0 for electrical power, and 1 for gate position",
+      ),
+    Rperm: zod.number().describe("Speed permanent droop parameter"),
+    T_reg: zod.number().describe("Speed detector time constant"),
+    Kp: zod.number().describe("Governor proportional gain"),
+    Ki: zod.number().describe("Governor integral gain"),
+    Kd: zod.number().describe("Governor derivative gain"),
+    Ta: zod.number().describe("Governor derivative time constant"),
+    Tb: zod.number().describe("Gate-servo time constant"),
+    D_turb: zod.number().describe("Turbine damping factor"),
+    gate_openings: zod
+      .array(zod.number())
+      .min(pIDGOVGateOpeningsMin)
+      .max(pIDGOVGateOpeningsMax)
+      .describe("Gate opening speed at different loads"),
+    power_gate_openings: zod
+      .array(zod.number())
+      .min(pIDGOVPowerGateOpeningsMin)
+      .max(pIDGOVPowerGateOpeningsMax)
+      .describe("Power at gate_openings"),
+    G_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    A_tw: zod.number().describe("Factor multiplying Tw"),
+    Tw: zod.number().describe("Water inertia time constant"),
+    P_ref: zod
+      .number()
+      .default(pIDGOVPRefDefault)
+      .describe("Reference load set-point"),
+  })
+  .describe("Hydro Turbine-Governor with PID controller");
+
+export type PIDGOV = zod.input<typeof PIDGOV>;
+export type PIDGOVOutput = zod.output<typeof PIDGOV>;
+
 export const SteamTurbineGov1 = zod
   .object({
-    id: zod.int().describe("Unique integer identifier for this component."),
-    R: zod.number().describe("Droop parameter."),
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Droop parameter"),
     T1: zod.number().describe("Governor time constant. Units: s."),
     valve_position_limits: zod
       .object({
@@ -462,22 +3038,167 @@ export const SteamTurbineGov1 = zod
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
-    T2: zod.number().describe("Lead Lag Lead Time constant. Units: s."),
-    T3: zod.number().describe("Lead Lag Lag Time constant. Units: s."),
-    D_T: zod.number().describe("Turbine Damping."),
-    DB_h: zod.number().describe("Deadband for overspeed."),
-    DB_l: zod.number().describe("Deadband for underspeed."),
+    T2: zod.number().describe("Lead-lag lead time constant. Units: s."),
+    T3: zod.number().describe("Lead-lag lag time constant. Units: s."),
+    D_T: zod.number().describe("Turbine damping"),
+    DB_h: zod.number().describe("Deadband for overspeed"),
+    DB_l: zod.number().describe("Deadband for underspeed"),
     T_rate: zod
       .number()
       .describe("Turbine Rate. If zero, generator base is used. Units: MW."),
-    P_ref: zod.number().optional().describe("Reference Power Set-point."),
+    P_ref: zod.number().optional().describe("Reference power set-point"),
   })
   .describe(
-    "Steam Turbine-Governor. This model considers both TGOV1 or TGOV1DU in PSS/E.",
+    "Steam Turbine-Governor. This model considers both TGOV1 or TGOV1DU in PSS/E",
   );
 
 export type SteamTurbineGov1 = zod.input<typeof SteamTurbineGov1>;
 export type SteamTurbineGov1Output = zod.output<typeof SteamTurbineGov1>;
+
+const tGFixedPRefDefault = 1;
+export const TGFixed = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    efficiency: zod
+      .number()
+      .describe("Efficiency factor that multiplies P_ref"),
+    P_ref: zod
+      .number()
+      .default(tGFixedPRefDefault)
+      .describe("Reference power set-point"),
+  })
+  .describe(
+    "Parameters of a fixed Turbine Governor that returns a fixed mechanical torque given by the product of P_ref*efficiency",
+  );
+
+export type TGFixed = zod.input<typeof TGFixed>;
+export type TGFixedOutput = zod.output<typeof TGFixed>;
+
+const tGSimplePRefDefault = 1;
+export const TGSimple = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    d_t: zod.number().describe("Inverse droop parameter"),
+    Tm: zod.number().describe("Turbine governor low-pass time constant"),
+    P_ref: zod
+      .number()
+      .default(tGSimplePRefDefault)
+      .describe("Reference power set-point"),
+  })
+  .describe("Parameters of a Simple one-state Turbine Governor");
+
+export type TGSimple = zod.input<typeof TGSimple>;
+export type TGSimpleOutput = zod.output<typeof TGSimple>;
+
+export const TGTypeI = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Droop parameter"),
+    Ts: zod.number().describe("Governor time constant"),
+    Tc: zod.number().describe("Servo time constant"),
+    T3: zod.number().describe("Transient gain time constant"),
+    T4: zod.number().describe("Power fraction time constant"),
+    T5: zod.number().describe("Reheat time constant"),
+    valve_position_limits: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    P_ref: zod.number().optional().describe("Reference power set-point"),
+  })
+  .describe("Parameters of a turbine governor type I");
+
+export type TGTypeI = zod.input<typeof TGTypeI>;
+export type TGTypeIOutput = zod.output<typeof TGTypeI>;
+
+export const TGTypeII = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    R: zod.number().describe("Droop parameter"),
+    T1: zod.number().describe("Transient gain time constant"),
+    T2: zod.number().describe("Power fraction time constant"),
+    tau_limits: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    P_ref: zod.number().optional().describe("Reference power set-point"),
+  })
+  .describe("Parameters of a turbine governor type II");
+
+export type TGTypeII = zod.input<typeof TGTypeII>;
+export type TGTypeIIOutput = zod.output<typeof TGTypeII>;
+
+export const wPIDHYGateOpeningsMin = 3;
+export const wPIDHYGateOpeningsMax = 3;
+
+export const wPIDHYPowerGateOpeningsMin = 3;
+export const wPIDHYPowerGateOpeningsMax = 3;
+
+const wPIDHYPRefDefault = 1;
+export const WPIDHY = zod
+  .object({
+    id: zod.int().describe("Unique integer identifier for this component"),
+    T_reg: zod.number().describe("Input time constant of the governor"),
+    reg: zod.number().describe("Input governor gain"),
+    Kp: zod.number().describe("Governor proportional gain"),
+    Ki: zod.number().describe("Governor integral gain"),
+    Kd: zod.number().describe("Governor derivative gain"),
+    Ta: zod
+      .number()
+      .describe("Governor derivative/high-frequency time constant"),
+    Tb: zod.number().describe("Gate-servo time constant"),
+    V_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    G_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    Tw: zod.number().describe("Water inertia time constant"),
+    P_lim: zod
+      .object({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    D_turb: zod.number().optional().describe("Turbine damping coefficient"),
+    gate_openings: zod
+      .array(zod.number())
+      .min(wPIDHYGateOpeningsMin)
+      .max(wPIDHYGateOpeningsMax)
+      .describe("Gate opening speed at different loads"),
+    power_gate_openings: zod
+      .array(zod.number())
+      .min(wPIDHYPowerGateOpeningsMin)
+      .max(wPIDHYPowerGateOpeningsMax)
+      .describe("Power at gate_openings"),
+    P_ref: zod
+      .number()
+      .default(wPIDHYPRefDefault)
+      .describe("Reference load set-point"),
+  })
+  .describe("Woodward PID Hydro Governor");
+
+export type WPIDHY = zod.input<typeof WPIDHY>;
+export type WPIDHYOutput = zod.output<typeof WPIDHY>;
 export { DbdPnts } from "../core/models";
 export type { DbdPntsOutput } from "../core/models";
 
@@ -486,3 +3207,6 @@ export type { FdbdPntsOutput } from "../core/models";
 
 export { MinMax } from "../infrastructure_core/models";
 export type { MinMaxOutput } from "../infrastructure_core/models";
+
+export { UpDown } from "../infrastructure_core/models";
+export type { UpDownOutput } from "../infrastructure_core/models";

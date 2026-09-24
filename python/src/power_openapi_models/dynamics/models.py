@@ -1333,7 +1333,7 @@ class PSS2C(BaseModel):
     )
     Xcomp: float = Field(..., description="Stator leakage reactance")
     Tcomp: float = Field(..., description="Time measured with compensated frequency")
-    hysteresis_binary_logic: int | None = Field("1.0", description="Hysteresis memory variable")
+    hysteresis_binary_logic: int | None = Field(1, description="Hysteresis memory variable")
 
 
 class PSSFixed(BaseModel):
@@ -1398,7 +1398,7 @@ class DEGOV(BaseModel):
     T5: float = Field(..., description="Governor lag time constant")
     T6: float = Field(..., description="Actuator time constant")
     Td: float = Field(..., description="Engine time delay")
-    P_ref: float | None = Field("1.0", description="Reference power set-point")
+    P_ref: float | None = Field(1.0, description="Reference power set-point")
 
 
 class DEGOV1(BaseModel):
@@ -1423,7 +1423,7 @@ class DEGOV1(BaseModel):
     )
     R: float = Field(..., description="Steady state droop parameter")
     Te: float = Field(..., description="Power transducer time constant")
-    P_ref: float | None = Field("1.0", description="Reference power set-point")
+    P_ref: float | None = Field(1.0, description="Reference power set-point")
 
 
 class GasTG(BaseModel):
@@ -1441,7 +1441,7 @@ class GasTG(BaseModel):
         min_length=2,
     )
     D_turb: float = Field(..., description="Speed damping coefficient of gas turbine rotor")
-    P_ref: float | None = Field("1.0", description="Reference load set-point")
+    P_ref: float | None = Field(1.0, description="Reference load set-point")
 
 
 class GeneralGovModel(BaseModel):
@@ -1478,7 +1478,7 @@ class GeneralGovModel(BaseModel):
     Tsa: float = Field(..., description="Temperature detection lead time constant")
     Tsb: float = Field(..., description="Temperature detection lag time constant")
     R_lim: UpDown = Field(..., description="Maximum rate of load increase")
-    P_ref: float | None = Field("1.0", description="Reference power set-point")
+    P_ref: float | None = Field(1.0, description="Reference power set-point")
 
 
 class HydroTurbineGov(BaseModel):
@@ -1494,7 +1494,7 @@ class HydroTurbineGov(BaseModel):
     At: float = Field(..., description="Turbine gain")
     D_T: float = Field(..., description="Turbine damping")
     q_nl: float = Field(..., description="No power flow")
-    P_ref: float | None = Field("1.0", description="Reference load set-point")
+    P_ref: float | None = Field(1.0, description="Reference load set-point")
 
 
 class IEEETurbineGov1(BaseModel):
@@ -1518,7 +1518,7 @@ class IEEETurbineGov1(BaseModel):
     T7: float = Field(..., description="Time constant for fourth boiler pass")
     K7: float = Field(..., description="Fraction of high pressure shaft power fourth boiler pass")
     K8: float = Field(..., description="Fraction of low pressure shaft power fourth boiler pass")
-    P_ref: float | None = Field("1.0", description="Reference power set-point")
+    P_ref: float | None = Field(1.0, description="Reference power set-point")
 
 
 class PIDGOV(BaseModel):
@@ -1544,7 +1544,7 @@ class PIDGOV(BaseModel):
     G_lim: MinMax = Field(..., description="Gate opening velocity limits")
     A_tw: float = Field(..., description="Factor multiplying Tw")
     Tw: float = Field(..., description="Water inertia time constant")
-    P_ref: float | None = Field("1.0", description="Reference load set-point")
+    P_ref: float | None = Field(1.0, description="Reference load set-point")
 
 
 class SteamTurbineGov1(BaseModel):
@@ -1566,14 +1566,14 @@ class SteamTurbineGov1(BaseModel):
 class TGFixed(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component")
     efficiency: float = Field(..., description="Efficiency factor that multiplies P_ref")
-    P_ref: float | None = Field("1.0", description="Reference power set-point")
+    P_ref: float | None = Field(1.0, description="Reference power set-point")
 
 
 class TGSimple(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component")
     d_t: float = Field(..., description="Inverse droop parameter")
     Tm: float = Field(..., description="Turbine governor low-pass time constant")
-    P_ref: float | None = Field("1.0", description="Reference power set-point")
+    P_ref: float | None = Field(1.0, description="Reference power set-point")
 
 
 class TGTypeI(BaseModel):
@@ -1617,4 +1617,4 @@ class WPIDHY(BaseModel):
     power_gate_openings: list[float] = Field(
         ..., description="Power at gate_openings", max_length=3, min_length=3
     )
-    P_ref: float | None = Field("1.0", description="Reference load set-point")
+    P_ref: float | None = Field(1.0, description="Reference load set-point")

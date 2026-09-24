@@ -24,12 +24,13 @@
  * keyed or discriminated by a type name this package cannot enumerate
  * statically.
  *
- * The other five association arrays (`supplemental_attribute_associations`,
+ * The other six association arrays (`supplemental_attribute_associations`,
  * `plant_associations`, `combined_cycle_associations`, `service_associations`,
- * `trading_hub_associations`) and `time_series_associations` all have
- * generated schemas (`infrastructure_core`'s `SupplementalAttributeAssociation`,
- * `operations`' `PlantAssociation`/`CombinedCycleAssociation`/
- * `ServiceAssociation`/`TradingHubAssociation`, `timeseries`'
+ * `trading_hub_associations`, `voltage_control_associations`) and
+ * `time_series_associations` all have generated schemas
+ * (`infrastructure_core`'s `SupplementalAttributeAssociation`, `operations`'
+ * `PlantAssociation`/`CombinedCycleAssociation`/`ServiceAssociation`/
+ * `TradingHubAssociation`/`VoltageControlAssociation`, `timeseries`'
  * `TimeSeriesAssociation`), so those fields are typed with them, mirroring
  * Python's import list.
  */
@@ -43,6 +44,7 @@ import {
   PlantAssociation,
   ServiceAssociation,
   TradingHubAssociation,
+  VoltageControlAssociation,
 } from "./operations/models";
 import {
   PortfolioFinancialData,
@@ -101,6 +103,12 @@ export const SystemDocument = zod
       .default([])
       .describe(
         "Links a trading hub to one associated entity. Added after the other association arrays, so older documents omit it.",
+      ),
+    voltage_control_associations: zod
+      .array(VoltageControlAssociation)
+      .default([])
+      .describe(
+        "Links a voltage control group (VoltageDroopControl or ReactivePowerSharing) to one member device with its relative reactive power weight and, for a two-terminal member, the converter terminal. Optional like `trading_hub_associations`, so older documents omit it.",
       ),
     time_series_associations: zod
       .array(TimeSeriesAssociation)
