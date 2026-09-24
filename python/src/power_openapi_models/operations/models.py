@@ -3023,9 +3023,13 @@ class TransformerCircuit(BaseModel):
         None,
         description="Side of the controlling winding on which the regulated bus lies, replacing the sign of PSS/E CONT. Set only when the regulated bus is not one of the transformer's own terminal buses; when it is, the side follows from the connections and this must be null.",
     )
-    load_drop_compensation: ComplexNumber | None = Field(
-        {"real": 0.0, "imag": 0.0},
-        description="Load drop compensation impedance for voltage control (PSS/E CR + jCX): the regulated voltage is compensated by this impedance times the circuit current. Zero means no compensation. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+    load_drop_compensation_r: float | None = Field(
+        0.0,
+        description="Resistive part of the load drop compensation impedance for voltage control (PSS/E CR): the regulated voltage is compensated by `load_drop_compensation_r + j load_drop_compensation_x` times the circuit current. Zero means no compensation. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+    )
+    load_drop_compensation_x: float | None = Field(
+        0.0,
+        description="Reactive part of the load drop compensation impedance for voltage control (PSS/E CX). Zero means no compensation. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
     )
     control_limits: MinMax | None = Field(
         {"min": 0.9, "max": 1.1},

@@ -1955,10 +1955,8 @@
         "control_objective": "FIXED",
         "regulated_bus_id": null,
         "regulated_bus_side": null,
-        "load_drop_compensation": {
-          "real": 0.0,
-          "imag": 0.0
-        },
+        "load_drop_compensation_r": 0.0,
+        "load_drop_compensation_x": 0.0,
         "control_limits": {
           "max": 1.1,
           "min": 0.9
@@ -1988,10 +1986,8 @@
         "control_objective": "FIXED",
         "regulated_bus_id": null,
         "regulated_bus_side": null,
-        "load_drop_compensation": {
-          "real": 0.0,
-          "imag": 0.0
-        },
+        "load_drop_compensation_r": 0.0,
+        "load_drop_compensation_x": 0.0,
         "control_limits": {
           "max": 1.1,
           "min": 0.9
@@ -2021,10 +2017,8 @@
         "control_objective": "FIXED",
         "regulated_bus_id": null,
         "regulated_bus_side": null,
-        "load_drop_compensation": {
-          "real": 0.0,
-          "imag": 0.0
-        },
+        "load_drop_compensation_r": 0.0,
+        "load_drop_compensation_x": 0.0,
         "control_limits": {
           "max": 1.1,
           "min": 0.9
@@ -2054,10 +2048,8 @@
         "control_objective": "FIXED",
         "regulated_bus_id": null,
         "regulated_bus_side": null,
-        "load_drop_compensation": {
-          "real": 0.0,
-          "imag": 0.0
-        },
+        "load_drop_compensation_r": 0.0,
+        "load_drop_compensation_x": 0.0,
         "control_limits": {
           "max": 1.1,
           "min": 0.9
@@ -2087,10 +2079,8 @@
         "control_objective": "FIXED",
         "regulated_bus_id": null,
         "regulated_bus_side": null,
-        "load_drop_compensation": {
-          "real": 0.0,
-          "imag": 0.0
-        },
+        "load_drop_compensation_r": 0.0,
+        "load_drop_compensation_x": 0.0,
         "control_limits": {
           "max": 1.1,
           "min": 0.9
@@ -2120,10 +2110,8 @@
         "control_objective": "FIXED",
         "regulated_bus_id": null,
         "regulated_bus_side": null,
-        "load_drop_compensation": {
-          "real": 0.0,
-          "imag": 0.0
-        },
+        "load_drop_compensation_r": 0.0,
+        "load_drop_compensation_x": 0.0,
         "control_limits": {
           "max": 1.1,
           "min": 0.9
@@ -2153,10 +2141,8 @@
         "control_objective": "FIXED",
         "regulated_bus_id": null,
         "regulated_bus_side": null,
-        "load_drop_compensation": {
-          "real": 0.0,
-          "imag": 0.0
-        },
+        "load_drop_compensation_r": 0.0,
+        "load_drop_compensation_x": 0.0,
         "control_limits": {
           "max": 1.1,
           "min": 0.9
@@ -2186,10 +2172,8 @@
         "control_objective": "FIXED",
         "regulated_bus_id": null,
         "regulated_bus_side": null,
-        "load_drop_compensation": {
-          "real": 0.0,
-          "imag": 0.0
-        },
+        "load_drop_compensation_r": 0.0,
+        "load_drop_compensation_x": 0.0,
         "control_limits": {
           "max": 1.1,
           "min": 0.9
@@ -2219,10 +2203,8 @@
         "control_objective": "FIXED",
         "regulated_bus_id": null,
         "regulated_bus_side": null,
-        "load_drop_compensation": {
-          "real": 0.0,
-          "imag": 0.0
-        },
+        "load_drop_compensation_r": 0.0,
+        "load_drop_compensation_x": 0.0,
         "control_limits": {
           "max": 1.1,
           "min": 0.9
