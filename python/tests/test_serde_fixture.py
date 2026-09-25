@@ -114,8 +114,11 @@ def test_roundtrip_no_field_drift(fixture_doc):
     rebuilt = {}
     for type_name, entries in fixture_doc["components"].items():
         cls = registry[type_name]
+        # exclude_unset: an omitted optional field is legal and meaningful, so a schema
+        # default must not be materialized into the round trip and reported as drift.
         rebuilt[type_name] = [
-            cls.model_validate(entry).model_dump(mode="json", by_alias=True) for entry in entries
+            cls.model_validate(entry).model_dump(mode="json", by_alias=True, exclude_unset=True)
+            for entry in entries
         ]
     diffs = _diff(_strip_none(fixture_doc["components"]), _strip_none(rebuilt))
     assert not diffs, "\n".join(diffs[:20])
