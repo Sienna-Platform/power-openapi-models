@@ -28,8 +28,8 @@ export type ComplexNumberOutput = zod.output<typeof ComplexNumber>;
 
 export const XYCoords = zod
   .object({
-    x: zod.number(),
-    y: zod.number(),
+    x: zod.number().describe("Units: the wrapped function's input unit."),
+    y: zod.number().describe("Units: the wrapped function's output unit."),
   })
   .describe("A single point, given as its `x` and `y` coordinates.");
 
@@ -108,23 +108,39 @@ export const FunctionData = zod
   .union([
     zod
       .object({
-        constant_term: zod.number(),
+        constant_term: zod
+          .number()
+          .describe("Units: the wrapped function's output unit."),
         function_type: zod
           .literal("LINEAR")
           .default(functionDataOneFunctionTypeDefault),
-        proportional_term: zod.number(),
+        proportional_term: zod
+          .number()
+          .describe(
+            "Units: the wrapped function's output unit per unit of its input.",
+          ),
       })
       .describe(
         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
       ),
     zod
       .object({
-        constant_term: zod.number(),
+        constant_term: zod
+          .number()
+          .describe("Units: the wrapped function's output unit."),
         function_type: zod
           .literal("QUADRATIC")
           .default(functionDataTwoFunctionTypeDefault),
-        proportional_term: zod.number(),
-        quadratic_term: zod.number(),
+        proportional_term: zod
+          .number()
+          .describe(
+            "Units: the wrapped function's output unit per unit of its input.",
+          ),
+        quadratic_term: zod
+          .number()
+          .describe(
+            "Units: the wrapped function's output unit per unit of its input squared.",
+          ),
       })
       .describe(
         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -137,8 +153,12 @@ export const FunctionData = zod
         points: zod.array(
           zod
             .object({
-              x: zod.number(),
-              y: zod.number(),
+              x: zod
+                .number()
+                .describe("Units: the wrapped function's input unit."),
+              y: zod
+                .number()
+                .describe("Units: the wrapped function's output unit."),
             })
             .describe("A single point, given as its `x` and `y` coordinates."),
         ),
@@ -151,8 +171,12 @@ export const FunctionData = zod
         function_type: zod
           .literal("PIECEWISE_STEP")
           .default(functionDataFourFunctionTypeDefault),
-        x_coords: zod.array(zod.number()),
-        y_coords: zod.array(zod.number()),
+        x_coords: zod.array(
+          zod.number().describe("Units: the wrapped function's input unit."),
+        ),
+        y_coords: zod.array(
+          zod.number().describe("Units: the wrapped function's output unit."),
+        ),
       })
       .describe(
         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -224,11 +248,17 @@ export type FunctionDataOutput = zod.output<typeof FunctionData>;
 const linearFunctionDataFunctionTypeDefault = `LINEAR`;
 export const LinearFunctionData = zod
   .object({
-    constant_term: zod.number(),
+    constant_term: zod
+      .number()
+      .describe("Units: the wrapped function's output unit."),
     function_type: zod
       .enum(["LINEAR"])
       .default(linearFunctionDataFunctionTypeDefault),
-    proportional_term: zod.number(),
+    proportional_term: zod
+      .number()
+      .describe(
+        "Units: the wrapped function's output unit per unit of its input.",
+      ),
   })
   .describe(
     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -240,12 +270,22 @@ export type LinearFunctionDataOutput = zod.output<typeof LinearFunctionData>;
 const quadraticFunctionDataFunctionTypeDefault = `QUADRATIC`;
 export const QuadraticFunctionData = zod
   .object({
-    constant_term: zod.number(),
+    constant_term: zod
+      .number()
+      .describe("Units: the wrapped function's output unit."),
     function_type: zod
       .enum(["QUADRATIC"])
       .default(quadraticFunctionDataFunctionTypeDefault),
-    proportional_term: zod.number(),
-    quadratic_term: zod.number(),
+    proportional_term: zod
+      .number()
+      .describe(
+        "Units: the wrapped function's output unit per unit of its input.",
+      ),
+    quadratic_term: zod
+      .number()
+      .describe(
+        "Units: the wrapped function's output unit per unit of its input squared.",
+      ),
   })
   .describe(
     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -265,8 +305,10 @@ export const PiecewiseLinearData = zod
     points: zod.array(
       zod
         .object({
-          x: zod.number(),
-          y: zod.number(),
+          x: zod.number().describe("Units: the wrapped function's input unit."),
+          y: zod
+            .number()
+            .describe("Units: the wrapped function's output unit."),
         })
         .describe("A single point, given as its `x` and `y` coordinates."),
     ),
@@ -284,8 +326,12 @@ export const PiecewiseStepData = zod
     function_type: zod
       .enum(["PIECEWISE_STEP"])
       .default(piecewiseStepDataFunctionTypeDefault),
-    x_coords: zod.array(zod.number()),
-    y_coords: zod.array(zod.number()),
+    x_coords: zod.array(
+      zod.number().describe("Units: the wrapped function's input unit."),
+    ),
+    y_coords: zod.array(
+      zod.number().describe("Units: the wrapped function's output unit."),
+    ),
   })
   .describe(
     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
