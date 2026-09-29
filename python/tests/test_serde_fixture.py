@@ -1,7 +1,7 @@
 """Serde tests against real 14-bus operations documents.
 
-Fixtures are byte-identical copies of PowerFlowFileParser-emitted 14-bus
-documents vendored from SiennaSchemas, kept in sync with a sibling Julia-side
+Fixtures are byte-identical copies of the 14-bus documents PowerFlowFileParser's
+scripts/inspect_14bus_json.jl writes, kept in sync with a sibling Julia-side
 fixture test. Operations types only, no time series.
 """
 
@@ -115,7 +115,9 @@ def test_roundtrip_no_field_drift(fixture_doc):
     for type_name, entries in fixture_doc["components"].items():
         cls = registry[type_name]
         rebuilt[type_name] = [
-            cls.model_validate(entry).model_dump(mode="json", by_alias=True) for entry in entries
+            # exclude_unset: a schema default filled in for an omitted field is not drift.
+            cls.model_validate(entry).model_dump(mode="json", by_alias=True, exclude_unset=True)
+            for entry in entries
         ]
     diffs = _diff(_strip_none(fixture_doc["components"]), _strip_none(rebuilt))
     assert not diffs, "\n".join(diffs[:20])
