@@ -505,7 +505,6 @@ class StorageCapitalCost(BaseModel):
 
 
 class CostCurve(BaseModel):
-    power_units: UnitSystem = UnitSystem.NATURAL_UNITS
     value_curve: ValueCurve
     variable_cost_type: Literal["COST"] = "COST"
     vom_cost: InputOutputCurve = Field(
@@ -561,7 +560,6 @@ class FuelCurve(BaseModel):
         None,
         description="Store-minted id of the fuel-cost time series association, or null when fuel_cost carries a fixed value. Exactly one of the two is set.",
     )
-    power_units: UnitSystem
     startup_fuel_offtake: InputOutputCurve | None = Field(
         None, description="Fuel consumed during startup, as a curve in the unit's fuel units."
     )

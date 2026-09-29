@@ -2099,11 +2099,6 @@ export const ColocatedSupplyStorageTechnology = zod
       .union([
         zod
           .object({
-            power_units: zod
-              .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-              .describe(
-                "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-              ),
             value_curve: zod
               .union([
                 zod
@@ -3015,7 +3010,7 @@ export const ColocatedSupplyStorageTechnology = zod
               ),
           })
           .describe(
-            "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
+            "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `vom_cost` adding a proportional variable operation and maintenance term. A cost curve is always in natural units: its x axis is power in MW, never per-unit. Units: x-axis MW ; y-axis USD/h .",
           ),
         zod
           .object({
@@ -3030,11 +3025,6 @@ export const ColocatedSupplyStorageTechnology = zod
               .nullish()
               .describe(
                 "Store-minted id of the fuel-cost time series association, or null when fuel_cost carries a fixed value. Exactly one of the two is set.",
-              ),
-            power_units: zod
-              .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-              .describe(
-                "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
               ),
             startup_fuel_offtake: zod
               .object({
@@ -4039,7 +4029,7 @@ export const ColocatedSupplyStorageTechnology = zod
               ),
           })
           .describe(
-            "Variable operation cost of a device expressed in fuel consumed — MBTU, liters, m^3 — together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
+            "Variable operation cost of a device expressed in fuel consumed — MBTU, liters, m^3 — together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price. A fuel curve is always in natural units: its x axis is power in MW, never per-unit.",
           ),
       ])
       .describe(
@@ -14711,11 +14701,6 @@ export const StorageTechnology = zod
           .default(storageTechnologyOperationCostsCostTypeDefault),
         charge_variable_cost: zod
           .object({
-            power_units: zod
-              .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-              .describe(
-                "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-              ),
             value_curve: zod
               .union([
                 zod
@@ -15628,15 +15613,10 @@ export const StorageTechnology = zod
           })
           .optional()
           .describe(
-            "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
+            "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `vom_cost` adding a proportional variable operation and maintenance term. A cost curve is always in natural units: its x axis is power in MW, never per-unit. Units: x-axis MW ; y-axis USD/h .",
           ),
         discharge_variable_cost: zod
           .object({
-            power_units: zod
-              .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-              .describe(
-                "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-              ),
             value_curve: zod
               .union([
                 zod
@@ -16549,7 +16529,7 @@ export const StorageTechnology = zod
           })
           .optional()
           .describe(
-            "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
+            "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `vom_cost` adding a proportional variable operation and maintenance term. A cost curve is always in natural units: its x axis is power in MW, never per-unit. Units: x-axis MW ; y-axis USD/h .",
           ),
         fixed: zod
           .number()
@@ -18167,11 +18147,6 @@ export const SupplyTechnology = zod
               .union([
                 zod
                   .object({
-                    power_units: zod
-                      .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-                      .describe(
-                        "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-                      ),
                     value_curve: zod
                       .union([
                         zod
@@ -19087,7 +19062,7 @@ export const SupplyTechnology = zod
                       ),
                   })
                   .describe(
-                    "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
+                    "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `vom_cost` adding a proportional variable operation and maintenance term. A cost curve is always in natural units: its x axis is power in MW, never per-unit. Units: x-axis MW ; y-axis USD/h .",
                   ),
                 zod
                   .object({
@@ -19102,11 +19077,6 @@ export const SupplyTechnology = zod
                       .nullish()
                       .describe(
                         "Store-minted id of the fuel-cost time series association, or null when fuel_cost carries a fixed value. Exactly one of the two is set.",
-                      ),
-                    power_units: zod
-                      .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-                      .describe(
-                        "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
                       ),
                     startup_fuel_offtake: zod
                       .object({
@@ -20119,7 +20089,7 @@ export const SupplyTechnology = zod
                       ),
                   })
                   .describe(
-                    "Variable operation cost of a device expressed in fuel consumed — MBTU, liters, m^3 — together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
+                    "Variable operation cost of a device expressed in fuel consumed — MBTU, liters, m^3 — together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price. A fuel curve is always in natural units: its x axis is power in MW, never per-unit.",
                   ),
               ])
               .describe(
@@ -20134,11 +20104,6 @@ export const SupplyTechnology = zod
               .default(supplyTechnologyOperationCostsTwoCostTypeDefault),
             curtailment_cost: zod
               .object({
-                power_units: zod
-                  .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-                  .describe(
-                    "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-                  ),
                 value_curve: zod
                   .union([
                     zod
@@ -21055,15 +21020,10 @@ export const SupplyTechnology = zod
               })
               .optional()
               .describe(
-                "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
+                "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `vom_cost` adding a proportional variable operation and maintenance term. A cost curve is always in natural units: its x axis is power in MW, never per-unit. Units: x-axis MW ; y-axis USD/h .",
               ),
             variable_operation_cost: zod
               .object({
-                power_units: zod
-                  .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-                  .describe(
-                    "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-                  ),
                 value_curve: zod
                   .union([
                     zod
@@ -21979,7 +21939,7 @@ export const SupplyTechnology = zod
                   ),
               })
               .describe(
-                "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
+                "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `vom_cost` adding a proportional variable operation and maintenance term. A cost curve is always in natural units: its x axis is power in MW, never per-unit. Units: x-axis MW ; y-axis USD/h .",
               ),
             fixed: zod
               .number()
@@ -21998,11 +21958,6 @@ export const SupplyTechnology = zod
               .union([
                 zod
                   .object({
-                    power_units: zod
-                      .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-                      .describe(
-                        "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-                      ),
                     value_curve: zod
                       .union([
                         zod
@@ -22918,7 +22873,7 @@ export const SupplyTechnology = zod
                       ),
                   })
                   .describe(
-                    "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
+                    "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `vom_cost` adding a proportional variable operation and maintenance term. A cost curve is always in natural units: its x axis is power in MW, never per-unit. Units: x-axis MW ; y-axis USD/h .",
                   ),
                 zod
                   .object({
@@ -22933,11 +22888,6 @@ export const SupplyTechnology = zod
                       .nullish()
                       .describe(
                         "Store-minted id of the fuel-cost time series association, or null when fuel_cost carries a fixed value. Exactly one of the two is set.",
-                      ),
-                    power_units: zod
-                      .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-                      .describe(
-                        "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
                       ),
                     startup_fuel_offtake: zod
                       .object({
@@ -23950,7 +23900,7 @@ export const SupplyTechnology = zod
                       ),
                   })
                   .describe(
-                    "Variable operation cost of a device expressed in fuel consumed — MBTU, liters, m^3 — together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
+                    "Variable operation cost of a device expressed in fuel consumed — MBTU, liters, m^3 — together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price. A fuel curve is always in natural units: its x axis is power in MW, never per-unit.",
                   ),
               ])
               .describe(
