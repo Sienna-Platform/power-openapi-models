@@ -1,0 +1,61 @@
+name: Release Rust
+
+# Fires from the SAME `v*` tag as release-python.yml and release-typescript.yml --
+# see the lockstep note in release-python.yml. All three gate on
+# scripts/check_version_sync.py.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Versions agree and match the tag
+        run: |
+          python3 scripts/check_version_sync.py \
+            --tag "${{ github.ref_name }}" \
+            --require python,typescript,rust
+
+  publish:
+    needs: guard
+    runs-on: ubuntu-latest
+    environment: crates-io
+    permissions:
+      # OIDC for crates.io trusted publishing. No token is stored.
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      # Publish from the generated tree that is committed, NOT by regenerating.
+      # Regenerating during a release would let a drifted local SiennaSchemas
+      # checkout publish models that never passed CI.
+      - run: cargo test
+        working-directory: rust
+
+      # Fail before publishing rather than after, if the package is wrong.
+      - run: cargo publish --dry-run
+        working-directory: rust
+
+      # crates.io has no pending-publisher flow: a trusted publisher can only be
+      # attached to a crate that already exists, so 0.1.0 must be published by
+      # hand once. Until then this step fails rather than falling back to a stored
+      # secret, which is intended. See CONTRIBUTING.md, "First publish, once per
+      # registry".
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      - run: cargo publish
+        working-directory: rust
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}

@@ -161,7 +161,7 @@ export const TimeSeriesAssociation = zod
             "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
           ),
         initial_timestamp: zod.iso
-          .datetime({ offset: true })
+          .datetime({ offset: true, local: true })
           .describe(
             "First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. An RFC3339 string with at most 3 fractional-second digits: the store's floor is one millisecond, matching Julia's millisecond-precision DateTime.",
           ),
@@ -413,7 +413,7 @@ export const TimeSeriesAssociation = zod
             "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
           ),
         initial_timestamp: zod.iso
-          .datetime({ offset: true })
+          .datetime({ offset: true, local: true })
           .describe("Start of the first forecast window."),
         resolution: zod
           .string()
@@ -550,7 +550,7 @@ export const TimeSeriesAssociation = zod
             "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
           ),
         initial_timestamp: zod.iso
-          .datetime({ offset: true })
+          .datetime({ offset: true, local: true })
           .describe("Start of the first forecast window."),
         resolution: zod
           .string()
@@ -687,7 +687,7 @@ export const TimeSeriesAssociation = zod
             "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
           ),
         initial_timestamp: zod.iso
-          .datetime({ offset: true })
+          .datetime({ offset: true, local: true })
           .describe("Start of the first forecast window."),
         resolution: zod
           .string()
@@ -830,7 +830,7 @@ export const TimeSeriesAssociation = zod
             "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
           ),
         initial_timestamp: zod.iso
-          .datetime({ offset: true })
+          .datetime({ offset: true, local: true })
           .describe("Start of the first forecast window."),
         resolution: zod
           .string()
@@ -990,7 +990,7 @@ export const SingleTimeSeries = zod
         "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
       ),
     initial_timestamp: zod.iso
-      .datetime({ offset: true })
+      .datetime({ offset: true, local: true })
       .describe(
         "First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. An RFC3339 string with at most 3 fractional-second digits: the store's floor is one millisecond, matching Julia's millisecond-precision DateTime.",
       ),
@@ -1266,7 +1266,7 @@ export const Deterministic = zod
         "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
       ),
     initial_timestamp: zod.iso
-      .datetime({ offset: true })
+      .datetime({ offset: true, local: true })
       .describe("Start of the first forecast window."),
     resolution: zod
       .string()
@@ -1414,7 +1414,7 @@ export const DeterministicSingleTimeSeries = zod
         "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
       ),
     initial_timestamp: zod.iso
-      .datetime({ offset: true })
+      .datetime({ offset: true, local: true })
       .describe("Start of the first forecast window."),
     resolution: zod
       .string()
@@ -1566,7 +1566,7 @@ export const Probabilistic = zod
         "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
       ),
     initial_timestamp: zod.iso
-      .datetime({ offset: true })
+      .datetime({ offset: true, local: true })
       .describe("Start of the first forecast window."),
     resolution: zod
       .string()
@@ -1720,7 +1720,7 @@ export const Scenarios = zod
         "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
       ),
     initial_timestamp: zod.iso
-      .datetime({ offset: true })
+      .datetime({ offset: true, local: true })
       .describe("Start of the first forecast window."),
     resolution: zod
       .string()

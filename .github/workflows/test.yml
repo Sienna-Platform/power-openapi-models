@@ -182,3 +182,63 @@ jobs:
             --julia PowerOpenAPIModels \
             --schema-dir SiennaSchemas \
             --julia-report-only
+
+  rust:
+    needs: schema-sha
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Sienna-Platform/SiennaSchemas
+          ref: ${{ needs.schema-sha.outputs.sha }}
+          path: SiennaSchemas
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      # Regeneration must be a no-op against the committed tree. A diff here means
+      # the committed crate does not correspond to the pinned schemas and the
+      # pinned generator -- the drift this repo exists to prevent. `status`, not
+      # `diff`, so a new untracked file counts too.
+      - name: Generated output is up to date
+        run: |
+          make generate-rust SCHEMA_DIR="${{ github.workspace }}/SiennaSchemas"
+          if [ -n "$(git status --porcelain -- rust/)" ]; then
+            echo "::error::rust/ is stale. Run 'make generate-rust' and commit the result." >&2
+            git status --porcelain -- rust/
+            git diff --stat -- rust/
+            exit 1
+          fi
+
+      - run: cargo fmt --check
+        working-directory: rust
+      - run: cargo clippy --all-targets -- -D warnings
+        working-directory: rust
+      - run: cargo test
+        working-directory: rust
+      - run: cargo publish --dry-run
+        working-directory: rust
+
+  # Its own job, not a step of `cross-language`: that job's Julia arm depends on a
+  # PowerOpenAPIModels checkout matching the pinned schema and can fail before any
+  # comparison runs. Python<->TypeScript and Python<->Rust are both hard gates.
+  rust-equivalence:
+    needs: schema-sha
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Sienna-Platform/SiennaSchemas
+          ref: ${{ needs.schema-sha.outputs.sha }}
+          path: SiennaSchemas
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: dtolnay/rust-toolchain@stable
+      - run: python3 -m pip install -e "./python[dev]"
+      - run: python3 scripts/check_cross_language.py --no-julia --ts typescript/ --schema-dir SiennaSchemas

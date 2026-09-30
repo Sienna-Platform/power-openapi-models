@@ -78,6 +78,17 @@ jobs:
           npm ci
           make generate-typescript SCHEMA_DIR=/tmp/schemas
 
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.schema.outputs.changed == 'true'
+
+      # Rust regenerates on the runner for the same reason TypeScript does: the
+      # generator (openapi-to-rust) is pinned exactly in the Makefile, and folding
+      # a Rust toolchain into the Python codegen image would couple two
+      # independent generators into one image rebuild.
+      - name: Regenerate Rust models
+        if: steps.schema.outputs.changed == 'true'
+        run: make generate-rust SCHEMA_DIR=/tmp/schemas
+
       - name: Validate
         if: steps.schema.outputs.changed == 'true'
         run: |
@@ -85,6 +96,7 @@ jobs:
           make validate
           python3 scripts/check_version_sync.py
           npx tsc --noEmit --project typescript
+          cargo test --manifest-path rust/Cargo.toml
 
       - name: Open Pull Request
         if: steps.schema.outputs.changed == 'true'
@@ -96,6 +108,6 @@ jobs:
             Auto-generated from [SiennaSchemas ${{ steps.schema.outputs.latest }}](https://github.com/Sienna-Platform/SiennaSchemas/releases/tag/${{ steps.schema.outputs.latest }}).
 
             **Review checklist:**
-            - [ ] Generated models look correct in BOTH python/ and typescript/
+            - [ ] Generated models look correct in python/, typescript/ AND rust/
             - [ ] Tests pass
           commit-message: "chore: regenerate models from schema ${{ steps.schema.outputs.latest }}"

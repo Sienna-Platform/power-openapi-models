@@ -442,11 +442,37 @@ def drop_redundant_root_aliases(content: str) -> tuple[str, bool]:
     return pattern.sub(drop, content), removed
 
 
+def fix_naive_timestamps(content: str) -> tuple[str, bool]:
+    """Swap pydantic's `AwareDatetime` for `timestamps.UtcDatetime`.
+
+    datamodel-codegen maps `format: date-time` to `AwareDatetime`, which rejects a
+    timestamp with no offset. Real producers write `2024-01-01T00:00:00`, and the
+    TypeScript and Rust packages accept it too, so it is read as UTC everywhere. The
+    schemas' RFC 3339 wording is unchanged; this is a deliberate, recorded
+    leniency (see CHANGELOG.md), applied in one place per language.
+    """
+    if not re.search(r"\bAwareDatetime\b", content):
+        return content, False
+
+    import_stmt = re.compile(r"^from pydantic import (\([^)]*\)|[^\n]*)$", re.MULTILINE)
+    match = import_stmt.search(content)
+    if match is None:
+        raise RuntimeError("fix_naive_timestamps: no `from pydantic import ...` line found")
+    names = [n for n in re.findall(r"\w+", match.group(1)) if n != "AwareDatetime"]
+    replacement = (
+        f"from pydantic import {', '.join(names)}\n"
+        "from power_openapi_models.timestamps import UtcDatetime"
+    )
+    content = content[: match.start()] + replacement + content[match.end() :]
+    return re.sub(r"\bAwareDatetime\b", "UtcDatetime", content), True
+
+
 FIXES = [
     fix_thermal_generation_cost_start_up,
     fix_required_fields_with_schema_defaults,
     fix_feature_property_count,
     drop_redundant_root_aliases,
+    fix_naive_timestamps,
 ]
 
 

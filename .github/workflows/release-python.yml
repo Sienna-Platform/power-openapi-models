@@ -28,7 +28,7 @@ jobs:
         run: |
           python3 scripts/check_version_sync.py \
             --tag "${{ github.ref_name }}" \
-            --require python,typescript
+            --require python,typescript,rust
 
   build:
     needs: guard

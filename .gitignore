@@ -220,3 +220,7 @@ typescript/.readme-tmp/
 
 # Design docs and drafts are local working notes, not repo content.
 .claude/plans/
+
+# Rust codegen scratch and pinned tool install
+codegen/rust/.build/
+codegen/rust/.tools/

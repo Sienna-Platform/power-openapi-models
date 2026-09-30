@@ -1,0 +1,21 @@
+[package]
+name = "power-openapi-models-postprocess"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "power-openapi-models-postprocess"
+path = "src/main.rs"
+
+[[bin]]
+name = "surface"
+path = "src/bin/surface.rs"
+
+[dependencies]
+syn = { version = "2", features = ["full", "visit-mut", "extra-traits"] }
+quote = "1"
+proc-macro2 = "1"
+prettyplease = "0.2"
+# preserve_order: `properties` must iterate in the schema's own order.
+serde_json = { version = "1", features = ["preserve_order"] }

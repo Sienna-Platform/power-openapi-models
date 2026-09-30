@@ -3,7 +3,8 @@
 
 from __future__ import annotations
 from enum import Enum
-from pydantic import AwareDatetime, BaseModel, Field, RootModel
+from pydantic import BaseModel, Field, RootModel
+from power_openapi_models.timestamps import UtcDatetime
 from typing import Any, Literal
 
 
@@ -113,14 +114,14 @@ class DataSource(BaseModel):
     organization: str | None = Field(
         None, description="Publishing organization, e.g. 'U.S. Energy Information Administration'."
     )
-    retrieved_at: AwareDatetime = Field(..., description="When the data was obtained.")
+    retrieved_at: UtcDatetime = Field(..., description="When the data was obtained.")
     dataset: str | None = Field(
         None,
         description="Dataset identifier within the publishing organization, e.g. 'EIA-860 2023, Schedule 3'.",
     )
     url: str | None = Field(None, description="URL the data was retrieved from.")
     version: str | None = Field(None, description="Data version or vintage, e.g. '2023 final'.")
-    published_at: AwareDatetime | None = Field(
+    published_at: UtcDatetime | None = Field(
         None, description="When the source published the data; null if unknown."
     )
     confidence: str | None = Field(None, description="Confidence qualifier, e.g. 'high', 'medium'.")
