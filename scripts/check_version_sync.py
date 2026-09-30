@@ -11,7 +11,7 @@ manifest is the one place a release can go wrong silently -- a tag that says
 0.1.0 publishing a package.json that says 0.0.9 is a wrong artifact under a
 right name, and nothing downstream can detect it.
 
-Rust joins by adding an entry to MANIFESTS; nothing else here changes.
+Another language joins by adding an entry to MANIFESTS; nothing else here changes.
 """
 
 import argparse
@@ -23,8 +23,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # (label, path, reader). A manifest that does not exist yet is skipped with a
-# notice rather than failing: `rust/` is a prepared slot with no Cargo.toml, and
-# typescript/package.json lands separately from this script.
+# notice rather than failing, so a PR that adds a language can land its manifest
+# and its checks separately. Release workflows pass --require to forbid that.
 MANIFESTS = [
     ("python", REPO_ROOT / "python" / "pyproject.toml", "pyproject"),
     ("typescript", REPO_ROOT / "typescript" / "package.json", "package_json"),

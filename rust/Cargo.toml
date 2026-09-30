@@ -1,0 +1,23 @@
+[package]
+name = "power-openapi-models"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+description = "Typed Rust models for the Sienna power system data format"
+license = "BSD-3-Clause"
+repository = "https://github.com/Sienna-Platform/power-openapi-models"
+homepage = "https://github.com/Sienna-Platform/power-openapi-models"
+readme = "README.md"
+keywords = ["power-systems", "energy", "openapi", "serde", "sienna"]
+categories = ["data-structures", "encoding"]
+include = ["src/**", "schema-version", "README.md", "LICENSE", "Cargo.toml"]
+
+[dependencies]
+# Only for `format: date-time` fields (RFC 3339, offset required by the schema).
+chrono = { version = "0.4", default-features = false, features = ["std", "serde"] }
+serde = { version = "1", features = ["derive"] }
+# preserve_order: component objects keep their input key order on write.
+# float_roundtrip: without it serde_json can parse a float one ULP off.
+serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
+
+[dev-dependencies]

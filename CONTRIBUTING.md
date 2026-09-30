@@ -6,14 +6,22 @@ Everything under `python/src/power_openapi_models/*/models.py` is **generated
 output**. An edit there is erased by the next regeneration and the drift
 check will not flag it as intentional.
 
+Everything under `rust/src/` except `lib.rs` and `document.rs` is generated too.
+
 Fixes belong in one of two upstream places:
 
 1. **[SiennaSchemas](https://github.com/Sienna-Platform/SiennaSchemas)** — the source of truth for
    fields, types, defaults, and unit annotations. A wrong field or a missing
    type is a schema bug.
-2. **`codegen/python/postprocess.py`** — for defects the code generator introduces
-   that the schema cannot express. Each fix is one function with a docstring
-   explaining the generator behavior it works around.
+2. **`codegen/python/postprocess.py`** (or `codegen/typescript/postprocess.ts`,
+   `codegen/rust/`) — for defects the code generator introduces that the schema
+   cannot express. Each fix is one function with a docstring explaining the
+   generator behavior it works around.
+
+`python/src/power_openapi_models/timestamps.py` and `rust/src/timestamp.rs` are
+hand-written too: they are the timestamp type the generated `date-time` fields use,
+which accept an offset-less timestamp as UTC (see CHANGELOG.md, "Changed from the
+schema"). Each language's postprocess wires its generated fields to them.
 
 A `<Base><N>` class whose `<Base>` also exists is a generator alias leak; the
 cure is naming the inline object or enum as a `$defs` entry in the SiennaSchemas
@@ -95,6 +103,32 @@ Note the postprocess runs on orval's **raw** output — one line per declaration
 keys quoted — not the prettier-formatted result. Pattern-matching fixes must
 match that form.
 
+### Rust
+
+```bash
+make generate-rust SCHEMA_DIR=../SiennaSchemas
+```
+
+`SCHEMA_DIR` must be a checkout of the release named in `.schema-version`, not a
+branch tip: a schema `main` that is ahead of the pin produces models that match no
+release. Four stages:
+
+1. `codegen/rust/bundle.py` resolves the six specs and every external `$ref` into
+   one OpenAPI 3.1 document. A definition reached from several specs is emitted
+   once, and two different definitions wanting one name is an error.
+2. `openapi-to-rust`, installed at the exact version in the `Makefile` into
+   `codegen/rust/.tools/`, generates the types. It reads a single document, so it
+   is never given the specs directly.
+3. `codegen/rust/gen` (a small `syn` program) fixes what the generator gets
+   wrong and writes the per-domain modules. Each fix is one function whose
+   doc comment names the defect, as in the Python and TypeScript postprocesses.
+4. `cargo fmt`.
+
+Regeneration must be a no-op against the committed tree; CI fails otherwise.
+`codegen/rust/gen/src/bin/surface.rs` dumps the generated crate's surface for the
+equivalence check, reading serde attributes rather than field declarations,
+because `#[serde(rename)]` is where a wire key differs from a field name.
+
 ## Running the checks
 
 From the repo root:
@@ -116,6 +150,18 @@ pytest tests/ -q
 pyright --verifytypes power_openapi_models
 ```
 
+For Rust, from `rust/`:
+
+```bash
+cargo fmt --check
+cargo clippy --all-targets -- -D warnings
+cargo test
+cargo publish --dry-run
+```
+
+`cargo publish --dry-run` prints a warning per integration test: they read the
+fixtures from the repo root, which a published package does not contain.
+
 For TypeScript, from `typescript/`:
 
 ```bash
@@ -130,9 +176,10 @@ And the cross-language equivalence gate, from the repo root:
 ```bash
 python3 scripts/check_cross_language.py --ts typescript/ \
     --julia ../PowerOpenAPIModels --julia-report-only
+python3 scripts/check_cross_language.py --no-julia --ts typescript/   # TS and Rust only
 ```
 
-**Python↔TypeScript is a hard gate** and must stay green. Python↔Julia runs
+**Python↔TypeScript and Python↔Rust are hard gates** and must stay green. Python↔Julia runs
 report-only: it prints every divergence but does not fail, because ~290 of them
 are a pre-existing bug in `PowerOpenAPIModels` where Julia leaves an omitted
 defaulted field absent while Python materializes the schema default. That is
@@ -150,28 +197,28 @@ one `vX.Y.Z` tag publishes all of them. That is only meaningful because every
 package is generated from the one `.schema-version` pin — the version means
 "this schema pin, these models", in any language.
 
-`scripts/check_version_sync.py` enforces it. Both release workflows gate on it
-with `--require python,typescript`, so a tag cannot publish one language at a
+`scripts/check_version_sync.py` enforces it. All three release workflows gate on it
+with `--require python,typescript,rust`, so a tag cannot publish one language at a
 version the others do not carry, and cannot silently publish nothing if a
 manifest is missing.
 
 To cut a release:
 
 1. Add a dated entry to `CHANGELOG.md`.
-2. Bump the version in **both** `python/pyproject.toml` and
-   `typescript/package.json`, then confirm:
+2. Bump the version in **all three** of `python/pyproject.toml`,
+   `typescript/package.json` and `rust/Cargo.toml`, then confirm:
 
    ```bash
-   python3 scripts/check_version_sync.py --require python,typescript
+   python3 scripts/check_version_sync.py --require python,typescript,rust
    ```
 
-3. Commit, tag `vX.Y.Z`, and push the tag. `release-python.yml` and
-   `release-typescript.yml` both fire from it.
+3. Commit, tag `vX.Y.Z`, and push the tag. `release-python.yml`,
+   `release-typescript.yml` and `release-rust.yml` all fire from it.
 
 ### First publish, once per registry
 
-Neither registry can be published to from CI until its trust is established,
-and the two work differently:
+No registry can be published to from CI until its trust is established, and they
+work differently:
 
 - **PyPI** supports a *pending publisher*. Configure it on PyPI before tagging
   and the very first CI publish works with no token.
@@ -186,7 +233,15 @@ and the two work differently:
   `@sienna-platform` org. Every release after that runs from CI over OIDC with
   no stored token.
 
-Until that is done `release-typescript.yml` fails rather than falling back to a
-stored secret, which is deliberate.
+- **crates.io has no pending publisher either.** Publish 0.1.0 by hand once,
+  then attach this repo and `release-rust.yml` (environment `crates-io`) as a
+  trusted publisher:
+
+  ```bash
+  cd rust && cargo publish
+  ```
+
+Until that is done `release-typescript.yml` and `release-rust.yml` fail rather than
+falling back to a stored secret, which is deliberate.
 
 See `CHANGELOG.md` for the format and history.

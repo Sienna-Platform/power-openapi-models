@@ -80,6 +80,13 @@ Many component fields carry a sibling `*_units` field (for example
 power-family field on that same component. There is no document-level unit
 system: each component blob is self-describing.
 
+### Timestamps may omit the offset
+
+The schema says RFC 3339, which requires an offset, but producers write
+`2024-01-01T00:00:00`, so all three packages accept it. An offset is accepted too; a
+bare date or text that is not a timestamp is rejected. Python and Rust read a missing
+offset as UTC. zod only validates, so here the string is returned exactly as written.
+
 ### Discriminated unions parse to the variant directly
 
 Several types are one of several shapes, chosen by a discriminator field.

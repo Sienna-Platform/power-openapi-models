@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Compare the Julia, Python, and TypeScript OpenAPI model surfaces for
+"""Compare the Julia, Python, TypeScript, and Rust OpenAPI model surfaces for
 interoperability.
 
   python3 scripts/check_cross_language.py
   python3 scripts/check_cross_language.py --julia ../PowerOpenAPIModels --ts typescript
+  python3 scripts/check_cross_language.py --rust rust
 
-All three packages are generated from the same SiennaSchemas specs, so a
+All four packages are generated from the same SiennaSchemas specs, so a
 document written by one must be readable by the others with identical
 semantics. This checks that the surfaces actually agree, comparing per shared
 type:
@@ -52,6 +53,7 @@ import argparse
 import importlib
 import json
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from dataclasses import field as dataclass_field
@@ -963,6 +965,70 @@ def load_typescript_surface(ts_root):
 
 
 # --------------------------------------------------------------------------- #
+# Rust side: the generated crate's own surface, read from its serde attributes
+# --------------------------------------------------------------------------- #
+
+RUST_SURFACE_MANIFEST = REPO_ROOT / "codegen" / "rust" / "gen" / "Cargo.toml"
+
+
+def _squash(name):
+    return re.sub(r"[^A-Za-z0-9]", "", name).lower()
+
+
+def load_rust_surface(rust_root, python_types):
+    """Parse `rust_root/src/generated.rs` into a Surface via the `surface` binary.
+
+    A Rust parser written in Python would re-derive what `syn` already knows, so
+    the dumper is Rust (`codegen/rust/gen/src/bin/surface.rs`). It reads the serde
+    attributes -- `rename` is the wire key, `default` is omittability, variant
+    renames are the enum's wire values -- because that is what the codec accepts
+    and writes, and a struct declaration alone says none of it.
+
+    openapi-to-rust re-cases a few schema names that are not valid Rust type
+    names (`FromTo_ToFrom` -> `FromToToFrom`). A type is matched to its Python
+    name exactly, else by ignoring case and punctuation, and only when that is
+    unambiguous: anything else keeps its Rust name and shows up as a divergence
+    rather than being paired by guess.
+    """
+    generated = Path(rust_root) / "src" / "generated.rs"
+    if not generated.is_file():
+        return Surface(language="Rust", types={}, files_scanned=0)
+    result = subprocess.run(
+        [
+            "cargo",
+            "run",
+            "--quiet",
+            "--release",
+            "--manifest-path",
+            str(RUST_SURFACE_MANIFEST),
+            "--bin",
+            "surface",
+            "--",
+            str(generated),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"rust surface dumper failed:\n{result.stderr}")
+    dumped = json.loads(result.stdout)
+
+    by_squash = {}
+    for name in python_types:
+        by_squash.setdefault(_squash(name), []).append(name)
+    surface = {}
+    for rust_name, entry in dumped["types"].items():
+        name = rust_name
+        if rust_name not in python_types:
+            candidates = by_squash.get(_squash(rust_name), [])
+            if len(candidates) == 1:
+                name = candidates[0]
+        entry["required"] = set(entry["required"])
+        surface[name] = entry
+    return Surface(language="Rust", types=surface, files_scanned=dumped["files"])
+
+
+# --------------------------------------------------------------------------- #
 # Comparison
 # --------------------------------------------------------------------------- #
 
@@ -1504,10 +1570,77 @@ def _require_shared_types(shared, count_a, count_b, label_a, label_b):
     return True
 
 
+def _hard_gate(label, surface, python_surface, schema_registry):
+    """Compare one language against Python as a hard gate: 0 agree, 1 diverge, 3 refuse.
+
+    No EXEMPTIONS and no report-only mode. Every divergence is fixed in that
+    language's generator, not waived; the exemption table is specific to
+    openapi-generator's Julia template.
+    """
+    print("=" * 70)
+    print(f"Python <-> {label}")
+    print("=" * 70)
+    problems, notes, shared = compare(
+        surface.types, python_surface.types, label, "Python", schema_registry
+    )
+    if not _require_shared_types(
+        shared, len(surface.types), len(python_surface.types), label, "Python"
+    ):
+        return 3
+    print(f"Compared {len(shared)} shared types.\n")
+    _print_notes(notes)
+    if problems:
+        print(f"DIVERGENCES ({len(problems)}):")
+        for _, msg in problems:
+            print(f"  {msg}")
+        print(
+            f"\n{len(problems)} divergence(s). Python<->{label} is a hard gate with no "
+            f"EXEMPTIONS and no report-only mode: every one of these must be fixed "
+            f"in the {label} generator, not waived."
+        )
+        return 1
+    print(
+        f"Python <-> {label} surfaces agree: field sets, required fields, "
+        "enum values, kinds, defaults."
+    )
+    return 0
+
+
+def _main_without_julia(args):
+    """Python<->TypeScript and Python<->Rust only.
+
+    For a checkout with no `PowerOpenAPIModels` that matches the pinned schema:
+    the Julia package is generated separately and can be ahead of (or behind) the
+    `.schema-version` this repo pins, in which case its arm fails before any
+    comparison runs. Asking for this mode is explicit, and the Julia arm is not
+    reported as agreeing -- it is reported as skipped.
+    """
+    print("Julia arm SKIPPED (--no-julia): not compared, not reported as agreeing.\n")
+    python_surface = load_python_surface()
+    ts_surface = load_typescript_surface(Path(args.ts).resolve())
+    rust_surface = load_rust_surface(Path(args.rust).resolve(), python_surface.types)
+    schema_registry = load_schema_property_defaults(Path(args.schema_dir).resolve())
+    print(f"Schema-declared defaults: {len(schema_registry)} property name(s)\n")
+    for surface in (python_surface, ts_surface, rust_surface):
+        print(
+            f"{surface.language + ':':<12}{len(surface.types)} types "
+            f"(from {surface.files_scanned} file(s))"
+        )
+    print()
+    if not all(_require_real_surface(s) for s in (python_surface, ts_surface, rust_surface)):
+        return 3
+    statuses = [
+        _hard_gate(label, surface, python_surface, schema_registry)
+        for label, surface in (("TypeScript", ts_surface), ("Rust", rust_surface))
+    ]
+    return max(statuses)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--julia", default=str(DEFAULT_JULIA))
     parser.add_argument("--ts", default=str(REPO_ROOT / "typescript"))
+    parser.add_argument("--rust", default=str(REPO_ROOT / "rust"))
     parser.add_argument(
         "--schema-dir",
         default=str(DEFAULT_SCHEMA_DIR),
@@ -1525,6 +1658,15 @@ def main():
         ),
     )
     parser.add_argument(
+        "--no-julia",
+        action="store_true",
+        help=(
+            "Skip the Julia arm entirely and compare only Python<->TypeScript and "
+            "Python<->Rust, both hard gates. The skip is printed; Julia is never "
+            "reported as agreeing."
+        ),
+    )
+    parser.add_argument(
         "--julia-report-only",
         action="store_true",
         help=(
@@ -1538,6 +1680,9 @@ def main():
         ),
     )
     args = parser.parse_args()
+
+    if args.no_julia:
+        return _main_without_julia(args)
 
     julia_root = Path(args.julia).resolve()
     if not julia_root.is_dir():
@@ -1565,6 +1710,7 @@ def main():
     python_surface = load_python_surface()
     ts_root = Path(args.ts).resolve()
     ts_surface = load_typescript_surface(ts_root)
+    rust_surface = load_rust_surface(Path(args.rust).resolve(), python_surface.types)
 
     schema_dir = Path(args.schema_dir).resolve()
     schema_registry = load_schema_property_defaults(schema_dir)
@@ -1596,12 +1742,16 @@ def main():
         f"(from {ts_surface.files_scanned} file(s)) — "
         + ", ".join(f"{d}={per_domain.get(d, 0)}" for d in DOMAINS)
     )
+    print(
+        f"Rust structs:     {len(rust_surface.types)} (from {rust_surface.files_scanned} file(s))"
+    )
     print()
 
     if (
         not _require_real_surface(julia_surface)
         or not _require_real_surface(python_surface)
         or not _require_real_surface(ts_surface)
+        or not _require_real_surface(rust_surface)
     ):
         return 3
 
@@ -1728,6 +1878,14 @@ def main():
             "Python <-> TypeScript surfaces agree: field sets, required fields, "
             "enum values, kinds, defaults."
         )
+
+    # ----------------------------------------------------------------- #
+    # Python <-> Rust: hard gate, same rules as TypeScript.
+    # ----------------------------------------------------------------- #
+    print()
+    rust_status = _hard_gate("Rust", rust_surface, python_surface, schema_registry)
+    if rust_status:
+        return rust_status
 
     return exit_code
 

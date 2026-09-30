@@ -14,7 +14,7 @@ format, not the tool.
 |---|---|---|---|
 | Python | [`power-openapi-models`](https://pypi.org/project/power-openapi-models/) on PyPI | Released | [`python/`](python/README.md) |
 | TypeScript | [`@sienna-platform/power-openapi-models`](https://www.npmjs.com/package/@sienna-platform/power-openapi-models) on npm | Released | [`typescript/`](typescript/README.md) |
-| Rust | — | **Upcoming** | [`rust/`](rust/README.md) |
+| Rust | [`power-openapi-models`](https://crates.io/crates/power-openapi-models) on crates.io | Ships with the next `v*` tag | [`rust/`](rust/README.md) |
 
 Each package's own README covers install, quickstart, concepts, and API
 details for that language. Start there; this file is only a router.

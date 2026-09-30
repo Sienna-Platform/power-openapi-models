@@ -408,7 +408,7 @@ export const DataSource = zod
         "Publishing organization, e.g. 'U.S. Energy Information Administration'.",
       ),
     retrieved_at: zod.iso
-      .datetime({ offset: true })
+      .datetime({ offset: true, local: true })
       .describe("When the data was obtained."),
     dataset: zod
       .string()
@@ -422,7 +422,7 @@ export const DataSource = zod
       .optional()
       .describe("Data version or vintage, e.g. '2023 final'."),
     published_at: zod.iso
-      .datetime({ offset: true })
+      .datetime({ offset: true, local: true })
       .nullish()
       .describe("When the source published the data; null if unknown."),
     confidence: zod

@@ -78,6 +78,20 @@ print(UnitSystem.NATURAL_UNITS.value)
 `base_power`. Getting this wrong is the most common source of
 wrong-by-a-factor-of-100 bugs across the ecosystem.
 
+### Timestamps may omit the offset
+
+The schema says RFC 3339, which requires an offset, but producers write
+`2024-01-01T00:00:00`, so all three packages accept it and read it as UTC. An offset is
+kept; a bare date or text that is not a timestamp is rejected. Fields are typed
+`power_openapi_models.timestamps.UtcDatetime`, so they always hold an aware `datetime`.
+
+```python
+from power_openapi_models.infrastructure_core.models import DataSource
+
+source = DataSource(id=1, fields=[], retrieved_at="2024-01-01T00:00:00")
+assert source.retrieved_at.utcoffset().total_seconds() == 0
+```
+
 ### Discriminated unions carry a `.root`
 
 Several types are one of several shapes, chosen by a discriminator field.

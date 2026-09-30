@@ -429,6 +429,7 @@ function applyGeneratorFixes(
   let stripped: string[];
 
   [out, fixes] = fixEmptyArrayDefaults(out, fixes);
+  [out, fixes] = fixNaiveTimestamps(out, fixes);
   [out, fixes] = fixMissingCostCurvePowerUnits(out, fixes);
   [out, fixes] = restoreDroppedSchemaDefaults(out, schemaDefaults, fixes);
   [out, fixes, stripped] = stripUndeclaredTopLevelDefaults(out, resolvedSchemas, fixes);
@@ -454,6 +455,35 @@ function fixEmptyArrayDefaults(content: string, fixes: number): [string, number]
     count += 1;
     return `const ${name}: never[] = [];`;
   });
+  return [out, fixes + count];
+}
+
+/**
+ * Accept a timestamp with no offset.
+ *
+ * orval renders `format: date-time` as `zod.iso.datetime({"offset":true})`, which
+ * takes `Z` or an offset but rejects `2024-01-01T00:00:00`. Real producers write
+ * that form, and the Python and Rust packages accept it too (read as UTC), so
+ * `local: true` is added. The schemas' RFC 3339 wording is unchanged; this is a
+ * deliberate, recorded leniency (see CHANGELOG.md). Unlike Python and Rust, zod
+ * only validates: the string is passed through as written.
+ *
+ * Fails loudly if a `datetime(...)` call is not the shape this recognizes, rather
+ * than leaving one field stricter than the rest. Runs before prettier, so it
+ * matches orval's raw emission.
+ */
+function fixNaiveTimestamps(content: string, fixes: number): [string, number] {
+  const strict = '.datetime({"offset":true})';
+  const lenient = '.datetime({"offset":true,"local":true})';
+  const count = content.split(strict).length - 1;
+  const out = content.split(strict).join(lenient);
+  const other = out.match(/\.datetime\((?!\{"offset":true,"local":true\}\))/g);
+  if (other) {
+    throw new Error(
+      `fixNaiveTimestamps: ${other.length} datetime(...) call(s) in an unrecognized shape; ` +
+        `update the fix instead of leaving those fields stricter than the rest`,
+    );
+  }
   return [out, fixes + count];
 }
 

@@ -1,6 +1,12 @@
 SCHEMA_DIR ?= ../SiennaSchemas
 CODEGEN_IMAGE ?= ghcr.io/sienna-platform/power-openapi-models/codegen:latest
 PKG_DIR := python/src/power_openapi_models
+# openapi-to-rust is pinned exactly: its output (names, derives, serde attributes)
+# is the product, so an upgrade must be a deliberate, reviewed regeneration.
+O2R_VERSION := 0.19.0
+O2R_ROOT := codegen/rust/.tools
+O2R := $(O2R_ROOT)/bin/openapi-to-rust
+RUST_BUILD := codegen/rust/.build
 # `--allow-remote-refs` (previously passed to the infrastructure_core and core
 # invocations below) does not exist in datamodel-code-generator 0.55.0 (the Dockerfile's
 # pin) and fails immediately: "unrecognized arguments: --allow-remote-refs". Confirmed
@@ -13,7 +19,7 @@ CODEGEN := datamodel-codegen --input-file-type openapi \
 	--disable-timestamp
 CORE_REF := --external-ref-mapping "Core/common.json=power_openapi_models.core.models"
 
-.PHONY: generate generate-python generate-typescript generate-docker clean validate lint typecheck check
+.PHONY: generate generate-python generate-typescript generate-rust generate-docker clean validate lint typecheck check
 
 generate: generate-python
 
@@ -89,6 +95,32 @@ generate-typescript:
 
 	@echo "==> Formatting"
 	npx prettier --write "typescript/orval.config.ts" "typescript/src/**/*.ts"
+
+$(O2R):
+	cargo install --locked openapi-to-rust --version =$(O2R_VERSION) --root $(O2R_ROOT)
+
+generate-rust: $(O2R)
+	@# bundle.py resolves SiennaSchemas' many files into one OpenAPI 3.1 document;
+	@# openapi-to-rust reads a single document and does not follow external $refs.
+	@echo "==> Bundling"
+	mkdir -p $(RUST_BUILD)
+	SCHEMA_DIR=$(SCHEMA_DIR) python3 codegen/rust/bundle.py $(RUST_BUILD)/bundle.json
+
+	@echo "==> Generating types"
+	rm -rf $(RUST_BUILD)/o2r
+	$(O2R) generate $(RUST_BUILD)/bundle.json --types-only --module-name generated \
+	  --output-dir $(RUST_BUILD)/o2r --quiet
+
+	@# Fixes what openapi-to-rust gets wrong (schema defaults) and writes the
+	@# per-domain modules. See codegen/rust/gen/src/main.rs.
+	@echo "==> Post-processing"
+	cargo run --quiet --release --manifest-path codegen/rust/gen/Cargo.toml \
+	  --bin power-openapi-models-postprocess -- \
+	  $(RUST_BUILD)/bundle.json $(RUST_BUILD)/o2r/types.rs rust/src
+
+	@echo "==> Formatting"
+	cd rust && cargo fmt
+	cp .schema-version rust/schema-version
 
 generate-docker:
 	docker run --rm \

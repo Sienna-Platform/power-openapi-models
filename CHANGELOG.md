@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] — Unreleased
 
-First release. Two packages, one version, one tag, one schema pin.
+First release. Three packages, one version, one tag, one schema pin.
 
 ### Added — Python (`power-openapi-models`, PyPI)
 
@@ -30,17 +30,61 @@ First release. Two packages, one version, one tag, one schema pin.
 - Hand-written `document.ts` mirroring `Core/SystemDocument.json`, the
   counterpart of Python's `document.py`.
 
+### Added — Rust (`power-openapi-models`, crates.io)
+
+- `serde` types for the same six domains, generated from the same schemas by
+  `openapi-to-rust` (pinned exactly), after a bundling step that resolves
+  SiennaSchemas' many files into one OpenAPI 3.1 document. No downgrade to 3.0.
+- One module per domain plus `generated` (every type, including inline enums),
+  `SCHEMA_VERSION` and `VERSION` constants, and a hand-written `document`
+  module (`SystemDocument`, `PortfolioDocument`, read/write) that follows the
+  Python package's write rules and round-trips the fixtures byte for byte.
+- Schema defaults are applied, integer enums reject unlisted values, and
+  timestamps use `chrono`; see the timestamp note below.
+- The README is the crate documentation, so its examples run as doctests.
+
 ### Added — repository
 
-- Multi-language layout: `python/`, `typescript/`, and a prepared `rust/`.
+- Multi-language layout: `python/`, `typescript/`, and `rust/`.
   Shared at the root: the `.schema-version` pin, the fixtures both languages
   round-trip, `codegen/`, and the cross-language check.
 - `scripts/check_version_sync.py` — a `v*` tag cannot publish one language at a
   version the others do not carry, and with `--require` cannot silently publish
   nothing.
-- A Python↔TypeScript equivalence gate in CI.
+- A Python↔TypeScript and Python↔Rust equivalence gate in CI, both blocking.
+  `check_cross_language.py --no-julia` runs them without the Julia arm, which
+  needs a `PowerOpenAPIModels` checkout matching the pinned schema.
+- `release-rust.yml`, publishing from the same `v*` tag over crates.io trusted
+  publishing, and a Rust regeneration-drift job.
+
+### Changed from the schema
+
+- **`format: date-time` fields accept a timestamp with no offset, in all three
+  packages.** The schemas say RFC 3339, which requires an offset, and each generator
+  honoured that (`AwareDatetime`, `zod.iso.datetime({ offset: true })`,
+  `chrono::DateTime<Utc>`), so `2024-01-01T00:00:00` was rejected. Real producers
+  write that form. A missing offset is read as UTC in Python and Rust; zod only
+  validates, so TypeScript returns the string as written. An offset is still honoured,
+  and a bare date or non-timestamp is still rejected. This is a deliberate leniency
+  of the pinned schema, applied once per language (`fix_naive_timestamps`,
+  `fixNaiveTimestamps`, `lenient_timestamps`) and worth raising with SiennaSchemas.
 
 ### Fixed
+
+- **`openapi-to-rust` had its own version of the same defects**, each found by the
+  Python↔Rust gate and fixed in `codegen/rust/`, never in the output:
+  - it drops schema `default`s: an optional defaulted field decoded to `None`
+    where Python gives the default, a required defaulted field was required, and
+    where it used `#[serde(default)]` that is Rust's zero, not the schema's
+    (`ac_setpoint`, default 1.0, would silently have been 0.0). A type-level
+    default on a referenced schema also applies to a required field of that type;
+  - it turns an integer `enum` into a bare `i64`, so `curve_style: 5` was
+    accepted where Python and TypeScript reject it;
+  - it emits struct fields alphabetically, so typed rows wrote keys in a
+    different order from the other packages, and it derives `PartialEq` on enums
+    but not structs.
+  It also needed `serde_json`'s `float_roundtrip`: without it a parsed float can be
+  one ULP off, which broke byte-identical round-trips.
 
 - **Both generators silently dropped schema defaults, in opposite places.** The
   new Python↔TypeScript gate found 156 field-level disagreements between the two
