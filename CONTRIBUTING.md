@@ -202,18 +202,31 @@ with `--require python,typescript,rust`, so a tag cannot publish one language at
 version the others do not carry, and cannot silently publish nothing if a
 manifest is missing.
 
-To cut a release:
+Merging a version bump to `main` is the release; nobody tags by hand.
+`release-on-merge.yml` sees a version with no `vX.Y.Z` tag, pushes the tag, and
+`release-python.yml`, `release-typescript.yml` and `release-rust.yml` all fire
+from it.
 
-1. Add a dated entry to `CHANGELOG.md`.
-2. Bump the version in **all three** of `python/pyproject.toml`,
-   `typescript/package.json` and `rust/Cargo.toml`, then confirm:
+**After a schema release** you only review and merge. SiennaSchemas' release
+dispatches `update-schema.yml` here, which regenerates all three languages,
+bumps the version, and opens the PR. The SDK bump mirrors the schema's bump
+*level*, not its number: a schema minor bump gives an SDK minor bump, a schema
+patch an SDK patch (`.github/scripts/bump_version.py`). Add a `CHANGELOG.md`
+entry to the PR before merging.
 
-   ```bash
-   python3 scripts/check_version_sync.py --require python,typescript,rust
-   ```
+**For a release without a schema change** (a generator fix), open an ordinary
+PR that adds a dated `CHANGELOG.md` entry and bumps the patch version in
+**all three** of `python/pyproject.toml`, `typescript/package.json` and
+`rust/Cargo.toml`, then confirm:
 
-3. Commit, tag `vX.Y.Z`, and push the tag. `release-python.yml`,
-   `release-typescript.yml` and `release-rust.yml` all fire from it.
+```bash
+python3 scripts/check_version_sync.py --require python,typescript,rust
+```
+
+The automation needs the `RELEASE_BOT_APP_ID` / `RELEASE_BOT_PRIVATE_KEY`
+secrets for a GitHub App with `contents` and `pull-requests` write access.
+Neither the PR nor the tag can use `GITHUB_TOKEN`, because events it creates
+trigger no workflows.
 
 ### First publish, once per registry
 
