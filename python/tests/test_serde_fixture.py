@@ -20,6 +20,7 @@ EXPECTED_COMPONENT_COUNT = 119
 # No document-level `base_power`/`unit_system`: each component carries its own
 # `power_units` instead (only on types with a power-family field).
 REQUIRED_ENVELOPE_KEYS = {
+    "schema_version",
     "components",
     "supplemental_attributes",
     "supplemental_attribute_associations",

@@ -13,6 +13,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  SCHEMA_VERSION,
   PortfolioDocument,
   readPortfolioDocument,
   writePortfolioDocument,
@@ -33,6 +34,7 @@ function loadSchema(): JsonSchema {
 }
 
 const minimal = {
+  schema_version: SCHEMA_VERSION,
   aggregation: "Area",
   components: {},
   supplemental_attributes: [],
@@ -53,7 +55,12 @@ describe("PortfolioDocument", () => {
   it("required fields match the schema's required list", () => {
     const schema = loadSchema();
     const required = Object.entries(PortfolioDocument.shape)
-      .filter(([, field]) => !(field as { safeParse(v: unknown): { success: boolean } }).safeParse(undefined).success)
+      .filter(
+        ([, field]) =>
+          !(field as { safeParse(v: unknown): { success: boolean } }).safeParse(
+            undefined,
+          ).success,
+      )
       .map(([name]) => name)
       .sort();
     expect(required).toEqual([...schema.required].sort());

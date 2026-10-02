@@ -55,6 +55,7 @@ jobs:
             -v ${{ github.workspace }}:/output \
             $CODEGEN_IMAGE
           echo "${{ steps.schema.outputs.latest }}" > .schema-version
+          python3 scripts/stamp_fixtures.py
 
       - uses: actions/setup-python@v5
         if: steps.schema.outputs.changed == 'true'
@@ -89,8 +90,17 @@ jobs:
         if: steps.schema.outputs.changed == 'true'
         run: make generate-rust SCHEMA_DIR=/tmp/schemas
 
+      # The bundles and vectors only exist in the release tarball. Committed with
+      # the models: release workflows build from the committed tree.
+      - name: Sync strict bundles and reader-rule vectors
+        if: steps.schema.outputs.changed == 'true'
+        run: make sync-bundles SCHEMA_DIR=/tmp/schemas
+
+      # The tests that read the schema tree take the extracted tarball.
       - name: Validate
         if: steps.schema.outputs.changed == 'true'
+        env:
+          SIENNA_SCHEMAS_DIR: /tmp/schemas
         run: |
           pip install -e "./python[dev]"
           make validate

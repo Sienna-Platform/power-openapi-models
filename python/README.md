@@ -148,9 +148,34 @@ consumer's job.
 ## Round-tripping
 
 `read_document` followed by `write_document` reproduces the input byte for
-byte. Fields the input never carried stay omitted rather than being written
-back as explicit nulls, top-level keys are sorted, and the file ends with a
-newline.
+byte, for a document in canonical form. Optional properties that are absent,
+null or equal to their schema default (an empty `trading_hub_associations`,
+say) are omitted rather than written back, top-level keys are sorted after the
+`schema_version` stamp, and the file ends with a newline.
+
+## Schema versions
+
+Both documents carry a required `schema_version`: the schema release that wrote
+them. `read_document` and `read_portfolio_document` check it on the raw JSON,
+before decoding, and raise `SchemaVersionError` (with `outcome`, `reader` and
+`document` attributes) unless the document is from this package's schema version
+or an older one on the same compatibility line. `check_schema_version(raw)` runs
+the same rule on a parsed dict and returns the outcome without raising (a
+non-object root raises pydantic's `ValidationError`).
+
+```python
+from power_openapi_models.document import get_source_schema_version, read_document
+
+doc = read_document("../fixtures/case14_operations.NATURAL_UNITS.json")
+print(get_source_schema_version(doc))
+```
+
+`write_document(doc, path)` stamps this package's version, so reading then writing
+upgrades a document; `upgrade_document(src, dst)` does exactly that. To keep the
+version a document was read at, pass `schema_version="source"`. When that version
+is older, the encoded document is validated against that version's strict schema
+first, and the write fails listing every path that version does not know; nothing
+is dropped. That check needs `pip install "power-openapi-models[source-version]"`.
 
 ## Worked example
 

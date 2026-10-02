@@ -6,7 +6,8 @@ Everything under `python/src/power_openapi_models/*/models.py` is **generated
 output**. An edit there is erased by the next regeneration and the drift
 check will not flag it as intentional.
 
-Everything under `rust/src/` except `lib.rs` and `document.rs` is generated too.
+Everything under `rust/src/` except `lib.rs`, `document.rs`, `schema_version.rs` and
+`timestamp.rs` is generated too.
 
 Fixes belong in one of two upstream places:
 
@@ -28,8 +29,16 @@ cure is naming the inline object or enum as a `$defs` entry in the SiennaSchemas
 source, rather than leaving it anonymous at the reference site.
 `python/tests/test_public_api.py` fails on these.
 
-`python/src/power_openapi_models/document.py` is the one exception: it is
-hand-written, not generated, and mirrors `Core/SystemDocument.json` by hand.
+`python/src/power_openapi_models/document.py` is hand-written, not generated, and
+mirrors `Core/SystemDocument.json` by hand. So are the schema-version modules
+beside it: `python/src/power_openapi_models/_versioning.py`,
+`rust/src/schema_version.rs`, and
+`typescript/src/{document,schema_version,source_validation}.ts`.
+
+The strict bundles (`bundles/` in each package) and `fixtures/versioning/cases.json`
+come from the SiennaSchemas release tarball, not from generation. After pointing
+`.schema-version` at a new release, extract its tarball and run
+`make sync-bundles SCHEMA_DIR=<extracted tarball>`.
 
 ## Regenerating
 
@@ -154,8 +163,9 @@ For Rust, from `rust/`:
 
 ```bash
 cargo fmt --check
-cargo clippy --all-targets -- -D warnings
+cargo clippy --all-targets --all-features -- -D warnings
 cargo test
+cargo test --features source-version
 cargo publish --dry-run
 ```
 

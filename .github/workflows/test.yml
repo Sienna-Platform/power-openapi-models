@@ -220,10 +220,17 @@ jobs:
 
       - run: cargo fmt --check
         working-directory: rust
-      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo clippy --all-targets --all-features -- -D warnings
         working-directory: rust
+      # The schema-version tests build strict bundles from the checkout above.
       - run: cargo test
         working-directory: rust
+        env:
+          SIENNA_SCHEMAS_DIR: ${{ github.workspace }}/SiennaSchemas
+      - run: cargo test --features source-version
+        working-directory: rust
+        env:
+          SIENNA_SCHEMAS_DIR: ${{ github.workspace }}/SiennaSchemas
       - run: cargo publish --dry-run
         working-directory: rust
 
