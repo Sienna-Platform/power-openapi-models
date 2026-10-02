@@ -10,14 +10,21 @@ homepage = "https://github.com/Sienna-Platform/power-openapi-models"
 readme = "README.md"
 keywords = ["power-systems", "energy", "openapi", "serde", "sienna"]
 categories = ["data-structures", "encoding"]
-include = ["src/**", "schema-version", "README.md", "LICENSE", "Cargo.toml"]
+include = ["src/**", "schema-version", "bundles/**", "README.md", "LICENSE", "Cargo.toml"]
 
 [dependencies]
 # Only for `format: date-time` fields (RFC 3339, offset required by the schema).
 chrono = { version = "0.4", default-features = false, features = ["std", "serde"] }
+# Only for the `source-version` feature.
+jsonschema = { version = "0.58", default-features = false, optional = true }
 serde = { version = "1", features = ["derive"] }
 # preserve_order: component objects keep their input key order on write.
 # float_roundtrip: without it serde_json can parse a float one ULP off.
 serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
 
 [dev-dependencies]
+
+[features]
+# Validates a `schema_version = source` write against the document's own strict
+# bundle. No default features: the bundles are self-contained, so no HTTP client.
+source-version = ["dep:jsonschema"]

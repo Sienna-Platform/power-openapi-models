@@ -190,6 +190,29 @@ wrongly-shaped object.
 byte, including each number's exact literal formatting (`138.0` stays
 `138.0`, not `138`) — with the single documented exception below.
 
+## Schema versions
+
+Both documents carry a required `schema_version`. `readDocument` and
+`readPortfolioDocument` check it on the raw JSON before decoding and throw a
+`SchemaVersionError` (with `outcome`, `readerVersion`, `documentVersion`) for a
+missing, malformed, newer or cross-line stamp; `checkSchemaVersion(raw)` runs
+the same rule on its own and returns the outcome (a non-object root throws the
+schema's `ZodError`). `SCHEMA_VERSION` is the version this package was
+built from, and `getSourceSchemaVersion(doc)` the version a document was read
+at.
+
+Writers stamp `SCHEMA_VERSION` by default. `{ schemaVersion: "source" }` keeps
+the version the document was read at instead; when that is older, the encoded
+document is validated against that release's strict bundle (shipped in
+`bundles/`) and the write fails listing every offending path. That check needs
+the optional peer dependency `ajv` (`npm install ajv`), Node only.
+`upgradeDocument(src, dst, { force })` and `upgradePortfolioDocument` read an
+older document and write it at the current version.
+
+Writers omit optional top-level properties that are absent, `null` or equal to
+their schema default (for example an empty `trading_hub_associations`). Rows
+inside `components` and `supplemental_attributes` are written exactly as given.
+
 ## Known limitations
 
 **`ext`'s key order is not preserved across a `readDocument` /

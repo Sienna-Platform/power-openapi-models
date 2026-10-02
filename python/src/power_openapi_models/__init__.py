@@ -17,6 +17,7 @@ from power_openapi_models import (
     operations,
     timeseries,
 )
+from power_openapi_models._versioning import SchemaVersionError, check_schema_version
 
 try:
     __version__ = _version("power-openapi-models")
@@ -47,6 +48,8 @@ __all__ = [
     "investments",
     "operations",
     "timeseries",
+    "SchemaVersionError",
+    "check_schema_version",
     "__version__",
     "__schema_version__",
 ]

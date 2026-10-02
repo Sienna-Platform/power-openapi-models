@@ -1,4 +1,5 @@
 {
+  "schema_version": "0.1.0",
   "combined_cycle_associations": [],
   "components": {
     "ACBus": [
@@ -3062,6 +3063,5 @@
     }
   ],
   "time_series_associations": [],
-  "time_series_storage_file": null,
-  "trading_hub_associations": []
+  "time_series_storage_file": null
 }

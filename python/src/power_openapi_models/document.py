@@ -36,8 +36,18 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Literal, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, RootModel
+
+from power_openapi_models._versioning import (
+    BUNDLE_DIR,
+    READER_VERSION,
+    SchemaVersionError,
+    check_schema_version,
+    validate_source,
+)
+from power_openapi_models._versioning import _check as _check_version
 
 try:
     from power_openapi_models.infrastructure_core.models import (
@@ -70,13 +80,61 @@ except ImportError:
     PortfolioFinancialData = RequirementAssociation = dict
 
 
-class SystemDocument(BaseModel):
+__all__ = [
+    "PortfolioDocument",
+    "SchemaVersionError",
+    "SystemDocument",
+    "check_schema_version",
+    "get_source_schema_version",
+    "read_document",
+    "read_portfolio_document",
+    "upgrade_document",
+    "upgrade_portfolio_document",
+    "write_document",
+    "write_portfolio_document",
+]
+
+SCHEMA_VERSION_PATTERN = r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$"
+
+
+class _StampedDocument(BaseModel):
+    """What both documents share: the `schema_version` stamp and the version the
+    container was read at.
+
+    `schema_version` is required in the file. A document built in code defaults it to
+    this package's version, and a reader never relies on that default:
+    `check_schema_version` runs on the raw JSON first. The writer stamps its own
+    choice (see `write_document`), so the field's value is only ever the version the
+    document had when it was read or built.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str = Field(
+        default_factory=lambda: READER_VERSION,
+        pattern=SCHEMA_VERSION_PATTERN,
+        description="Version of the schema release that wrote this document, without a "
+        "leading `v`.",
+    )
+
+    # Not serialized, like `counter` in the Julia container: the stamp on disk is the only
+    # persisted version.
+    _source_schema_version: str = PrivateAttr(default="")
+
+    def model_post_init(self, __context: object) -> None:
+        self._source_schema_version = self.schema_version
+
+
+def get_source_schema_version(doc: _StampedDocument) -> str:
+    """The schema version `doc` was read at, or this package's version for a new document."""
+    return doc._source_schema_version
+
+
+class SystemDocument(_StampedDocument):
     """A whole serialized power system: components bucketed by type name, the
     association tables linking them, and the name of the HDF5 sidecar holding time
     series values. Mirrors `Core/SystemDocument.json`.
     """
-
-    model_config = ConfigDict(extra="forbid")
 
     name: str | None = Field(None, description="Optional system name.")
     description: str | None = Field(
@@ -137,47 +195,153 @@ class SystemDocument(BaseModel):
     )
 
 
+_D = TypeVar("_D", bound=_StampedDocument)
+
+
+def _read(cls: type[_D], path: str | Path, *, reader: str = READER_VERSION) -> _D:
+    """The one read path: check the stamp on the raw JSON, then decode.
+
+    Checking before `model_validate` is what lets a newer document report its version
+    instead of tripping `extra="forbid"` on a key this reader does not know.
+    """
+    raw = json.loads(Path(path).read_text())
+    _check_version(raw, reader)
+    return cls.model_validate(raw)
+
+
 def read_document(path: str | Path) -> SystemDocument:
-    """Read a `SystemDocument` from a JSON file."""
-    return SystemDocument.model_validate_json(Path(path).read_text())
+    """Read a `SystemDocument` from a JSON file.
+
+    Raises `SchemaVersionError` unless the document's `schema_version` is the reader's
+    or an older one on the same compatibility line.
+    """
+    return _read(SystemDocument, path)
 
 
-def _write(doc: BaseModel, path: str | Path, *, indent: int | None) -> None:
+def _prune(value: object, dumped: object) -> None:
+    """Drop explicit nulls of optional properties from `dumped`, the JSON dump of `value`.
+
+    One level of rows is as far as this reaches: the generated models cannot say which
+    nested field equals its schema default without per-field generator support, and
+    `components` rows are untyped dicts that the writer emits as given.
+    """
+    if isinstance(value, list) and isinstance(dumped, list):
+        for item, row in zip(value, dumped, strict=True):
+            _prune(item, row)
+        return
+    inner = value.root if isinstance(value, RootModel) else value
+    if isinstance(inner, BaseModel) and isinstance(dumped, dict):
+        for name, field in type(inner).model_fields.items():
+            if not field.is_required() and name in dumped and dumped[name] is None:
+                del dumped[name]
+
+
+_FINANCIAL_RATES = ("discount_rate", "inflation_rate", "interest_rate")
+
+
+def _encode(doc: _StampedDocument, stamp: str) -> dict:
+    """The canonical JSON tree of `doc`, stamped `stamp`.
+
+    Omits an optional property that is absent, null, or equal to its schema default, so
+    a document read at an older version and written back carries nothing that version's
+    strict schema rejects. `exclude_unset` handles absent; `exclude_none` would instead
+    strip required properties that are legitimately null (`time_series_storage_file`),
+    so nulls are judged per field.
+    """
+    dumped = doc.model_dump(mode="json", exclude_unset=True)
+    data = {}
+    for name, field in type(doc).model_fields.items():
+        if name == "schema_version" or name not in dumped:
+            continue
+        value = dumped[name]
+        # `ext` has no schema default: its pydantic factory is not a reason to drop a set `{}`.
+        if not field.is_required() and (
+            value is None
+            or (name != "ext" and value == field.get_default(call_default_factory=True))
+        ):
+            continue
+        _prune(getattr(doc, name), value)
+        if name == "financial_data":
+            # Required in the schema though the model defaults them: write them always,
+            # in field order so a rewrite is byte-stable.
+            fd = getattr(doc, name)
+            value = {
+                k: value[k] if k in value else getattr(fd, k)
+                for k in type(fd).model_fields
+                if k in value or k in _FINANCIAL_RATES
+            }
+        data[name] = value
+    data["components"] = {key: data["components"][key] for key in sorted(data["components"])}
+    # Sort the top level too, not just `components`. Field-declaration order is an
+    # artifact of how the model happens to be written; sorting makes the output a
+    # function of the data alone, so re-writing a document is a no-op in diff and two
+    # producers agree byte for byte. The stamp stays first, as in the schema.
+    return {"schema_version": stamp, **{key: data[key] for key in sorted(data)}}
+
+
+def _write(
+    doc: _StampedDocument,
+    path: str | Path,
+    *,
+    indent: int | None,
+    bundle_name: str,
+    schema_version: Literal["current", "source"] = "current",
+    reader: str = READER_VERSION,
+    bundle_dir: Path = BUNDLE_DIR,
+) -> None:
     """Dump `doc` to `path` as JSON under the rules both document types share.
 
-    `exclude_unset=True` keeps an omitted field omitted. Without it
-    `model_dump` materializes optional fields (`name`, `description`,
-    `frequency`) as explicit `null`s, so reading a document and writing it
-    straight back added keys it never had — and put Python at odds with the
-    Julia package, whose `_encode` skips absent fields.
-
-    `exclude_unset`, not `exclude_none`: `time_series_storage_file` is
-    *required* and is legitimately `null` in real documents, so dropping every
-    None would strip a required key and produce a document that no longer
-    validates. What should be omitted is what the input never carried, which is
-    what `model_fields_set` records.
+    `reader` and `bundle_dir` are parameters so tests can stand in a reader and the
+    bundles built from a SiennaSchemas checkout.
     """
-    data = doc.model_dump(mode="json", exclude_unset=True)
-    data["components"] = {key: data["components"][key] for key in sorted(data["components"])}
-    # Sort the top level too, not just `components`. Field-declaration order is
-    # an artifact of how the model happens to be written; sorting makes the
-    # output a function of the data alone, so re-writing a document is a no-op
-    # in diff and two producers agree byte for byte.
-    data = {key: data[key] for key in sorted(data)}
+    if schema_version == "current":
+        stamp = reader
+    elif schema_version == "source":
+        stamp = get_source_schema_version(doc)
+        # A source stamp this reader could not itself read is not a stamp to write.
+        _check_version({"schema_version": stamp}, reader)
+    else:
+        raise ValueError(f"schema_version must be 'current' or 'source', got {schema_version!r}")
+    data = _encode(doc, stamp)
+    if stamp != reader:
+        validate_source(data, stamp, bundle_name, bundle_dir)
     # Trailing newline: POSIX text-file convention, and it makes read -> write
-    # byte-identical against documents produced by other tools in this
-    # ecosystem, which all emit one.
+    # byte-identical against documents produced by other tools in this ecosystem,
+    # which all emit one.
     Path(path).write_text(json.dumps(data, indent=indent) + "\n")
 
 
-def write_document(doc: SystemDocument, path: str | Path, *, indent: int | None = 2) -> None:
+def write_document(
+    doc: SystemDocument,
+    path: str | Path,
+    *,
+    indent: int | None = 2,
+    schema_version: Literal["current", "source"] = "current",
+) -> None:
     """Write `doc` to `path` as JSON, with `components` keys sorted for
     deterministic output — the schema requires the same.
+
+    `schema_version="current"` stamps this package's schema version, so reading and
+    writing upgrades a document. `"source"` keeps the version the document was read at
+    (`get_source_schema_version`): when that is older, the encoded document is checked
+    against that version's strict schema and the write fails, listing every offending
+    path, rather than dropping anything. That check needs the `source-version` extra.
     """
-    _write(doc, path, indent=indent)
+    _write(doc, path, indent=indent, bundle_name="SystemDocument", schema_version=schema_version)
 
 
-class PortfolioDocument(BaseModel):
+def _refuse_overwrite(dst: str | Path, force: bool) -> None:
+    if Path(dst).exists() and not force:
+        raise FileExistsError(f"{dst} exists; pass force=True to overwrite it")
+
+
+def upgrade_document(src: str | Path, dst: str | Path, *, force: bool = False) -> None:
+    """Read the `SystemDocument` at `src` and write it to `dst` at the current schema version."""
+    _refuse_overwrite(dst, force)
+    write_document(read_document(src), dst)
+
+
+class PortfolioDocument(_StampedDocument):
     """A whole serialized investment portfolio: the candidate technologies,
     regional aggregations, and policy requirements that make up an expansion
     problem, the supplemental attributes describing them, the association
@@ -195,8 +359,6 @@ class PortfolioDocument(BaseModel):
     holding it as its own `SystemDocument`, so a portfolio and its base system
     can be written, moved, and read together.
     """
-
-    model_config = ConfigDict(extra="forbid")
 
     name: str | None = Field(None, description="Optional portfolio name.")
     description: str | None = Field(
@@ -272,19 +434,29 @@ class PortfolioDocument(BaseModel):
 
 
 def read_portfolio_document(path: str | Path) -> PortfolioDocument:
-    """Read a `PortfolioDocument` from a JSON file."""
-    return PortfolioDocument.model_validate_json(Path(path).read_text())
+    """Read a `PortfolioDocument` from a JSON file.
+
+    Same version rule as `read_document`.
+    """
+    return _read(PortfolioDocument, path)
 
 
 def write_portfolio_document(
-    doc: PortfolioDocument, path: str | Path, *, indent: int | None = 2
+    doc: PortfolioDocument,
+    path: str | Path,
+    *,
+    indent: int | None = 2,
+    schema_version: Literal["current", "source"] = "current",
 ) -> None:
     """Write `doc` to `path` as JSON, with `components` keys sorted for
     deterministic output — the schema requires the same.
 
-    Same dump rules as `write_document`, for the same reasons: `exclude_unset`
-    to keep an omitted field omitted rather than materializing it as an
-    explicit `null`, a sorted top level so output is a function of the data
-    alone, and a trailing newline.
+    Same dump rules and `schema_version` targets as `write_document`.
     """
-    _write(doc, path, indent=indent)
+    _write(doc, path, indent=indent, bundle_name="PortfolioDocument", schema_version=schema_version)
+
+
+def upgrade_portfolio_document(src: str | Path, dst: str | Path, *, force: bool = False) -> None:
+    """Read the `PortfolioDocument` at `src` and write it to `dst` at the current schema version."""
+    _refuse_overwrite(dst, force)
+    write_portfolio_document(read_portfolio_document(src), dst)

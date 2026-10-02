@@ -73,7 +73,7 @@ def test_required_fields_match_schema_required(document_module, schema):
         for name, field in document_module.SystemDocument.model_fields.items()
         if field.is_required()
     }
-    assert required == set(schema["required"])
+    assert required | {"schema_version"} == set(schema["required"])
 
 
 def test_trading_hub_associations_defaults_to_empty_list(document_module, schema):
@@ -166,7 +166,7 @@ def test_portfolio_required_fields_match_schema_required(document_module, portfo
         for name, field in document_module.PortfolioDocument.model_fields.items()
         if field.is_required()
     }
-    assert required == set(portfolio_schema["required"])
+    assert required | {"schema_version"} == set(portfolio_schema["required"])
 
 
 def test_portfolio_rejects_unknown_top_level_key(document_module):

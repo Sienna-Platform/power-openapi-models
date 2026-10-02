@@ -19,7 +19,7 @@ CODEGEN := datamodel-codegen --input-file-type openapi \
 	--disable-timestamp
 CORE_REF := --external-ref-mapping "Core/common.json=power_openapi_models.core.models"
 
-.PHONY: generate generate-python generate-typescript generate-rust generate-docker clean validate lint typecheck check
+.PHONY: generate generate-python generate-typescript generate-rust stamp-fixtures sync-bundles generate-docker clean validate lint typecheck check
 
 generate: generate-python
 
@@ -69,6 +69,7 @@ generate-python:
 	@# Keep the packaged copy of .schema-version in sync so
 	@# power_openapi_models.__schema_version__ never goes stale after a regen.
 	cp .schema-version $(PKG_DIR)/_schema_version.txt
+	$(MAKE) stamp-fixtures
 
 generate-typescript:
 	@# gen-orval-config.ts walks $(SCHEMA_DIR) itself (Core/ Operations/
@@ -95,6 +96,8 @@ generate-typescript:
 
 	@echo "==> Formatting"
 	npx prettier --write "typescript/orval.config.ts" "typescript/src/**/*.ts"
+	cp .schema-version typescript/schema-version
+	$(MAKE) stamp-fixtures
 
 $(O2R):
 	cargo install --locked openapi-to-rust --version =$(O2R_VERSION) --root $(O2R_ROOT)
@@ -121,6 +124,25 @@ generate-rust: $(O2R)
 	@echo "==> Formatting"
 	cd rust && cargo fmt
 	cp .schema-version rust/schema-version
+	$(MAKE) stamp-fixtures
+
+# The root fixtures carry a literal stamp; a reader rejects one outside its line.
+stamp-fixtures:
+	python3 scripts/stamp_fixtures.py
+
+# Strict bundles (the `schema_version = "source"` write check) and the reader-rule
+# vectors exist only in the release tarball, so SCHEMA_DIR must be an extracted
+# tarball, not a git checkout. The bundles are committed with the models: release
+# workflows build from the committed tree and never fetch schemas.
+sync-bundles:
+	@test -d $(SCHEMA_DIR)/bundles || { \
+	  echo "$(SCHEMA_DIR)/bundles not found: SCHEMA_DIR must be an extracted release tarball" >&2; \
+	  exit 1; }
+	for dir in $(PKG_DIR)/bundles typescript/bundles rust/bundles; do \
+	  rm -rf $$dir && cp -R $(SCHEMA_DIR)/bundles $$dir; \
+	done
+	mkdir -p fixtures/versioning
+	cp $(SCHEMA_DIR)/versioning/cases.json fixtures/versioning/cases.json
 
 generate-docker:
 	docker run --rm \

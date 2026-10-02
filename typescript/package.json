@@ -8,7 +8,10 @@
   "engines": {
     "node": ">=22"
   },
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "bundles"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -55,7 +58,13 @@
     }
   },
   "peerDependencies": {
-    "zod": "^4"
+    "zod": "^4",
+    "ajv": "^8"
+  },
+  "peerDependenciesMeta": {
+    "ajv": {
+      "optional": true
+    }
   },
   "keywords": [
     "power-systems",

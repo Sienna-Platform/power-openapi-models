@@ -7,6 +7,7 @@ pub mod generated;
 pub mod infrastructure_core;
 pub mod investments;
 pub mod operations;
+pub mod schema_version;
 pub mod timeseries;
 pub mod timestamp;
 

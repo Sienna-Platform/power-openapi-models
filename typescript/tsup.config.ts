@@ -1,5 +1,7 @@
 import { defineConfig } from "tsup";
 
+import { define } from "./schema-version-define";
+
 export default defineConfig({
   entry: {
     index: "src/index.ts",
@@ -16,4 +18,6 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   splitting: true,
+  shims: true,
+  define,
 });

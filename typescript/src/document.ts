@@ -34,7 +34,7 @@
  * Python's import list.
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import * as zod from "zod";
 
 import { SupplementalAttributeAssociation } from "./infrastructure_core/models";
@@ -49,11 +49,30 @@ import {
   RequirementAssociation,
 } from "./investments/models";
 import { TimeSeriesAssociation } from "./timeseries/models";
+import {
+  SCHEMA_VERSION,
+  assertReadable,
+  classifySchemaVersion,
+  SchemaVersionError,
+} from "./schema_version";
+import type { SchemaVersionOutcome } from "./schema_version";
+import { validateAgainstBundle } from "./source_validation";
+
+export { SCHEMA_VERSION, SchemaVersionError };
+export type { SchemaVersionOutcome } from "./schema_version";
 
 const genericRecord = zod.record(zod.string(), zod.unknown());
 
 export const SystemDocument = zod
   .object({
+    schema_version: zod
+      .string()
+      .regex(
+        /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$/,
+      )
+      .describe(
+        "Version of the schema release that wrote this document, without a leading `v`. A reader compares it with its own before decoding anything else; the comparison rule is defined once, in the schema repository's versioning document.",
+      ),
     name: zod.string().nullable().optional().describe("Optional system name."),
     description: zod
       .string()
@@ -134,6 +153,14 @@ export type SystemDocumentOutput = zod.output<typeof SystemDocument>;
 
 export const PortfolioDocument = zod
   .object({
+    schema_version: zod
+      .string()
+      .regex(
+        /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$/,
+      )
+      .describe(
+        "Version of the schema release that wrote this document, without a leading `v`. A reader compares it with its own before decoding anything else; the comparison rule is defined once, in the schema repository's versioning document.",
+      ),
     name: zod
       .string()
       .nullable()
@@ -307,23 +334,79 @@ function sortKeys<T extends Record<string, unknown>>(obj: T): T {
 const RAW_NUMBER_TREE = Symbol("power-openapi-models:rawNumberTree");
 
 /**
+ * The schema version `doc` carries in its own `schema_version` field: the
+ * version it was read at, or the one the caller built it with. Derived from
+ * the field, not tracked per object, so it survives spreads and clones.
+ * Not serialized separately. A document built in code without the field is
+ * taken to be at this package's version, as in Python; the field is required
+ * by the `SystemDocument`/`PortfolioDocument` types, so callers should stamp
+ * new documents with `SCHEMA_VERSION`.
+ */
+export function getSourceSchemaVersion(doc: object): string {
+  return (doc as { schema_version?: string }).schema_version ?? SCHEMA_VERSION;
+}
+
+/**
+ * The reader rule against this package's schema version, on the raw parsed JSON.
+ * Pure: returns the outcome. A non-object root throws the schema's format error
+ * (a `ZodError`), as reading it does.
+ */
+export function checkSchemaVersion(raw: unknown): SchemaVersionOutcome {
+  if (!isRecord(raw)) {
+    SystemDocument.parse(raw);
+  }
+  return classifySchemaVersion(SCHEMA_VERSION, raw);
+}
+
+export type SchemaVersionTarget = "current" | "source";
+
+export interface ReadOptions {
+  /** @internal Test hook: reader version in place of this package's. */
+  readerVersion?: string;
+}
+
+export interface WriteOptions extends ReadOptions {
+  /**
+   * `current` (default) stamps this package's version. `source` stamps the
+   * version the document was read at; when that is older, the encoded document
+   * is validated against that release's strict bundle first (needs `ajv`).
+   */
+  schemaVersion?: SchemaVersionTarget;
+  /** @internal Test hook: directory holding `<version>/<Document>.json` bundles. */
+  bundlesDir?: string;
+  /** @internal Test hook: module specifier loaded for the validator. */
+  ajv?: string;
+}
+
+/**
  * Read and validate one document, preserving numeric literals.
  *
  * Shared by both container types: the raw-number machinery above is about
  * JSON, not about which document is being read, so parameterizing on the zod
  * schema keeps one implementation rather than two that can drift.
  *
- * Validates the parsed JSON against `schema` (throwing on invalid input, the
- * same as Python's `model_validate_json`) and returns a value that reads like
+ * Checks `schema_version` on the raw JSON first, so a newer document with
+ * keys this reader does not know reports "newer" rather than an unknown key,
+ * then validates against `schema` (throwing on invalid input, the same as
+ * Python's `model_validate_json`) and returns a value that reads like
  * ordinary parsed JSON (numbers are plain `number`s) but secretly carries,
  * alongside it, the exact source text of every number it contained. `write`
  * uses that to reproduce the original numeric literals exactly; nothing else
  * about the returned object's shape depends on it.
  */
-function read<T>(schema: { parse(value: unknown): unknown }, path: string): T {
+function read<T extends object>(
+  schema: { parse(value: unknown): unknown },
+  path: string,
+  options: ReadOptions,
+): T {
   assertRawNumberSupport();
   const text = readFileSync(path, "utf-8");
   const raw: unknown = JSON.parse(text);
+  // A non-object root is a format error for the schema to report, not a
+  // document that predates versioning.
+  if (typeof raw === "object" && raw !== null && !Array.isArray(raw)) {
+    assertReadable(options.readerVersion ?? SCHEMA_VERSION, raw);
+  }
   schema.parse(raw);
   const rawNumberTree = parseWithContext(text, reviveRawNumbers);
   Object.defineProperty(raw as object, RAW_NUMBER_TREE, {
@@ -337,53 +420,163 @@ function read<T>(schema: { parse(value: unknown): unknown }, path: string): T {
 /**
  * Read a `SystemDocument` from a JSON file.
  */
-export function readDocument(path: string): SystemDocumentOutput {
-  return read<SystemDocumentOutput>(SystemDocument, path);
+export function readDocument(
+  path: string,
+  options: ReadOptions = {},
+): SystemDocumentOutput {
+  return read<SystemDocumentOutput>(SystemDocument, path, options);
 }
 
 /**
  * Read a `PortfolioDocument` from a JSON file.
  */
-export function readPortfolioDocument(path: string): PortfolioDocumentOutput {
-  return read<PortfolioDocumentOutput>(PortfolioDocument, path);
+export function readPortfolioDocument(
+  path: string,
+  options: ReadOptions = {},
+): PortfolioDocumentOutput {
+  return read<PortfolioDocumentOutput>(PortfolioDocument, path, options);
+}
+
+interface DocumentKind {
+  schema: { parse(value: unknown): unknown };
+  name: string;
+  /** Optional properties omitted when absent, null, or equal to `defaults`. */
+  optional: string[];
+  /** Schema `default`s; a value equal to one is omitted. */
+  defaults: Record<string, unknown>;
+}
+
+// Row-level canonical encoding is not this module's: `components` and
+// `supplemental_attributes` rows are opaque records written exactly as given.
+const SYSTEM_KIND: DocumentKind = {
+  schema: SystemDocument,
+  name: "SystemDocument",
+  optional: ["name", "description", "frequency", "trading_hub_associations"],
+  defaults: { trading_hub_associations: [] },
+};
+
+const PORTFOLIO_KIND: DocumentKind = {
+  schema: PortfolioDocument,
+  name: "PortfolioDocument",
+  optional: [
+    "name",
+    "description",
+    "data_source",
+    "financial_data",
+    "investment_schedule",
+    "ext",
+  ],
+  defaults: {},
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+const FINANCIAL_RATES = ["discount_rate", "inflation_rate", "interest_rate"];
+
+function isCanonicalOmitted(
+  kind: DocumentKind,
+  key: string,
+  value: unknown,
+): boolean {
+  if (!kind.optional.includes(key)) {
+    return false;
+  }
+  if (value === undefined || value === null) {
+    return true;
+  }
+  return (
+    key in kind.defaults &&
+    JSON.stringify(value) === JSON.stringify(kind.defaults[key])
+  );
 }
 
 /**
  * Write one document to `path` as JSON, matching Python's `write_document` /
- * `write_portfolio_document`: both `components` and the top-level object have
- * their keys sorted, a field the input never carried is not materialized into
- * the output, and the file ends with a trailing newline. When `doc` came from
- * the matching reader, the exact original numeric literals (e.g. `138.0`
- * rather than `138`) are reproduced as well; a `doc` built by hand has no
- * original source text to draw on, so its numbers serialize with ordinary
- * `JSON.stringify` formatting.
+ * `write_portfolio_document`: `schema_version` comes first, both `components`
+ * and the remaining top-level keys are sorted, an optional field that is
+ * absent, null or equal to its schema default is omitted, and the file ends
+ * with a trailing newline. When `doc` came from the matching reader, the exact
+ * original numeric literals (e.g. `138.0` rather than `138`) are reproduced as
+ * well; a `doc` built by hand has no original source text to draw on, so its
+ * numbers serialize with ordinary `JSON.stringify` formatting.
  */
 function write(
-  schema: { parse(value: unknown): unknown },
-  doc: unknown,
+  kind: DocumentKind,
+  doc: object,
   path: string,
+  options: WriteOptions,
 ): void {
   assertRawNumberSupport();
-  schema.parse(doc);
+
+  const reader = options.readerVersion ?? SCHEMA_VERSION;
+  const target = options.schemaVersion ?? "current";
+  if (target !== "current" && target !== "source") {
+    throw new Error(
+      `schemaVersion must be "current" or "source", got ${JSON.stringify(target)}`,
+    );
+  }
+  const stamp =
+    target === "source"
+      ? assertReadable(reader, { schema_version: getSourceSchemaVersion(doc) })
+      : reader;
+  // The stamp is overwritten, so validate the document as it will be written.
+  const parsed = kind.schema.parse({ ...doc, schema_version: stamp }) as Record<
+    string,
+    unknown
+  >;
 
   const rawNumberTree = (doc as Record<PropertyKey, unknown>)[
     RAW_NUMBER_TREE
   ] as Record<string, unknown> | undefined;
   const source = (rawNumberTree ?? doc) as Record<string, unknown>;
 
-  const sortedComponents = sortKeys(
-    source.components as Record<string, unknown>,
-  );
-  const data = sortKeys({ ...source, components: sortedComponents });
+  const { schema_version: _ignored, ...rest } = source;
+  const kept: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(rest)) {
+    if (!isCanonicalOmitted(kind, key, value)) {
+      kept[key] = value;
+    }
+  }
+  if (isRecord(kept.financial_data) && isRecord(parsed.financial_data)) {
+    // Required in the schema though the model defaults them: write them always.
+    const filled = { ...kept.financial_data };
+    for (const rate of FINANCIAL_RATES) {
+      filled[rate] ??= parsed.financial_data[rate];
+    }
+    kept.financial_data = filled;
+  }
+  const sortedComponents = sortKeys(kept.components as Record<string, unknown>);
+  const data = {
+    schema_version: stamp,
+    ...sortKeys({ ...kept, components: sortedComponents }),
+  };
+  const text = JSON.stringify(data, null, 2) + "\n";
 
-  writeFileSync(path, JSON.stringify(data, null, 2) + "\n");
+  if (target === "source" && stamp !== reader) {
+    // rawJSON numbers are opaque objects to a validator; validate plain JSON.
+    validateAgainstBundle(
+      JSON.parse(text),
+      kind.name,
+      stamp,
+      reader,
+      options.bundlesDir,
+      options.ajv ?? "ajv",
+    );
+  }
+  writeFileSync(path, text);
 }
 
 /**
  * Write a `SystemDocument` to `path` as JSON.
  */
-export function writeDocument(doc: SystemDocument, path: string): void {
-  write(SystemDocument, doc, path);
+export function writeDocument(
+  doc: SystemDocument,
+  path: string,
+  options: WriteOptions = {},
+): void {
+  write(SYSTEM_KIND, doc, path, options);
 }
 
 /**
@@ -392,6 +585,42 @@ export function writeDocument(doc: SystemDocument, path: string): void {
 export function writePortfolioDocument(
   doc: PortfolioDocument,
   path: string,
+  options: WriteOptions = {},
 ): void {
-  write(PortfolioDocument, doc, path);
+  write(PORTFOLIO_KIND, doc, path, options);
+}
+
+function refuseOverwrite(dst: string, force: boolean): void {
+  if (!force && existsSync(dst)) {
+    throw new Error(
+      `${dst} already exists; pass { force: true } to overwrite it`,
+    );
+  }
+}
+
+/**
+ * Read `src` (any readable older version) and write it to `dst` stamped with
+ * this package's version. Refuses to overwrite `dst` unless `force`.
+ */
+export function upgradeDocument(
+  src: string,
+  dst: string,
+  options: { force?: boolean } & ReadOptions = {},
+): void {
+  const doc = readDocument(src, options);
+  refuseOverwrite(dst, options.force ?? false);
+  writeDocument(doc, dst, { readerVersion: options.readerVersion });
+}
+
+/**
+ * `upgradeDocument` for a `PortfolioDocument`.
+ */
+export function upgradePortfolioDocument(
+  src: string,
+  dst: string,
+  options: { force?: boolean } & ReadOptions = {},
+): void {
+  const doc = readPortfolioDocument(src, options);
+  refuseOverwrite(dst, options.force ?? false);
+  writePortfolioDocument(doc, dst, { readerVersion: options.readerVersion });
 }
