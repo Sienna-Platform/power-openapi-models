@@ -35,7 +35,7 @@ from power_openapi_models.core.models import (
     UnitSystem,
     UpDown,
 )
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, confloat
 from enum import Enum
 
 
@@ -2457,6 +2457,14 @@ class GroupReserve(BaseModel):
         description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
     )
     requirement: float = Field(..., description="The value of required reserves. Units: MW.")
+    max_requirement: confloat(ge=0.0) | None = Field(
+        None,
+        description="The most the group's members may be awarded in total, scaled per step by a `max_requirement` time series when one is attached. Omit when the group has no cap. Units: MW.",
+    )
+    participation_bounds: list[list[float]] | None = Field(
+        None,
+        description="Per-member bounds on the members' awards, one `[member, min, max]` triple per bounded member. `member` is the component id of a member reserve (also a member through a `ServiceAssociation` row), written as a whole number, `min` a fraction of the group's requirement (0 for no floor) and `max` a fraction of its `max_requirement` (1 for no cap beyond the group's); fractions are finite and >= 0. A dimensionless `participation_bound_min` or `participation_bound_max` time series on the group with the feature `member` set to that id scales the fraction per step. Omit when the group has none.",
+    )
     variable: CostCurve | None = Field(
         None,
         description="Operating reserve demand curve for the group, either static or time-series-backed. A group carrying a curve is elastic: its requirement is priced by the curve rather than enforced. Time series values are carried via `time_series_associations` in the sidecar, never inline. Omit when the group has no demand curve.",

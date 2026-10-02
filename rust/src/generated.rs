@@ -10247,7 +10247,7 @@ impl AsRef<str> for OperationalStates {
         self.as_str()
     }
 }
-///A reserve product met by a group of individual reserves. The group requirement is additional to each member's own requirement, and a device contributing to a member reserve also counts toward the group. Membership is carried by `ServiceAssociation` rows, not by a field here.
+///A reserve product, or a limit, over a group of individual reserves: a device contributing to a member reserve also counts toward the group. A demand curve on `variable` prices the group, `max_requirement` caps the members' total, and `participation_bounds` bounds each member's share. Membership is carried by `ServiceAssociation` rows, not by a field here.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct GroupReserve {
     ///Unique integer identifier for this component.
@@ -10258,6 +10258,17 @@ pub struct GroupReserve {
     pub available: bool,
     ///The value of required reserves. Units: MW.
     pub requirement: f64,
+    ///The most the group's members may be awarded in total, scaled per step by a `max_requirement` time series when one is attached. Omit when the group has no cap. Units: MW.
+    ///Constraint: minimum=0
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub max_requirement: Option<Option<f64>>,
+    ///Per-member bounds on the members' awards, one `[member, min, max]` triple per bounded member. `member` is the component id of a member reserve (also a member through a `ServiceAssociation` row), written as a whole number, `min` a fraction of the group's requirement (0 for no floor) and `max` a fraction of its `max_requirement` (1 for no cap beyond the group's); fractions are finite and >= 0. A dimensionless `participation_bound_min` or `participation_bound_max` time series on the group with the feature `member` set to that id scales the fraction per step. Omit when the group has none.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub participation_bounds: Option<Vec<Vec<f64>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub variable: Option<CostCurve>,
     pub reserve_direction: ReserveDirection,

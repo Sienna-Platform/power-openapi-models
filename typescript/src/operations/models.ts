@@ -7400,6 +7400,11 @@ export const FixedForcedOutage = zod
 export type FixedForcedOutage = zod.input<typeof FixedForcedOutage>;
 export type FixedForcedOutageOutput = zod.output<typeof FixedForcedOutage>;
 
+export const groupReserveMaxRequirementMin = 0;
+
+export const groupReserveParticipationBoundsItemMin = 3;
+export const groupReserveParticipationBoundsItemMax = 3;
+
 const groupReserveVariableValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const groupReserveVariableValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const groupReserveVariableValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
@@ -7474,6 +7479,24 @@ export const GroupReserve = zod
     requirement: zod
       .number()
       .describe("The value of required reserves. Units: MW."),
+    max_requirement: zod
+      .number()
+      .min(groupReserveMaxRequirementMin)
+      .nullish()
+      .describe(
+        "The most the group's members may be awarded in total, scaled per step by a `max_requirement` time series when one is attached. Omit when the group has no cap. Units: MW.",
+      ),
+    participation_bounds: zod
+      .array(
+        zod
+          .array(zod.number())
+          .min(groupReserveParticipationBoundsItemMin)
+          .max(groupReserveParticipationBoundsItemMax),
+      )
+      .optional()
+      .describe(
+        "Per-member bounds on the members' awards, one `[member, min, max]` triple per bounded member. `member` is the component id of a member reserve (also a member through a `ServiceAssociation` row), written as a whole number, `min` a fraction of the group's requirement (0 for no floor) and `max` a fraction of its `max_requirement` (1 for no cap beyond the group's); fractions are finite and >= 0. A dimensionless `participation_bound_min` or `participation_bound_max` time series on the group with the feature `member` set to that id scales the fraction per step. Omit when the group has none.",
+      ),
     variable: zod
       .object({
         power_units: zod
@@ -8152,7 +8175,7 @@ export const GroupReserve = zod
       ),
   })
   .describe(
-    "A reserve product met by a group of individual reserves. The group requirement is additional to each member's own requirement, and a device contributing to a member reserve also counts toward the group. Membership is carried by `ServiceAssociation` rows, not by a field here.",
+    "A reserve product, or a limit, over a group of individual reserves: a device contributing to a member reserve also counts toward the group. A demand curve on `variable` prices the group, `max_requirement` caps the members' total, and `participation_bounds` bounds each member's share. Membership is carried by `ServiceAssociation` rows, not by a field here.",
   );
 
 export type GroupReserve = zod.input<typeof GroupReserve>;
