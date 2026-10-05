@@ -40,6 +40,7 @@ use power_openapi_models::generated::ACBus;
 use serde_json::{json, Value};
 
 let text = json!({
+    "schema_version": power_openapi_models::schema_version::current_schema_version(),
     "components": {
         "ACBus": [{
             "id": 3, "number": 101, "name": "BUS 101", "available": true,
@@ -69,6 +70,33 @@ assert_eq!(parse_document(&written)?, doc);
 
 Read and write files with `read_document` / `write_document`. `PortfolioDocument`
 has the same set: `read_portfolio_document`, `write_portfolio_document`.
+
+## Schema versions
+
+Every document carries `schema_version`. A read compares it with this crate's
+(`schema_version::current_schema_version()`) on the raw JSON, before decoding, and
+fails with `DocumentError::Version` unless the document is `current` or
+`upgradable` (written by an older release of the same compatibility line). The
+rule is `schema_version::check_schema_version`.
+
+Writes stamp this crate's version. To keep the version a document was read at,
+pass `SchemaVersionTarget::Source`:
+
+```rust,no_run
+use power_openapi_models::document::{read_document, write_document, SchemaVersionTarget};
+
+let doc = read_document("system.json")?;
+println!("read at schema {}", doc.get_source_schema_version());
+write_document(&doc, "out.json", SchemaVersionTarget::Source)?;
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+For a document read at an older version, a source write checks the encoded
+document against that version's strict bundle in `bundles/<version>/` and lists
+every path it holds that the older schema does not know; nothing is dropped. It
+needs the `source-version` cargo feature and fails without it.
+`write_document_with_bundles` takes the bundle directory explicitly. `upgrade_document`
+and `upgrade_portfolio_document` read a file and rewrite it at the current version.
 
 ## Layout
 
@@ -108,8 +136,7 @@ assert_eq!(serde_json::to_value(&curve)?["power_units"], "NATURAL_UNITS");
 Because serde cannot tell an omitted defaulted field from an explicit one, a typed
 value writes its defaults out. `SystemDocument` avoids the consequence: its own
 optional fields (`trading_hub_associations`, `ext`) are `Option`s, so `None` means
-"the input did not carry it" and stays omitted. The one place this does not hold is
-`PortfolioFinancialData`, whose three rates have schema defaults.
+"the input did not carry it" and stays omitted.
 
 **Enums reject unlisted values**, including the integer ones (`curve_style`
 accepts `0` and `1`, nothing else).

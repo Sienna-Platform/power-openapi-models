@@ -18,6 +18,14 @@ First release. Three packages, one version, one tag, one schema pin.
   module (`SystemDocument`, `read_document`, `write_document`).
 - PEP 561 `py.typed` marker; the package ships as fully typed.
 - `__version__` and `__schema_version__` for runtime provenance.
+- Schema-version stamp on `SystemDocument` and `PortfolioDocument`: readers check
+  `schema_version` on the raw JSON before decoding and raise `SchemaVersionError`
+  (`check_schema_version`); writers stamp the shipped schema version and encode
+  canonically (absent, null and default-valued optional properties omitted).
+  `write_document(..., schema_version="source")` keeps an older stamp after
+  validating against that version's strict bundle (optional extra
+  `source-version`); `upgrade_document` and `upgrade_portfolio_document` re-stamp.
+  Strict bundles ship in `power_openapi_models/bundles/`.
 
 ### Added — TypeScript (`@sienna-platform/power-openapi-models`, npm)
 
@@ -29,6 +37,12 @@ First release. Three packages, one version, one tag, one schema pin.
   copies of zod. The generated code uses the zod v4 API.
 - Hand-written `document.ts` mirroring `Core/SystemDocument.json`, the
   counterpart of Python's `document.py`.
+- Schema-version stamp on both documents, with the same reader rule, canonical
+  encoding and `upgrade*` functions as Python: `readDocument` throws
+  `SchemaVersionError` (`checkSchemaVersion`) before decoding, and
+  `writeDocument(..., { schemaVersion: "source" })` validates against that
+  version's strict bundle with the optional peer dependency `ajv` (`^8`).
+  Strict bundles ship in `bundles/`.
 
 ### Added — Rust (`power-openapi-models`, crates.io)
 
@@ -42,9 +56,17 @@ First release. Three packages, one version, one tag, one schema pin.
 - Schema defaults are applied, integer enums reject unlisted values, and
   timestamps use `chrono`; see the timestamp note below.
 - The README is the crate documentation, so its examples run as doctests.
+- Schema-version stamp on both documents, with the same reader rule, canonical
+  encoding and `upgrade_*` functions as Python: reads return
+  `DocumentError::Version` before decoding, and
+  `SchemaVersionTarget::Source` validates against that version's strict bundle
+  (cargo feature `source-version`). Strict bundles ship in `bundles/`.
 
 ### Added — repository
 
+- `make sync-bundles` copies the strict bundles and reader-rule vectors from a
+  release tarball into the three packages; `make stamp-fixtures` re-stamps the
+  root fixtures to the pinned schema version after a regeneration.
 - Multi-language layout: `python/`, `typescript/`, and `rust/`.
   Shared at the root: the `.schema-version` pin, the fixtures both languages
   round-trip, `codegen/`, and the cross-language check.

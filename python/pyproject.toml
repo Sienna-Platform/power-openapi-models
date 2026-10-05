@@ -41,7 +41,9 @@ Issues = "https://github.com/Sienna-Platform/power-openapi-models/issues"
 Changelog = "https://github.com/Sienna-Platform/power-openapi-models/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
+source-version = ["jsonschema>=4"]
 dev = [
+    "jsonschema>=4",
     "ruff>=0.6",
     "pytest>=8",
     "pyright>=1.1.380",
@@ -54,7 +56,7 @@ dev = [
 where = ["src"]
 
 [tool.setuptools.package-data]
-power_openapi_models = ["py.typed", "_schema_version.txt"]
+power_openapi_models = ["py.typed", "_schema_version.txt", "bundles/*/*.json"]
 
 [tool.ruff]
 line-length = 100

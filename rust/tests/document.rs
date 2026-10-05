@@ -1,10 +1,12 @@
 //! SystemDocument / PortfolioDocument rules, mirroring python/tests/test_document.py.
 
 use power_openapi_models::document::*;
+use power_openapi_models::schema_version::current_schema_version;
 use serde_json::{json, Value};
 
 fn system() -> Value {
     json!({
+        "schema_version": current_schema_version(),
         "components": {"ACBus": []},
         "supplemental_attributes": [],
         "supplemental_attribute_associations": [],
@@ -18,6 +20,7 @@ fn system() -> Value {
 
 fn portfolio() -> Value {
     json!({
+        "schema_version": current_schema_version(),
         "aggregation": "PSY.Area",
         "components": {},
         "supplemental_attributes": [],
@@ -119,13 +122,13 @@ fn omitted_optional_fields_stay_omitted_on_write() {
 }
 
 #[test]
-fn present_empty_optional_arrays_survive_a_roundtrip() {
+fn present_empty_ext_survives_a_roundtrip_but_defaulted_arrays_do_not() {
     let mut doc = system();
     doc["trading_hub_associations"] = json!([]);
     doc["ext"] = json!({});
     let written: Value =
         serde_json::from_str(&document_to_string(&parse(&doc).unwrap()).unwrap()).unwrap();
-    assert_eq!(written["trading_hub_associations"], json!([]));
+    assert!(written.get("trading_hub_associations").is_none());
     assert_eq!(written["ext"], json!({}));
 }
 
@@ -137,9 +140,10 @@ fn keys_are_written_sorted() {
     let text = document_to_string(&parse(&doc).unwrap()).unwrap();
     let written: Value = serde_json::from_str(&text).unwrap();
     let top: Vec<&String> = written.as_object().unwrap().keys().collect();
-    let mut sorted = top.clone();
+    assert_eq!(top[0], "schema_version");
+    let mut sorted = top[1..].to_vec();
     sorted.sort();
-    assert_eq!(top, sorted);
+    assert_eq!(top[1..], sorted);
     let comps: Vec<&String> = written["components"].as_object().unwrap().keys().collect();
     assert_eq!(comps, ["ACBus", "Area", "Line"]);
 }
@@ -151,9 +155,10 @@ fn portfolio_keys_are_written_sorted() {
             .unwrap();
     let written: Value = serde_json::from_str(&text).unwrap();
     let top: Vec<&String> = written.as_object().unwrap().keys().collect();
-    let mut sorted = top.clone();
+    assert_eq!(top[0], "schema_version");
+    let mut sorted = top[1..].to_vec();
     sorted.sort();
-    assert_eq!(top, sorted);
+    assert_eq!(top[1..], sorted);
 }
 
 #[test]
@@ -169,7 +174,7 @@ fn write_then_read_via_files() {
     std::fs::create_dir_all(&dir).unwrap();
     let path = dir.join("doc.json");
     let doc = parse(&system()).unwrap();
-    write_document(&doc, &path).unwrap();
+    write_document(&doc, &path, SchemaVersionTarget::Current).unwrap();
     assert_eq!(read_document(&path).unwrap(), doc);
     std::fs::remove_dir_all(&dir).unwrap();
 }
