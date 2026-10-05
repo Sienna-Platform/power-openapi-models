@@ -1,14 +1,29 @@
 name: Update from Schema Release
 
+# SiennaSchemas' release workflow dispatches schema-release with the new tag.
+# The cron is a backstop for a missed dispatch: a run whose tag is already in
+# .schema-version is a no-op. Merging the PR this opens is the release -- see
+# release-on-merge.yml.
 on:
+  repository_dispatch:
+    types: [schema-release]
   schedule:
     - cron: "0 */6 * * *"
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "SiennaSchemas release tag (default: the latest release)"
+        required: false
 
 permissions:
   contents: write
   pull-requests: write
   packages: read
+
+# A dispatch and a cron run for the same tag must not race on one PR branch.
+concurrency:
+  group: update-schema
+  cancel-in-progress: false
 
 env:
   CODEGEN_IMAGE: ghcr.io/sienna-platform/power-openapi-models/codegen:latest
@@ -19,12 +34,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get latest schema release
+      - name: Resolve the schema release
         id: schema
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Passed through env, never interpolated into the script: the payload
+          # is caller-supplied text.
+          REQUESTED: ${{ github.event.client_payload.tag || inputs.tag }}
         run: |
-          LATEST=$(gh release view --repo Sienna-Platform/SiennaSchemas --json tagName -q .tagName)
+          LATEST="${REQUESTED:-$(gh release view --repo Sienna-Platform/SiennaSchemas --json tagName -q .tagName)}"
+          if ! [[ "$LATEST" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::'$LATEST' is not a SiennaSchemas release tag" >&2
+            exit 1
+          fi
           CURRENT=$(cat .schema-version 2>/dev/null || echo "none")
           echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
           echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
@@ -49,14 +71,16 @@ jobs:
 
       - name: Regenerate Python models via codegen container
         if: steps.schema.outputs.changed == 'true'
+        # .schema-version is written first: generate-python copies it into the
+        # package as __schema_version__, and generate-rust into rust/.
         run: |
+          echo "${{ steps.schema.outputs.latest }}" > .schema-version
           docker run --rm \
             -v /tmp/schemas:/schemas:ro \
             -v ${{ github.workspace }}:/output \
             $CODEGEN_IMAGE
           echo "${{ steps.schema.outputs.latest }}" > .schema-version
           python3 scripts/stamp_fixtures.py
-
       - uses: actions/setup-python@v5
         if: steps.schema.outputs.changed == 'true'
         with:
@@ -97,6 +121,14 @@ jobs:
         run: make sync-bundles SCHEMA_DIR=/tmp/schemas
 
       # The tests that read the schema tree take the extracted tarball.
+      - name: Bump the SDK version
+        id: bump
+        if: steps.schema.outputs.changed == 'true'
+        run: |
+          version=$(python3 .github/scripts/bump_version.py \
+            "${{ steps.schema.outputs.current }}" "${{ steps.schema.outputs.latest }}")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Validate
         if: steps.schema.outputs.changed == 'true'
         env:
@@ -104,18 +136,30 @@ jobs:
         run: |
           pip install -e "./python[dev]"
           make validate
-          python3 scripts/check_version_sync.py
+          python3 scripts/check_version_sync.py --require python,typescript,rust
           npx tsc --noEmit --project typescript
           cargo test --manifest-path rust/Cargo.toml
+
+      # Not GITHUB_TOKEN: a PR it opens triggers no workflows, so Test would
+      # never report on it.
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        if: steps.schema.outputs.changed == 'true'
+        with:
+          app-id: ${{ secrets.RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
 
       - name: Open Pull Request
         if: steps.schema.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ steps.app-token.outputs.token }}
           branch: auto/schema-${{ steps.schema.outputs.latest }}
-          title: "chore: update to schema ${{ steps.schema.outputs.latest }}"
+          title: "chore: update to schema ${{ steps.schema.outputs.latest }} (v${{ steps.bump.outputs.version }})"
           body: |
             Auto-generated from [SiennaSchemas ${{ steps.schema.outputs.latest }}](https://github.com/Sienna-Platform/SiennaSchemas/releases/tag/${{ steps.schema.outputs.latest }}).
+
+            **Merging this PR releases v${{ steps.bump.outputs.version }}** to PyPI, npm and crates.io.
 
             **Review checklist:**
             - [ ] Generated models look correct in python/, typescript/ AND rust/
