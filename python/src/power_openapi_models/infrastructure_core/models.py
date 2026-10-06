@@ -19,8 +19,8 @@ class ComplexNumber(BaseModel):
 
 
 class XYCoords(BaseModel):
-    x: float
-    y: float
+    x: float = Field(..., description="Units: the wrapped function's input unit.")
+    y: float = Field(..., description="Units: the wrapped function's output unit.")
 
 
 class MinMax(BaseModel):
@@ -49,9 +49,11 @@ class FromToToFrom(BaseModel):
 
 
 class LinearFunctionData(BaseModel):
-    constant_term: float
+    constant_term: float = Field(..., description="Units: the wrapped function's output unit.")
     function_type: Literal["LINEAR"] = "LINEAR"
-    proportional_term: float
+    proportional_term: float = Field(
+        ..., description="Units: the wrapped function's output unit per unit of its input."
+    )
 
 
 class PiecewiseLinearData(BaseModel):
@@ -66,10 +68,14 @@ class PiecewiseStepData(BaseModel):
 
 
 class QuadraticFunctionData(BaseModel):
-    constant_term: float
+    constant_term: float = Field(..., description="Units: the wrapped function's output unit.")
     function_type: Literal["QUADRATIC"] = "QUADRATIC"
-    proportional_term: float
-    quadratic_term: float
+    proportional_term: float = Field(
+        ..., description="Units: the wrapped function's output unit per unit of its input."
+    )
+    quadratic_term: float = Field(
+        ..., description="Units: the wrapped function's output unit per unit of its input squared."
+    )
 
 
 class TimeSeriesLinearFunctionData(BaseModel):

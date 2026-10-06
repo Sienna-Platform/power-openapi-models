@@ -3,7 +3,7 @@
  * Do not edit manually.
  * PowerInvestmentsOpenAPIModels
  * Power system investments models: Technologies, Financials, Requirements, SupplementalAttributes, and Portfolio components
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 import * as zod from "zod";
 
@@ -90,27 +90,43 @@ export const AggregateTransportTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
                           aggregateTransportTechnologyCapitalCostsCapitalCostOneFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
-                      quadratic_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
                     })
                     .describe(
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           aggregateTransportTechnologyCapitalCostsCapitalCostOneFunctionDataTwoFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -125,8 +141,16 @@ export const AggregateTransportTechnology = zod
                       points: zod.array(
                         zod
                           .object({
-                            x: zod.number(),
-                            y: zod.number(),
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                           })
                           .describe(
                             "A single point, given as its `x` and `y` coordinates.",
@@ -137,7 +161,10 @@ export const AggregateTransportTechnology = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                 ]),
-                input_at_zero: zod.number().optional(),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .default(
                 aggregateTransportTechnologyCapitalCostsCapitalCostOneDefault,
@@ -155,13 +182,19 @@ export const AggregateTransportTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           aggregateTransportTechnologyCapitalCostsCapitalCostTwoFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -173,15 +206,33 @@ export const AggregateTransportTechnology = zod
                         .default(
                           aggregateTransportTechnologyCapitalCostsCapitalCostTwoFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -196,13 +247,19 @@ export const AggregateTransportTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           aggregateTransportTechnologyCapitalCostsCapitalCostThreeFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -214,15 +271,33 @@ export const AggregateTransportTechnology = zod
                         .default(
                           aggregateTransportTechnologyCapitalCostsCapitalCostThreeFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -238,27 +313,47 @@ export const AggregateTransportTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             aggregateTransportTechnologyCapitalCostsCapitalCostFourFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             aggregateTransportTechnologyCapitalCostsCapitalCostFourFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -273,8 +368,16 @@ export const AggregateTransportTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -291,8 +394,20 @@ export const AggregateTransportTechnology = zod
                           .default(
                             aggregateTransportTechnologyCapitalCostsCapitalCostFourFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -386,27 +501,47 @@ export const AggregateTransportTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             aggregateTransportTechnologyCapitalCostsCapitalCostFiveFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             aggregateTransportTechnologyCapitalCostsCapitalCostFiveFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -421,8 +556,16 @@ export const AggregateTransportTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -439,8 +582,20 @@ export const AggregateTransportTechnology = zod
                           .default(
                             aggregateTransportTechnologyCapitalCostsCapitalCostFiveFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -540,27 +695,47 @@ export const AggregateTransportTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             aggregateTransportTechnologyCapitalCostsCapitalCostSixFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             aggregateTransportTechnologyCapitalCostsCapitalCostSixFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -575,8 +750,16 @@ export const AggregateTransportTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -593,8 +776,20 @@ export const AggregateTransportTechnology = zod
                           .default(
                             aggregateTransportTechnologyCapitalCostsCapitalCostSixFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -1099,27 +1294,43 @@ export const ColocatedSupplyStorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
                           colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostOneFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
-                      quadratic_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
                     })
                     .describe(
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostOneFunctionDataTwoFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -1134,8 +1345,16 @@ export const ColocatedSupplyStorageTechnology = zod
                       points: zod.array(
                         zod
                           .object({
-                            x: zod.number(),
-                            y: zod.number(),
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                           })
                           .describe(
                             "A single point, given as its `x` and `y` coordinates.",
@@ -1146,7 +1365,10 @@ export const ColocatedSupplyStorageTechnology = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                 ]),
-                input_at_zero: zod.number().optional(),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .default(
                 colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostOneDefault,
@@ -1164,13 +1386,19 @@ export const ColocatedSupplyStorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostTwoFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -1182,15 +1410,33 @@ export const ColocatedSupplyStorageTechnology = zod
                         .default(
                           colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostTwoFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -1205,13 +1451,19 @@ export const ColocatedSupplyStorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostThreeFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -1223,15 +1475,33 @@ export const ColocatedSupplyStorageTechnology = zod
                         .default(
                           colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostThreeFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -1247,27 +1517,47 @@ export const ColocatedSupplyStorageTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostFourFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostFourFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -1282,8 +1572,16 @@ export const ColocatedSupplyStorageTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -1300,8 +1598,20 @@ export const ColocatedSupplyStorageTechnology = zod
                           .default(
                             colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostFourFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -1395,27 +1705,47 @@ export const ColocatedSupplyStorageTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostFiveFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostFiveFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -1430,8 +1760,16 @@ export const ColocatedSupplyStorageTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -1448,8 +1786,20 @@ export const ColocatedSupplyStorageTechnology = zod
                           .default(
                             colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostFiveFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -1549,27 +1899,47 @@ export const ColocatedSupplyStorageTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostSixFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostSixFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -1584,8 +1954,16 @@ export const ColocatedSupplyStorageTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -1602,8 +1980,20 @@ export const ColocatedSupplyStorageTechnology = zod
                           .default(
                             colocatedSupplyStorageTechnologyCapitalCostsInverterCapitalCostSixFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -1726,27 +2116,47 @@ export const ColocatedSupplyStorageTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("QUADRATIC")
                             .default(
                               colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveOneFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
-                          quadratic_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
+                          quadratic_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input squared.",
+                            ),
                         })
                         .describe(
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveOneFunctionDataTwoFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -1761,8 +2171,16 @@ export const ColocatedSupplyStorageTechnology = zod
                           points: zod.array(
                             zod
                               .object({
-                                x: zod.number(),
-                                y: zod.number(),
+                                x: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's input unit.",
+                                  ),
+                                y: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                               })
                               .describe(
                                 "A single point, given as its `x` and `y` coordinates.",
@@ -1773,7 +2191,10 @@ export const ColocatedSupplyStorageTechnology = zod
                           "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                         ),
                     ]),
-                    input_at_zero: zod.number().optional(),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .default(
                     colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveOneDefault,
@@ -1791,13 +2212,21 @@ export const ColocatedSupplyStorageTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveTwoFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -1809,15 +2238,33 @@ export const ColocatedSupplyStorageTechnology = zod
                             .default(
                               colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveTwoFunctionDataTwoFunctionTypeDefault,
                             ),
-                          x_coords: zod.array(zod.number()),
-                          y_coords: zod.array(zod.number()),
+                          x_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                          ),
+                          y_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
+                          ),
                         })
                         .describe(
                           "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                         ),
                     ]),
-                    initial_input: zod.number().optional(),
-                    input_at_zero: zod.number().optional(),
+                    initial_input: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .describe(
                     "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -1832,13 +2279,21 @@ export const ColocatedSupplyStorageTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveThreeFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -1850,15 +2305,33 @@ export const ColocatedSupplyStorageTechnology = zod
                             .default(
                               colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveThreeFunctionDataTwoFunctionTypeDefault,
                             ),
-                          x_coords: zod.array(zod.number()),
-                          y_coords: zod.array(zod.number()),
+                          x_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                          ),
+                          y_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
+                          ),
                         })
                         .describe(
                           "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                         ),
                     ]),
-                    initial_input: zod.number().optional(),
-                    input_at_zero: zod.number().optional(),
+                    initial_input: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .describe(
                     "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -1874,27 +2347,47 @@ export const ColocatedSupplyStorageTechnology = zod
                       .union([
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("LINEAR")
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveFourFunctionDataOneFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
                           })
                           .describe(
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("QUADRATIC")
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveFourFunctionDataTwoFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
-                            quadratic_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
+                            quadratic_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input squared.",
+                              ),
                           })
                           .describe(
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -1909,8 +2402,16 @@ export const ColocatedSupplyStorageTechnology = zod
                             points: zod.array(
                               zod
                                 .object({
-                                  x: zod.number(),
-                                  y: zod.number(),
+                                  x: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                  y: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                 })
                                 .describe(
                                   "A single point, given as its `x` and `y` coordinates.",
@@ -1927,8 +2428,20 @@ export const ColocatedSupplyStorageTechnology = zod
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveFourFunctionDataFourFunctionTypeDefault,
                               ),
-                            x_coords: zod.array(zod.number()),
-                            y_coords: zod.array(zod.number()),
+                            x_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                            ),
+                            y_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
+                            ),
                           })
                           .describe(
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -2022,27 +2535,47 @@ export const ColocatedSupplyStorageTechnology = zod
                       .union([
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("LINEAR")
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveFiveFunctionDataOneFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
                           })
                           .describe(
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("QUADRATIC")
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveFiveFunctionDataTwoFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
-                            quadratic_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
+                            quadratic_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input squared.",
+                              ),
                           })
                           .describe(
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -2057,8 +2590,16 @@ export const ColocatedSupplyStorageTechnology = zod
                             points: zod.array(
                               zod
                                 .object({
-                                  x: zod.number(),
-                                  y: zod.number(),
+                                  x: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                  y: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                 })
                                 .describe(
                                   "A single point, given as its `x` and `y` coordinates.",
@@ -2075,8 +2616,20 @@ export const ColocatedSupplyStorageTechnology = zod
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveFiveFunctionDataFourFunctionTypeDefault,
                               ),
-                            x_coords: zod.array(zod.number()),
-                            y_coords: zod.array(zod.number()),
+                            x_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                            ),
+                            y_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
+                            ),
                           })
                           .describe(
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -2176,27 +2729,47 @@ export const ColocatedSupplyStorageTechnology = zod
                       .union([
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("LINEAR")
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveSixFunctionDataOneFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
                           })
                           .describe(
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("QUADRATIC")
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveSixFunctionDataTwoFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
-                            quadratic_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
+                            quadratic_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input squared.",
+                              ),
                           })
                           .describe(
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -2211,8 +2784,16 @@ export const ColocatedSupplyStorageTechnology = zod
                             points: zod.array(
                               zod
                                 .object({
-                                  x: zod.number(),
-                                  y: zod.number(),
+                                  x: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                  y: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                 })
                                 .describe(
                                   "A single point, given as its `x` and `y` coordinates.",
@@ -2229,8 +2810,20 @@ export const ColocatedSupplyStorageTechnology = zod
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterOneValueCurveSixFunctionDataFourFunctionTypeDefault,
                               ),
-                            x_coords: zod.array(zod.number()),
-                            y_coords: zod.array(zod.number()),
+                            x_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                            ),
+                            y_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
+                            ),
                           })
                           .describe(
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -2338,27 +2931,43 @@ export const ColocatedSupplyStorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
                           colocatedSupplyStorageTechnologyOperationCostsInverterOneVomCostFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
-                      quadratic_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
                     })
                     .describe(
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           colocatedSupplyStorageTechnologyOperationCostsInverterOneVomCostFunctionDataTwoFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -2373,8 +2982,16 @@ export const ColocatedSupplyStorageTechnology = zod
                       points: zod.array(
                         zod
                           .object({
-                            x: zod.number(),
-                            y: zod.number(),
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                           })
                           .describe(
                             "A single point, given as its `x` and `y` coordinates.",
@@ -2385,7 +3002,10 @@ export const ColocatedSupplyStorageTechnology = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                 ]),
-                input_at_zero: zod.number().optional(),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .default(
                 colocatedSupplyStorageTechnologyOperationCostsInverterOneVomCostDefault,
@@ -2395,7 +3015,7 @@ export const ColocatedSupplyStorageTechnology = zod
               ),
           })
           .describe(
-            "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term.",
+            "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
           ),
         zod
           .object({
@@ -2426,27 +3046,43 @@ export const ColocatedSupplyStorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
                           colocatedSupplyStorageTechnologyOperationCostsInverterTwoStartupFuelOfftakeFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
-                      quadratic_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
                     })
                     .describe(
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           colocatedSupplyStorageTechnologyOperationCostsInverterTwoStartupFuelOfftakeFunctionDataTwoFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -2461,8 +3097,16 @@ export const ColocatedSupplyStorageTechnology = zod
                       points: zod.array(
                         zod
                           .object({
-                            x: zod.number(),
-                            y: zod.number(),
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                           })
                           .describe(
                             "A single point, given as its `x` and `y` coordinates.",
@@ -2473,7 +3117,10 @@ export const ColocatedSupplyStorageTechnology = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                 ]),
-                input_at_zero: zod.number().optional(),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .default(
                 colocatedSupplyStorageTechnologyOperationCostsInverterTwoStartupFuelOfftakeDefault,
@@ -2493,27 +3140,47 @@ export const ColocatedSupplyStorageTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("QUADRATIC")
                             .default(
                               colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveOneFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
-                          quadratic_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
+                          quadratic_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input squared.",
+                            ),
                         })
                         .describe(
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveOneFunctionDataTwoFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -2528,8 +3195,16 @@ export const ColocatedSupplyStorageTechnology = zod
                           points: zod.array(
                             zod
                               .object({
-                                x: zod.number(),
-                                y: zod.number(),
+                                x: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's input unit.",
+                                  ),
+                                y: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                               })
                               .describe(
                                 "A single point, given as its `x` and `y` coordinates.",
@@ -2540,7 +3215,10 @@ export const ColocatedSupplyStorageTechnology = zod
                           "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                         ),
                     ]),
-                    input_at_zero: zod.number().optional(),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .default(
                     colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveOneDefault,
@@ -2558,13 +3236,21 @@ export const ColocatedSupplyStorageTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveTwoFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -2576,15 +3262,33 @@ export const ColocatedSupplyStorageTechnology = zod
                             .default(
                               colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveTwoFunctionDataTwoFunctionTypeDefault,
                             ),
-                          x_coords: zod.array(zod.number()),
-                          y_coords: zod.array(zod.number()),
+                          x_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                          ),
+                          y_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
+                          ),
                         })
                         .describe(
                           "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                         ),
                     ]),
-                    initial_input: zod.number().optional(),
-                    input_at_zero: zod.number().optional(),
+                    initial_input: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .describe(
                     "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -2599,13 +3303,21 @@ export const ColocatedSupplyStorageTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveThreeFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -2617,15 +3329,33 @@ export const ColocatedSupplyStorageTechnology = zod
                             .default(
                               colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveThreeFunctionDataTwoFunctionTypeDefault,
                             ),
-                          x_coords: zod.array(zod.number()),
-                          y_coords: zod.array(zod.number()),
+                          x_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                          ),
+                          y_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
+                          ),
                         })
                         .describe(
                           "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                         ),
                     ]),
-                    initial_input: zod.number().optional(),
-                    input_at_zero: zod.number().optional(),
+                    initial_input: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .describe(
                     "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -2641,27 +3371,47 @@ export const ColocatedSupplyStorageTechnology = zod
                       .union([
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("LINEAR")
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveFourFunctionDataOneFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
                           })
                           .describe(
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("QUADRATIC")
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveFourFunctionDataTwoFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
-                            quadratic_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
+                            quadratic_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input squared.",
+                              ),
                           })
                           .describe(
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -2676,8 +3426,16 @@ export const ColocatedSupplyStorageTechnology = zod
                             points: zod.array(
                               zod
                                 .object({
-                                  x: zod.number(),
-                                  y: zod.number(),
+                                  x: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                  y: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                 })
                                 .describe(
                                   "A single point, given as its `x` and `y` coordinates.",
@@ -2694,8 +3452,20 @@ export const ColocatedSupplyStorageTechnology = zod
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveFourFunctionDataFourFunctionTypeDefault,
                               ),
-                            x_coords: zod.array(zod.number()),
-                            y_coords: zod.array(zod.number()),
+                            x_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                            ),
+                            y_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
+                            ),
                           })
                           .describe(
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -2789,27 +3559,47 @@ export const ColocatedSupplyStorageTechnology = zod
                       .union([
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("LINEAR")
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveFiveFunctionDataOneFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
                           })
                           .describe(
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("QUADRATIC")
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveFiveFunctionDataTwoFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
-                            quadratic_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
+                            quadratic_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input squared.",
+                              ),
                           })
                           .describe(
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -2824,8 +3614,16 @@ export const ColocatedSupplyStorageTechnology = zod
                             points: zod.array(
                               zod
                                 .object({
-                                  x: zod.number(),
-                                  y: zod.number(),
+                                  x: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                  y: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                 })
                                 .describe(
                                   "A single point, given as its `x` and `y` coordinates.",
@@ -2842,8 +3640,20 @@ export const ColocatedSupplyStorageTechnology = zod
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveFiveFunctionDataFourFunctionTypeDefault,
                               ),
-                            x_coords: zod.array(zod.number()),
-                            y_coords: zod.array(zod.number()),
+                            x_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                            ),
+                            y_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
+                            ),
                           })
                           .describe(
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -2943,27 +3753,47 @@ export const ColocatedSupplyStorageTechnology = zod
                       .union([
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("LINEAR")
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveSixFunctionDataOneFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
                           })
                           .describe(
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("QUADRATIC")
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveSixFunctionDataTwoFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
-                            quadratic_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
+                            quadratic_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input squared.",
+                              ),
                           })
                           .describe(
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -2978,8 +3808,16 @@ export const ColocatedSupplyStorageTechnology = zod
                             points: zod.array(
                               zod
                                 .object({
-                                  x: zod.number(),
-                                  y: zod.number(),
+                                  x: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                  y: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                 })
                                 .describe(
                                   "A single point, given as its `x` and `y` coordinates.",
@@ -2996,8 +3834,20 @@ export const ColocatedSupplyStorageTechnology = zod
                               .default(
                                 colocatedSupplyStorageTechnologyOperationCostsInverterTwoValueCurveSixFunctionDataFourFunctionTypeDefault,
                               ),
-                            x_coords: zod.array(zod.number()),
-                            y_coords: zod.array(zod.number()),
+                            x_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                            ),
+                            y_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
+                            ),
                           })
                           .describe(
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -3105,27 +3955,43 @@ export const ColocatedSupplyStorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
                           colocatedSupplyStorageTechnologyOperationCostsInverterTwoVomCostFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
-                      quadratic_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
                     })
                     .describe(
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           colocatedSupplyStorageTechnologyOperationCostsInverterTwoVomCostFunctionDataTwoFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -3140,8 +4006,16 @@ export const ColocatedSupplyStorageTechnology = zod
                       points: zod.array(
                         zod
                           .object({
-                            x: zod.number(),
-                            y: zod.number(),
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                           })
                           .describe(
                             "A single point, given as its `x` and `y` coordinates.",
@@ -3152,7 +4026,10 @@ export const ColocatedSupplyStorageTechnology = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                 ]),
-                input_at_zero: zod.number().optional(),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .default(
                 colocatedSupplyStorageTechnologyOperationCostsInverterTwoVomCostDefault,
@@ -3293,27 +4170,43 @@ export const DemandRequirement = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("QUADRATIC")
                     .default(
                       demandRequirementUnservedDemandCurveOneFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
-                  quadratic_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
+                  quadratic_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input squared.",
+                    ),
                 })
                 .describe(
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       demandRequirementUnservedDemandCurveOneFunctionDataTwoFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -3328,8 +4221,16 @@ export const DemandRequirement = zod
                   points: zod.array(
                     zod
                       .object({
-                        x: zod.number(),
-                        y: zod.number(),
+                        x: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                        y: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                       })
                       .describe(
                         "A single point, given as its `x` and `y` coordinates.",
@@ -3340,7 +4241,10 @@ export const DemandRequirement = zod
                   "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                 ),
             ]),
-            input_at_zero: zod.number().optional(),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .default(demandRequirementUnservedDemandCurveOneDefault)
           .describe(
@@ -3354,13 +4258,19 @@ export const DemandRequirement = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       demandRequirementUnservedDemandCurveTwoFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -3372,15 +4282,29 @@ export const DemandRequirement = zod
                     .default(
                       demandRequirementUnservedDemandCurveTwoFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -3395,13 +4319,19 @@ export const DemandRequirement = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       demandRequirementUnservedDemandCurveThreeFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -3413,15 +4343,29 @@ export const DemandRequirement = zod
                     .default(
                       demandRequirementUnservedDemandCurveThreeFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -3437,27 +4381,43 @@ export const DemandRequirement = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         demandRequirementUnservedDemandCurveFourFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         demandRequirementUnservedDemandCurveFourFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -3472,8 +4432,16 @@ export const DemandRequirement = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -3490,8 +4458,16 @@ export const DemandRequirement = zod
                       .default(
                         demandRequirementUnservedDemandCurveFourFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -3585,27 +4561,43 @@ export const DemandRequirement = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         demandRequirementUnservedDemandCurveFiveFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         demandRequirementUnservedDemandCurveFiveFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -3620,8 +4612,16 @@ export const DemandRequirement = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -3638,8 +4638,16 @@ export const DemandRequirement = zod
                       .default(
                         demandRequirementUnservedDemandCurveFiveFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -3737,27 +4745,43 @@ export const DemandRequirement = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         demandRequirementUnservedDemandCurveSixFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         demandRequirementUnservedDemandCurveSixFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -3772,8 +4796,16 @@ export const DemandRequirement = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -3790,8 +4822,16 @@ export const DemandRequirement = zod
                       .default(
                         demandRequirementUnservedDemandCurveSixFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -4063,27 +5103,43 @@ export const DemandSideTechnology = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("QUADRATIC")
                     .default(
                       demandSideTechnologyPricePerUnitOneFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
-                  quadratic_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
+                  quadratic_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input squared.",
+                    ),
                 })
                 .describe(
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       demandSideTechnologyPricePerUnitOneFunctionDataTwoFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -4098,8 +5154,16 @@ export const DemandSideTechnology = zod
                   points: zod.array(
                     zod
                       .object({
-                        x: zod.number(),
-                        y: zod.number(),
+                        x: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                        y: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                       })
                       .describe(
                         "A single point, given as its `x` and `y` coordinates.",
@@ -4110,7 +5174,10 @@ export const DemandSideTechnology = zod
                   "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                 ),
             ]),
-            input_at_zero: zod.number().optional(),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .default(demandSideTechnologyPricePerUnitOneDefault)
           .describe(
@@ -4124,13 +5191,19 @@ export const DemandSideTechnology = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       demandSideTechnologyPricePerUnitTwoFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -4142,15 +5215,29 @@ export const DemandSideTechnology = zod
                     .default(
                       demandSideTechnologyPricePerUnitTwoFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -4163,13 +5250,19 @@ export const DemandSideTechnology = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       demandSideTechnologyPricePerUnitThreeFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -4181,15 +5274,29 @@ export const DemandSideTechnology = zod
                     .default(
                       demandSideTechnologyPricePerUnitThreeFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -4203,27 +5310,43 @@ export const DemandSideTechnology = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         demandSideTechnologyPricePerUnitFourFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         demandSideTechnologyPricePerUnitFourFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -4238,8 +5361,16 @@ export const DemandSideTechnology = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -4256,8 +5387,16 @@ export const DemandSideTechnology = zod
                       .default(
                         demandSideTechnologyPricePerUnitFourFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -4349,27 +5488,43 @@ export const DemandSideTechnology = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         demandSideTechnologyPricePerUnitFiveFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         demandSideTechnologyPricePerUnitFiveFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -4384,8 +5539,16 @@ export const DemandSideTechnology = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -4402,8 +5565,16 @@ export const DemandSideTechnology = zod
                       .default(
                         demandSideTechnologyPricePerUnitFiveFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -4501,27 +5672,43 @@ export const DemandSideTechnology = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         demandSideTechnologyPricePerUnitSixFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         demandSideTechnologyPricePerUnitSixFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -4536,8 +5723,16 @@ export const DemandSideTechnology = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -4554,8 +5749,16 @@ export const DemandSideTechnology = zod
                       .default(
                         demandSideTechnologyPricePerUnitSixFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -4689,27 +5892,43 @@ export const DemandSideTechnology = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("QUADRATIC")
                     .default(
                       demandSideTechnologyShiftVariableCostOneFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
-                  quadratic_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
+                  quadratic_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input squared.",
+                    ),
                 })
                 .describe(
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       demandSideTechnologyShiftVariableCostOneFunctionDataTwoFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -4724,8 +5943,16 @@ export const DemandSideTechnology = zod
                   points: zod.array(
                     zod
                       .object({
-                        x: zod.number(),
-                        y: zod.number(),
+                        x: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                        y: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                       })
                       .describe(
                         "A single point, given as its `x` and `y` coordinates.",
@@ -4736,7 +5963,10 @@ export const DemandSideTechnology = zod
                   "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                 ),
             ]),
-            input_at_zero: zod.number().optional(),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .default(demandSideTechnologyShiftVariableCostOneDefault)
           .describe(
@@ -4752,13 +5982,19 @@ export const DemandSideTechnology = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       demandSideTechnologyShiftVariableCostTwoFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -4770,15 +6006,29 @@ export const DemandSideTechnology = zod
                     .default(
                       demandSideTechnologyShiftVariableCostTwoFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -4793,13 +6043,19 @@ export const DemandSideTechnology = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       demandSideTechnologyShiftVariableCostThreeFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -4811,15 +6067,29 @@ export const DemandSideTechnology = zod
                     .default(
                       demandSideTechnologyShiftVariableCostThreeFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -4835,27 +6105,43 @@ export const DemandSideTechnology = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         demandSideTechnologyShiftVariableCostFourFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         demandSideTechnologyShiftVariableCostFourFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -4870,8 +6156,16 @@ export const DemandSideTechnology = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -4888,8 +6182,16 @@ export const DemandSideTechnology = zod
                       .default(
                         demandSideTechnologyShiftVariableCostFourFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -4983,27 +6285,43 @@ export const DemandSideTechnology = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         demandSideTechnologyShiftVariableCostFiveFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         demandSideTechnologyShiftVariableCostFiveFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -5018,8 +6336,16 @@ export const DemandSideTechnology = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -5036,8 +6362,16 @@ export const DemandSideTechnology = zod
                       .default(
                         demandSideTechnologyShiftVariableCostFiveFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -5137,27 +6471,43 @@ export const DemandSideTechnology = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         demandSideTechnologyShiftVariableCostSixFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         demandSideTechnologyShiftVariableCostSixFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -5172,8 +6522,16 @@ export const DemandSideTechnology = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -5190,8 +6548,16 @@ export const DemandSideTechnology = zod
                       .default(
                         demandSideTechnologyShiftVariableCostSixFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -5295,27 +6661,43 @@ export const DemandSideTechnology = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("QUADRATIC")
                     .default(
                       demandSideTechnologyCurtailmentCostOneFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
-                  quadratic_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
+                  quadratic_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input squared.",
+                    ),
                 })
                 .describe(
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       demandSideTechnologyCurtailmentCostOneFunctionDataTwoFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -5330,8 +6712,16 @@ export const DemandSideTechnology = zod
                   points: zod.array(
                     zod
                       .object({
-                        x: zod.number(),
-                        y: zod.number(),
+                        x: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                        y: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                       })
                       .describe(
                         "A single point, given as its `x` and `y` coordinates.",
@@ -5342,7 +6732,10 @@ export const DemandSideTechnology = zod
                   "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                 ),
             ]),
-            input_at_zero: zod.number().optional(),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .default(demandSideTechnologyCurtailmentCostOneDefault)
           .describe(
@@ -5356,13 +6749,19 @@ export const DemandSideTechnology = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       demandSideTechnologyCurtailmentCostTwoFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -5374,15 +6773,29 @@ export const DemandSideTechnology = zod
                     .default(
                       demandSideTechnologyCurtailmentCostTwoFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -5397,13 +6810,19 @@ export const DemandSideTechnology = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       demandSideTechnologyCurtailmentCostThreeFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -5415,15 +6834,29 @@ export const DemandSideTechnology = zod
                     .default(
                       demandSideTechnologyCurtailmentCostThreeFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -5437,27 +6870,43 @@ export const DemandSideTechnology = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         demandSideTechnologyCurtailmentCostFourFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         demandSideTechnologyCurtailmentCostFourFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -5472,8 +6921,16 @@ export const DemandSideTechnology = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -5490,8 +6947,16 @@ export const DemandSideTechnology = zod
                       .default(
                         demandSideTechnologyCurtailmentCostFourFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -5583,27 +7048,43 @@ export const DemandSideTechnology = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         demandSideTechnologyCurtailmentCostFiveFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         demandSideTechnologyCurtailmentCostFiveFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -5618,8 +7099,16 @@ export const DemandSideTechnology = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -5636,8 +7125,16 @@ export const DemandSideTechnology = zod
                       .default(
                         demandSideTechnologyCurtailmentCostFiveFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -5735,27 +7232,43 @@ export const DemandSideTechnology = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         demandSideTechnologyCurtailmentCostSixFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         demandSideTechnologyCurtailmentCostSixFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -5770,8 +7283,16 @@ export const DemandSideTechnology = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -5788,8 +7309,16 @@ export const DemandSideTechnology = zod
                       .default(
                         demandSideTechnologyCurtailmentCostSixFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -6110,27 +7639,43 @@ export const NodalACTransportTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
                           nodalACTransportTechnologyCapitalCostsCapitalCostOneFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
-                      quadratic_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
                     })
                     .describe(
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           nodalACTransportTechnologyCapitalCostsCapitalCostOneFunctionDataTwoFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -6145,8 +7690,16 @@ export const NodalACTransportTechnology = zod
                       points: zod.array(
                         zod
                           .object({
-                            x: zod.number(),
-                            y: zod.number(),
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                           })
                           .describe(
                             "A single point, given as its `x` and `y` coordinates.",
@@ -6157,7 +7710,10 @@ export const NodalACTransportTechnology = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                 ]),
-                input_at_zero: zod.number().optional(),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .default(
                 nodalACTransportTechnologyCapitalCostsCapitalCostOneDefault,
@@ -6175,13 +7731,19 @@ export const NodalACTransportTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           nodalACTransportTechnologyCapitalCostsCapitalCostTwoFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -6193,15 +7755,33 @@ export const NodalACTransportTechnology = zod
                         .default(
                           nodalACTransportTechnologyCapitalCostsCapitalCostTwoFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -6216,13 +7796,19 @@ export const NodalACTransportTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           nodalACTransportTechnologyCapitalCostsCapitalCostThreeFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -6234,15 +7820,33 @@ export const NodalACTransportTechnology = zod
                         .default(
                           nodalACTransportTechnologyCapitalCostsCapitalCostThreeFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -6258,27 +7862,47 @@ export const NodalACTransportTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             nodalACTransportTechnologyCapitalCostsCapitalCostFourFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             nodalACTransportTechnologyCapitalCostsCapitalCostFourFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -6293,8 +7917,16 @@ export const NodalACTransportTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -6311,8 +7943,20 @@ export const NodalACTransportTechnology = zod
                           .default(
                             nodalACTransportTechnologyCapitalCostsCapitalCostFourFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -6406,27 +8050,47 @@ export const NodalACTransportTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             nodalACTransportTechnologyCapitalCostsCapitalCostFiveFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             nodalACTransportTechnologyCapitalCostsCapitalCostFiveFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -6441,8 +8105,16 @@ export const NodalACTransportTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -6459,8 +8131,20 @@ export const NodalACTransportTechnology = zod
                           .default(
                             nodalACTransportTechnologyCapitalCostsCapitalCostFiveFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -6560,27 +8244,47 @@ export const NodalACTransportTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             nodalACTransportTechnologyCapitalCostsCapitalCostSixFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             nodalACTransportTechnologyCapitalCostsCapitalCostSixFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -6595,8 +8299,16 @@ export const NodalACTransportTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -6613,8 +8325,20 @@ export const NodalACTransportTechnology = zod
                           .default(
                             nodalACTransportTechnologyCapitalCostsCapitalCostSixFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -6905,27 +8629,43 @@ export const NodalHVDCTransportTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
                           nodalHVDCTransportTechnologyCapitalCostsCapitalCostOneFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
-                      quadratic_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
                     })
                     .describe(
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           nodalHVDCTransportTechnologyCapitalCostsCapitalCostOneFunctionDataTwoFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -6940,8 +8680,16 @@ export const NodalHVDCTransportTechnology = zod
                       points: zod.array(
                         zod
                           .object({
-                            x: zod.number(),
-                            y: zod.number(),
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                           })
                           .describe(
                             "A single point, given as its `x` and `y` coordinates.",
@@ -6952,7 +8700,10 @@ export const NodalHVDCTransportTechnology = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                 ]),
-                input_at_zero: zod.number().optional(),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .default(
                 nodalHVDCTransportTechnologyCapitalCostsCapitalCostOneDefault,
@@ -6970,13 +8721,19 @@ export const NodalHVDCTransportTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           nodalHVDCTransportTechnologyCapitalCostsCapitalCostTwoFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -6988,15 +8745,33 @@ export const NodalHVDCTransportTechnology = zod
                         .default(
                           nodalHVDCTransportTechnologyCapitalCostsCapitalCostTwoFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -7011,13 +8786,19 @@ export const NodalHVDCTransportTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           nodalHVDCTransportTechnologyCapitalCostsCapitalCostThreeFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -7029,15 +8810,33 @@ export const NodalHVDCTransportTechnology = zod
                         .default(
                           nodalHVDCTransportTechnologyCapitalCostsCapitalCostThreeFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -7053,27 +8852,47 @@ export const NodalHVDCTransportTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             nodalHVDCTransportTechnologyCapitalCostsCapitalCostFourFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             nodalHVDCTransportTechnologyCapitalCostsCapitalCostFourFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -7088,8 +8907,16 @@ export const NodalHVDCTransportTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -7106,8 +8933,20 @@ export const NodalHVDCTransportTechnology = zod
                           .default(
                             nodalHVDCTransportTechnologyCapitalCostsCapitalCostFourFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -7201,27 +9040,47 @@ export const NodalHVDCTransportTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             nodalHVDCTransportTechnologyCapitalCostsCapitalCostFiveFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             nodalHVDCTransportTechnologyCapitalCostsCapitalCostFiveFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -7236,8 +9095,16 @@ export const NodalHVDCTransportTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -7254,8 +9121,20 @@ export const NodalHVDCTransportTechnology = zod
                           .default(
                             nodalHVDCTransportTechnologyCapitalCostsCapitalCostFiveFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -7355,27 +9234,47 @@ export const NodalHVDCTransportTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             nodalHVDCTransportTechnologyCapitalCostsCapitalCostSixFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             nodalHVDCTransportTechnologyCapitalCostsCapitalCostSixFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -7390,8 +9289,16 @@ export const NodalHVDCTransportTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -7408,8 +9315,20 @@ export const NodalHVDCTransportTechnology = zod
                           .default(
                             nodalHVDCTransportTechnologyCapitalCostsCapitalCostSixFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -7522,27 +9441,43 @@ export const NodalHVDCTransportTechnology = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("QUADRATIC")
                     .default(
                       nodalHVDCTransportTechnologyLineLossOneFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
-                  quadratic_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
+                  quadratic_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input squared.",
+                    ),
                 })
                 .describe(
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       nodalHVDCTransportTechnologyLineLossOneFunctionDataTwoFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -7557,8 +9492,16 @@ export const NodalHVDCTransportTechnology = zod
                   points: zod.array(
                     zod
                       .object({
-                        x: zod.number(),
-                        y: zod.number(),
+                        x: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                        y: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                       })
                       .describe(
                         "A single point, given as its `x` and `y` coordinates.",
@@ -7569,7 +9512,10 @@ export const NodalHVDCTransportTechnology = zod
                   "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                 ),
             ]),
-            input_at_zero: zod.number().optional(),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .default(nodalHVDCTransportTechnologyLineLossOneDefault)
           .describe(
@@ -7583,13 +9529,19 @@ export const NodalHVDCTransportTechnology = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       nodalHVDCTransportTechnologyLineLossTwoFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -7601,15 +9553,29 @@ export const NodalHVDCTransportTechnology = zod
                     .default(
                       nodalHVDCTransportTechnologyLineLossTwoFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -7624,13 +9590,19 @@ export const NodalHVDCTransportTechnology = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       nodalHVDCTransportTechnologyLineLossThreeFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -7642,15 +9614,29 @@ export const NodalHVDCTransportTechnology = zod
                     .default(
                       nodalHVDCTransportTechnologyLineLossThreeFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -7666,27 +9652,43 @@ export const NodalHVDCTransportTechnology = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         nodalHVDCTransportTechnologyLineLossFourFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         nodalHVDCTransportTechnologyLineLossFourFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -7701,8 +9703,16 @@ export const NodalHVDCTransportTechnology = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -7719,8 +9729,16 @@ export const NodalHVDCTransportTechnology = zod
                       .default(
                         nodalHVDCTransportTechnologyLineLossFourFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -7814,27 +9832,43 @@ export const NodalHVDCTransportTechnology = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         nodalHVDCTransportTechnologyLineLossFiveFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         nodalHVDCTransportTechnologyLineLossFiveFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -7849,8 +9883,16 @@ export const NodalHVDCTransportTechnology = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -7867,8 +9909,16 @@ export const NodalHVDCTransportTechnology = zod
                       .default(
                         nodalHVDCTransportTechnologyLineLossFiveFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -7966,27 +10016,43 @@ export const NodalHVDCTransportTechnology = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         nodalHVDCTransportTechnologyLineLossSixFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         nodalHVDCTransportTechnologyLineLossSixFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -8001,8 +10067,16 @@ export const NodalHVDCTransportTechnology = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -8019,8 +10093,16 @@ export const NodalHVDCTransportTechnology = zod
                       .default(
                         nodalHVDCTransportTechnologyLineLossSixFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -8288,27 +10370,43 @@ export const RetirementPotential = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("QUADRATIC")
                     .default(
                       retirementPotentialRetirementCostOneFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
-                  quadratic_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
+                  quadratic_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input squared.",
+                    ),
                 })
                 .describe(
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       retirementPotentialRetirementCostOneFunctionDataTwoFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -8323,8 +10421,16 @@ export const RetirementPotential = zod
                   points: zod.array(
                     zod
                       .object({
-                        x: zod.number(),
-                        y: zod.number(),
+                        x: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                        y: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                       })
                       .describe(
                         "A single point, given as its `x` and `y` coordinates.",
@@ -8335,7 +10441,10 @@ export const RetirementPotential = zod
                   "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                 ),
             ]),
-            input_at_zero: zod.number().optional(),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .default(retirementPotentialRetirementCostOneDefault)
           .describe(
@@ -8349,13 +10458,19 @@ export const RetirementPotential = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       retirementPotentialRetirementCostTwoFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -8367,15 +10482,29 @@ export const RetirementPotential = zod
                     .default(
                       retirementPotentialRetirementCostTwoFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -8388,13 +10517,19 @@ export const RetirementPotential = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       retirementPotentialRetirementCostThreeFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -8406,15 +10541,29 @@ export const RetirementPotential = zod
                     .default(
                       retirementPotentialRetirementCostThreeFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -8428,27 +10577,43 @@ export const RetirementPotential = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         retirementPotentialRetirementCostFourFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         retirementPotentialRetirementCostFourFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -8463,8 +10628,16 @@ export const RetirementPotential = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -8481,8 +10654,16 @@ export const RetirementPotential = zod
                       .default(
                         retirementPotentialRetirementCostFourFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -8574,27 +10755,43 @@ export const RetirementPotential = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         retirementPotentialRetirementCostFiveFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         retirementPotentialRetirementCostFiveFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -8609,8 +10806,16 @@ export const RetirementPotential = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -8627,8 +10832,16 @@ export const RetirementPotential = zod
                       .default(
                         retirementPotentialRetirementCostFiveFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -8726,27 +10939,43 @@ export const RetirementPotential = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         retirementPotentialRetirementCostSixFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         retirementPotentialRetirementCostSixFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -8761,8 +10990,16 @@ export const RetirementPotential = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -8779,8 +11016,16 @@ export const RetirementPotential = zod
                       .default(
                         retirementPotentialRetirementCostSixFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -8951,27 +11196,43 @@ export const RetrofitPotential = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("QUADRATIC")
                     .default(
                       retrofitPotentialRetrofitCostOneFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
-                  quadratic_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
+                  quadratic_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input squared.",
+                    ),
                 })
                 .describe(
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       retrofitPotentialRetrofitCostOneFunctionDataTwoFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -8986,8 +11247,16 @@ export const RetrofitPotential = zod
                   points: zod.array(
                     zod
                       .object({
-                        x: zod.number(),
-                        y: zod.number(),
+                        x: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                        y: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                       })
                       .describe(
                         "A single point, given as its `x` and `y` coordinates.",
@@ -8998,7 +11267,10 @@ export const RetrofitPotential = zod
                   "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                 ),
             ]),
-            input_at_zero: zod.number().optional(),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .default(retrofitPotentialRetrofitCostOneDefault)
           .describe(
@@ -9012,13 +11284,19 @@ export const RetrofitPotential = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       retrofitPotentialRetrofitCostTwoFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -9030,15 +11308,29 @@ export const RetrofitPotential = zod
                     .default(
                       retrofitPotentialRetrofitCostTwoFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -9051,13 +11343,19 @@ export const RetrofitPotential = zod
             function_data: zod.union([
               zod
                 .object({
-                  constant_term: zod.number(),
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
                   function_type: zod
                     .literal("LINEAR")
                     .default(
                       retrofitPotentialRetrofitCostThreeFunctionDataOneFunctionTypeDefault,
                     ),
-                  proportional_term: zod.number(),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
                 })
                 .describe(
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -9069,15 +11367,29 @@ export const RetrofitPotential = zod
                     .default(
                       retrofitPotentialRetrofitCostThreeFunctionDataTwoFunctionTypeDefault,
                     ),
-                  x_coords: zod.array(zod.number()),
-                  y_coords: zod.array(zod.number()),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
                 })
                 .describe(
                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                 ),
             ]),
-            initial_input: zod.number().optional(),
-            input_at_zero: zod.number().optional(),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
           })
           .describe(
             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -9091,27 +11403,43 @@ export const RetrofitPotential = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         retrofitPotentialRetrofitCostFourFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         retrofitPotentialRetrofitCostFourFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -9126,8 +11454,16 @@ export const RetrofitPotential = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -9144,8 +11480,16 @@ export const RetrofitPotential = zod
                       .default(
                         retrofitPotentialRetrofitCostFourFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -9237,27 +11581,43 @@ export const RetrofitPotential = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         retrofitPotentialRetrofitCostFiveFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         retrofitPotentialRetrofitCostFiveFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -9272,8 +11632,16 @@ export const RetrofitPotential = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -9290,8 +11658,16 @@ export const RetrofitPotential = zod
                       .default(
                         retrofitPotentialRetrofitCostFiveFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -9389,27 +11765,43 @@ export const RetrofitPotential = zod
               .union([
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("LINEAR")
                       .default(
                         retrofitPotentialRetrofitCostSixFunctionDataOneFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
                   })
                   .describe(
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
                   .object({
-                    constant_term: zod.number(),
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
                         retrofitPotentialRetrofitCostSixFunctionDataTwoFunctionTypeDefault,
                       ),
-                    proportional_term: zod.number(),
-                    quadratic_term: zod.number(),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
                   })
                   .describe(
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -9424,8 +11816,16 @@ export const RetrofitPotential = zod
                     points: zod.array(
                       zod
                         .object({
-                          x: zod.number(),
-                          y: zod.number(),
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                         })
                         .describe(
                           "A single point, given as its `x` and `y` coordinates.",
@@ -9442,8 +11842,16 @@ export const RetrofitPotential = zod
                       .default(
                         retrofitPotentialRetrofitCostSixFunctionDataFourFunctionTypeDefault,
                       ),
-                    x_coords: zod.array(zod.number()),
-                    y_coords: zod.array(zod.number()),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                    ),
                   })
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -9892,27 +12300,43 @@ export const StorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
                           storageTechnologyCapitalCostsChargeCapitalCostOneFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
-                      quadratic_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
                     })
                     .describe(
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           storageTechnologyCapitalCostsChargeCapitalCostOneFunctionDataTwoFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -9927,8 +12351,16 @@ export const StorageTechnology = zod
                       points: zod.array(
                         zod
                           .object({
-                            x: zod.number(),
-                            y: zod.number(),
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                           })
                           .describe(
                             "A single point, given as its `x` and `y` coordinates.",
@@ -9939,7 +12371,10 @@ export const StorageTechnology = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                 ]),
-                input_at_zero: zod.number().optional(),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .default(storageTechnologyCapitalCostsChargeCapitalCostOneDefault)
               .describe(
@@ -9955,13 +12390,19 @@ export const StorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           storageTechnologyCapitalCostsChargeCapitalCostTwoFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -9973,15 +12414,33 @@ export const StorageTechnology = zod
                         .default(
                           storageTechnologyCapitalCostsChargeCapitalCostTwoFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -9996,13 +12455,19 @@ export const StorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           storageTechnologyCapitalCostsChargeCapitalCostThreeFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -10014,15 +12479,33 @@ export const StorageTechnology = zod
                         .default(
                           storageTechnologyCapitalCostsChargeCapitalCostThreeFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -10038,27 +12521,47 @@ export const StorageTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             storageTechnologyCapitalCostsChargeCapitalCostFourFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             storageTechnologyCapitalCostsChargeCapitalCostFourFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -10073,8 +12576,16 @@ export const StorageTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -10091,8 +12602,20 @@ export const StorageTechnology = zod
                           .default(
                             storageTechnologyCapitalCostsChargeCapitalCostFourFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -10186,27 +12709,47 @@ export const StorageTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             storageTechnologyCapitalCostsChargeCapitalCostFiveFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             storageTechnologyCapitalCostsChargeCapitalCostFiveFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -10221,8 +12764,16 @@ export const StorageTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -10239,8 +12790,20 @@ export const StorageTechnology = zod
                           .default(
                             storageTechnologyCapitalCostsChargeCapitalCostFiveFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -10340,27 +12903,47 @@ export const StorageTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             storageTechnologyCapitalCostsChargeCapitalCostSixFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             storageTechnologyCapitalCostsChargeCapitalCostSixFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -10375,8 +12958,16 @@ export const StorageTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -10393,8 +12984,20 @@ export const StorageTechnology = zod
                           .default(
                             storageTechnologyCapitalCostsChargeCapitalCostSixFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -10499,27 +13102,43 @@ export const StorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
                           storageTechnologyCapitalCostsDischargeCapitalCostOneFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
-                      quadratic_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
                     })
                     .describe(
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           storageTechnologyCapitalCostsDischargeCapitalCostOneFunctionDataTwoFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -10534,8 +13153,16 @@ export const StorageTechnology = zod
                       points: zod.array(
                         zod
                           .object({
-                            x: zod.number(),
-                            y: zod.number(),
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                           })
                           .describe(
                             "A single point, given as its `x` and `y` coordinates.",
@@ -10546,7 +13173,10 @@ export const StorageTechnology = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                 ]),
-                input_at_zero: zod.number().optional(),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .default(
                 storageTechnologyCapitalCostsDischargeCapitalCostOneDefault,
@@ -10564,13 +13194,19 @@ export const StorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           storageTechnologyCapitalCostsDischargeCapitalCostTwoFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -10582,15 +13218,33 @@ export const StorageTechnology = zod
                         .default(
                           storageTechnologyCapitalCostsDischargeCapitalCostTwoFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -10605,13 +13259,19 @@ export const StorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           storageTechnologyCapitalCostsDischargeCapitalCostThreeFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -10623,15 +13283,33 @@ export const StorageTechnology = zod
                         .default(
                           storageTechnologyCapitalCostsDischargeCapitalCostThreeFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -10647,27 +13325,47 @@ export const StorageTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             storageTechnologyCapitalCostsDischargeCapitalCostFourFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             storageTechnologyCapitalCostsDischargeCapitalCostFourFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -10682,8 +13380,16 @@ export const StorageTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -10700,8 +13406,20 @@ export const StorageTechnology = zod
                           .default(
                             storageTechnologyCapitalCostsDischargeCapitalCostFourFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -10795,27 +13513,47 @@ export const StorageTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             storageTechnologyCapitalCostsDischargeCapitalCostFiveFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             storageTechnologyCapitalCostsDischargeCapitalCostFiveFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -10830,8 +13568,16 @@ export const StorageTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -10848,8 +13594,20 @@ export const StorageTechnology = zod
                           .default(
                             storageTechnologyCapitalCostsDischargeCapitalCostFiveFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -10949,27 +13707,47 @@ export const StorageTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             storageTechnologyCapitalCostsDischargeCapitalCostSixFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             storageTechnologyCapitalCostsDischargeCapitalCostSixFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -10984,8 +13762,16 @@ export const StorageTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -11002,8 +13788,20 @@ export const StorageTechnology = zod
                           .default(
                             storageTechnologyCapitalCostsDischargeCapitalCostSixFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -11108,27 +13906,43 @@ export const StorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
                           storageTechnologyCapitalCostsEnergyCapitalCostOneFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
-                      quadratic_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
                     })
                     .describe(
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           storageTechnologyCapitalCostsEnergyCapitalCostOneFunctionDataTwoFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -11143,8 +13957,16 @@ export const StorageTechnology = zod
                       points: zod.array(
                         zod
                           .object({
-                            x: zod.number(),
-                            y: zod.number(),
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                           })
                           .describe(
                             "A single point, given as its `x` and `y` coordinates.",
@@ -11155,7 +13977,10 @@ export const StorageTechnology = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                 ]),
-                input_at_zero: zod.number().optional(),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .default(storageTechnologyCapitalCostsEnergyCapitalCostOneDefault)
               .describe(
@@ -11171,13 +13996,19 @@ export const StorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           storageTechnologyCapitalCostsEnergyCapitalCostTwoFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -11189,15 +14020,33 @@ export const StorageTechnology = zod
                         .default(
                           storageTechnologyCapitalCostsEnergyCapitalCostTwoFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -11212,13 +14061,19 @@ export const StorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           storageTechnologyCapitalCostsEnergyCapitalCostThreeFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -11230,15 +14085,33 @@ export const StorageTechnology = zod
                         .default(
                           storageTechnologyCapitalCostsEnergyCapitalCostThreeFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -11254,27 +14127,47 @@ export const StorageTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             storageTechnologyCapitalCostsEnergyCapitalCostFourFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             storageTechnologyCapitalCostsEnergyCapitalCostFourFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -11289,8 +14182,16 @@ export const StorageTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -11307,8 +14208,20 @@ export const StorageTechnology = zod
                           .default(
                             storageTechnologyCapitalCostsEnergyCapitalCostFourFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -11402,27 +14315,47 @@ export const StorageTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             storageTechnologyCapitalCostsEnergyCapitalCostFiveFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             storageTechnologyCapitalCostsEnergyCapitalCostFiveFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -11437,8 +14370,16 @@ export const StorageTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -11455,8 +14396,20 @@ export const StorageTechnology = zod
                           .default(
                             storageTechnologyCapitalCostsEnergyCapitalCostFiveFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -11556,27 +14509,47 @@ export const StorageTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             storageTechnologyCapitalCostsEnergyCapitalCostSixFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             storageTechnologyCapitalCostsEnergyCapitalCostSixFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -11591,8 +14564,16 @@ export const StorageTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -11609,8 +14590,20 @@ export const StorageTechnology = zod
                           .default(
                             storageTechnologyCapitalCostsEnergyCapitalCostSixFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -11735,27 +14728,47 @@ export const StorageTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("QUADRATIC")
                             .default(
                               storageTechnologyOperationCostsChargeVariableCostValueCurveOneFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
-                          quadratic_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
+                          quadratic_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input squared.",
+                            ),
                         })
                         .describe(
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               storageTechnologyOperationCostsChargeVariableCostValueCurveOneFunctionDataTwoFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -11770,8 +14783,16 @@ export const StorageTechnology = zod
                           points: zod.array(
                             zod
                               .object({
-                                x: zod.number(),
-                                y: zod.number(),
+                                x: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's input unit.",
+                                  ),
+                                y: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                               })
                               .describe(
                                 "A single point, given as its `x` and `y` coordinates.",
@@ -11782,7 +14803,10 @@ export const StorageTechnology = zod
                           "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                         ),
                     ]),
-                    input_at_zero: zod.number().optional(),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .default(
                     storageTechnologyOperationCostsChargeVariableCostValueCurveOneDefault,
@@ -11800,13 +14824,21 @@ export const StorageTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               storageTechnologyOperationCostsChargeVariableCostValueCurveTwoFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -11818,15 +14850,33 @@ export const StorageTechnology = zod
                             .default(
                               storageTechnologyOperationCostsChargeVariableCostValueCurveTwoFunctionDataTwoFunctionTypeDefault,
                             ),
-                          x_coords: zod.array(zod.number()),
-                          y_coords: zod.array(zod.number()),
+                          x_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                          ),
+                          y_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
+                          ),
                         })
                         .describe(
                           "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                         ),
                     ]),
-                    initial_input: zod.number().optional(),
-                    input_at_zero: zod.number().optional(),
+                    initial_input: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .describe(
                     "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -11841,13 +14891,21 @@ export const StorageTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               storageTechnologyOperationCostsChargeVariableCostValueCurveThreeFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -11859,15 +14917,33 @@ export const StorageTechnology = zod
                             .default(
                               storageTechnologyOperationCostsChargeVariableCostValueCurveThreeFunctionDataTwoFunctionTypeDefault,
                             ),
-                          x_coords: zod.array(zod.number()),
-                          y_coords: zod.array(zod.number()),
+                          x_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                          ),
+                          y_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
+                          ),
                         })
                         .describe(
                           "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                         ),
                     ]),
-                    initial_input: zod.number().optional(),
-                    input_at_zero: zod.number().optional(),
+                    initial_input: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .describe(
                     "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -11883,27 +14959,47 @@ export const StorageTechnology = zod
                       .union([
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("LINEAR")
                               .default(
                                 storageTechnologyOperationCostsChargeVariableCostValueCurveFourFunctionDataOneFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
                           })
                           .describe(
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("QUADRATIC")
                               .default(
                                 storageTechnologyOperationCostsChargeVariableCostValueCurveFourFunctionDataTwoFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
-                            quadratic_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
+                            quadratic_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input squared.",
+                              ),
                           })
                           .describe(
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -11918,8 +15014,16 @@ export const StorageTechnology = zod
                             points: zod.array(
                               zod
                                 .object({
-                                  x: zod.number(),
-                                  y: zod.number(),
+                                  x: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                  y: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                 })
                                 .describe(
                                   "A single point, given as its `x` and `y` coordinates.",
@@ -11936,8 +15040,20 @@ export const StorageTechnology = zod
                               .default(
                                 storageTechnologyOperationCostsChargeVariableCostValueCurveFourFunctionDataFourFunctionTypeDefault,
                               ),
-                            x_coords: zod.array(zod.number()),
-                            y_coords: zod.array(zod.number()),
+                            x_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                            ),
+                            y_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
+                            ),
                           })
                           .describe(
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -12031,27 +15147,47 @@ export const StorageTechnology = zod
                       .union([
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("LINEAR")
                               .default(
                                 storageTechnologyOperationCostsChargeVariableCostValueCurveFiveFunctionDataOneFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
                           })
                           .describe(
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("QUADRATIC")
                               .default(
                                 storageTechnologyOperationCostsChargeVariableCostValueCurveFiveFunctionDataTwoFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
-                            quadratic_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
+                            quadratic_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input squared.",
+                              ),
                           })
                           .describe(
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -12066,8 +15202,16 @@ export const StorageTechnology = zod
                             points: zod.array(
                               zod
                                 .object({
-                                  x: zod.number(),
-                                  y: zod.number(),
+                                  x: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                  y: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                 })
                                 .describe(
                                   "A single point, given as its `x` and `y` coordinates.",
@@ -12084,8 +15228,20 @@ export const StorageTechnology = zod
                               .default(
                                 storageTechnologyOperationCostsChargeVariableCostValueCurveFiveFunctionDataFourFunctionTypeDefault,
                               ),
-                            x_coords: zod.array(zod.number()),
-                            y_coords: zod.array(zod.number()),
+                            x_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                            ),
+                            y_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
+                            ),
                           })
                           .describe(
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -12185,27 +15341,47 @@ export const StorageTechnology = zod
                       .union([
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("LINEAR")
                               .default(
                                 storageTechnologyOperationCostsChargeVariableCostValueCurveSixFunctionDataOneFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
                           })
                           .describe(
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("QUADRATIC")
                               .default(
                                 storageTechnologyOperationCostsChargeVariableCostValueCurveSixFunctionDataTwoFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
-                            quadratic_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
+                            quadratic_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input squared.",
+                              ),
                           })
                           .describe(
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -12220,8 +15396,16 @@ export const StorageTechnology = zod
                             points: zod.array(
                               zod
                                 .object({
-                                  x: zod.number(),
-                                  y: zod.number(),
+                                  x: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                  y: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                 })
                                 .describe(
                                   "A single point, given as its `x` and `y` coordinates.",
@@ -12238,8 +15422,20 @@ export const StorageTechnology = zod
                               .default(
                                 storageTechnologyOperationCostsChargeVariableCostValueCurveSixFunctionDataFourFunctionTypeDefault,
                               ),
-                            x_coords: zod.array(zod.number()),
-                            y_coords: zod.array(zod.number()),
+                            x_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                            ),
+                            y_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
+                            ),
                           })
                           .describe(
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -12347,27 +15543,43 @@ export const StorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
                           storageTechnologyOperationCostsChargeVariableCostVomCostFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
-                      quadratic_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
                     })
                     .describe(
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           storageTechnologyOperationCostsChargeVariableCostVomCostFunctionDataTwoFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -12382,8 +15594,16 @@ export const StorageTechnology = zod
                       points: zod.array(
                         zod
                           .object({
-                            x: zod.number(),
-                            y: zod.number(),
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                           })
                           .describe(
                             "A single point, given as its `x` and `y` coordinates.",
@@ -12394,7 +15614,10 @@ export const StorageTechnology = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                 ]),
-                input_at_zero: zod.number().optional(),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .default(
                 storageTechnologyOperationCostsChargeVariableCostVomCostDefault,
@@ -12405,7 +15628,7 @@ export const StorageTechnology = zod
           })
           .optional()
           .describe(
-            "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term.",
+            "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
           ),
         discharge_variable_cost: zod
           .object({
@@ -12426,27 +15649,47 @@ export const StorageTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("QUADRATIC")
                             .default(
                               storageTechnologyOperationCostsDischargeVariableCostValueCurveOneFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
-                          quadratic_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
+                          quadratic_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input squared.",
+                            ),
                         })
                         .describe(
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               storageTechnologyOperationCostsDischargeVariableCostValueCurveOneFunctionDataTwoFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -12461,8 +15704,16 @@ export const StorageTechnology = zod
                           points: zod.array(
                             zod
                               .object({
-                                x: zod.number(),
-                                y: zod.number(),
+                                x: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's input unit.",
+                                  ),
+                                y: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                               })
                               .describe(
                                 "A single point, given as its `x` and `y` coordinates.",
@@ -12473,7 +15724,10 @@ export const StorageTechnology = zod
                           "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                         ),
                     ]),
-                    input_at_zero: zod.number().optional(),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .default(
                     storageTechnologyOperationCostsDischargeVariableCostValueCurveOneDefault,
@@ -12491,13 +15745,21 @@ export const StorageTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               storageTechnologyOperationCostsDischargeVariableCostValueCurveTwoFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -12509,15 +15771,33 @@ export const StorageTechnology = zod
                             .default(
                               storageTechnologyOperationCostsDischargeVariableCostValueCurveTwoFunctionDataTwoFunctionTypeDefault,
                             ),
-                          x_coords: zod.array(zod.number()),
-                          y_coords: zod.array(zod.number()),
+                          x_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                          ),
+                          y_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
+                          ),
                         })
                         .describe(
                           "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                         ),
                     ]),
-                    initial_input: zod.number().optional(),
-                    input_at_zero: zod.number().optional(),
+                    initial_input: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .describe(
                     "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -12532,13 +15812,21 @@ export const StorageTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               storageTechnologyOperationCostsDischargeVariableCostValueCurveThreeFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -12550,15 +15838,33 @@ export const StorageTechnology = zod
                             .default(
                               storageTechnologyOperationCostsDischargeVariableCostValueCurveThreeFunctionDataTwoFunctionTypeDefault,
                             ),
-                          x_coords: zod.array(zod.number()),
-                          y_coords: zod.array(zod.number()),
+                          x_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                          ),
+                          y_coords: zod.array(
+                            zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
+                          ),
                         })
                         .describe(
                           "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                         ),
                     ]),
-                    initial_input: zod.number().optional(),
-                    input_at_zero: zod.number().optional(),
+                    initial_input: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .describe(
                     "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -12574,27 +15880,47 @@ export const StorageTechnology = zod
                       .union([
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("LINEAR")
                               .default(
                                 storageTechnologyOperationCostsDischargeVariableCostValueCurveFourFunctionDataOneFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
                           })
                           .describe(
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("QUADRATIC")
                               .default(
                                 storageTechnologyOperationCostsDischargeVariableCostValueCurveFourFunctionDataTwoFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
-                            quadratic_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
+                            quadratic_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input squared.",
+                              ),
                           })
                           .describe(
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -12609,8 +15935,16 @@ export const StorageTechnology = zod
                             points: zod.array(
                               zod
                                 .object({
-                                  x: zod.number(),
-                                  y: zod.number(),
+                                  x: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                  y: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                 })
                                 .describe(
                                   "A single point, given as its `x` and `y` coordinates.",
@@ -12627,8 +15961,20 @@ export const StorageTechnology = zod
                               .default(
                                 storageTechnologyOperationCostsDischargeVariableCostValueCurveFourFunctionDataFourFunctionTypeDefault,
                               ),
-                            x_coords: zod.array(zod.number()),
-                            y_coords: zod.array(zod.number()),
+                            x_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                            ),
+                            y_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
+                            ),
                           })
                           .describe(
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -12722,27 +16068,47 @@ export const StorageTechnology = zod
                       .union([
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("LINEAR")
                               .default(
                                 storageTechnologyOperationCostsDischargeVariableCostValueCurveFiveFunctionDataOneFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
                           })
                           .describe(
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("QUADRATIC")
                               .default(
                                 storageTechnologyOperationCostsDischargeVariableCostValueCurveFiveFunctionDataTwoFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
-                            quadratic_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
+                            quadratic_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input squared.",
+                              ),
                           })
                           .describe(
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -12757,8 +16123,16 @@ export const StorageTechnology = zod
                             points: zod.array(
                               zod
                                 .object({
-                                  x: zod.number(),
-                                  y: zod.number(),
+                                  x: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                  y: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                 })
                                 .describe(
                                   "A single point, given as its `x` and `y` coordinates.",
@@ -12775,8 +16149,20 @@ export const StorageTechnology = zod
                               .default(
                                 storageTechnologyOperationCostsDischargeVariableCostValueCurveFiveFunctionDataFourFunctionTypeDefault,
                               ),
-                            x_coords: zod.array(zod.number()),
-                            y_coords: zod.array(zod.number()),
+                            x_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                            ),
+                            y_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
+                            ),
                           })
                           .describe(
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -12876,27 +16262,47 @@ export const StorageTechnology = zod
                       .union([
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("LINEAR")
                               .default(
                                 storageTechnologyOperationCostsDischargeVariableCostValueCurveSixFunctionDataOneFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
                           })
                           .describe(
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
                           .object({
-                            constant_term: zod.number(),
+                            constant_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                             function_type: zod
                               .literal("QUADRATIC")
                               .default(
                                 storageTechnologyOperationCostsDischargeVariableCostValueCurveSixFunctionDataTwoFunctionTypeDefault,
                               ),
-                            proportional_term: zod.number(),
-                            quadratic_term: zod.number(),
+                            proportional_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input.",
+                              ),
+                            quadratic_term: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit per unit of its input squared.",
+                              ),
                           })
                           .describe(
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -12911,8 +16317,16 @@ export const StorageTechnology = zod
                             points: zod.array(
                               zod
                                 .object({
-                                  x: zod.number(),
-                                  y: zod.number(),
+                                  x: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                  y: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                 })
                                 .describe(
                                   "A single point, given as its `x` and `y` coordinates.",
@@ -12929,8 +16343,20 @@ export const StorageTechnology = zod
                               .default(
                                 storageTechnologyOperationCostsDischargeVariableCostValueCurveSixFunctionDataFourFunctionTypeDefault,
                               ),
-                            x_coords: zod.array(zod.number()),
-                            y_coords: zod.array(zod.number()),
+                            x_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                            ),
+                            y_coords: zod.array(
+                              zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
+                            ),
                           })
                           .describe(
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -13038,27 +16464,43 @@ export const StorageTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
                           storageTechnologyOperationCostsDischargeVariableCostVomCostFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
-                      quadratic_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
                     })
                     .describe(
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           storageTechnologyOperationCostsDischargeVariableCostVomCostFunctionDataTwoFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -13073,8 +16515,16 @@ export const StorageTechnology = zod
                       points: zod.array(
                         zod
                           .object({
-                            x: zod.number(),
-                            y: zod.number(),
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                           })
                           .describe(
                             "A single point, given as its `x` and `y` coordinates.",
@@ -13085,7 +16535,10 @@ export const StorageTechnology = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                 ]),
-                input_at_zero: zod.number().optional(),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .default(
                 storageTechnologyOperationCostsDischargeVariableCostVomCostDefault,
@@ -13096,7 +16549,7 @@ export const StorageTechnology = zod
           })
           .optional()
           .describe(
-            "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term.",
+            "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
           ),
         fixed: zod
           .number()
@@ -13880,27 +17333,43 @@ export const SupplyTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
                           supplyTechnologyCapitalCostsCapitalCostOneFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
-                      quadratic_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
                     })
                     .describe(
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           supplyTechnologyCapitalCostsCapitalCostOneFunctionDataTwoFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -13915,8 +17384,16 @@ export const SupplyTechnology = zod
                       points: zod.array(
                         zod
                           .object({
-                            x: zod.number(),
-                            y: zod.number(),
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
                           })
                           .describe(
                             "A single point, given as its `x` and `y` coordinates.",
@@ -13927,7 +17404,10 @@ export const SupplyTechnology = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                 ]),
-                input_at_zero: zod.number().optional(),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .default(supplyTechnologyCapitalCostsCapitalCostOneDefault)
               .describe(
@@ -13943,13 +17423,19 @@ export const SupplyTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           supplyTechnologyCapitalCostsCapitalCostTwoFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -13961,15 +17447,33 @@ export const SupplyTechnology = zod
                         .default(
                           supplyTechnologyCapitalCostsCapitalCostTwoFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -13984,13 +17488,19 @@ export const SupplyTechnology = zod
                 function_data: zod.union([
                   zod
                     .object({
-                      constant_term: zod.number(),
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
                       function_type: zod
                         .literal("LINEAR")
                         .default(
                           supplyTechnologyCapitalCostsCapitalCostThreeFunctionDataOneFunctionTypeDefault,
                         ),
-                      proportional_term: zod.number(),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
                     })
                     .describe(
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -14002,15 +17512,33 @@ export const SupplyTechnology = zod
                         .default(
                           supplyTechnologyCapitalCostsCapitalCostThreeFunctionDataTwoFunctionTypeDefault,
                         ),
-                      x_coords: zod.array(zod.number()),
-                      y_coords: zod.array(zod.number()),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      ),
                     })
                     .describe(
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                 ]),
-                initial_input: zod.number().optional(),
-                input_at_zero: zod.number().optional(),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
               })
               .describe(
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -14026,27 +17554,47 @@ export const SupplyTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             supplyTechnologyCapitalCostsCapitalCostFourFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             supplyTechnologyCapitalCostsCapitalCostFourFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -14061,8 +17609,16 @@ export const SupplyTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -14079,8 +17635,20 @@ export const SupplyTechnology = zod
                           .default(
                             supplyTechnologyCapitalCostsCapitalCostFourFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -14174,27 +17742,47 @@ export const SupplyTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             supplyTechnologyCapitalCostsCapitalCostFiveFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             supplyTechnologyCapitalCostsCapitalCostFiveFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -14209,8 +17797,16 @@ export const SupplyTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -14227,8 +17823,20 @@ export const SupplyTechnology = zod
                           .default(
                             supplyTechnologyCapitalCostsCapitalCostFiveFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -14328,27 +17936,47 @@ export const SupplyTechnology = zod
                   .union([
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("LINEAR")
                           .default(
                             supplyTechnologyCapitalCostsCapitalCostSixFunctionDataOneFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
                       })
                       .describe(
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
                       .object({
-                        constant_term: zod.number(),
+                        constant_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
                         function_type: zod
                           .literal("QUADRATIC")
                           .default(
                             supplyTechnologyCapitalCostsCapitalCostSixFunctionDataTwoFunctionTypeDefault,
                           ),
-                        proportional_term: zod.number(),
-                        quadratic_term: zod.number(),
+                        proportional_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input.",
+                          ),
+                        quadratic_term: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit per unit of its input squared.",
+                          ),
                       })
                       .describe(
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -14363,8 +17991,16 @@ export const SupplyTechnology = zod
                         points: zod.array(
                           zod
                             .object({
-                              x: zod.number(),
-                              y: zod.number(),
+                              x: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's input unit.",
+                                ),
+                              y: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                             })
                             .describe(
                               "A single point, given as its `x` and `y` coordinates.",
@@ -14381,8 +18017,20 @@ export const SupplyTechnology = zod
                           .default(
                             supplyTechnologyCapitalCostsCapitalCostSixFunctionDataFourFunctionTypeDefault,
                           ),
-                        x_coords: zod.array(zod.number()),
-                        y_coords: zod.array(zod.number()),
+                        x_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                        ),
+                        y_coords: zod.array(
+                          zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        ),
                       })
                       .describe(
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -14536,27 +18184,47 @@ export const SupplyTechnology = zod
                             function_data: zod.union([
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("QUADRATIC")
                                     .default(
                                       supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveOneFunctionDataOneFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
-                                  quadratic_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
+                                  quadratic_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input squared.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                                 ),
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("LINEAR")
                                     .default(
                                       supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveOneFunctionDataTwoFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -14571,8 +18239,16 @@ export const SupplyTechnology = zod
                                   points: zod.array(
                                     zod
                                       .object({
-                                        x: zod.number(),
-                                        y: zod.number(),
+                                        x: zod
+                                          .number()
+                                          .describe(
+                                            "Units: the wrapped function's input unit.",
+                                          ),
+                                        y: zod
+                                          .number()
+                                          .describe(
+                                            "Units: the wrapped function's output unit.",
+                                          ),
                                       })
                                       .describe(
                                         "A single point, given as its `x` and `y` coordinates.",
@@ -14583,7 +18259,10 @@ export const SupplyTechnology = zod
                                   "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                                 ),
                             ]),
-                            input_at_zero: zod.number().optional(),
+                            input_at_zero: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
                           })
                           .default(
                             supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveOneDefault,
@@ -14601,13 +18280,21 @@ export const SupplyTechnology = zod
                             function_data: zod.union([
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("LINEAR")
                                     .default(
                                       supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveTwoFunctionDataOneFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -14619,15 +18306,33 @@ export const SupplyTechnology = zod
                                     .default(
                                       supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveTwoFunctionDataTwoFunctionTypeDefault,
                                     ),
-                                  x_coords: zod.array(zod.number()),
-                                  y_coords: zod.array(zod.number()),
+                                  x_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                  ),
+                                  y_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
+                                  ),
                                 })
                                 .describe(
                                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                                 ),
                             ]),
-                            initial_input: zod.number().optional(),
-                            input_at_zero: zod.number().optional(),
+                            initial_input: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
+                            input_at_zero: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
                             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -14642,13 +18347,21 @@ export const SupplyTechnology = zod
                             function_data: zod.union([
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("LINEAR")
                                     .default(
                                       supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveThreeFunctionDataOneFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -14660,15 +18373,33 @@ export const SupplyTechnology = zod
                                     .default(
                                       supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveThreeFunctionDataTwoFunctionTypeDefault,
                                     ),
-                                  x_coords: zod.array(zod.number()),
-                                  y_coords: zod.array(zod.number()),
+                                  x_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                  ),
+                                  y_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
+                                  ),
                                 })
                                 .describe(
                                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                                 ),
                             ]),
-                            initial_input: zod.number().optional(),
-                            input_at_zero: zod.number().optional(),
+                            initial_input: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
+                            input_at_zero: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
                             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -14684,27 +18415,47 @@ export const SupplyTechnology = zod
                               .union([
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("LINEAR")
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveFourFunctionDataOneFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                                   ),
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("QUADRATIC")
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveFourFunctionDataTwoFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
-                                    quadratic_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
+                                    quadratic_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input squared.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -14719,8 +18470,16 @@ export const SupplyTechnology = zod
                                     points: zod.array(
                                       zod
                                         .object({
-                                          x: zod.number(),
-                                          y: zod.number(),
+                                          x: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's input unit.",
+                                            ),
+                                          y: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's output unit.",
+                                            ),
                                         })
                                         .describe(
                                           "A single point, given as its `x` and `y` coordinates.",
@@ -14737,8 +18496,20 @@ export const SupplyTechnology = zod
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveFourFunctionDataFourFunctionTypeDefault,
                                       ),
-                                    x_coords: zod.array(zod.number()),
-                                    y_coords: zod.array(zod.number()),
+                                    x_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                    ),
+                                    y_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
+                                    ),
                                   })
                                   .describe(
                                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -14832,27 +18603,47 @@ export const SupplyTechnology = zod
                               .union([
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("LINEAR")
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveFiveFunctionDataOneFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                                   ),
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("QUADRATIC")
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveFiveFunctionDataTwoFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
-                                    quadratic_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
+                                    quadratic_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input squared.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -14867,8 +18658,16 @@ export const SupplyTechnology = zod
                                     points: zod.array(
                                       zod
                                         .object({
-                                          x: zod.number(),
-                                          y: zod.number(),
+                                          x: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's input unit.",
+                                            ),
+                                          y: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's output unit.",
+                                            ),
                                         })
                                         .describe(
                                           "A single point, given as its `x` and `y` coordinates.",
@@ -14885,8 +18684,20 @@ export const SupplyTechnology = zod
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveFiveFunctionDataFourFunctionTypeDefault,
                                       ),
-                                    x_coords: zod.array(zod.number()),
-                                    y_coords: zod.array(zod.number()),
+                                    x_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                    ),
+                                    y_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
+                                    ),
                                   })
                                   .describe(
                                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -14986,27 +18797,47 @@ export const SupplyTechnology = zod
                               .union([
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("LINEAR")
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveSixFunctionDataOneFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                                   ),
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("QUADRATIC")
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveSixFunctionDataTwoFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
-                                    quadratic_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
+                                    quadratic_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input squared.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -15021,8 +18852,16 @@ export const SupplyTechnology = zod
                                     points: zod.array(
                                       zod
                                         .object({
-                                          x: zod.number(),
-                                          y: zod.number(),
+                                          x: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's input unit.",
+                                            ),
+                                          y: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's output unit.",
+                                            ),
                                         })
                                         .describe(
                                           "A single point, given as its `x` and `y` coordinates.",
@@ -15039,8 +18878,20 @@ export const SupplyTechnology = zod
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostOneValueCurveSixFunctionDataFourFunctionTypeDefault,
                                       ),
-                                    x_coords: zod.array(zod.number()),
-                                    y_coords: zod.array(zod.number()),
+                                    x_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                    ),
+                                    y_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
+                                    ),
                                   })
                                   .describe(
                                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -15148,27 +18999,47 @@ export const SupplyTechnology = zod
                         function_data: zod.union([
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("QUADRATIC")
                                 .default(
                                   supplyTechnologyOperationCostsOneVariableOperationCostOneVomCostFunctionDataOneFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
-                              quadratic_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
+                              quadratic_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input squared.",
+                                ),
                             })
                             .describe(
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("LINEAR")
                                 .default(
                                   supplyTechnologyOperationCostsOneVariableOperationCostOneVomCostFunctionDataTwoFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
                             })
                             .describe(
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -15183,8 +19054,16 @@ export const SupplyTechnology = zod
                               points: zod.array(
                                 zod
                                   .object({
-                                    x: zod.number(),
-                                    y: zod.number(),
+                                    x: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                    y: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                   })
                                   .describe(
                                     "A single point, given as its `x` and `y` coordinates.",
@@ -15195,7 +19074,10 @@ export const SupplyTechnology = zod
                               "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                             ),
                         ]),
-                        input_at_zero: zod.number().optional(),
+                        input_at_zero: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
                       })
                       .default(
                         supplyTechnologyOperationCostsOneVariableOperationCostOneVomCostDefault,
@@ -15205,7 +19087,7 @@ export const SupplyTechnology = zod
                       ),
                   })
                   .describe(
-                    "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term.",
+                    "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
                   ),
                 zod
                   .object({
@@ -15236,27 +19118,47 @@ export const SupplyTechnology = zod
                         function_data: zod.union([
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("QUADRATIC")
                                 .default(
                                   supplyTechnologyOperationCostsOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataOneFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
-                              quadratic_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
+                              quadratic_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input squared.",
+                                ),
                             })
                             .describe(
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("LINEAR")
                                 .default(
                                   supplyTechnologyOperationCostsOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataTwoFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
                             })
                             .describe(
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -15271,8 +19173,16 @@ export const SupplyTechnology = zod
                               points: zod.array(
                                 zod
                                   .object({
-                                    x: zod.number(),
-                                    y: zod.number(),
+                                    x: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                    y: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                   })
                                   .describe(
                                     "A single point, given as its `x` and `y` coordinates.",
@@ -15283,7 +19193,10 @@ export const SupplyTechnology = zod
                               "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                             ),
                         ]),
-                        input_at_zero: zod.number().optional(),
+                        input_at_zero: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
                       })
                       .default(
                         supplyTechnologyOperationCostsOneVariableOperationCostTwoStartupFuelOfftakeDefault,
@@ -15303,27 +19216,47 @@ export const SupplyTechnology = zod
                             function_data: zod.union([
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("QUADRATIC")
                                     .default(
                                       supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveOneFunctionDataOneFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
-                                  quadratic_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
+                                  quadratic_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input squared.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                                 ),
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("LINEAR")
                                     .default(
                                       supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveOneFunctionDataTwoFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -15338,8 +19271,16 @@ export const SupplyTechnology = zod
                                   points: zod.array(
                                     zod
                                       .object({
-                                        x: zod.number(),
-                                        y: zod.number(),
+                                        x: zod
+                                          .number()
+                                          .describe(
+                                            "Units: the wrapped function's input unit.",
+                                          ),
+                                        y: zod
+                                          .number()
+                                          .describe(
+                                            "Units: the wrapped function's output unit.",
+                                          ),
                                       })
                                       .describe(
                                         "A single point, given as its `x` and `y` coordinates.",
@@ -15350,7 +19291,10 @@ export const SupplyTechnology = zod
                                   "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                                 ),
                             ]),
-                            input_at_zero: zod.number().optional(),
+                            input_at_zero: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
                           })
                           .default(
                             supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveOneDefault,
@@ -15368,13 +19312,21 @@ export const SupplyTechnology = zod
                             function_data: zod.union([
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("LINEAR")
                                     .default(
                                       supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveTwoFunctionDataOneFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -15386,15 +19338,33 @@ export const SupplyTechnology = zod
                                     .default(
                                       supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveTwoFunctionDataTwoFunctionTypeDefault,
                                     ),
-                                  x_coords: zod.array(zod.number()),
-                                  y_coords: zod.array(zod.number()),
+                                  x_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                  ),
+                                  y_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
+                                  ),
                                 })
                                 .describe(
                                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                                 ),
                             ]),
-                            initial_input: zod.number().optional(),
-                            input_at_zero: zod.number().optional(),
+                            initial_input: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
+                            input_at_zero: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
                             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -15409,13 +19379,21 @@ export const SupplyTechnology = zod
                             function_data: zod.union([
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("LINEAR")
                                     .default(
                                       supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveThreeFunctionDataOneFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -15427,15 +19405,33 @@ export const SupplyTechnology = zod
                                     .default(
                                       supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveThreeFunctionDataTwoFunctionTypeDefault,
                                     ),
-                                  x_coords: zod.array(zod.number()),
-                                  y_coords: zod.array(zod.number()),
+                                  x_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                  ),
+                                  y_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
+                                  ),
                                 })
                                 .describe(
                                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                                 ),
                             ]),
-                            initial_input: zod.number().optional(),
-                            input_at_zero: zod.number().optional(),
+                            initial_input: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
+                            input_at_zero: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
                             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -15451,27 +19447,47 @@ export const SupplyTechnology = zod
                               .union([
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("LINEAR")
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveFourFunctionDataOneFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                                   ),
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("QUADRATIC")
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveFourFunctionDataTwoFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
-                                    quadratic_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
+                                    quadratic_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input squared.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -15486,8 +19502,16 @@ export const SupplyTechnology = zod
                                     points: zod.array(
                                       zod
                                         .object({
-                                          x: zod.number(),
-                                          y: zod.number(),
+                                          x: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's input unit.",
+                                            ),
+                                          y: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's output unit.",
+                                            ),
                                         })
                                         .describe(
                                           "A single point, given as its `x` and `y` coordinates.",
@@ -15504,8 +19528,20 @@ export const SupplyTechnology = zod
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveFourFunctionDataFourFunctionTypeDefault,
                                       ),
-                                    x_coords: zod.array(zod.number()),
-                                    y_coords: zod.array(zod.number()),
+                                    x_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                    ),
+                                    y_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
+                                    ),
                                   })
                                   .describe(
                                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -15599,27 +19635,47 @@ export const SupplyTechnology = zod
                               .union([
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("LINEAR")
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveFiveFunctionDataOneFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                                   ),
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("QUADRATIC")
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveFiveFunctionDataTwoFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
-                                    quadratic_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
+                                    quadratic_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input squared.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -15634,8 +19690,16 @@ export const SupplyTechnology = zod
                                     points: zod.array(
                                       zod
                                         .object({
-                                          x: zod.number(),
-                                          y: zod.number(),
+                                          x: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's input unit.",
+                                            ),
+                                          y: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's output unit.",
+                                            ),
                                         })
                                         .describe(
                                           "A single point, given as its `x` and `y` coordinates.",
@@ -15652,8 +19716,20 @@ export const SupplyTechnology = zod
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveFiveFunctionDataFourFunctionTypeDefault,
                                       ),
-                                    x_coords: zod.array(zod.number()),
-                                    y_coords: zod.array(zod.number()),
+                                    x_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                    ),
+                                    y_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
+                                    ),
                                   })
                                   .describe(
                                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -15753,27 +19829,47 @@ export const SupplyTechnology = zod
                               .union([
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("LINEAR")
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveSixFunctionDataOneFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                                   ),
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("QUADRATIC")
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveSixFunctionDataTwoFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
-                                    quadratic_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
+                                    quadratic_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input squared.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -15788,8 +19884,16 @@ export const SupplyTechnology = zod
                                     points: zod.array(
                                       zod
                                         .object({
-                                          x: zod.number(),
-                                          y: zod.number(),
+                                          x: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's input unit.",
+                                            ),
+                                          y: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's output unit.",
+                                            ),
                                         })
                                         .describe(
                                           "A single point, given as its `x` and `y` coordinates.",
@@ -15806,8 +19910,20 @@ export const SupplyTechnology = zod
                                       .default(
                                         supplyTechnologyOperationCostsOneVariableOperationCostTwoValueCurveSixFunctionDataFourFunctionTypeDefault,
                                       ),
-                                    x_coords: zod.array(zod.number()),
-                                    y_coords: zod.array(zod.number()),
+                                    x_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                    ),
+                                    y_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
+                                    ),
                                   })
                                   .describe(
                                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -15915,27 +20031,47 @@ export const SupplyTechnology = zod
                         function_data: zod.union([
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("QUADRATIC")
                                 .default(
                                   supplyTechnologyOperationCostsOneVariableOperationCostTwoVomCostFunctionDataOneFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
-                              quadratic_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
+                              quadratic_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input squared.",
+                                ),
                             })
                             .describe(
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("LINEAR")
                                 .default(
                                   supplyTechnologyOperationCostsOneVariableOperationCostTwoVomCostFunctionDataTwoFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
                             })
                             .describe(
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -15950,8 +20086,16 @@ export const SupplyTechnology = zod
                               points: zod.array(
                                 zod
                                   .object({
-                                    x: zod.number(),
-                                    y: zod.number(),
+                                    x: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                    y: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                   })
                                   .describe(
                                     "A single point, given as its `x` and `y` coordinates.",
@@ -15962,7 +20106,10 @@ export const SupplyTechnology = zod
                               "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                             ),
                         ]),
-                        input_at_zero: zod.number().optional(),
+                        input_at_zero: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
                       })
                       .default(
                         supplyTechnologyOperationCostsOneVariableOperationCostTwoVomCostDefault,
@@ -16004,27 +20151,47 @@ export const SupplyTechnology = zod
                         function_data: zod.union([
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("QUADRATIC")
                                 .default(
                                   supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveOneFunctionDataOneFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
-                              quadratic_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
+                              quadratic_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input squared.",
+                                ),
                             })
                             .describe(
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("LINEAR")
                                 .default(
                                   supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveOneFunctionDataTwoFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
                             })
                             .describe(
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -16039,8 +20206,16 @@ export const SupplyTechnology = zod
                               points: zod.array(
                                 zod
                                   .object({
-                                    x: zod.number(),
-                                    y: zod.number(),
+                                    x: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                    y: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                   })
                                   .describe(
                                     "A single point, given as its `x` and `y` coordinates.",
@@ -16051,7 +20226,10 @@ export const SupplyTechnology = zod
                               "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                             ),
                         ]),
-                        input_at_zero: zod.number().optional(),
+                        input_at_zero: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
                       })
                       .default(
                         supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveOneDefault,
@@ -16069,13 +20247,21 @@ export const SupplyTechnology = zod
                         function_data: zod.union([
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("LINEAR")
                                 .default(
                                   supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveTwoFunctionDataOneFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
                             })
                             .describe(
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -16087,15 +20273,33 @@ export const SupplyTechnology = zod
                                 .default(
                                   supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveTwoFunctionDataTwoFunctionTypeDefault,
                                 ),
-                              x_coords: zod.array(zod.number()),
-                              y_coords: zod.array(zod.number()),
+                              x_coords: zod.array(
+                                zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's input unit.",
+                                  ),
+                              ),
+                              y_coords: zod.array(
+                                zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
+                              ),
                             })
                             .describe(
                               "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                             ),
                         ]),
-                        initial_input: zod.number().optional(),
-                        input_at_zero: zod.number().optional(),
+                        initial_input: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
+                        input_at_zero: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
                         "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -16110,13 +20314,21 @@ export const SupplyTechnology = zod
                         function_data: zod.union([
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("LINEAR")
                                 .default(
                                   supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveThreeFunctionDataOneFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
                             })
                             .describe(
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -16128,15 +20340,33 @@ export const SupplyTechnology = zod
                                 .default(
                                   supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveThreeFunctionDataTwoFunctionTypeDefault,
                                 ),
-                              x_coords: zod.array(zod.number()),
-                              y_coords: zod.array(zod.number()),
+                              x_coords: zod.array(
+                                zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's input unit.",
+                                  ),
+                              ),
+                              y_coords: zod.array(
+                                zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
+                              ),
                             })
                             .describe(
                               "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                             ),
                         ]),
-                        initial_input: zod.number().optional(),
-                        input_at_zero: zod.number().optional(),
+                        initial_input: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
+                        input_at_zero: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
                         "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -16152,27 +20382,47 @@ export const SupplyTechnology = zod
                           .union([
                             zod
                               .object({
-                                constant_term: zod.number(),
+                                constant_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                                 function_type: zod
                                   .literal("LINEAR")
                                   .default(
                                     supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveFourFunctionDataOneFunctionTypeDefault,
                                   ),
-                                proportional_term: zod.number(),
+                                proportional_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input.",
+                                  ),
                               })
                               .describe(
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
                               .object({
-                                constant_term: zod.number(),
+                                constant_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                                 function_type: zod
                                   .literal("QUADRATIC")
                                   .default(
                                     supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveFourFunctionDataTwoFunctionTypeDefault,
                                   ),
-                                proportional_term: zod.number(),
-                                quadratic_term: zod.number(),
+                                proportional_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input.",
+                                  ),
+                                quadratic_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input squared.",
+                                  ),
                               })
                               .describe(
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -16187,8 +20437,16 @@ export const SupplyTechnology = zod
                                 points: zod.array(
                                   zod
                                     .object({
-                                      x: zod.number(),
-                                      y: zod.number(),
+                                      x: zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                      y: zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
                                     })
                                     .describe(
                                       "A single point, given as its `x` and `y` coordinates.",
@@ -16205,8 +20463,20 @@ export const SupplyTechnology = zod
                                   .default(
                                     supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveFourFunctionDataFourFunctionTypeDefault,
                                   ),
-                                x_coords: zod.array(zod.number()),
-                                y_coords: zod.array(zod.number()),
+                                x_coords: zod.array(
+                                  zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                ),
+                                y_coords: zod.array(
+                                  zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
+                                ),
                               })
                               .describe(
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -16300,27 +20570,47 @@ export const SupplyTechnology = zod
                           .union([
                             zod
                               .object({
-                                constant_term: zod.number(),
+                                constant_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                                 function_type: zod
                                   .literal("LINEAR")
                                   .default(
                                     supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveFiveFunctionDataOneFunctionTypeDefault,
                                   ),
-                                proportional_term: zod.number(),
+                                proportional_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input.",
+                                  ),
                               })
                               .describe(
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
                               .object({
-                                constant_term: zod.number(),
+                                constant_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                                 function_type: zod
                                   .literal("QUADRATIC")
                                   .default(
                                     supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveFiveFunctionDataTwoFunctionTypeDefault,
                                   ),
-                                proportional_term: zod.number(),
-                                quadratic_term: zod.number(),
+                                proportional_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input.",
+                                  ),
+                                quadratic_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input squared.",
+                                  ),
                               })
                               .describe(
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -16335,8 +20625,16 @@ export const SupplyTechnology = zod
                                 points: zod.array(
                                   zod
                                     .object({
-                                      x: zod.number(),
-                                      y: zod.number(),
+                                      x: zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                      y: zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
                                     })
                                     .describe(
                                       "A single point, given as its `x` and `y` coordinates.",
@@ -16353,8 +20651,20 @@ export const SupplyTechnology = zod
                                   .default(
                                     supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveFiveFunctionDataFourFunctionTypeDefault,
                                   ),
-                                x_coords: zod.array(zod.number()),
-                                y_coords: zod.array(zod.number()),
+                                x_coords: zod.array(
+                                  zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                ),
+                                y_coords: zod.array(
+                                  zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
+                                ),
                               })
                               .describe(
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -16454,27 +20764,47 @@ export const SupplyTechnology = zod
                           .union([
                             zod
                               .object({
-                                constant_term: zod.number(),
+                                constant_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                                 function_type: zod
                                   .literal("LINEAR")
                                   .default(
                                     supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveSixFunctionDataOneFunctionTypeDefault,
                                   ),
-                                proportional_term: zod.number(),
+                                proportional_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input.",
+                                  ),
                               })
                               .describe(
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
                               .object({
-                                constant_term: zod.number(),
+                                constant_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                                 function_type: zod
                                   .literal("QUADRATIC")
                                   .default(
                                     supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveSixFunctionDataTwoFunctionTypeDefault,
                                   ),
-                                proportional_term: zod.number(),
-                                quadratic_term: zod.number(),
+                                proportional_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input.",
+                                  ),
+                                quadratic_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input squared.",
+                                  ),
                               })
                               .describe(
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -16489,8 +20819,16 @@ export const SupplyTechnology = zod
                                 points: zod.array(
                                   zod
                                     .object({
-                                      x: zod.number(),
-                                      y: zod.number(),
+                                      x: zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                      y: zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
                                     })
                                     .describe(
                                       "A single point, given as its `x` and `y` coordinates.",
@@ -16507,8 +20845,20 @@ export const SupplyTechnology = zod
                                   .default(
                                     supplyTechnologyOperationCostsTwoCurtailmentCostValueCurveSixFunctionDataFourFunctionTypeDefault,
                                   ),
-                                x_coords: zod.array(zod.number()),
-                                y_coords: zod.array(zod.number()),
+                                x_coords: zod.array(
+                                  zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                ),
+                                y_coords: zod.array(
+                                  zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
+                                ),
                               })
                               .describe(
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -16616,27 +20966,47 @@ export const SupplyTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("QUADRATIC")
                             .default(
                               supplyTechnologyOperationCostsTwoCurtailmentCostVomCostFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
-                          quadratic_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
+                          quadratic_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input squared.",
+                            ),
                         })
                         .describe(
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               supplyTechnologyOperationCostsTwoCurtailmentCostVomCostFunctionDataTwoFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -16651,8 +21021,16 @@ export const SupplyTechnology = zod
                           points: zod.array(
                             zod
                               .object({
-                                x: zod.number(),
-                                y: zod.number(),
+                                x: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's input unit.",
+                                  ),
+                                y: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                               })
                               .describe(
                                 "A single point, given as its `x` and `y` coordinates.",
@@ -16663,7 +21041,10 @@ export const SupplyTechnology = zod
                           "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                         ),
                     ]),
-                    input_at_zero: zod.number().optional(),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .default(
                     supplyTechnologyOperationCostsTwoCurtailmentCostVomCostDefault,
@@ -16674,7 +21055,7 @@ export const SupplyTechnology = zod
               })
               .optional()
               .describe(
-                "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term.",
+                "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
               ),
             variable_operation_cost: zod
               .object({
@@ -16695,27 +21076,47 @@ export const SupplyTechnology = zod
                         function_data: zod.union([
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("QUADRATIC")
                                 .default(
                                   supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveOneFunctionDataOneFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
-                              quadratic_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
+                              quadratic_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input squared.",
+                                ),
                             })
                             .describe(
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("LINEAR")
                                 .default(
                                   supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveOneFunctionDataTwoFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
                             })
                             .describe(
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -16730,8 +21131,16 @@ export const SupplyTechnology = zod
                               points: zod.array(
                                 zod
                                   .object({
-                                    x: zod.number(),
-                                    y: zod.number(),
+                                    x: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                    y: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                   })
                                   .describe(
                                     "A single point, given as its `x` and `y` coordinates.",
@@ -16742,7 +21151,10 @@ export const SupplyTechnology = zod
                               "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                             ),
                         ]),
-                        input_at_zero: zod.number().optional(),
+                        input_at_zero: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
                       })
                       .default(
                         supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveOneDefault,
@@ -16760,13 +21172,21 @@ export const SupplyTechnology = zod
                         function_data: zod.union([
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("LINEAR")
                                 .default(
                                   supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveTwoFunctionDataOneFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
                             })
                             .describe(
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -16778,15 +21198,33 @@ export const SupplyTechnology = zod
                                 .default(
                                   supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveTwoFunctionDataTwoFunctionTypeDefault,
                                 ),
-                              x_coords: zod.array(zod.number()),
-                              y_coords: zod.array(zod.number()),
+                              x_coords: zod.array(
+                                zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's input unit.",
+                                  ),
+                              ),
+                              y_coords: zod.array(
+                                zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
+                              ),
                             })
                             .describe(
                               "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                             ),
                         ]),
-                        initial_input: zod.number().optional(),
-                        input_at_zero: zod.number().optional(),
+                        initial_input: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
+                        input_at_zero: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
                         "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -16801,13 +21239,21 @@ export const SupplyTechnology = zod
                         function_data: zod.union([
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("LINEAR")
                                 .default(
                                   supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveThreeFunctionDataOneFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
                             })
                             .describe(
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -16819,15 +21265,33 @@ export const SupplyTechnology = zod
                                 .default(
                                   supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveThreeFunctionDataTwoFunctionTypeDefault,
                                 ),
-                              x_coords: zod.array(zod.number()),
-                              y_coords: zod.array(zod.number()),
+                              x_coords: zod.array(
+                                zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's input unit.",
+                                  ),
+                              ),
+                              y_coords: zod.array(
+                                zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
+                              ),
                             })
                             .describe(
                               "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                             ),
                         ]),
-                        initial_input: zod.number().optional(),
-                        input_at_zero: zod.number().optional(),
+                        initial_input: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
+                        input_at_zero: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
                         "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -16843,27 +21307,47 @@ export const SupplyTechnology = zod
                           .union([
                             zod
                               .object({
-                                constant_term: zod.number(),
+                                constant_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                                 function_type: zod
                                   .literal("LINEAR")
                                   .default(
                                     supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveFourFunctionDataOneFunctionTypeDefault,
                                   ),
-                                proportional_term: zod.number(),
+                                proportional_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input.",
+                                  ),
                               })
                               .describe(
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
                               .object({
-                                constant_term: zod.number(),
+                                constant_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                                 function_type: zod
                                   .literal("QUADRATIC")
                                   .default(
                                     supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveFourFunctionDataTwoFunctionTypeDefault,
                                   ),
-                                proportional_term: zod.number(),
-                                quadratic_term: zod.number(),
+                                proportional_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input.",
+                                  ),
+                                quadratic_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input squared.",
+                                  ),
                               })
                               .describe(
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -16878,8 +21362,16 @@ export const SupplyTechnology = zod
                                 points: zod.array(
                                   zod
                                     .object({
-                                      x: zod.number(),
-                                      y: zod.number(),
+                                      x: zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                      y: zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
                                     })
                                     .describe(
                                       "A single point, given as its `x` and `y` coordinates.",
@@ -16896,8 +21388,20 @@ export const SupplyTechnology = zod
                                   .default(
                                     supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveFourFunctionDataFourFunctionTypeDefault,
                                   ),
-                                x_coords: zod.array(zod.number()),
-                                y_coords: zod.array(zod.number()),
+                                x_coords: zod.array(
+                                  zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                ),
+                                y_coords: zod.array(
+                                  zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
+                                ),
                               })
                               .describe(
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -16991,27 +21495,47 @@ export const SupplyTechnology = zod
                           .union([
                             zod
                               .object({
-                                constant_term: zod.number(),
+                                constant_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                                 function_type: zod
                                   .literal("LINEAR")
                                   .default(
                                     supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveFiveFunctionDataOneFunctionTypeDefault,
                                   ),
-                                proportional_term: zod.number(),
+                                proportional_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input.",
+                                  ),
                               })
                               .describe(
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
                               .object({
-                                constant_term: zod.number(),
+                                constant_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                                 function_type: zod
                                   .literal("QUADRATIC")
                                   .default(
                                     supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveFiveFunctionDataTwoFunctionTypeDefault,
                                   ),
-                                proportional_term: zod.number(),
-                                quadratic_term: zod.number(),
+                                proportional_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input.",
+                                  ),
+                                quadratic_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input squared.",
+                                  ),
                               })
                               .describe(
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -17026,8 +21550,16 @@ export const SupplyTechnology = zod
                                 points: zod.array(
                                   zod
                                     .object({
-                                      x: zod.number(),
-                                      y: zod.number(),
+                                      x: zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                      y: zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
                                     })
                                     .describe(
                                       "A single point, given as its `x` and `y` coordinates.",
@@ -17044,8 +21576,20 @@ export const SupplyTechnology = zod
                                   .default(
                                     supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveFiveFunctionDataFourFunctionTypeDefault,
                                   ),
-                                x_coords: zod.array(zod.number()),
-                                y_coords: zod.array(zod.number()),
+                                x_coords: zod.array(
+                                  zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                ),
+                                y_coords: zod.array(
+                                  zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
+                                ),
                               })
                               .describe(
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -17145,27 +21689,47 @@ export const SupplyTechnology = zod
                           .union([
                             zod
                               .object({
-                                constant_term: zod.number(),
+                                constant_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                                 function_type: zod
                                   .literal("LINEAR")
                                   .default(
                                     supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveSixFunctionDataOneFunctionTypeDefault,
                                   ),
-                                proportional_term: zod.number(),
+                                proportional_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input.",
+                                  ),
                               })
                               .describe(
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
                               .object({
-                                constant_term: zod.number(),
+                                constant_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                                 function_type: zod
                                   .literal("QUADRATIC")
                                   .default(
                                     supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveSixFunctionDataTwoFunctionTypeDefault,
                                   ),
-                                proportional_term: zod.number(),
-                                quadratic_term: zod.number(),
+                                proportional_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input.",
+                                  ),
+                                quadratic_term: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit per unit of its input squared.",
+                                  ),
                               })
                               .describe(
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -17180,8 +21744,16 @@ export const SupplyTechnology = zod
                                 points: zod.array(
                                   zod
                                     .object({
-                                      x: zod.number(),
-                                      y: zod.number(),
+                                      x: zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                      y: zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
                                     })
                                     .describe(
                                       "A single point, given as its `x` and `y` coordinates.",
@@ -17198,8 +21770,20 @@ export const SupplyTechnology = zod
                                   .default(
                                     supplyTechnologyOperationCostsTwoVariableOperationCostValueCurveSixFunctionDataFourFunctionTypeDefault,
                                   ),
-                                x_coords: zod.array(zod.number()),
-                                y_coords: zod.array(zod.number()),
+                                x_coords: zod.array(
+                                  zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's input unit.",
+                                    ),
+                                ),
+                                y_coords: zod.array(
+                                  zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
+                                ),
                               })
                               .describe(
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -17307,27 +21891,47 @@ export const SupplyTechnology = zod
                     function_data: zod.union([
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("QUADRATIC")
                             .default(
                               supplyTechnologyOperationCostsTwoVariableOperationCostVomCostFunctionDataOneFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
-                          quadratic_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
+                          quadratic_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input squared.",
+                            ),
                         })
                         .describe(
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
                         .object({
-                          constant_term: zod.number(),
+                          constant_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
                           function_type: zod
                             .literal("LINEAR")
                             .default(
                               supplyTechnologyOperationCostsTwoVariableOperationCostVomCostFunctionDataTwoFunctionTypeDefault,
                             ),
-                          proportional_term: zod.number(),
+                          proportional_term: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit per unit of its input.",
+                            ),
                         })
                         .describe(
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -17342,8 +21946,16 @@ export const SupplyTechnology = zod
                           points: zod.array(
                             zod
                               .object({
-                                x: zod.number(),
-                                y: zod.number(),
+                                x: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's input unit.",
+                                  ),
+                                y: zod
+                                  .number()
+                                  .describe(
+                                    "Units: the wrapped function's output unit.",
+                                  ),
                               })
                               .describe(
                                 "A single point, given as its `x` and `y` coordinates.",
@@ -17354,7 +21966,10 @@ export const SupplyTechnology = zod
                           "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                         ),
                     ]),
-                    input_at_zero: zod.number().optional(),
+                    input_at_zero: zod
+                      .number()
+                      .optional()
+                      .describe("Units: the curve's y-axis unit."),
                   })
                   .default(
                     supplyTechnologyOperationCostsTwoVariableOperationCostVomCostDefault,
@@ -17364,7 +21979,7 @@ export const SupplyTechnology = zod
                   ),
               })
               .describe(
-                "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term.",
+                "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
               ),
             fixed: zod
               .number()
@@ -17400,27 +22015,47 @@ export const SupplyTechnology = zod
                             function_data: zod.union([
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("QUADRATIC")
                                     .default(
                                       supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveOneFunctionDataOneFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
-                                  quadratic_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
+                                  quadratic_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input squared.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                                 ),
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("LINEAR")
                                     .default(
                                       supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveOneFunctionDataTwoFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -17435,8 +22070,16 @@ export const SupplyTechnology = zod
                                   points: zod.array(
                                     zod
                                       .object({
-                                        x: zod.number(),
-                                        y: zod.number(),
+                                        x: zod
+                                          .number()
+                                          .describe(
+                                            "Units: the wrapped function's input unit.",
+                                          ),
+                                        y: zod
+                                          .number()
+                                          .describe(
+                                            "Units: the wrapped function's output unit.",
+                                          ),
                                       })
                                       .describe(
                                         "A single point, given as its `x` and `y` coordinates.",
@@ -17447,7 +22090,10 @@ export const SupplyTechnology = zod
                                   "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                                 ),
                             ]),
-                            input_at_zero: zod.number().optional(),
+                            input_at_zero: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
                           })
                           .default(
                             supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveOneDefault,
@@ -17465,13 +22111,21 @@ export const SupplyTechnology = zod
                             function_data: zod.union([
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("LINEAR")
                                     .default(
                                       supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveTwoFunctionDataOneFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -17483,15 +22137,33 @@ export const SupplyTechnology = zod
                                     .default(
                                       supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveTwoFunctionDataTwoFunctionTypeDefault,
                                     ),
-                                  x_coords: zod.array(zod.number()),
-                                  y_coords: zod.array(zod.number()),
+                                  x_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                  ),
+                                  y_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
+                                  ),
                                 })
                                 .describe(
                                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                                 ),
                             ]),
-                            initial_input: zod.number().optional(),
-                            input_at_zero: zod.number().optional(),
+                            initial_input: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
+                            input_at_zero: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
                             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -17506,13 +22178,21 @@ export const SupplyTechnology = zod
                             function_data: zod.union([
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("LINEAR")
                                     .default(
                                       supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveThreeFunctionDataOneFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -17524,15 +22204,33 @@ export const SupplyTechnology = zod
                                     .default(
                                       supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveThreeFunctionDataTwoFunctionTypeDefault,
                                     ),
-                                  x_coords: zod.array(zod.number()),
-                                  y_coords: zod.array(zod.number()),
+                                  x_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                  ),
+                                  y_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
+                                  ),
                                 })
                                 .describe(
                                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                                 ),
                             ]),
-                            initial_input: zod.number().optional(),
-                            input_at_zero: zod.number().optional(),
+                            initial_input: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
+                            input_at_zero: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
                             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -17548,27 +22246,47 @@ export const SupplyTechnology = zod
                               .union([
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("LINEAR")
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveFourFunctionDataOneFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                                   ),
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("QUADRATIC")
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveFourFunctionDataTwoFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
-                                    quadratic_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
+                                    quadratic_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input squared.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -17583,8 +22301,16 @@ export const SupplyTechnology = zod
                                     points: zod.array(
                                       zod
                                         .object({
-                                          x: zod.number(),
-                                          y: zod.number(),
+                                          x: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's input unit.",
+                                            ),
+                                          y: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's output unit.",
+                                            ),
                                         })
                                         .describe(
                                           "A single point, given as its `x` and `y` coordinates.",
@@ -17601,8 +22327,20 @@ export const SupplyTechnology = zod
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveFourFunctionDataFourFunctionTypeDefault,
                                       ),
-                                    x_coords: zod.array(zod.number()),
-                                    y_coords: zod.array(zod.number()),
+                                    x_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                    ),
+                                    y_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
+                                    ),
                                   })
                                   .describe(
                                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -17696,27 +22434,47 @@ export const SupplyTechnology = zod
                               .union([
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("LINEAR")
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveFiveFunctionDataOneFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                                   ),
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("QUADRATIC")
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveFiveFunctionDataTwoFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
-                                    quadratic_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
+                                    quadratic_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input squared.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -17731,8 +22489,16 @@ export const SupplyTechnology = zod
                                     points: zod.array(
                                       zod
                                         .object({
-                                          x: zod.number(),
-                                          y: zod.number(),
+                                          x: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's input unit.",
+                                            ),
+                                          y: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's output unit.",
+                                            ),
                                         })
                                         .describe(
                                           "A single point, given as its `x` and `y` coordinates.",
@@ -17749,8 +22515,20 @@ export const SupplyTechnology = zod
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveFiveFunctionDataFourFunctionTypeDefault,
                                       ),
-                                    x_coords: zod.array(zod.number()),
-                                    y_coords: zod.array(zod.number()),
+                                    x_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                    ),
+                                    y_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
+                                    ),
                                   })
                                   .describe(
                                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -17850,27 +22628,47 @@ export const SupplyTechnology = zod
                               .union([
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("LINEAR")
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveSixFunctionDataOneFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                                   ),
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("QUADRATIC")
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveSixFunctionDataTwoFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
-                                    quadratic_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
+                                    quadratic_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input squared.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -17885,8 +22683,16 @@ export const SupplyTechnology = zod
                                     points: zod.array(
                                       zod
                                         .object({
-                                          x: zod.number(),
-                                          y: zod.number(),
+                                          x: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's input unit.",
+                                            ),
+                                          y: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's output unit.",
+                                            ),
                                         })
                                         .describe(
                                           "A single point, given as its `x` and `y` coordinates.",
@@ -17903,8 +22709,20 @@ export const SupplyTechnology = zod
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostOneValueCurveSixFunctionDataFourFunctionTypeDefault,
                                       ),
-                                    x_coords: zod.array(zod.number()),
-                                    y_coords: zod.array(zod.number()),
+                                    x_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                    ),
+                                    y_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
+                                    ),
                                   })
                                   .describe(
                                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -18012,27 +22830,47 @@ export const SupplyTechnology = zod
                         function_data: zod.union([
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("QUADRATIC")
                                 .default(
                                   supplyTechnologyOperationCostsThreeVariableOperationCostOneVomCostFunctionDataOneFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
-                              quadratic_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
+                              quadratic_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input squared.",
+                                ),
                             })
                             .describe(
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("LINEAR")
                                 .default(
                                   supplyTechnologyOperationCostsThreeVariableOperationCostOneVomCostFunctionDataTwoFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
                             })
                             .describe(
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -18047,8 +22885,16 @@ export const SupplyTechnology = zod
                               points: zod.array(
                                 zod
                                   .object({
-                                    x: zod.number(),
-                                    y: zod.number(),
+                                    x: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                    y: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                   })
                                   .describe(
                                     "A single point, given as its `x` and `y` coordinates.",
@@ -18059,7 +22905,10 @@ export const SupplyTechnology = zod
                               "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                             ),
                         ]),
-                        input_at_zero: zod.number().optional(),
+                        input_at_zero: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
                       })
                       .default(
                         supplyTechnologyOperationCostsThreeVariableOperationCostOneVomCostDefault,
@@ -18069,7 +22918,7 @@ export const SupplyTechnology = zod
                       ),
                   })
                   .describe(
-                    "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term.",
+                    "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
                   ),
                 zod
                   .object({
@@ -18100,27 +22949,47 @@ export const SupplyTechnology = zod
                         function_data: zod.union([
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("QUADRATIC")
                                 .default(
                                   supplyTechnologyOperationCostsThreeVariableOperationCostTwoStartupFuelOfftakeFunctionDataOneFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
-                              quadratic_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
+                              quadratic_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input squared.",
+                                ),
                             })
                             .describe(
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("LINEAR")
                                 .default(
                                   supplyTechnologyOperationCostsThreeVariableOperationCostTwoStartupFuelOfftakeFunctionDataTwoFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
                             })
                             .describe(
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -18135,8 +23004,16 @@ export const SupplyTechnology = zod
                               points: zod.array(
                                 zod
                                   .object({
-                                    x: zod.number(),
-                                    y: zod.number(),
+                                    x: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                    y: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                   })
                                   .describe(
                                     "A single point, given as its `x` and `y` coordinates.",
@@ -18147,7 +23024,10 @@ export const SupplyTechnology = zod
                               "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                             ),
                         ]),
-                        input_at_zero: zod.number().optional(),
+                        input_at_zero: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
                       })
                       .default(
                         supplyTechnologyOperationCostsThreeVariableOperationCostTwoStartupFuelOfftakeDefault,
@@ -18167,27 +23047,47 @@ export const SupplyTechnology = zod
                             function_data: zod.union([
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("QUADRATIC")
                                     .default(
                                       supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveOneFunctionDataOneFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
-                                  quadratic_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
+                                  quadratic_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input squared.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                                 ),
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("LINEAR")
                                     .default(
                                       supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveOneFunctionDataTwoFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -18202,8 +23102,16 @@ export const SupplyTechnology = zod
                                   points: zod.array(
                                     zod
                                       .object({
-                                        x: zod.number(),
-                                        y: zod.number(),
+                                        x: zod
+                                          .number()
+                                          .describe(
+                                            "Units: the wrapped function's input unit.",
+                                          ),
+                                        y: zod
+                                          .number()
+                                          .describe(
+                                            "Units: the wrapped function's output unit.",
+                                          ),
                                       })
                                       .describe(
                                         "A single point, given as its `x` and `y` coordinates.",
@@ -18214,7 +23122,10 @@ export const SupplyTechnology = zod
                                   "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                                 ),
                             ]),
-                            input_at_zero: zod.number().optional(),
+                            input_at_zero: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
                           })
                           .default(
                             supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveOneDefault,
@@ -18232,13 +23143,21 @@ export const SupplyTechnology = zod
                             function_data: zod.union([
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("LINEAR")
                                     .default(
                                       supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveTwoFunctionDataOneFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -18250,15 +23169,33 @@ export const SupplyTechnology = zod
                                     .default(
                                       supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveTwoFunctionDataTwoFunctionTypeDefault,
                                     ),
-                                  x_coords: zod.array(zod.number()),
-                                  y_coords: zod.array(zod.number()),
+                                  x_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                  ),
+                                  y_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
+                                  ),
                                 })
                                 .describe(
                                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                                 ),
                             ]),
-                            initial_input: zod.number().optional(),
-                            input_at_zero: zod.number().optional(),
+                            initial_input: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
+                            input_at_zero: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
                             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
@@ -18273,13 +23210,21 @@ export const SupplyTechnology = zod
                             function_data: zod.union([
                               zod
                                 .object({
-                                  constant_term: zod.number(),
+                                  constant_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit.",
+                                    ),
                                   function_type: zod
                                     .literal("LINEAR")
                                     .default(
                                       supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveThreeFunctionDataOneFunctionTypeDefault,
                                     ),
-                                  proportional_term: zod.number(),
+                                  proportional_term: zod
+                                    .number()
+                                    .describe(
+                                      "Units: the wrapped function's output unit per unit of its input.",
+                                    ),
                                 })
                                 .describe(
                                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -18291,15 +23236,33 @@ export const SupplyTechnology = zod
                                     .default(
                                       supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveThreeFunctionDataTwoFunctionTypeDefault,
                                     ),
-                                  x_coords: zod.array(zod.number()),
-                                  y_coords: zod.array(zod.number()),
+                                  x_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                  ),
+                                  y_coords: zod.array(
+                                    zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
+                                  ),
                                 })
                                 .describe(
                                   "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                                 ),
                             ]),
-                            initial_input: zod.number().optional(),
-                            input_at_zero: zod.number().optional(),
+                            initial_input: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
+                            input_at_zero: zod
+                              .number()
+                              .optional()
+                              .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
                             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
@@ -18315,27 +23278,47 @@ export const SupplyTechnology = zod
                               .union([
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("LINEAR")
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveFourFunctionDataOneFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                                   ),
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("QUADRATIC")
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveFourFunctionDataTwoFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
-                                    quadratic_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
+                                    quadratic_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input squared.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -18350,8 +23333,16 @@ export const SupplyTechnology = zod
                                     points: zod.array(
                                       zod
                                         .object({
-                                          x: zod.number(),
-                                          y: zod.number(),
+                                          x: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's input unit.",
+                                            ),
+                                          y: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's output unit.",
+                                            ),
                                         })
                                         .describe(
                                           "A single point, given as its `x` and `y` coordinates.",
@@ -18368,8 +23359,20 @@ export const SupplyTechnology = zod
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveFourFunctionDataFourFunctionTypeDefault,
                                       ),
-                                    x_coords: zod.array(zod.number()),
-                                    y_coords: zod.array(zod.number()),
+                                    x_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                    ),
+                                    y_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
+                                    ),
                                   })
                                   .describe(
                                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -18463,27 +23466,47 @@ export const SupplyTechnology = zod
                               .union([
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("LINEAR")
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveFiveFunctionDataOneFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                                   ),
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("QUADRATIC")
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveFiveFunctionDataTwoFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
-                                    quadratic_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
+                                    quadratic_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input squared.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -18498,8 +23521,16 @@ export const SupplyTechnology = zod
                                     points: zod.array(
                                       zod
                                         .object({
-                                          x: zod.number(),
-                                          y: zod.number(),
+                                          x: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's input unit.",
+                                            ),
+                                          y: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's output unit.",
+                                            ),
                                         })
                                         .describe(
                                           "A single point, given as its `x` and `y` coordinates.",
@@ -18516,8 +23547,20 @@ export const SupplyTechnology = zod
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveFiveFunctionDataFourFunctionTypeDefault,
                                       ),
-                                    x_coords: zod.array(zod.number()),
-                                    y_coords: zod.array(zod.number()),
+                                    x_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                    ),
+                                    y_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
+                                    ),
                                   })
                                   .describe(
                                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -18617,27 +23660,47 @@ export const SupplyTechnology = zod
                               .union([
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("LINEAR")
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveSixFunctionDataOneFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                                   ),
                                 zod
                                   .object({
-                                    constant_term: zod.number(),
+                                    constant_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                     function_type: zod
                                       .literal("QUADRATIC")
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveSixFunctionDataTwoFunctionTypeDefault,
                                       ),
-                                    proportional_term: zod.number(),
-                                    quadratic_term: zod.number(),
+                                    proportional_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input.",
+                                      ),
+                                    quadratic_term: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit per unit of its input squared.",
+                                      ),
                                   })
                                   .describe(
                                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
@@ -18652,8 +23715,16 @@ export const SupplyTechnology = zod
                                     points: zod.array(
                                       zod
                                         .object({
-                                          x: zod.number(),
-                                          y: zod.number(),
+                                          x: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's input unit.",
+                                            ),
+                                          y: zod
+                                            .number()
+                                            .describe(
+                                              "Units: the wrapped function's output unit.",
+                                            ),
                                         })
                                         .describe(
                                           "A single point, given as its `x` and `y` coordinates.",
@@ -18670,8 +23741,20 @@ export const SupplyTechnology = zod
                                       .default(
                                         supplyTechnologyOperationCostsThreeVariableOperationCostTwoValueCurveSixFunctionDataFourFunctionTypeDefault,
                                       ),
-                                    x_coords: zod.array(zod.number()),
-                                    y_coords: zod.array(zod.number()),
+                                    x_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's input unit.",
+                                        ),
+                                    ),
+                                    y_coords: zod.array(
+                                      zod
+                                        .number()
+                                        .describe(
+                                          "Units: the wrapped function's output unit.",
+                                        ),
+                                    ),
                                   })
                                   .describe(
                                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
@@ -18779,27 +23862,47 @@ export const SupplyTechnology = zod
                         function_data: zod.union([
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("QUADRATIC")
                                 .default(
                                   supplyTechnologyOperationCostsThreeVariableOperationCostTwoVomCostFunctionDataOneFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
-                              quadratic_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
+                              quadratic_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input squared.",
+                                ),
                             })
                             .describe(
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
                             .object({
-                              constant_term: zod.number(),
+                              constant_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit.",
+                                ),
                               function_type: zod
                                 .literal("LINEAR")
                                 .default(
                                   supplyTechnologyOperationCostsThreeVariableOperationCostTwoVomCostFunctionDataTwoFunctionTypeDefault,
                                 ),
-                              proportional_term: zod.number(),
+                              proportional_term: zod
+                                .number()
+                                .describe(
+                                  "Units: the wrapped function's output unit per unit of its input.",
+                                ),
                             })
                             .describe(
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
@@ -18814,8 +23917,16 @@ export const SupplyTechnology = zod
                               points: zod.array(
                                 zod
                                   .object({
-                                    x: zod.number(),
-                                    y: zod.number(),
+                                    x: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's input unit.",
+                                      ),
+                                    y: zod
+                                      .number()
+                                      .describe(
+                                        "Units: the wrapped function's output unit.",
+                                      ),
                                   })
                                   .describe(
                                     "A single point, given as its `x` and `y` coordinates.",
@@ -18826,7 +23937,10 @@ export const SupplyTechnology = zod
                               "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                             ),
                         ]),
-                        input_at_zero: zod.number().optional(),
+                        input_at_zero: zod
+                          .number()
+                          .optional()
+                          .describe("Units: the curve's y-axis unit."),
                       })
                       .default(
                         supplyTechnologyOperationCostsThreeVariableOperationCostTwoVomCostDefault,
@@ -18999,23 +24113,6 @@ export type TechnologyFinancialData = zod.input<typeof TechnologyFinancialData>;
 export type TechnologyFinancialDataOutput = zod.output<
   typeof TechnologyFinancialData
 >;
-
-export const TopologyMapping = zod
-  .object({
-    id: zod.int().describe("ID for individual component."),
-    buses: zod
-      .array(zod.string())
-      .optional()
-      .describe(
-        "List of buses in the base system that are associated with a zone.",
-      ),
-  })
-  .describe(
-    "Supplemental attribute storing the mapping between a zone and the associated buses in the base system.",
-  );
-
-export type TopologyMapping = zod.input<typeof TopologyMapping>;
-export type TopologyMappingOutput = zod.output<typeof TopologyMapping>;
 export { AverageRateCurve } from "../core/models";
 export type { AverageRateCurveOutput } from "../core/models";
 

@@ -3,7 +3,7 @@
  * Do not edit manually.
  * InfrastructureTimeSeriesOpenAPIModels
  * Time series associations: the six canonical time series types defined by the upstream data layer and their metadata, without the dense values
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 import * as zod from "zod";
 

@@ -290,16 +290,18 @@ def parse_julia_enum_struct(text):
 #
 # `_encode` is the source: one `isa Absent` line per field, naming both the
 # field and the literal JSON key it writes under, on one physical line or
-# wrapped across two:
+# wrapped across two. Since the generated code validates each value once, the
+# per-field writer is `_encode_unvalidated`; both names are accepted:
 #     _openapi_value.ta_tb isa Absent ||
-#         (_openapi_output["Ta_Tb"] = _encode(_openapi_value.ta_tb))
+#         (_openapi_output["Ta_Tb"] = _encode_unvalidated(_openapi_value.ta_tb))
 ENCODE_FUNC_RE = re.compile(
-    r"function _encode\(_openapi_value::(\w+)\)\n(.*?)\n(?=function |\Z)",
+    r"function _encode(?:_unvalidated)?\(_openapi_value::(\w+)\)\n(.*?)\n(?=function |\Z)",
     re.DOTALL,
 )
 ENCODE_FIELD_RE = re.compile(
     r"_openapi_value\.(\w+) isa Absent \|\|\s*"
-    r'\(\s*_openapi_output\["([^"]+)"\]\s*=\s*_encode\(_openapi_value\.(\w+)\)\s*\)'
+    r'\(\s*_openapi_output\["([^"]+)"\]\s*=\s*'
+    r"_encode(?:_unvalidated)?\(_openapi_value\.(\w+)\)\s*\)"
 )
 
 # Independent cross-check source: `_decode`'s `additional_properties` skip-list
