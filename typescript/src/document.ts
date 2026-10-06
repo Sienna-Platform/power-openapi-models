@@ -24,12 +24,13 @@
  * keyed or discriminated by a type name this package cannot enumerate
  * statically.
  *
- * The other five association arrays (`supplemental_attribute_associations`,
+ * The other six association arrays (`supplemental_attribute_associations`,
  * `plant_associations`, `combined_cycle_associations`, `service_associations`,
- * `trading_hub_associations`) and `time_series_associations` all have
+ * `trading_hub_associations`, `voltage_control_associations`) and
+ * `time_series_associations` all have
  * generated schemas (`infrastructure_core`'s `SupplementalAttributeAssociation`,
  * `operations`' `PlantAssociation`/`CombinedCycleAssociation`/
- * `ServiceAssociation`/`TradingHubAssociation`, `timeseries`'
+ * `ServiceAssociation`/`TradingHubAssociation`/`VoltageControlAssociation`, `timeseries`'
  * `TimeSeriesAssociation`), so those fields are typed with them, mirroring
  * Python's import list.
  */
@@ -43,6 +44,7 @@ import {
   PlantAssociation,
   ServiceAssociation,
   TradingHubAssociation,
+  VoltageControlAssociation,
 } from "./operations/models";
 import {
   PortfolioFinancialData,
@@ -120,6 +122,12 @@ export const SystemDocument = zod
       .default([])
       .describe(
         "Links a trading hub to one associated entity. Added after the other association arrays, so older documents omit it.",
+      ),
+    voltage_control_associations: zod
+      .array(VoltageControlAssociation)
+      .default([])
+      .describe(
+        "Links a voltage control group to one member device. Added after the other association arrays, so older documents omit it.",
       ),
     time_series_associations: zod
       .array(TimeSeriesAssociation)
@@ -451,8 +459,14 @@ interface DocumentKind {
 const SYSTEM_KIND: DocumentKind = {
   schema: SystemDocument,
   name: "SystemDocument",
-  optional: ["name", "description", "frequency", "trading_hub_associations"],
-  defaults: { trading_hub_associations: [] },
+  optional: [
+    "name",
+    "description",
+    "frequency",
+    "trading_hub_associations",
+    "voltage_control_associations",
+  ],
+  defaults: { trading_hub_associations: [], voltage_control_associations: [] },
 };
 
 const PORTFOLIO_KIND: DocumentKind = {

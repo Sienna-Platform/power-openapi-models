@@ -15,7 +15,8 @@
 //! other top-level keys and `components` keys sorted, everything else in input
 //! order, and a trailing newline. Encoding is canonical: an optional property
 //! that is absent, null, or equal to its schema default is omitted, so
-//! `trading_hub_associations` is written only when non-empty. Component and
+//! `trading_hub_associations` and `voltage_control_associations` are written
+//! only when non-empty. Component and
 //! supplemental attribute rows are untyped JSON and are written as read; the
 //! typed rows omit unset optional fields themselves.
 //!
@@ -37,6 +38,7 @@ use crate::infrastructure_core::SupplementalAttributeAssociation;
 use crate::investments::{PortfolioFinancialData, RequirementAssociation};
 use crate::operations::{
     CombinedCycleAssociation, PlantAssociation, ServiceAssociation, TradingHubAssociation,
+    VoltageControlAssociation,
 };
 use crate::schema_version::{
     check_schema_version_for, current_schema_version, message, SchemaVersionOutcome,
@@ -173,6 +175,10 @@ pub struct SystemDocument {
     /// association arrays, so older documents omit it; written only when non-empty.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub trading_hub_associations: Vec<TradingHubAssociation>,
+    /// Links a voltage control group to one member device. Added after the other
+    /// association arrays, so older documents omit it; written only when non-empty.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub voltage_control_associations: Vec<VoltageControlAssociation>,
 }
 
 impl SystemDocument {

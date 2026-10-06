@@ -101,8 +101,8 @@ fn nullable_field_without_default_stays_null() {
     .unwrap_or_else(|e| panic!("{e}"));
     let out = written(&converter);
     assert!(out["remote_bus_control"].is_null());
-    // ac_setpoint defaults to 1.0; Rust's zero value would be 0.0.
-    assert_eq!(out["ac_setpoint"].as_f64(), Some(1.0));
+    // power_factor_weighting_fraction defaults to 1.0; Rust's zero value would be 0.0.
+    assert_eq!(out["power_factor_weighting_fraction"].as_f64(), Some(1.0));
 }
 
 #[test]
