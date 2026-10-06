@@ -120,7 +120,6 @@ jobs:
         if: steps.schema.outputs.changed == 'true'
         run: make sync-bundles SCHEMA_DIR=/tmp/schemas
 
-      # The tests that read the schema tree take the extracted tarball.
       - name: Bump the SDK version
         id: bump
         if: steps.schema.outputs.changed == 'true'
@@ -129,19 +128,11 @@ jobs:
             "${{ steps.schema.outputs.current }}" "${{ steps.schema.outputs.latest }}")
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Validate
-        if: steps.schema.outputs.changed == 'true'
-        env:
-          SIENNA_SCHEMAS_DIR: /tmp/schemas
-        run: |
-          pip install -e "./python[dev]"
-          make validate
-          python3 scripts/check_version_sync.py --require python,typescript,rust
-          npx tsc --noEmit --project typescript
-          cargo test --manifest-path rust/Cargo.toml
-
-      # Not GITHUB_TOKEN: a PR it opens triggers no workflows, so Test would
-      # never report on it.
+      # No validation step here: the Test workflow runs every suite on this PR.
+      # A breaking schema release needs hand-written fixes that only work with
+      # the regenerated models, and those land on this PR, so a failing suite
+      # must not stop it from opening. That is why the PR must not be opened
+      # with GITHUB_TOKEN -- a PR it opens triggers no workflows.
       - uses: actions/create-github-app-token@v1
         id: app-token
         if: steps.schema.outputs.changed == 'true'
