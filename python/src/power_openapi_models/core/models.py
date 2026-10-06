@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 from enum import Enum, IntEnum
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, Field, RootModel, confloat
 from typing import Literal
 
 
@@ -69,6 +69,13 @@ class ChargeDischarge(BaseModel):
 
 class MinMaxByKey(RootModel[dict[str, MinMax]]):
     root: dict[str, MinMax]
+
+
+class OperationalFlowLimit(BaseModel):
+    from_to_min: confloat(ge=0.0) = Field(..., title="FromToMin")
+    from_to_max: confloat(ge=0.0) = Field(..., title="FromToMax")
+    to_from_min: confloat(ge=0.0) = Field(..., title="ToFromMin")
+    to_from_max: confloat(ge=0.0) = Field(..., title="ToFromMax")
 
 
 class OutageFactors(BaseModel):
@@ -347,8 +354,8 @@ class AverageRateCurve(BaseModel):
     function_data: LinearFunctionData | PiecewiseStepData = Field(
         ..., discriminator="function_type"
     )
-    initial_input: float | None = None
-    input_at_zero: float | None = None
+    initial_input: float | None = Field(None, description="Units: the curve's y-axis unit.")
+    input_at_zero: float | None = Field(None, description="Units: the curve's y-axis unit.")
 
 
 class IncrementalCurve(BaseModel):
@@ -356,8 +363,8 @@ class IncrementalCurve(BaseModel):
     function_data: LinearFunctionData | PiecewiseStepData = Field(
         ..., discriminator="function_type"
     )
-    initial_input: float | None = None
-    input_at_zero: float | None = None
+    initial_input: float | None = Field(None, description="Units: the curve's y-axis unit.")
+    input_at_zero: float | None = Field(None, description="Units: the curve's y-axis unit.")
 
 
 class Area(BaseModel):
@@ -393,7 +400,7 @@ class InputOutputCurve(BaseModel):
     function_data: QuadraticFunctionData | LinearFunctionData | PiecewiseLinearData = Field(
         ..., discriminator="function_type"
     )
-    input_at_zero: float | None = None
+    input_at_zero: float | None = Field(None, description="Units: the curve's y-axis unit.")
 
 
 class LossValueCurve(RootModel[InputOutputCurve | IncrementalCurve]):

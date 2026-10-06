@@ -22,6 +22,117 @@ mod tri_state_serde {
         T::deserialize(de).map(Some)
     }
 }
+///Woodward PID Hydro Governor
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct WPIDHY {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Input time constant of the governor
+    #[serde(rename = "T_reg")]
+    pub t_reg: f64,
+    ///Input governor gain
+    pub reg: f64,
+    ///Governor proportional gain
+    #[serde(rename = "Kp")]
+    pub kp: f64,
+    ///Governor integral gain
+    #[serde(rename = "Ki")]
+    pub ki: f64,
+    ///Governor derivative gain
+    #[serde(rename = "Kd")]
+    pub kd: f64,
+    ///Governor derivative/high-frequency time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    ///Gate-servo time constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    #[serde(rename = "V_lim")]
+    pub v_lim: MinMax,
+    #[serde(rename = "G_lim")]
+    pub g_lim: MinMax,
+    ///Water inertia time constant
+    #[serde(rename = "Tw")]
+    pub tw: f64,
+    #[serde(rename = "P_lim")]
+    pub p_lim: MinMax,
+    ///Turbine damping coefficient
+    #[serde(rename = "D")]
+    pub d: f64,
+    ///Gate opening speed at different loads
+    ///Constraint: minItems=3, maxItems=3
+    pub gate_openings: Vec<f64>,
+    ///Power at gate_openings
+    ///Constraint: minItems=3, maxItems=3
+    pub power_gate_openings: Vec<f64>,
+    ///Reference load set-point
+    #[serde(rename = "P_ref", default = "defaults::WPIDHY_p_ref")]
+    pub p_ref: f64,
+}
+///Supplemental attribute for a voltage droop controller (PSS/E voltage droop control): a set of generators jointly regulating the reactive power at one bus along a Q–V characteristic. While the controller is available its regulated bus and characteristic override each member's own voltage target; while it is unavailable the members fall back to their own targets. Membership and each member's relative reactive power weight are VoltageControlAssociation rows. The characteristic holds `reactive_power_limits.max` below `voltage_limits.min`, ramps to `deadband_reactive_power` at `deadband_voltage_limits.min`, holds it through `deadband_voltage_limits.max`, ramps to `reactive_power_limits.min` at `voltage_limits.max`, and holds it above.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct VoltageDroopControl {
+    ///Unique integer identifier for this supplemental attribute.
+    pub id: i64,
+    ///Name of the voltage droop controller.
+    pub name: String,
+    ///Whether the controller is in service (PSS/E STATUS). While false, members regulate their own targets.
+    #[serde(default = "defaults::VoltageDroopControl_available")]
+    pub available: bool,
+    ///ID of the bus whose reactive power the controller regulates; overrides every member's own regulated bus while the controller is available.
+    pub regulated_bus_id: i64,
+    pub reactive_power_limits: MinMax,
+    ///Reactive power held while the regulated bus voltage is inside `deadband_voltage_limits` (PSS/E QDB). Must lie strictly between `reactive_power_limits.min` and `reactive_power_limits.max`. Units: MVAr.
+    pub deadband_reactive_power: f64,
+    #[serde(default = "defaults::VoltageDroopControl_voltage_units")]
+    pub voltage_units: VoltageUnitBasis,
+    pub deadband_voltage_limits: MinMax,
+    pub voltage_limits: MinMax,
+}
+///Links a voltage control group (a VoltageDroopControl or a ReactivePowerSharing attribute) to one member device and records the member's relative reactive power weight. One row per (control, member). `entity_id` names a device that regulates voltage to a setpoint; `terminal` picks the converter for a two-terminal member (a TwoTerminalVSCLine) and is UNDEFINED for every other member. A device, or a two-terminal line's converter, belongs to at most one group of either kind. PSS/E RMPCT imports as weight = RMPCT / 100, so the PSS/E default of 100 is the default weight of 1.0.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct VoltageControlAssociation {
+    ///ID of the VoltageDroopControl or ReactivePowerSharing attribute the member belongs to.
+    pub control_id: i64,
+    ///ID of the member device.
+    pub entity_id: i64,
+    ///Positive relative weight of this member. Its share of the reactive power required at the regulated bus is weight divided by the sum of the weights of the members in service. Units: 1.
+    ///Constraint: exclusiveMinimum=0
+    #[serde(default = "defaults::VoltageControlAssociation_weight")]
+    pub weight: f64,
+    #[serde(default = "defaults::VoltageControlAssociation_terminal")]
+    pub terminal: VoltageControlTerminal,
+}
+///Which converter of a two-terminal line a voltage control membership refers to. UNDEFINED: the member is a single-bus device, so no converter is named. FROM: the converter at the arc's `from` bus. TO: the converter at the arc's `to` bus.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
+pub enum VoltageControlTerminal {
+    #[default]
+    #[serde(rename = "UNDEFINED")]
+    Undefined,
+    #[serde(rename = "FROM")]
+    From,
+    #[serde(rename = "TO")]
+    To,
+}
+impl VoltageControlTerminal {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Undefined => "UNDEFINED",
+            Self::From => "FROM",
+            Self::To => "TO",
+        }
+    }
+}
+impl ::std::fmt::Display for VoltageControlTerminal {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+impl AsRef<str> for VoltageControlTerminal {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
 ///A virtual (convergence) market participant. Supply offers map to the operating cost's incremental offer curves; demand bids map to decremental offer curves. Settles either at a settlement point or at associated trading hubs — the two are mutually exclusive; hub membership is carried as TradingHubAssociation rows rather than a list on this record, matching the trading hub's own membership convention.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct VirtualParticipant {
@@ -287,7 +398,7 @@ impl AsRef<str> for TwoWindingTransformerShuntLocation {
         self.as_str()
     }
 }
-///A High Voltage Voltage-Source Converter DC line, which must be connected to an ACBus on each end. This model is appropriate for operational simulations with a linearized DC power flow approximation with losses using a voltage-current model. For modeling a DC network, see TModelHVDCLine.
+///A High Voltage Voltage-Source Converter DC line, which must be connected to an ACBus on each end. This model is appropriate for operational simulations with a linearized DC power flow approximation with losses using a voltage-current model. For modeling a DC network, see TModelHVDCLine. Impedance, voltage, and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct TwoTerminalVSCLine {
     ///Unique integer identifier for this component.
@@ -300,13 +411,9 @@ pub struct TwoTerminalVSCLine {
     pub arc: i64,
     ///Initial condition of active power flowing from the from-bus to the to-bus in DC. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
     pub active_power_flow: f64,
-    ///Maximum output power rating of the converter. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    ///Transfer rating of the DC line, independent of the converter ratings at each end. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     pub rating: f64,
-    pub active_power_limits_from: MinMax,
-    pub active_power_limits_to: MinMax,
-    #[serde(default = "defaults::TwoTerminalVSCLine_admittance_units")]
-    pub admittance_units: AdmittanceUnitBasis,
-    ///Series conductance of the DC line. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MW, COMPONENT_BASE: pu .
+    ///Series conductance of the DC line. Units: S.
     #[serde(default = "defaults::TwoTerminalVSCLine_g")]
     pub g: f64,
     ///DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: A.
@@ -315,19 +422,40 @@ pub struct TwoTerminalVSCLine {
     ///Initial condition of reactive power flowing into the from-bus. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
     #[serde(default = "defaults::TwoTerminalVSCLine_reactive_power_from")]
     pub reactive_power_from: f64,
-    #[serde(default = "defaults::TwoTerminalVSCLine_dc_control_from")]
-    pub dc_control_from: VSCDCControlModes,
-    #[serde(default = "defaults::TwoTerminalVSCLine_ac_control_from")]
-    pub ac_control_from: VSCACControlModes,
-    #[serde(default = "defaults::TwoTerminalVSCLine_setpoint_voltage_units")]
-    pub setpoint_voltage_units: VoltageUnitBasis,
-    ///Converter DC setpoint in the `from` bus converter. When `dc_control_from` regulates DC voltage this number is the DC voltage on the DC side of the converter; when it controls DC power this value is the power demand in MW, if positive the converter is supplying power to the AC network at the `from` bus; if negative, the converter is withdrawing power from the AC network at the `from` bus. Units: per dc_control_from — DC_POWER: MW, DC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu), DC_VOLTAGE_DROOP: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .
-    #[serde(default = "defaults::TwoTerminalVSCLine_dc_setpoint_from")]
-    pub dc_setpoint_from: f64,
-    ///Converter AC setpoint in the `from` bus converter. When `ac_control_from` regulates AC voltage this number is the AC voltage on the AC side of the converter; when it controls reactive power this value is the power factor setpoint. Units: per ac_control_from — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .
-    #[serde(default = "defaults::TwoTerminalVSCLine_ac_setpoint_from")]
-    pub ac_setpoint_from: f64,
-    ///Rated (base) AC voltage at the `from` converter's AC terminal in kV. Used as the AC voltage base for interpreting ac_setpoint_from when ac_control_from is AC_VOLTAGE; 0.0 means unspecified (the setpoint is taken as per-unit directly). Units: kV.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dc_control_from: Option<VSCDCControlModes>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ac_control_from: Option<VSCACControlModes>,
+    ///Active-power order of the `from` bus converter, used when `dc_control_from` is `DC_POWER`; `null` otherwise. Positive means the converter supplies power to the AC network; negative means it withdraws power from it. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub dc_power_setpoint_from: Option<Option<f64>>,
+    ///DC-side voltage target of the `from` bus converter, used when `dc_control_from` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub dc_voltage_setpoint_from: Option<Option<f64>>,
+    ///Power-factor setpoint of the `from` bus converter, used when `ac_control_from` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.
+    ///Constraint: minimum=-1, maximum=1
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub power_factor_setpoint_from: Option<Option<f64>>,
+    ///AC-side voltage magnitude target of the `from` bus converter, used when `ac_control_from` is `AC_VOLTAGE`; `null` otherwise. Units: kV.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub ac_voltage_setpoint_from: Option<Option<f64>>,
+    ///Rated AC voltage at the `from` converter's AC terminal; 0.0 means unspecified. Units: kV.
     #[serde(default = "defaults::TwoTerminalVSCLine_rated_ac_voltage_from")]
     pub rated_ac_voltage_from: f64,
     #[serde(default = "defaults::TwoTerminalVSCLine_converter_loss_from")]
@@ -335,35 +463,56 @@ pub struct TwoTerminalVSCLine {
     ///Maximum stable dc current limits. Units: A.
     #[serde(default = "defaults::TwoTerminalVSCLine_max_dc_current_from")]
     pub max_dc_current_from: f64,
-    ///Converter rating in the `from` bus. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::TwoTerminalVSCLine_rating_from")]
-    pub rating_from: f64,
+    ///Converter rating in the `from` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rating_from: Option<f64>,
     #[serde(default = "defaults::TwoTerminalVSCLine_reactive_power_limits_from")]
     pub reactive_power_limits_from: MinMax,
     ///Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.
     #[serde(default = "defaults::TwoTerminalVSCLine_power_factor_weighting_fraction_from")]
     pub power_factor_weighting_fraction_from: f64,
-    #[serde(default = "defaults::TwoTerminalVSCLine_voltage_units")]
-    pub voltage_units: VoltageUnitBasis,
     #[serde(default = "defaults::TwoTerminalVSCLine_voltage_limits_from")]
     pub voltage_limits_from: MinMax,
-    ///DC-voltage droop gain on the `from` converter, used when `dc_control_from` is `DC_VOLTAGE_DROOP`: `V_dc = dc_setpoint_from - dc_voltage_droop_from * P_c`. Units: pu.
+    ///DC-voltage droop gain on the `from` converter, used when `dc_control_from` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint_from - dc_voltage_droop_from * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.
     #[serde(default = "defaults::TwoTerminalVSCLine_dc_voltage_droop_from")]
     pub dc_voltage_droop_from: f64,
     ///Initial condition of reactive power flowing into the to-bus. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
     #[serde(default = "defaults::TwoTerminalVSCLine_reactive_power_to")]
     pub reactive_power_to: f64,
-    #[serde(default = "defaults::TwoTerminalVSCLine_dc_control_to")]
-    pub dc_control_to: VSCDCControlModes,
-    #[serde(default = "defaults::TwoTerminalVSCLine_ac_control_to")]
-    pub ac_control_to: VSCACControlModes,
-    ///Converter DC setpoint in the `to` bus converter. When `dc_control_to` regulates DC voltage this number is the DC voltage on the DC side of the converter; when it controls DC power this value is the power demand in MW, if positive the converter is supplying power to the AC network at the `to` bus; if negative, the converter is withdrawing power from the AC network at the `to` bus. Units: per dc_control_to — DC_POWER: MW, DC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu), DC_VOLTAGE_DROOP: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .
-    #[serde(default = "defaults::TwoTerminalVSCLine_dc_setpoint_to")]
-    pub dc_setpoint_to: f64,
-    ///Converter AC setpoint in the `to` bus converter. When `ac_control_to` regulates AC voltage this number is the AC voltage on the AC side of the converter; when it controls reactive power this value is the power factor setpoint. Units: per ac_control_to — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .
-    #[serde(default = "defaults::TwoTerminalVSCLine_ac_setpoint_to")]
-    pub ac_setpoint_to: f64,
-    ///Rated (base) AC voltage at the `to` converter's AC terminal in kV. Used as the AC voltage base for interpreting ac_setpoint_to when ac_control_to is AC_VOLTAGE; 0.0 means unspecified (the setpoint is taken as per-unit directly). Units: kV.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dc_control_to: Option<VSCDCControlModes>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ac_control_to: Option<VSCACControlModes>,
+    ///Active-power order of the `to` bus converter, used when `dc_control_to` is `DC_POWER`; `null` otherwise. Positive means the converter supplies power to the AC network; negative means it withdraws power from it. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub dc_power_setpoint_to: Option<Option<f64>>,
+    ///DC-side voltage target of the `to` bus converter, used when `dc_control_to` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub dc_voltage_setpoint_to: Option<Option<f64>>,
+    ///Power-factor setpoint of the `to` bus converter, used when `ac_control_to` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.
+    ///Constraint: minimum=-1, maximum=1
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub power_factor_setpoint_to: Option<Option<f64>>,
+    ///AC-side voltage magnitude target of the `to` bus converter, used when `ac_control_to` is `AC_VOLTAGE`; `null` otherwise. Units: kV.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub ac_voltage_setpoint_to: Option<Option<f64>>,
+    ///Rated AC voltage at the `to` converter's AC terminal; 0.0 means unspecified. Units: kV.
     #[serde(default = "defaults::TwoTerminalVSCLine_rated_ac_voltage_to")]
     pub rated_ac_voltage_to: f64,
     #[serde(default = "defaults::TwoTerminalVSCLine_converter_loss_to")]
@@ -371,9 +520,11 @@ pub struct TwoTerminalVSCLine {
     ///Maximum stable dc current limits. Units: A.
     #[serde(default = "defaults::TwoTerminalVSCLine_max_dc_current_to")]
     pub max_dc_current_to: f64,
-    ///Converter rating in the `to` bus. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::TwoTerminalVSCLine_rating_to")]
-    pub rating_to: f64,
+    ///Converter rating in the `to` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rating_to: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operational_flow_limit: Option<OperationalFlowLimit>,
     #[serde(default = "defaults::TwoTerminalVSCLine_reactive_power_limits_to")]
     pub reactive_power_limits_to: MinMax,
     ///Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.
@@ -381,10 +532,10 @@ pub struct TwoTerminalVSCLine {
     pub power_factor_weighting_fraction_to: f64,
     #[serde(default = "defaults::TwoTerminalVSCLine_voltage_limits_to")]
     pub voltage_limits_to: MinMax,
-    ///DC-voltage droop gain on the `to` converter, used when `dc_control_to` is `DC_VOLTAGE_DROOP`: `V_dc = dc_setpoint_to - dc_voltage_droop_to * P_c`. Units: pu.
+    ///DC-voltage droop gain on the `to` converter, used when `dc_control_to` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint_to - dc_voltage_droop_to * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.
     #[serde(default = "defaults::TwoTerminalVSCLine_dc_voltage_droop_to")]
     pub dc_voltage_droop_to: f64,
-    ///Rated (base) DC voltage of the link in kV. Used as the DC voltage base for interpreting DC-voltage setpoints; 0.0 means unspecified (DC-voltage setpoints are taken as per-unit directly). Units: kV.
+    ///Rated DC voltage of the link; 0.0 means unspecified. Units: kV.
     #[serde(default = "defaults::TwoTerminalVSCLine_rated_dc_voltage")]
     pub rated_dc_voltage: f64,
     ///Number of the AC bus whose voltage the `from` converter regulates when `ac_control_from` is `AC_VOLTAGE`; null regulates its own terminal bus.
@@ -401,17 +552,11 @@ pub struct TwoTerminalVSCLine {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub remote_bus_control_to: Option<Option<i64>>,
-    ///Percent of the total Mvar required to hold the voltage at the bus regulated by the `from` converter that is contributed by this converter. Units: 1.
-    #[serde(default = "defaults::TwoTerminalVSCLine_rmpct_from")]
-    pub rmpct_from: f64,
-    ///Percent of the total Mvar required to hold the voltage at the bus regulated by the `to` converter that is contributed by this converter. Units: 1.
-    #[serde(default = "defaults::TwoTerminalVSCLine_rmpct_to")]
-    pub rmpct_to: f64,
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
 }
-///A Non-Capacitor Line Commutated Converter (LCC)-HVDC transmission line. As implemented in PSS/E.
+///A Non-Capacitor Line Commutated Converter (LCC)-HVDC transmission line. As implemented in PSS/E. Impedance, voltage, and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct TwoTerminalLCCLine {
     ///Unique integer identifier for this component.
@@ -424,44 +569,51 @@ pub struct TwoTerminalLCCLine {
     pub arc: i64,
     ///Initial condition of active power flow on the line. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
     pub active_power_flow: f64,
-    #[serde(default = "defaults::TwoTerminalLCCLine_parameter_units")]
-    pub parameter_units: ImpedanceUnitBasis,
-    ///Series resistance of the DC line. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    ///Series resistance of the DC line. Units: ohm.
     pub r: f64,
-    ///Desired set-point of power. If `power_mode = true` this value is in MW units, and if `power_mode = false` is in Amperes units. This parameter must not be specified in per-unit. A positive value represents the desired consumed power at the rectifier bus, while a negative value represents the desired power at the inverter bus (i.e. the absolute value of `transfer_setpoint` is the generated power at the inverter bus). Units: per power_mode — true: MW, false: A .
-    pub transfer_setpoint: f64,
-    #[serde(default = "defaults::TwoTerminalLCCLine_dc_voltage_units")]
-    pub dc_voltage_units: VoltageUnitBasis,
-    ///Scheduled compounded DC voltage. By default this parameter is the scheduled DC voltage in the inverter bus. This parameter must not be specified in per-unit. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .
+    ///Scheduled power transfer, used when `control_mode` is `POWER`; `null` otherwise. Must not be specified in per-unit. A positive value is the power consumed at the rectifier bus; a negative value is the power delivered at the inverter bus (its absolute value is the generated power at the inverter bus). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub power_transfer_setpoint: Option<Option<f64>>,
+    ///Scheduled current transfer, used when `control_mode` is `CURRENT`; `null` otherwise. Units: A.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub current_transfer_setpoint: Option<Option<f64>>,
+    ///Scheduled compounded DC voltage. By default this parameter is the scheduled DC voltage in the inverter bus. Units: kV.
     pub scheduled_dc_voltage: f64,
     ///Number of bridges in series in the rectifier side.
     pub rectifier_bridges: i64,
     pub rectifier_delay_angle_limits: MinMax,
-    ///Rectifier commutating transformer resistance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    ///Rectifier commutating transformer resistance per bridge. Units: ohm.
     pub rectifier_rc: f64,
-    ///Rectifier commutating transformer reactance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    ///Rectifier commutating transformer reactance per bridge. Units: ohm.
     pub rectifier_xc: f64,
     ///Rectifier primary base AC voltage, entered in kV. Units: kV.
     pub rectifier_base_voltage: f64,
     ///Number of bridges in series in the inverter side.
     pub inverter_bridges: i64,
     pub inverter_extinction_angle_limits: MinMax,
-    ///Inverter commutating transformer resistance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    ///Inverter commutating transformer resistance per bridge. Units: ohm.
     pub inverter_rc: f64,
-    ///Inverter commutating transformer reactance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    ///Inverter commutating transformer reactance per bridge. Units: ohm.
     pub inverter_xc: f64,
     ///Inverter primary base AC voltage, entered in kV. Units: kV.
     pub inverter_base_voltage: f64,
-    ///Boolean flag to identify if the LCC line is in power mode or current mode. If `power_mode = true`, setpoint values must be specified in MW, and if `power_mode = false` setpoint values must be specified in Amperes.
-    #[serde(default = "defaults::TwoTerminalLCCLine_power_mode")]
-    pub power_mode: bool,
-    ///Mode switch DC voltage. This parameter must not be added in per-unit. If LCC line is in power mode control, and DC voltage falls below this value, the line switch to current mode control. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .
+    #[serde(default = "defaults::TwoTerminalLCCLine_control_mode")]
+    pub control_mode: LCCControlMode,
+    ///Mode switch DC voltage. If `control_mode` is `POWER` and the DC voltage falls below this value, the line switches to current control. Units: kV.
     #[serde(default = "defaults::TwoTerminalLCCLine_switch_mode_voltage")]
     pub switch_mode_voltage: f64,
-    ///Compounding Resistance. This parameter is for control of the DC voltage in the rectifier or inverter end. For inverter DC voltage control, the parameter is set to zero; for rectifier DC voltage control, the parameter is set to the DC line resistance; otherwise, set to a fraction of the DC line resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    ///Compounding Resistance. This parameter is for control of the DC voltage in the rectifier or inverter end. For inverter DC voltage control, the parameter is set to zero; for rectifier DC voltage control, the parameter is set to the DC line resistance; otherwise, set to a fraction of the DC line resistance. Units: ohm.
     #[serde(default = "defaults::TwoTerminalLCCLine_compounding_resistance")]
     pub compounding_resistance: f64,
-    ///Minimum compounded voltage. This parameter must not be added in per-unit. Only used in constant gamma operation (gamma_min = gamma_max), and the AC transformer is used to control the DC voltage. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .
+    ///Minimum compounded voltage. Only used in constant gamma operation (gamma_min = gamma_max), and the AC transformer is used to control the DC voltage. Units: kV.
     #[serde(default = "defaults::TwoTerminalLCCLine_min_compounding_voltage")]
     pub min_compounding_voltage: f64,
     ///Rectifier transformer ratio between the primary and secondary side AC voltages. Units: 1.
@@ -478,7 +630,7 @@ pub struct TwoTerminalLCCLine {
     ///Rectifier firing delay angle (alpha). Units: rad.
     #[serde(default = "defaults::TwoTerminalLCCLine_rectifier_delay_angle")]
     pub rectifier_delay_angle: f64,
-    ///Commutating rectifier capacitor reactance magnitude per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    ///Commutating rectifier capacitor reactance magnitude per bridge. Units: ohm.
     #[serde(default = "defaults::TwoTerminalLCCLine_rectifier_capacitor_reactance")]
     pub rectifier_capacitor_reactance: f64,
     ///Inverter transformer ratio between the primary and secondary side AC voltages. Units: 1.
@@ -495,13 +647,19 @@ pub struct TwoTerminalLCCLine {
     ///Inverter extinction angle (gamma). Units: rad.
     #[serde(default = "defaults::TwoTerminalLCCLine_inverter_extinction_angle")]
     pub inverter_extinction_angle: f64,
-    ///Commutating inverter capacitor reactance magnitude per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    ///Commutating inverter capacitor reactance magnitude per bridge. Units: ohm.
     #[serde(default = "defaults::TwoTerminalLCCLine_inverter_capacitor_reactance")]
     pub inverter_capacitor_reactance: f64,
-    #[serde(default = "defaults::TwoTerminalLCCLine_active_power_limits_from")]
-    pub active_power_limits_from: MinMax,
-    #[serde(default = "defaults::TwoTerminalLCCLine_active_power_limits_to")]
-    pub active_power_limits_to: MinMax,
+    ///Transfer rating of the DC line, independent of the converter ratings at each end. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    pub rating: f64,
+    ///Converter rating in the `from` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rating_from: Option<f64>,
+    ///Converter rating in the `to` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rating_to: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operational_flow_limit: Option<OperationalFlowLimit>,
     #[serde(default = "defaults::TwoTerminalLCCLine_reactive_power_limits_from")]
     pub reactive_power_limits_from: MinMax,
     #[serde(default = "defaults::TwoTerminalLCCLine_reactive_power_limits_to")]
@@ -511,6 +669,36 @@ pub struct TwoTerminalLCCLine {
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
+}
+///Control mode of an LCC-HVDC line (PSS/E MDC). BLOCKED: the line is blocked and holds no schedule. POWER: the line holds a power schedule (power_transfer_setpoint, MW). CURRENT: the line holds a current schedule (current_transfer_setpoint, A).
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
+pub enum LCCControlMode {
+    #[default]
+    #[serde(rename = "BLOCKED")]
+    Blocked,
+    #[serde(rename = "POWER")]
+    Power,
+    #[serde(rename = "CURRENT")]
+    Current,
+}
+impl LCCControlMode {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Blocked => "BLOCKED",
+            Self::Power => "POWER",
+            Self::Current => "CURRENT",
+        }
+    }
+}
+impl ::std::fmt::Display for LCCControlMode {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+impl AsRef<str> for LCCControlMode {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
 }
 ///A High Voltage DC line, which must be connected to an ACBus on each end. This model is appropriate for operational simulations with a linearized DC power flow approximation with losses proportional to the power flow. For modeling a DC network, see TModelHVDCLine.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -525,8 +713,16 @@ pub struct TwoTerminalGenericHVDCLine {
     pub active_power_flow: f64,
     ///An Arc defining this line `from` a bus `to` another bus.
     pub arc: i64,
-    pub active_power_limits_from: MinMax,
-    pub active_power_limits_to: MinMax,
+    ///Transfer rating of the DC line, independent of the converter ratings at each end. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    pub rating: f64,
+    ///Converter rating in the `from` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rating_from: Option<f64>,
+    ///Converter rating in the `to` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rating_to: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operational_flow_limit: Option<OperationalFlowLimit>,
     pub reactive_power_limits_from: MinMax,
     pub reactive_power_limits_to: MinMax,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -565,7 +761,7 @@ pub struct TransmissionInterfaceDirectionMapping {
 }
 /**The data defining one modeled arc of a transformer.
 
-A `TwoWindingTransformer` has one circuit; a `ThreeWindingTransformer` has three, each connecting a terminal bus to the star bus. Circuit `available` is the single source of truth for availability; the owning transformer derives its availability from its circuits. `r`/`x` are the circuit impedance (for a two-winding transformer, the series impedance; for a three-winding transformer, the star-leg equivalent), in pu (device base) on `base_power` referenced to `base_voltage_primary`. Tap-changer / phase-shifter control is described by the flat control fields: `control_objective = UNDEFINED` means the circuit has no control block. For a `TwoWindingTransformer`, the single circuit's `base_power` is the transformer's device base.*/
+A `TwoWindingTransformer` has one circuit; a `ThreeWindingTransformer` has three, each connecting a terminal bus to the star bus. Circuit `available` is the single source of truth for availability; the owning transformer derives its availability from its circuits. `r`/`x` are the circuit impedance (for a two-winding transformer, the series impedance; for a three-winding transformer, the star-leg equivalent), in pu (device base) on `base_power` referenced to `base_voltage_primary`. Tap-changer / phase-shifter control is described by the flat control fields: `control_objective = UNDEFINED` means the circuit has no control block. Each objective selects exactly one actuator band (`tap_ratio_limits` or `phase_angle_limits`) and one target band (`controlled_voltage_limits`, `controlled_reactive_power_flow_limits` or `controlled_active_power_flow_limits`); every other band is `null`. For a `TwoWindingTransformer`, the single circuit's `base_power` is the transformer's device base.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct TransformerCircuit {
     ///Unique integer identifier for this component.
@@ -593,22 +789,29 @@ pub struct TransformerCircuit {
     ///Controlled bus number (PSS/E CONT; sign = regulation side).
     #[serde(default = "defaults::TransformerCircuit_regulated_bus_number")]
     pub regulated_bus_number: i64,
-    #[serde(default = "defaults::TransformerCircuit_control_limits")]
-    pub control_limits: MinMax,
-    #[serde(default = "defaults::TransformerCircuit_controlled_quantity_limits")]
-    pub controlled_quantity_limits: MinMax,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tap_ratio_limits: Option<MinMax>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub phase_angle_limits: Option<MinMax>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub controlled_voltage_limits: Option<MinMax>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub controlled_reactive_power_flow_limits: Option<MinMax>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub controlled_active_power_flow_limits: Option<MinMax>,
     ///Number of tap positions (PSS/E NTP).
     #[serde(default = "defaults::TransformerCircuit_number_of_tap_positions")]
     pub number_of_tap_positions: i64,
     ///Thermal rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rating: Option<f64>,
+    pub rating: f64,
     ///Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rating_b: Option<f64>,
     ///Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rating_c: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operational_flow_limit: Option<OperationalFlowLimit>,
     ///Initial condition of active power flow through this circuit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
     #[serde(default = "defaults::TransformerCircuit_active_power_flow")]
     pub active_power_flow: f64,
@@ -1673,6 +1876,8 @@ pub struct ThermalStandard {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub dynamic_injector: Option<Option<i64>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub switching_times: Option<UpDown>,
 }
 ///Operating cost of generation, or a MarketBidCost.
 #[derive(Debug, Clone, PartialEq)]
@@ -2216,6 +2421,8 @@ pub struct ThermalMultiStart {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub dynamic_injector: Option<Option<i64>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub switching_times: Option<UpDown>,
 }
 ///Operating cost of generation. or MarketBidCost
 #[derive(Debug, Clone, PartialEq)]
@@ -2717,7 +2924,7 @@ pub struct StartUpShutDown {
 }
 /**A High Voltage DC transmission line for modeling DC transmission networks.
 
-This line must be connected to a `DCBus` on each end. It uses a T-Model of the line impedance. This is suitable for operational simulations with a multi-terminal DC network. This line has no independent per-component power base, so its power fields are always natural units.*/
+This line must be connected to a `DCBus` on each end. It uses a T-Model of the line impedance. This is suitable for operational simulations with a multi-terminal DC network. This line has no independent per-component power base, so its power fields are always natural units. Impedance, voltage, and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct TModelHVDCLine {
     ///Unique integer identifier for this component.
@@ -2730,18 +2937,63 @@ pub struct TModelHVDCLine {
     pub active_power_flow: f64,
     ///An `Arc` defining this line `from` a bus `to` another bus.
     pub arc: i64,
-    #[serde(default = "defaults::TModelHVDCLine_parameter_units")]
-    pub parameter_units: ImpedanceUnitBasis,
-    ///Base current for per-unitization of this line's per-unit fields — this DC line per-unitizes against a current base, not a power base. Units: A.
+    ///Base current of the line as recorded by the source data. No field of this component is per-unit on it. Units: A.
     pub base_current: f64,
-    ///Total series resistance, split equally on both sides of the shunt capacitance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    ///Total series resistance, split equally on both sides of the shunt capacitance. Units: ohm.
     pub r: f64,
-    ///Total series inductance, split equally on both sides of the shunt capacitance. Per-unit on this line's `base_current`. Units: pu.
+    ///Total series inductance, split equally on both sides of the shunt capacitance. Units: H.
     pub l: f64,
-    ///Shunt capacitance. Per-unit on this line's `base_current`. Units: pu.
+    ///Shunt capacitance. Units: F.
     pub c: f64,
-    pub active_power_limits_from: MinMax,
-    pub active_power_limits_to: MinMax,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operational_flow_limit: Option<OperationalFlowLimit>,
+}
+///Parameters of a turbine governor type II
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct TGTypeII {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Droop parameter
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Transient gain time constant
+    #[serde(rename = "T1")]
+    pub t1: f64,
+    ///Power fraction time constant
+    #[serde(rename = "T2")]
+    pub t2: f64,
+    pub tau_limits: MinMax,
+    ///Reference power set-point
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
+}
+///Parameters of a turbine governor type I
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct TGTypeI {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Droop parameter
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Governor time constant
+    #[serde(rename = "Ts")]
+    pub ts: f64,
+    ///Servo time constant
+    #[serde(rename = "Tc")]
+    pub tc: f64,
+    ///Transient gain time constant
+    #[serde(rename = "T3")]
+    pub t3: f64,
+    ///Power fraction time constant
+    #[serde(rename = "T4")]
+    pub t4: f64,
+    ///Reheat time constant
+    #[serde(rename = "T5")]
+    pub t5: f64,
+    pub valve_position_limits: MinMax,
+    ///Reference power set-point
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 ///A Synchronous Machine connected to the system to provide inertia or reactive power support.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -2805,8 +3057,10 @@ pub struct SwitchedAdmittance {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub solved_admittance: Option<Option<f64>>,
-    #[serde(default = "defaults::SwitchedAdmittance_admittance_limits")]
-    pub admittance_limits: MinMax,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub voltage_limits: Option<MinMax>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactive_power_range_limits: Option<MinMax>,
     #[serde(default = "defaults::SwitchedAdmittance_control_mode")]
     pub control_mode: SwitchedAdmittanceControlMode,
     ///Bus number whose voltage/quantity this shunt regulates; 0 means local bus (PSS/E SWREM/NREG). Units: 1.
@@ -2820,7 +3074,7 @@ pub struct SwitchedAdmittance {
     )]
     pub dynamic_injector: Option<Option<i64>>,
 }
-///Control mode of a switched shunt admittance. `UNDEFINED` leaves the mode unspecified; `FIXED` holds the admittance at a constant value; `CONTINUOUS_VOLTAGE` adjusts it continuously to control voltage. The `DISCRETE_*` modes switch blocks in discrete steps to control voltage, a plant's reactive power, a voltage-source-converter terminal's reactive power, or a remote bus's admittance, respectively.
+///Control mode of a switched shunt admittance (PSS/E MODSW). `UNDEFINED` leaves the mode unspecified; `FIXED` holds the admittance constant. `DISCRETE_VOLTAGE` and `CONTINUOUS_VOLTAGE` regulate voltage in steps or continuously and use `voltage_limits`. `DISCRETE_REACTIVE_PLANT`, `DISCRETE_REACTIVE_VSC`, `DISCRETE_ADMITTANCE_REMOTE` and `DISCRETE_REACTIVE_FACTS` regulate a plant's, a voltage-source-converter terminal's, a remote bus's, or a FACTS device's reactive quantity in steps and use `reactive_power_range_limits`.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum SwitchedAdmittanceControlMode {
     #[default]
@@ -2838,6 +3092,8 @@ pub enum SwitchedAdmittanceControlMode {
     DiscreteReactiveVsc,
     #[serde(rename = "DISCRETE_ADMITTANCE_REMOTE")]
     DiscreteAdmittanceRemote,
+    #[serde(rename = "DISCRETE_REACTIVE_FACTS")]
+    DiscreteReactiveFacts,
 }
 impl SwitchedAdmittanceControlMode {
     pub fn as_str(&self) -> &'static str {
@@ -2849,6 +3105,7 @@ impl SwitchedAdmittanceControlMode {
             Self::DiscreteReactivePlant => "DISCRETE_REACTIVE_PLANT",
             Self::DiscreteReactiveVsc => "DISCRETE_REACTIVE_VSC",
             Self::DiscreteAdmittanceRemote => "DISCRETE_ADMITTANCE_REMOTE",
+            Self::DiscreteReactiveFacts => "DISCRETE_REACTIVE_FACTS",
         }
     }
 }
@@ -3609,37 +3866,37 @@ pub struct StorageCapitalCost {
     #[serde(default = "defaults::StorageCapitalCost_interconnection_cost")]
     pub interconnection_cost: f64,
 }
-///Steam Turbine-Governor. This model considers both TGOV1 or TGOV1DU in PSS/E.
+///Steam Turbine-Governor. This model considers both TGOV1 or TGOV1DU in PSS/E
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct SteamTurbineGov1 {
-    ///Unique integer identifier for this component.
+    ///Unique integer identifier for this component
     pub id: i64,
-    ///Droop parameter.
+    ///Droop parameter
     #[serde(rename = "R")]
     pub r: f64,
     ///Governor time constant. Units: s.
     #[serde(rename = "T1")]
     pub t1: f64,
     pub valve_position_limits: MinMax,
-    ///Lead Lag Lead Time constant. Units: s.
+    ///Lead-lag lead time constant. Units: s.
     #[serde(rename = "T2")]
     pub t2: f64,
-    ///Lead Lag Lag Time constant. Units: s.
+    ///Lead-lag lag time constant. Units: s.
     #[serde(rename = "T3")]
     pub t3: f64,
-    ///Turbine Damping.
+    ///Turbine damping
     #[serde(rename = "D_T")]
     pub d_t: f64,
-    ///Deadband for overspeed.
+    ///Deadband for overspeed
     #[serde(rename = "DB_h")]
     pub db_h: f64,
-    ///Deadband for underspeed.
+    ///Deadband for underspeed
     #[serde(rename = "DB_l")]
     pub db_l: f64,
     ///Turbine Rate. If zero, generator base is used. Units: MW.
     #[serde(rename = "T_rate")]
     pub t_rate: f64,
-    ///Reference Power Set-point.
+    ///Reference power set-point
     #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
     pub p_ref: Option<f64>,
 }
@@ -4744,18 +5001,153 @@ impl AsRef<str> for ScenariosTimeSeriesType {
         self.as_str()
     }
 }
-///Parameters of Simplified Excitation System Model - SEXS in PSSE.
+///In these excitation systems, voltage (and also current in compounded systems) is transformed to an appropriate level. Rectifiers, either controlled or non-controlled, provide the necessary direct current for the generator field. Parameters of IEEE Std 421.5 Type ST8C Excitacion System. ST8C in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ST8C {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///OEL Flag for ST8C: <2: Summation at voltage error, 2: OEL takeover at gate
+    #[serde(rename = "OEL_Flag")]
+    pub oel_flag: i64,
+    ///UEL Flag for ST8C: <2: Summation at voltage error, 2: UEL takeover at gate
+    #[serde(rename = "UEL_Flag")]
+    pub uel_flag: i64,
+    ///SCL Flag for ST8C: <2: Summation at voltage error, 2: SCL takeover at UEL and OEL gates
+    #[serde(rename = "SCL_Flag")]
+    pub scl_flag: i64,
+    ///SW1 Flag for power source selector for ST8C: <2: Source from generator terminal voltage, 2: Independent power source
+    #[serde(rename = "SW1_Flag")]
+    pub sw1_flag: i64,
+    ///Regulator input filter time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Regulator proportional gain
+    #[serde(rename = "K_pr")]
+    pub k_pr: f64,
+    ///Regulator integral gain
+    #[serde(rename = "K_ir")]
+    pub k_ir: f64,
+    #[serde(rename = "Vpi_lim")]
+    pub vpi_lim: MinMax,
+    ///Field current regulator proportional gain
+    #[serde(rename = "K_pa")]
+    pub k_pa: f64,
+    ///Field current regulator integral gain
+    #[serde(rename = "K_ia")]
+    pub k_ia: f64,
+    #[serde(rename = "Va_lim")]
+    pub va_lim: MinMax,
+    ///Field current regulator proportional gain
+    #[serde(rename = "K_a")]
+    pub k_a: f64,
+    ///Controlled rectifier bridge equivalent time constant
+    #[serde(rename = "T_a")]
+    pub t_a: f64,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Exciter field current feedback gain
+    #[serde(rename = "K_f")]
+    pub k_f: f64,
+    ///Field current feedback time constant
+    #[serde(rename = "T_f")]
+    pub t_f: f64,
+    ///Rectifier loading factor proportional to commutating reactance
+    #[serde(rename = "K_c1")]
+    pub k_c1: f64,
+    ///Potential circuit (voltage) gain coefficient
+    #[serde(rename = "K_p")]
+    pub k_p: f64,
+    ///Potential circuit (current) gain coefficient
+    #[serde(rename = "K_i1")]
+    pub k_i1: f64,
+    ///Reactance associated with potential source
+    #[serde(rename = "X_l")]
+    pub x_l: f64,
+    ///Potential circuit phase angle (degrees)
+    pub theta_p: f64,
+    ///Maximum available exciter voltage
+    #[serde(rename = "VB1_max")]
+    pub vb1_max: f64,
+    ///Rectifier loading factor proportional to commutating reactance
+    #[serde(rename = "K_c2")]
+    pub k_c2: f64,
+    ///Potential circuit (current) gain coefficient
+    #[serde(rename = "K_i2")]
+    pub k_i2: f64,
+    ///Maximum available exciter voltage
+    #[serde(rename = "VB2_max")]
+    pub vb2_max: f64,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::ST8C_v_ref")]
+    pub v_ref: f64,
+    ///Reference field current set-point
+    #[serde(rename = "Ifd_ref", default = "defaults::ST8C_ifd_ref")]
+    pub ifd_ref: f64,
+}
+///In these excitation systems, voltage (and also current in compounded systems) is transformed to an appropriate level. Rectifiers, either controlled or non-controlled, provide the necessary direct current for the generator field. Parameters of IEEE Std 421.5 Type ST6B Excitacion System. ST6B in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ST6B {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///OEL Flag for ST6B: 1: before HV gate, 2: after HV gate
+    #[serde(rename = "OEL_Flag")]
+    pub oel_flag: i64,
+    ///Regulator input filter time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Regulator proportional gain
+    #[serde(rename = "K_pa")]
+    pub k_pa: f64,
+    ///Regulator integral gain
+    #[serde(rename = "K_ia")]
+    pub k_ia: f64,
+    ///Regulator derivative gain
+    #[serde(rename = "K_da")]
+    pub k_da: f64,
+    ///Voltage regulator derivative channel time constant
+    #[serde(rename = "T_da")]
+    pub t_da: f64,
+    #[serde(rename = "Va_lim")]
+    pub va_lim: MinMax,
+    ///Pre-control gain of the inner loop field regulator
+    #[serde(rename = "K_ff")]
+    pub k_ff: f64,
+    ///Forward gain of the inner loop field regulator
+    #[serde(rename = "K_m")]
+    pub k_m: f64,
+    ///Exciter output current limit adjustment gain
+    #[serde(rename = "K_ci")]
+    pub k_ci: f64,
+    ///Exciter output current limiter gain
+    #[serde(rename = "K_lr")]
+    pub k_lr: f64,
+    ///Exciter current limiter reference
+    #[serde(rename = "I_lr")]
+    pub i_lr: f64,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Feedback gain constant of the inner loop field regulator
+    #[serde(rename = "Kg")]
+    pub kg: f64,
+    ///Feedback time constant of the inner loop field voltage regulator
+    #[serde(rename = "Tg")]
+    pub tg: f64,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::ST6B_v_ref")]
+    pub v_ref: f64,
+}
+///Parameters of Simplified Excitation System Model - SEXS in PSSE
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct SEXS {
-    ///Unique integer identifier for this component.
+    ///Unique integer identifier for this component
     pub id: i64,
-    ///Ratio of lead and lag time constants.
+    ///Ratio of lead and lag time constants
     #[serde(rename = "Ta_Tb")]
     pub ta_tb: f64,
     ///Lag time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
-    ///Gain.
+    ///Gain
     #[serde(rename = "K")]
     pub k: f64,
     ///Field circuit time constant. Units: s.
@@ -4763,8 +5155,35 @@ pub struct SEXS {
     pub te: f64,
     #[serde(rename = "V_lim")]
     pub v_lim: MinMax,
-    ///Reference Voltage Set-point.
+    ///Reference voltage set-point
     #[serde(rename = "V_ref", default = "defaults::SEXS_v_ref")]
+    pub v_ref: f64,
+}
+///This exciter is based on an IEEE type SCRX solid state exciter. The output field voltage is varied by a control system to maintain the system voltage at Vref. Please note that this exciter model has no initialization capabilities - this means that it will respond to whatever inputs it receives regardless of the state of the machine model
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct SCRX {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Lead input constant ratio
+    #[serde(rename = "Ta_Tb")]
+    pub ta_tb: f64,
+    ///Lag input constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    ///Regulator gain
+    #[serde(rename = "K")]
+    pub k: f64,
+    ///Regulator time constant
+    #[serde(rename = "Te")]
+    pub te: f64,
+    #[serde(rename = "Efd_lim")]
+    pub efd_lim: MinMax,
+    ///Switch
+    pub switch: i64,
+    ///Field current capability. Set = 0 for negative current capability. Typical value 10
+    pub rc_rfd: f64,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::SCRX_v_ref")]
     pub v_ref: f64,
 }
 ///Supplemental attribute defining which existing generators mapped to a supply technology are eligible for retrofit.
@@ -4845,6 +5264,53 @@ pub struct RenewableNonDispatch {
     )]
     pub dynamic_injector: Option<Option<i64>>,
 }
+///Parameters of a renewable energy generator/converter model, this model corresponds to REGCA1 in PSSE, but to be interfaced using a Voltage Source instead of a Current Source
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct RenewableEnergyVoltageConverterTypeA {
+    ///Converter time constant. Units: s.
+    #[serde(rename = "T_g")]
+    pub t_g: f64,
+    ///Low Voltage Power Logic (LVPL) ramp rate limit.
+    #[serde(rename = "Rrpwr")]
+    pub rrpwr: f64,
+    ///LVPL characteristic voltage 2.
+    #[serde(rename = "Brkpt")]
+    pub brkpt: f64,
+    ///LVPL characteristic voltage 1.
+    #[serde(rename = "Zerox")]
+    pub zerox: f64,
+    ///LVPL gain.
+    #[serde(rename = "Lvpl1")]
+    pub lvpl1: f64,
+    ///Voltage limit for high voltage reactive current management.
+    #[serde(rename = "Vo_lim")]
+    pub vo_lim: f64,
+    #[serde(rename = "Lv_pnts")]
+    pub lv_pnts: MinMax,
+    ///Current limit for high voltage reactive current management (specified as a negative value).
+    #[serde(rename = "Io_lim")]
+    pub io_lim: f64,
+    ///Voltage filter time constant for low voltage active current management. Units: s.
+    #[serde(rename = "T_fltr")]
+    pub t_fltr: f64,
+    ///Overvoltage compensation gain used in the high voltage reactive current management.
+    #[serde(rename = "K_hv")]
+    pub k_hv: f64,
+    #[serde(rename = "Iqr_lims")]
+    pub iqr_lims: MinMax,
+    ///Acceleration factor.
+    #[serde(rename = "Accel")]
+    pub accel: f64,
+    ///Low voltage power logic (LVPL) switch. (0: LVPL not present, 1: LVPL present).
+    #[serde(rename = "Lvpl_sw")]
+    pub lvpl_sw: i64,
+    ///Initial condition of reactive power from power flow.
+    #[serde(
+        rename = "Q_ref",
+        default = "defaults::RenewableEnergyVoltageConverterTypeA_q_ref"
+    )]
+    pub q_ref: f64,
+}
 ///Parameters of a renewable energy generator/converter model, this model corresponds to REGCA1 in PSSE.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct RenewableEnergyConverterTypeA {
@@ -4882,9 +5348,9 @@ pub struct RenewableEnergyConverterTypeA {
     ///Acceleration factor.
     #[serde(rename = "Accel")]
     pub accel: f64,
-    ///Low voltage power logic (LVPL) switch. (`false`: LVPL not present, `true`: LVPL present).
+    ///Low voltage power logic (LVPL) switch. (0: LVPL not present, 1: LVPL present).
     #[serde(rename = "Lvpl_sw")]
-    pub lvpl_sw: bool,
+    pub lvpl_sw: i64,
     ///Initial condition of reactive power from power flow.
     #[serde(
         rename = "Q_ref",
@@ -5515,39 +5981,29 @@ pub struct ReactiveRenewableControllerAB {
     )]
     pub v_ref: f64,
 }
-///Parameters of the Inner Control part of the REECB model in PSS/E.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct RECurrentControlB {
-    ///Q Flag used for I_qinj.
     #[serde(rename = "Q_Flag")]
     pub q_flag: bool,
-    ///PQ Flag used for the Current Limit Logic.
     #[serde(rename = "PQ_Flag")]
     pub pq_flag: bool,
     #[serde(rename = "Vdip_lim")]
     pub vdip_lim: MinMax,
-    ///Voltage Filter Time Constant. Units: s.
     #[serde(rename = "T_rv")]
     pub t_rv: f64,
     pub dbd_pnts: DbdPnts,
-    ///Reactive current injection gain during over and undervoltage conditions.
     #[serde(rename = "K_qv")]
     pub k_qv: f64,
     #[serde(rename = "Iqinj_lim")]
     pub iqinj_lim: MinMax,
-    ///User defined reference. If 0, `PowerSimulationsDynamics.jl` initializes to initial terminal voltage.
     #[serde(rename = "V_ref0")]
     pub v_ref0: f64,
-    ///Voltage regulator proportional gain (used when QFlag = 1).
     #[serde(rename = "K_vp")]
     pub k_vp: f64,
-    ///Voltage regulator integral gain (used when QFlag = 1).
     #[serde(rename = "K_vi")]
     pub k_vi: f64,
-    ///Time constant for low-pass filter for state q_V when QFlag = 0. Units: s.
     #[serde(rename = "T_iq")]
     pub t_iq: f64,
-    ///Maximum limit on total converter current.
     #[serde(rename = "I_max")]
     pub i_max: f64,
 }
@@ -5894,6 +6350,57 @@ impl<'de> serde::Deserialize<'de> for PointToPointBidSpreadBid {
         }
     }
 }
+///Hydro Turbine-Governor with PID controller
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct PIDGOV {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Feedback signal for governor droop: 0 for electrical power, and 1 for gate position
+    pub feedback_flag: i64,
+    ///Speed permanent droop parameter
+    #[serde(rename = "Rperm")]
+    pub rperm: f64,
+    ///Speed detector time constant
+    #[serde(rename = "T_reg")]
+    pub t_reg: f64,
+    ///Governor proportional gain
+    #[serde(rename = "Kp")]
+    pub kp: f64,
+    ///Governor integral gain
+    #[serde(rename = "Ki")]
+    pub ki: f64,
+    ///Governor derivative gain
+    #[serde(rename = "Kd")]
+    pub kd: f64,
+    ///Governor derivative time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    ///Gate-servo time constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    ///Turbine damping factor
+    #[serde(rename = "D_turb")]
+    pub d_turb: f64,
+    ///Gate opening speed at different loads
+    ///Constraint: minItems=3, maxItems=3
+    pub gate_openings: Vec<f64>,
+    ///Power at gate_openings
+    ///Constraint: minItems=3, maxItems=3
+    pub power_gate_openings: Vec<f64>,
+    #[serde(rename = "G_lim")]
+    pub g_lim: MinMax,
+    ///Factor multiplying Tw
+    #[serde(rename = "A_tw")]
+    pub a_tw: f64,
+    ///Water inertia time constant
+    #[serde(rename = "Tw")]
+    pub tw: f64,
+    #[serde(rename = "V_lim")]
+    pub v_lim: MinMax,
+    ///Reference load set-point
+    #[serde(rename = "P_ref", default = "defaults::PIDGOV_p_ref")]
+    pub p_ref: f64,
+}
 ///A reserve product provided by devices already synchronized with the system. The procurement requirement is static unless a `requirement` time series is attached, in which case `requirement` is the scaling factor. Attach an Operating Reserve Demand Curve through `variable` to price the requirement rather than enforce it; omit `variable` when the reserve has no demand curve.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct OnlineReserve {
@@ -6154,46 +6661,6 @@ impl AsRef<str> for MotorLoadMotorTechnology {
         self.as_str()
     }
 }
-/**An AC transmission line with additional power flow constraints specified by the system operator, more restrictive than the line's thermal limits.
-
-For example, monitored lines can be used to restrict line flow following a contingency elsewhere in the network. See the `flow_limits` parameter. If monitoring is not needed, see `Line`.*/
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
-pub struct MonitoredLine {
-    ///Unique integer identifier for this component.
-    pub id: i64,
-    ///Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.
-    pub name: String,
-    ///Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.
-    pub available: bool,
-    ///Initial condition of active power flow on the line. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    pub active_power_flow: f64,
-    ///Initial condition of reactive power flow on the line. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    pub reactive_power_flow: f64,
-    ///An `Arc` defining this line `from` a bus `to` another bus.
-    pub arc: i64,
-    ///Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
-    pub r: f64,
-    ///Reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
-    pub x: f64,
-    ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
-    pub base_power: f64,
-    pub power_units: UnitSystem,
-    #[serde(default = "defaults::MonitoredLine_parameter_units")]
-    pub parameter_units: ImpedanceUnitBasis,
-    pub b: FromTo,
-    pub flow_limits: FromToToFrom,
-    ///Thermal rating. Flow through the transformer must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
-    pub rating: f64,
-    ///Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rating_b: Option<f64>,
-    ///Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rating_c: Option<f64>,
-    pub angle_limits: MinMax,
-    #[serde(default = "defaults::MonitoredLine_g")]
-    pub g: FromTo,
-}
 ///A mapping from a stringified float key to the `MinMax` bound that applies at that key.
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
 pub struct MinMaxByKey {
@@ -6251,6 +6718,8 @@ pub struct Line {
     ///Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rating_c: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operational_flow_limit: Option<OperationalFlowLimit>,
     pub angle_limits: MinMax,
     #[serde(default = "defaults::Line_g")]
     pub g: FromTo,
@@ -7329,7 +7798,7 @@ impl<'de> serde::Deserialize<'de> for InterruptiblePowerLoadOperationCost {
         }
     }
 }
-///Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus.
+///Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus. Voltage and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct InterconnectingConverter {
     ///Unique integer identifier for this component.
@@ -7360,19 +7829,40 @@ pub struct InterconnectingConverter {
     pub max_dc_current: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub loss_function: Option<LossCurve>,
-    #[serde(default = "defaults::InterconnectingConverter_dc_control")]
-    pub dc_control: VSCDCControlModes,
-    #[serde(default = "defaults::InterconnectingConverter_ac_control")]
-    pub ac_control: VSCACControlModes,
-    #[serde(default = "defaults::InterconnectingConverter_voltage_setpoint_units")]
-    pub voltage_setpoint_units: VoltageUnitBasis,
-    ///DC-voltage target (when `dc_control` regulates DC voltage) or active-power order (otherwise). Units: per dc_control — DC_POWER: MW, DC_VOLTAGE: (per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu), DC_VOLTAGE_DROOP: (per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .
-    #[serde(default = "defaults::InterconnectingConverter_dc_setpoint")]
-    pub dc_setpoint: f64,
-    ///AC-voltage magnitude target (when `ac_control` regulates AC voltage) or power factor setpoint (otherwise). Units: per ac_control — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .
-    #[serde(default = "defaults::InterconnectingConverter_ac_setpoint")]
-    pub ac_setpoint: f64,
-    ///DC-voltage droop gain relating DC voltage to converter active power as `V_dc = dc_setpoint - dc_voltage_droop * P_c`. A value of 0.0 disables droop. Units: pu.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dc_control: Option<VSCDCControlModes>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ac_control: Option<VSCACControlModes>,
+    ///Active-power order of the converter, used when `dc_control` is `DC_POWER`; `null` otherwise. Positive means the converter supplies power to the AC network; negative means it withdraws power from it. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub dc_power_setpoint: Option<Option<f64>>,
+    ///DC-side voltage target of the converter, used when `dc_control` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub dc_voltage_setpoint: Option<Option<f64>>,
+    ///Power-factor setpoint of the converter, used when `ac_control` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.
+    ///Constraint: minimum=-1, maximum=1
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub power_factor_setpoint: Option<Option<f64>>,
+    ///AC-side voltage magnitude target of the converter, used when `ac_control` is `AC_VOLTAGE`; `null` otherwise. Units: kV.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub ac_voltage_setpoint: Option<Option<f64>>,
+    ///DC-voltage droop gain on the converter, used when `dc_control` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint - dc_voltage_droop * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.
     #[serde(default = "defaults::InterconnectingConverter_dc_voltage_droop")]
     pub dc_voltage_droop: f64,
     ///Number of the AC bus whose voltage the converter regulates when `ac_control` is `AC_VOLTAGE`; null regulates its own terminal bus.
@@ -7382,9 +7872,6 @@ pub struct InterconnectingConverter {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub remote_bus_control: Option<Option<i64>>,
-    ///Percent of the total Mvar required to hold the voltage at the bus regulated by this converter that is contributed by this converter. Units: 1.
-    #[serde(default = "defaults::InterconnectingConverter_rmpct")]
-    pub rmpct: f64,
     ///Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.
     #[serde(default = "defaults::InterconnectingConverter_power_factor_weighting_fraction")]
     pub power_factor_weighting_fraction: f64,
@@ -7455,7 +7942,7 @@ impl AsRef<str> for VSCACControlModes {
         self.as_str()
     }
 }
-///Losses of a device as a function of the flow through it, together with the power basis the curve is expressed in. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched.
+///Losses of a device as a function of the flow through it, together with the power basis the curve is expressed in. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct LossCurve {
     #[serde(default = "defaults::LossCurve_power_units")]
@@ -7675,12 +8162,15 @@ impl AsRef<str> for ImportExportCostCostType {
         self.as_str()
     }
 }
-///Supplemental attribute carrying one row of an impedance correction table, linked to a transformer. The correction curve defines intervals over tap ratio or angle shift, and the accompanying fields name which winding the row applies to and whether the controlled quantity is an off-nominal turns ratio or a phase angle shift.
+///Supplemental attribute carrying one row of an impedance correction table, linked to a transformer. Exactly one correction curve is present, selected by `transformer_control_mode`: `tap_ratio_correction_curve` spans off-nominal turns ratio and `phase_angle_correction_curve` spans phase-shift angle. `transformer_winding` names the winding the row applies to.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct ImpedanceCorrectionData {
     pub id: i64,
     pub table_number: i64,
-    pub impedance_correction_curve: PiecewiseLinearData,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tap_ratio_correction_curve: Option<PiecewiseLinearData>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub phase_angle_correction_curve: Option<PiecewiseLinearData>,
     pub transformer_winding: ImpedanceCorrectionDataTransformerWinding,
     pub transformer_control_mode: ImpedanceCorrectionDataTransformerControlMode,
 }
@@ -7741,6 +8231,151 @@ impl AsRef<str> for ImpedanceCorrectionDataTransformerControlMode {
     fn as_ref(&self) -> &str {
         self.as_str()
     }
+}
+///IEEE Type 1 Speed-Governing Model
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct IEEETurbineGov1 {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Governor gain
+    #[serde(rename = "K")]
+    pub k: i64,
+    ///Input filter lag
+    #[serde(rename = "T1")]
+    pub t1: i64,
+    ///Input filter lead
+    #[serde(rename = "T2")]
+    pub t2: f64,
+    ///Valve position time constant
+    #[serde(rename = "T3")]
+    pub t3: f64,
+    ///Maximum valve opening rate
+    #[serde(rename = "U0")]
+    pub u0: f64,
+    ///Maximum valve closing rate
+    #[serde(rename = "U_c")]
+    pub u_c: f64,
+    pub valve_position_limits: MinMax,
+    ///Time constant inlet steam
+    #[serde(rename = "T4")]
+    pub t4: f64,
+    ///Fraction of high pressure shaft power
+    #[serde(rename = "K1")]
+    pub k1: f64,
+    ///Fraction of low pressure shaft power
+    #[serde(rename = "K2")]
+    pub k2: f64,
+    ///Time constant for second boiler pass
+    #[serde(rename = "T5")]
+    pub t5: f64,
+    ///Fraction of high pressure shaft power second boiler pass
+    #[serde(rename = "K3")]
+    pub k3: f64,
+    ///Fraction of low pressure shaft power second boiler pass
+    #[serde(rename = "K4")]
+    pub k4: f64,
+    ///Time constant for third boiler pass
+    #[serde(rename = "T6")]
+    pub t6: f64,
+    ///Fraction of high pressure shaft power third boiler pass
+    #[serde(rename = "K5")]
+    pub k5: f64,
+    ///Fraction of low pressure shaft power third boiler pass
+    #[serde(rename = "K6")]
+    pub k6: f64,
+    ///Time constant for fourth boiler pass
+    #[serde(rename = "T7")]
+    pub t7: f64,
+    ///Fraction of high pressure shaft power fourth boiler pass
+    #[serde(rename = "K7")]
+    pub k7: f64,
+    ///Fraction of low pressure shaft power fourth boiler pass
+    #[serde(rename = "K8")]
+    pub k8: f64,
+    ///Reference power set-point
+    #[serde(rename = "P_ref", default = "defaults::IEEETurbineGov1_p_ref")]
+    pub p_ref: f64,
+}
+///1968 IEEE type 1 excitation system model
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct IEEET1 {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Voltage measurement time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Amplifier gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Amplifier time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Exciter constant related to self-excited field
+    #[serde(rename = "Ke")]
+    pub ke: f64,
+    ///Exciter time constant, integration rate associated with exciter control
+    #[serde(rename = "Te")]
+    pub te: f64,
+    ///Excitation control system stabilizer gain
+    #[serde(rename = "Kf")]
+    pub kf: f64,
+    ///Excitation control system stabilizer time constant
+    #[serde(rename = "Tf")]
+    pub tf: f64,
+    ///Switch
+    pub switch: i64,
+    ///Exciter output voltage for saturation factor
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "E_sat")]
+    pub e_sat: Vec<f64>,
+    ///Exciter saturation factor at exciter output voltage
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Se")]
+    pub se: Vec<f64>,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::IEEET1_v_ref")]
+    pub v_ref: f64,
+}
+///Hydro turbine-governor
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct HydroTurbineGov {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Permanent droop parameter
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Temporary droop
+    #[serde(rename = "r")]
+    pub r_2: f64,
+    ///Governor time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Filter time constant
+    #[serde(rename = "Tf")]
+    pub tf: f64,
+    ///Servo time constant
+    #[serde(rename = "Tg")]
+    pub tg: f64,
+    ///Gate velocity limit
+    #[serde(rename = "VELM")]
+    pub velm: f64,
+    pub gate_position_limits: MinMax,
+    ///Water time constant
+    #[serde(rename = "Tw")]
+    pub tw: f64,
+    ///Turbine gain
+    #[serde(rename = "At")]
+    pub at: f64,
+    ///Turbine damping
+    #[serde(rename = "D_T")]
+    pub d_t: f64,
+    ///No power flow
+    pub q_nl: f64,
+    ///Reference load set-point
+    #[serde(rename = "P_ref", default = "defaults::HydroTurbineGov_p_ref")]
+    pub p_ref: f64,
 }
 ///A hydropower generator that must have a `HydroReservoir` attached, suitable for modeling independent turbines and reservoirs.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -10782,8 +11417,8 @@ pub struct GenericArcImpedance {
     pub active_power_flow: f64,
     ///Initial condition of reactive power flow on the line. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
     pub reactive_power_flow: f64,
-    ///Maximum allowable flow on the generic impedance. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    pub max_flow: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operational_flow_limit: Option<OperationalFlowLimit>,
     ///An `Arc` defining this line `from` a bus `to` another bus.
     pub arc: i64,
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
@@ -10822,6 +11457,104 @@ impl AsRef<str> for ImpedanceUnitBasis {
     fn as_ref(&self) -> &str {
         self.as_str()
     }
+}
+///GE General Governor/Turbine Model. The GeneralGovModel (GGOV1) model is a general purpose governor model used for a variety of prime movers controlled by proportional-integral-derivative (PID) governors including gas turbines
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct GeneralGovModel {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Feedback signal for governor droop
+    #[serde(rename = "Rselect")]
+    pub rselect: i64,
+    ///Flag switch for fuel source characteristic
+    pub fuel_flag: i64,
+    ///Speed droop parameter
+    #[serde(rename = "R", skip_serializing_if = "Option::is_none")]
+    pub r: Option<f64>,
+    ///Electrical power transducer time constant
+    #[serde(rename = "Tpelec")]
+    pub tpelec: f64,
+    pub speed_error_signal: MinMax,
+    ///Governor proportional gain
+    #[serde(rename = "Kp_gov")]
+    pub kp_gov: f64,
+    ///Governor integral gain
+    #[serde(rename = "Ki_gov")]
+    pub ki_gov: f64,
+    ///Governor derivative gain
+    #[serde(rename = "Kd_gov")]
+    pub kd_gov: f64,
+    ///Governor derivative time constant
+    #[serde(rename = "Td_gov")]
+    pub td_gov: f64,
+    pub valve_position_limits: MinMax,
+    ///Actuator time constant
+    #[serde(rename = "T_act")]
+    pub t_act: f64,
+    ///Turbine gain
+    #[serde(rename = "K_turb")]
+    pub k_turb: f64,
+    ///No load fuel flow
+    #[serde(rename = "Wf_nl")]
+    pub wf_nl: f64,
+    ///Turbine lag time constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    ///Turbine lead time constant
+    #[serde(rename = "Tc")]
+    pub tc: f64,
+    ///Transport lag time constant for diesel engine
+    #[serde(rename = "T_eng")]
+    pub t_eng: f64,
+    ///Load limiter time constant
+    #[serde(rename = "Tf_load")]
+    pub tf_load: f64,
+    ///Load limiter proportional gain for PI controller
+    #[serde(rename = "Kp_load")]
+    pub kp_load: f64,
+    ///Load integral gain for PI controller
+    #[serde(rename = "Ki_load")]
+    pub ki_load: f64,
+    ///Load limiter integral gain for PI controller
+    #[serde(rename = "Ld_ref")]
+    pub ld_ref: f64,
+    ///Mechanical damping coefficient
+    #[serde(rename = "Dm")]
+    pub dm: f64,
+    ///Maximum valve opening rate
+    #[serde(rename = "R_open")]
+    pub r_open: f64,
+    ///Maximum valve closing rate
+    #[serde(rename = "R_close")]
+    pub r_close: f64,
+    ///Power controller (reset) gain
+    #[serde(rename = "Ki_mw")]
+    pub ki_mw: f64,
+    ///Acceleration limiter setpoint
+    #[serde(rename = "A_set")]
+    pub a_set: f64,
+    ///Acceleration limiter gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Acceleration limiter time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    ///Turbine rating
+    #[serde(rename = "T_rate")]
+    pub t_rate: f64,
+    ///Speed governor deadband
+    pub db: f64,
+    ///Temperature detection lead time constant
+    #[serde(rename = "Tsa")]
+    pub tsa: f64,
+    ///Temperature detection lag time constant
+    #[serde(rename = "Tsb")]
+    pub tsb: f64,
+    #[serde(rename = "R_lim")]
+    pub r_lim: UpDown,
+    ///Reference power set-point
+    #[serde(rename = "P_ref", default = "defaults::GeneralGovModel_p_ref")]
+    pub p_ref: f64,
 }
 /**A fixed admittance.
 
@@ -12237,6 +12970,693 @@ impl AsRef<str> for EmissionBasis {
         self.as_str()
     }
 }
+///IEEE Type ST1 Excitation System (PTI version)
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct EXST1 {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Voltage measurement time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    #[serde(rename = "Vi_lim")]
+    pub vi_lim: MinMax,
+    ///Numerator lead-lag (lead) time constant
+    #[serde(rename = "Tc")]
+    pub tc: f64,
+    ///Denominator lead-lag (lag) time constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    ///Amplifier gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Amplifier time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Current field constant limiter multiplier
+    #[serde(rename = "Kc")]
+    pub kc: f64,
+    ///Excitation control system stabilizer gain
+    #[serde(rename = "Kf")]
+    pub kf: f64,
+    ///Excitation control system stabilizer time constant
+    #[serde(rename = "Tf")]
+    pub tf: f64,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::EXST1_v_ref")]
+    pub v_ref: f64,
+}
+///Generic Proportional/Integral Excitation System
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct EXPIC1 {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Regulator input filter time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Voltage regulator gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Voltage regulator time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    #[serde(rename = "Va_lim")]
+    pub va_lim: MinMax,
+    ///Voltage regulator time constant
+    #[serde(rename = "Ta_2")]
+    pub ta_2: f64,
+    ///Voltage regulator time constant
+    #[serde(rename = "Ta_3")]
+    pub ta_3: f64,
+    ///Voltage regulator time constant
+    #[serde(rename = "Ta_4")]
+    pub ta_4: f64,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Rate feedback excitation system stabilizer gain
+    #[serde(rename = "Kf")]
+    pub kf: f64,
+    ///Rate feedback time constant
+    #[serde(rename = "Tf_1")]
+    pub tf_1: f64,
+    ///Rate feedback time constant
+    #[serde(rename = "Tf_2")]
+    pub tf_2: f64,
+    #[serde(rename = "Efd_lim")]
+    pub efd_lim: MinMax,
+    ///Exciter constant
+    #[serde(rename = "Ke")]
+    pub ke: f64,
+    ///Exciter time constant
+    #[serde(rename = "Te")]
+    pub te: f64,
+    ///Exciter output voltage for saturation factor
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "E_sat")]
+    pub e_sat: Vec<f64>,
+    ///Exciter saturation factor at exciter output voltage
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Se")]
+    pub se: Vec<f64>,
+    ///Potential source gain
+    #[serde(rename = "Kp")]
+    pub kp: f64,
+    ///Current source gain
+    #[serde(rename = "Ki")]
+    pub ki: f64,
+    ///Exciter regulator factor
+    #[serde(rename = "Kc")]
+    pub kc: f64,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::EXPIC1_v_ref")]
+    pub v_ref: f64,
+}
+///Modified AC2. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC2A Excitacion System. The alternator main exciter is used, feeding its output via non-controlled rectifiers. The Type AC2C model is similar to that of Type AC1C except for the inclusion of exciter time constant compensation and exciter field current limiting elements. EXAC2 in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct EXAC2 {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Regulator input filter time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Regulator denominator (lag) time constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    ///Regulator numerator (lead) time constant
+    #[serde(rename = "Tc")]
+    pub tc: f64,
+    ///Regulator output gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Regulator output time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    #[serde(rename = "Va_lim")]
+    pub va_lim: MinMax,
+    ///Second stage regulator gain
+    #[serde(rename = "Kb")]
+    pub kb: f64,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Exciter field time constant
+    #[serde(rename = "Te")]
+    pub te: f64,
+    ///Exciter field current limiter gain
+    #[serde(rename = "Kl")]
+    pub kl: f64,
+    ///Exciter field current regulator feedback gain
+    #[serde(rename = "Kh")]
+    pub kh: f64,
+    ///Rate feedback excitation system stabilizer gain
+    #[serde(rename = "Kf")]
+    pub kf: f64,
+    ///Rate feedback time constant
+    #[serde(rename = "Tf")]
+    pub tf: f64,
+    ///Rectifier loading factor proportional to commutating reactance
+    #[serde(rename = "Kc")]
+    pub kc: f64,
+    ///Demagnetizing factor, function of exciter alternator reactances
+    #[serde(rename = "Kd")]
+    pub kd: f64,
+    ///Exciter field proportional constant
+    #[serde(rename = "Ke")]
+    pub ke: f64,
+    ///Maximum exciter field current
+    #[serde(rename = "V_lr")]
+    pub v_lr: f64,
+    ///Exciter output voltage for saturation factor
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "E_sat")]
+    pub e_sat: Vec<f64>,
+    ///Exciter saturation factor at exciter output voltage
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Se")]
+    pub se: Vec<f64>,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::EXAC2_v_ref")]
+    pub v_ref: f64,
+}
+///Modified ESAC1A. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A Excitacion System. EXAC1A in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct EXAC1A {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Regulator input filter time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Regulator denominator (lag) time constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    ///Regulator numerator (lead) time constant
+    #[serde(rename = "Tc")]
+    pub tc: f64,
+    ///Regulator output gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Regulator output time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    #[serde(rename = "Va_lim")]
+    pub va_lim: MinMax,
+    ///Exciter field time constant
+    #[serde(rename = "Te")]
+    pub te: f64,
+    ///Rate feedback excitation system stabilizer gain
+    #[serde(rename = "Kf")]
+    pub kf: f64,
+    ///Rate feedback time constant
+    #[serde(rename = "Tf")]
+    pub tf: f64,
+    ///Rectifier loading factor proportional to commutating reactance
+    #[serde(rename = "Kc")]
+    pub kc: f64,
+    ///Demagnetizing factor, function of exciter alternator reactances
+    #[serde(rename = "Kd")]
+    pub kd: f64,
+    ///Exciter field proportional constant
+    #[serde(rename = "Ke")]
+    pub ke: f64,
+    ///Exciter output voltage for saturation factor
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "E_sat")]
+    pub e_sat: Vec<f64>,
+    ///Exciter saturation factor at exciter output voltage
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Se")]
+    pub se: Vec<f64>,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::EXAC1A_v_ref")]
+    pub v_ref: f64,
+}
+///Modified ESAC1A. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A. EXAC1 in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct EXAC1 {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Regulator input filter time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Regulator denominator (lag) time constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    ///Regulator numerator (lead) time constant
+    #[serde(rename = "Tc")]
+    pub tc: f64,
+    ///Regulator output gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Regulator output time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Exciter field time constant
+    #[serde(rename = "Te")]
+    pub te: f64,
+    ///Rate feedback excitation system stabilizer gain
+    #[serde(rename = "Kf")]
+    pub kf: f64,
+    ///Rate feedback time constant
+    #[serde(rename = "Tf")]
+    pub tf: f64,
+    ///Rectifier loading factor proportional to commutating reactance
+    #[serde(rename = "Kc")]
+    pub kc: f64,
+    ///Demagnetizing factor, function of exciter alternator reactances
+    #[serde(rename = "Kd")]
+    pub kd: f64,
+    ///Exciter field proportional constant
+    #[serde(rename = "Ke")]
+    pub ke: f64,
+    ///Exciter output voltage for saturation factor
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "E_sat")]
+    pub e_sat: Vec<f64>,
+    ///Exciter saturation factor at exciter output voltage
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Se")]
+    pub se: Vec<f64>,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::EXAC1_v_ref")]
+    pub v_ref: f64,
+}
+///IEEE Excitation System for Voltage Security Assesment
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct EX4VSA {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///OEL field current limit
+    #[serde(rename = "Iflim")]
+    pub iflim: f64,
+    ///OEL parameter d
+    pub d: f64,
+    ///OEL parameter f
+    pub f: f64,
+    ///OEL parameter Spar
+    #[serde(rename = "Spar")]
+    pub spar: f64,
+    ///OEL delay time constant
+    #[serde(rename = "K1")]
+    pub k1: f64,
+    ///OEL parameter K2
+    #[serde(rename = "K2")]
+    pub k2: f64,
+    #[serde(rename = "Oel_lim")]
+    pub oel_lim: MinMax,
+    ///AVR exciter gain
+    #[serde(rename = "G")]
+    pub g: f64,
+    ///Numerator lead-lag (lead) time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    ///Denominator lead-lag (lag) time constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    ///Exciter time constant
+    #[serde(rename = "Te")]
+    pub te: f64,
+    #[serde(rename = "E_lim")]
+    pub e_lim: MinMax,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::EX4VSA_v_ref")]
+    pub v_ref: f64,
+}
+///In these excitation systems, voltage (and also current in compounded systems) is transformed to an appropriate level. Rectifiers, either controlled or non-controlled, provide the necessary direct current for the generator field. Parameters of IEEE Std 421.5 Type ST4B Excitacion System. ESST4B in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ESST4B {
+    ///Regulator input filter time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Regulator proportional gain
+    #[serde(rename = "K_pr")]
+    pub k_pr: f64,
+    ///Regulator integral gain
+    #[serde(rename = "K_ir")]
+    pub k_ir: f64,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Voltage regulator time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    ///Voltage regulator proportional gain output
+    #[serde(rename = "K_pm")]
+    pub k_pm: f64,
+    ///Voltage regulator integral gain output
+    #[serde(rename = "K_im")]
+    pub k_im: f64,
+    #[serde(rename = "Vm_lim")]
+    pub vm_lim: MinMax,
+    ///Feedback gain constant of the inner loop field regulator
+    #[serde(rename = "Kg")]
+    pub kg: f64,
+    ///Potential circuit (voltage) gain coefficient
+    #[serde(rename = "Kp")]
+    pub kp: f64,
+    ///Compound circuit (current) gain coefficient
+    #[serde(rename = "Ki")]
+    pub ki: f64,
+    ///Maximum available exciter voltage
+    #[serde(rename = "VB_max")]
+    pub vb_max: f64,
+    ///Rectifier loading factor proportional to commutating reactance
+    #[serde(rename = "Kc")]
+    pub kc: f64,
+    ///Reactance associated with potential source
+    #[serde(rename = "Xl")]
+    pub xl: f64,
+    ///Potential circuit phase angle (degrees)
+    pub thetap: f64,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::ESST4B_v_ref")]
+    pub v_ref: f64,
+}
+///This excitation system supplies power through a transformer from the generator terminals and its regulated by a controlled rectifier (via thyristors). Parameters of IEEE Std 421.5 Type ST1A Excitacion System. ESST1A in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ESST1A {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Code input for Underexcitization limiter (UEL) entry
+    #[serde(rename = "UEL_flags")]
+    pub uel_flags: i64,
+    ///Code input for Power System Stabilizer (PSS) or (VOS) entry
+    #[serde(rename = "PSS_flags")]
+    pub pss_flags: i64,
+    ///Regulator input filter time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Voltage error limits (regulator input)
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Vi_lim")]
+    pub vi_lim: Vec<f64>,
+    ///First regulator numerator (lead) time constant
+    #[serde(rename = "Tc")]
+    pub tc: f64,
+    ///First regulator denominator (lag) time constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    ///Second regulator numerator (lead) time constant
+    #[serde(rename = "Tc1")]
+    pub tc1: f64,
+    ///Second regulator denominator (lag) time constant
+    #[serde(rename = "Tb1")]
+    pub tb1: f64,
+    ///Voltage regulator gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Voltage regulator time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    #[serde(rename = "Va_lim")]
+    pub va_lim: MinMax,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Rectifier loading factor proportional to commutating reactance
+    #[serde(rename = "Kc")]
+    pub kc: f64,
+    ///Rate feedback gain
+    #[serde(rename = "Kf")]
+    pub kf: f64,
+    ///Rate feedback time constant
+    #[serde(rename = "Tf")]
+    pub tf: f64,
+    ///Exciter output current limiter gain
+    #[serde(rename = "K_lr")]
+    pub k_lr: f64,
+    ///Exciter output current limit reference
+    #[serde(rename = "I_lr")]
+    pub i_lr: f64,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::ESST1A_v_ref")]
+    pub v_ref: f64,
+}
+///Used to represent field-controlled dc commutator exciters with continuously acting voltage regulators having power supplies derived from the generator or auxiliaries bus. Parameters of IEEE Std 421.5 Type DC2A Excitacion System. This model corresponds to ESDC2A in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ESDC2A {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Voltage measurement time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Amplifier gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Amplifier time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    ///Regulator input time constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    ///Regulator input time constant
+    #[serde(rename = "Tc")]
+    pub tc: f64,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Exciter constant related to self-excited field
+    #[serde(rename = "Ke")]
+    pub ke: f64,
+    ///Exciter time constant, integration rate associated with exciter control
+    #[serde(rename = "Te")]
+    pub te: f64,
+    ///Excitation control system stabilizer gain
+    #[serde(rename = "Kf")]
+    pub kf: f64,
+    ///Excitation control system stabilizer time constant
+    #[serde(rename = "Tf")]
+    pub tf: f64,
+    ///switch
+    pub switch: i64,
+    ///Exciter output voltage for saturation factor
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "E_sat")]
+    pub e_sat: Vec<f64>,
+    ///Exciter saturation factor at exciter output voltage
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Se")]
+    pub se: Vec<f64>,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::ESDC2A_v_ref")]
+    pub v_ref: f64,
+}
+///Self-excited shunt fields with the voltage regulator operating in a mode commonly termed buck-boost. Parameters of IEEE Std 421.5 Type DC1A Excitacion System. This model corresponds to ESDC1A in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ESDC1A {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Voltage measurement time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Amplifier gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Amplifier time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    ///Regulator input time constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    ///Regulator input time constant
+    #[serde(rename = "Tc")]
+    pub tc: f64,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Exciter constant related to self-excited field
+    #[serde(rename = "Ke")]
+    pub ke: f64,
+    ///Exciter time constant, integration rate associated with exciter control
+    #[serde(rename = "Te")]
+    pub te: f64,
+    ///Excitation control system stabilizer gain
+    #[serde(rename = "Kf")]
+    pub kf: f64,
+    ///Excitation control system stabilizer time constant
+    #[serde(rename = "Tf")]
+    pub tf: f64,
+    ///switch
+    pub switch: i64,
+    ///Exciter output voltage for saturation factor
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "E_sat")]
+    pub e_sat: Vec<f64>,
+    ///Exciter saturation factor at exciter output voltage
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Se")]
+    pub se: Vec<f64>,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::ESDC1A_v_ref")]
+    pub v_ref: f64,
+}
+///Excitation System AC8B. Used to represent the Basler Digital Excitation Control System (DECS) with PID controller in PSSE
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ESAC8B {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Regulator input filter time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Regulator proportional PID gain
+    #[serde(rename = "Kp")]
+    pub kp: f64,
+    ///Regulator integral PID gain
+    #[serde(rename = "Ki")]
+    pub ki: f64,
+    ///Regulator derivative PID gain
+    #[serde(rename = "Kd")]
+    pub kd: f64,
+    ///Regulator derivative PID time constant
+    #[serde(rename = "Td")]
+    pub td: f64,
+    ///Regulator output gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Regulator output lag time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Exciter field time constant
+    #[serde(rename = "Te")]
+    pub te: f64,
+    ///Exciter field proportional constant
+    #[serde(rename = "Ke")]
+    pub ke: f64,
+    ///Exciter output voltage for saturation factor
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "E_sat")]
+    pub e_sat: Vec<f64>,
+    ///Exciter saturation factor at exciter output voltage
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Se")]
+    pub se: Vec<f64>,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::ESAC8B_v_ref")]
+    pub v_ref: f64,
+}
+///This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC6A Excitacion System. ESAC6A in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ESAC6A {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Regulator input filter time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Regulator output gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Regulator output lag time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    ///Voltage regulator lead time constant
+    #[serde(rename = "Tk")]
+    pub tk: f64,
+    ///Regulator denominator (lag) time constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    ///Regulator numerator (lead) time constant
+    #[serde(rename = "Tc")]
+    pub tc: f64,
+    #[serde(rename = "Va_lim")]
+    pub va_lim: MinMax,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Exciter field time constant
+    #[serde(rename = "Te")]
+    pub te: f64,
+    ///Exciter field current limiter reference
+    #[serde(rename = "VFE_lim")]
+    pub vfe_lim: f64,
+    ///Exciter field current regulator feedback gain
+    #[serde(rename = "Kh")]
+    pub kh: f64,
+    ///Exciter field current limiter maximum output
+    #[serde(rename = "VH_max")]
+    pub vh_max: f64,
+    ///Exciter field current limiter denominator (lag) time constant
+    #[serde(rename = "Th")]
+    pub th: f64,
+    ///Exciter field current limiter (lead) time constant
+    #[serde(rename = "Tj")]
+    pub tj: f64,
+    ///Rectifier loading factor proportional to commutating reactance
+    #[serde(rename = "Kc")]
+    pub kc: f64,
+    ///Demagnetizing factor, function of exciter alternator reactances
+    #[serde(rename = "Kd")]
+    pub kd: f64,
+    ///Exciter field proportional constant
+    #[serde(rename = "Ke")]
+    pub ke: f64,
+    ///Exciter output voltage for saturation factor
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "E_sat")]
+    pub e_sat: Vec<f64>,
+    ///Exciter saturation factor at exciter output voltage
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Se")]
+    pub se: Vec<f64>,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::ESAC6A_v_ref")]
+    pub v_ref: f64,
+}
+///This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A Excitacion System. This model corresponds to ESAC1A in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ESAC1A {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Regulator input filter time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    ///Regulator denominator (lag) time constant
+    #[serde(rename = "Tb")]
+    pub tb: f64,
+    ///Regulator numerator (lead) time constant
+    #[serde(rename = "Tc")]
+    pub tc: f64,
+    ///Regulator output gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Regulator output time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    #[serde(rename = "Va_lim")]
+    pub va_lim: MinMax,
+    ///Exciter field time constant
+    #[serde(rename = "Te")]
+    pub te: f64,
+    ///Rate feedback excitation system stabilizer gain
+    #[serde(rename = "Kf")]
+    pub kf: f64,
+    ///Rate feedback time constant
+    #[serde(rename = "Tf")]
+    pub tf: f64,
+    ///Rectifier loading factor proportional to commutating reactance
+    #[serde(rename = "Kc")]
+    pub kc: f64,
+    ///Demagnetizing factor, function of exciter alternator reactances
+    #[serde(rename = "Kd")]
+    pub kd: f64,
+    ///Exciter field proportional constant
+    #[serde(rename = "Ke")]
+    pub ke: f64,
+    ///Exciter output voltage for saturation factor
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "E_sat")]
+    pub e_sat: Vec<f64>,
+    ///Exciter saturation factor at exciter output voltage
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Se")]
+    pub se: Vec<f64>,
+    #[serde(rename = "Vr_lim")]
+    pub vr_lim: MinMax,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::ESAC1A_v_ref")]
+    pub v_ref: f64,
+}
 ///Used to represent switches and breakers connecting AC Buses.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct DiscreteControlledACBranch {
@@ -12261,6 +13681,8 @@ pub struct DiscreteControlledACBranch {
     pub x: f64,
     ///Thermal rating. Flow on the branch must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     pub rating: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operational_flow_limit: Option<OperationalFlowLimit>,
     ///Type of discrete control.
     #[serde(default = "defaults::DiscreteControlledACBranch_discrete_branch_type")]
     pub discrete_branch_type: DiscreteControlledACBranchDiscreteBranchType,
@@ -12270,6 +13692,18 @@ pub struct DiscreteControlledACBranch {
     ///Normal (as-designed) open or close status of the device.
     #[serde(default = "defaults::DiscreteControlledACBranch_normal_branch_status")]
     pub normal_branch_status: DiscreteControlledACBranchNormalBranchStatus,
+}
+///Operator-set flow limits on a directed branch: a minimum and a maximum flow in each direction, applied in addition to the branch's thermal rating.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct OperationalFlowLimit {
+    ///Constraint: minimum=0
+    pub from_to_min: f64,
+    ///Constraint: minimum=0
+    pub from_to_max: f64,
+    ///Constraint: minimum=0
+    pub to_from_min: f64,
+    ///Constraint: minimum=0
+    pub to_from_max: f64,
 }
 ///Normal (as-designed) open or close status of the device.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -13049,7 +14483,7 @@ impl AsRef<str> for FuelCurveVariableCostType {
         self.as_str()
     }
 }
-///Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term.
+///Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct CostCurve {
     #[serde(default = "defaults::CostCurve_power_units")]
@@ -15964,16 +17398,20 @@ pub struct InputOutputCurve {
     #[serde(default = "defaults::InputOutputCurve_curve_type")]
     pub curve_type: InputOutputCurveCurveType,
     pub function_data: InputOutputCurveFunctionData,
+    ///Units: the curve's y-axis unit.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub input_at_zero: Option<f64>,
 }
 ///Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct QuadraticFunctionData {
+    ///Units: the wrapped function's output unit.
     pub constant_term: f64,
     #[serde(default = "defaults::QuadraticFunctionData_function_type")]
     pub function_type: QuadraticFunctionDataFunctionType,
+    ///Units: the wrapped function's output unit per unit of its input.
     pub proportional_term: f64,
+    ///Units: the wrapped function's output unit per unit of its input squared.
     pub quadratic_term: f64,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -16009,7 +17447,9 @@ pub struct PiecewiseLinearData {
 ///A single point, given as its `x` and `y` coordinates.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct XYCoords {
+    ///Units: the wrapped function's input unit.
     pub x: f64,
+    ///Units: the wrapped function's output unit.
     pub y: f64,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -16365,8 +17805,10 @@ pub struct IncrementalCurve {
     #[serde(default = "defaults::IncrementalCurve_curve_type")]
     pub curve_type: IncrementalCurveCurveType,
     pub function_data: IncrementalCurveFunctionData,
+    ///Units: the curve's y-axis unit.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub initial_input: Option<f64>,
+    ///Units: the curve's y-axis unit.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub input_at_zero: Option<f64>,
 }
@@ -16574,8 +18016,10 @@ pub struct AverageRateCurve {
     #[serde(default = "defaults::AverageRateCurve_curve_type")]
     pub curve_type: AverageRateCurveCurveType,
     pub function_data: AverageRateCurveFunctionData,
+    ///Units: the curve's y-axis unit.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub initial_input: Option<f64>,
+    ///Units: the curve's y-axis unit.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub input_at_zero: Option<f64>,
 }
@@ -16613,9 +18057,11 @@ impl AsRef<str> for PiecewiseStepDataFunctionType {
 ///Data for a linear function `f(x) = proportional_term * x + constant_term`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct LinearFunctionData {
+    ///Units: the wrapped function's output unit.
     pub constant_term: f64,
     #[serde(default = "defaults::LinearFunctionData_function_type")]
     pub function_type: LinearFunctionDataFunctionType,
+    ///Units: the wrapped function's output unit per unit of its input.
     pub proportional_term: f64,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -16897,6 +18343,82 @@ pub struct FdbdPnts {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fdbd2: Option<f64>,
 }
+///Parameters of an Automatic Voltage Regulator Type II - Typical static exciter model
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct AVRTypeII {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Regulator gain
+    #[serde(rename = "K0")]
+    pub k0: f64,
+    ///First pole in s
+    #[serde(rename = "T1")]
+    pub t1: f64,
+    ///First zero in s
+    #[serde(rename = "T2")]
+    pub t2: f64,
+    ///First pole in s
+    #[serde(rename = "T3")]
+    pub t3: f64,
+    ///First zero in s
+    #[serde(rename = "T4")]
+    pub t4: f64,
+    ///Field circuit time constant
+    #[serde(rename = "Te")]
+    pub te: f64,
+    ///Voltage measurement time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    #[serde(rename = "Va_lim")]
+    pub va_lim: MinMax,
+    ///1st ceiling coefficient
+    #[serde(rename = "Ae")]
+    pub ae: f64,
+    ///2nd ceiling coefficient
+    #[serde(rename = "Be")]
+    pub be: f64,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::AVRTypeII_v_ref")]
+    pub v_ref: f64,
+}
+///Parameters of an Automatic Voltage Regulator Type I - Resembles IEEE Type DC1
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct AVRTypeI {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Amplifier gain
+    #[serde(rename = "Ka")]
+    pub ka: f64,
+    ///Field circuit integral deviation
+    #[serde(rename = "Ke")]
+    pub ke: f64,
+    ///Stabilizer gain
+    #[serde(rename = "Kf")]
+    pub kf: f64,
+    ///Amplifier time constant
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    ///Field circuit time constant
+    #[serde(rename = "Te")]
+    pub te: f64,
+    ///Stabilizer time constant
+    #[serde(rename = "Tf")]
+    pub tf: f64,
+    ///Voltage measurement time constant
+    #[serde(rename = "Tr")]
+    pub tr: f64,
+    #[serde(rename = "Va_lim")]
+    pub va_lim: MinMax,
+    ///1st ceiling coefficient
+    #[serde(rename = "Ae")]
+    pub ae: f64,
+    ///2nd ceiling coefficient
+    #[serde(rename = "Be")]
+    pub be: f64,
+    ///Reference voltage set-point
+    #[serde(rename = "V_ref", default = "defaults::AVRTypeI_v_ref")]
+    pub v_ref: f64,
+}
 ///An AC bus.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct ACBus {
@@ -17001,6 +18523,94 @@ pub struct AGC {
     #[serde(default = "defaults::AGC_initial_ace")]
     pub initial_ace: f64,
 }
+///Parameters of a AVR that returns a fixed voltage to the rotor winding
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct AVRFixed {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Fixed voltage field applied to the rotor winding
+    #[serde(rename = "Vf")]
+    pub vf: f64,
+    ///Reference Voltage Set-point
+    #[serde(rename = "V_ref", default = "defaults::AVRFixed_v_ref")]
+    pub v_ref: f64,
+}
+///Parameters of a simple proportional AVR in the derivative of EMF i.e. an integrator controller on EMF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct AVRSimple {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Proportional Gain
+    #[serde(rename = "Kv")]
+    pub kv: f64,
+    ///Reference Voltage Set-point
+    #[serde(rename = "V_ref", default = "defaults::AVRSimple_v_ref")]
+    pub v_ref: f64,
+}
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ActivePowerDroop {
+    #[serde(rename = "Rp")]
+    pub rp: f64,
+    pub omegaz: f64,
+    #[serde(rename = "P_ref", default = "defaults::ActivePowerDroop_p_ref")]
+    pub p_ref: f64,
+}
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ActivePowerPI {
+    #[serde(rename = "Kp_p")]
+    pub kp_p: f64,
+    #[serde(rename = "Ki_p")]
+    pub ki_p: f64,
+    pub omegaz: f64,
+    #[serde(rename = "P_ref", default = "defaults::ActivePowerPI_p_ref")]
+    pub p_ref: f64,
+}
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ActiveVirtualOscillator {
+    pub k1: f64,
+    pub psi: f64,
+    #[serde(rename = "P_ref", default = "defaults::ActiveVirtualOscillator_p_ref")]
+    pub p_ref: f64,
+}
+///Parameters of 6-states synchronous machine: Anderson-Fouad model
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct AndersonFouadMachine {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Resistance after EMF
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Reactance after EMF in d-axis
+    #[serde(rename = "Xd")]
+    pub xd: f64,
+    ///Reactance after EMF in q-axis
+    #[serde(rename = "Xq")]
+    pub xq: f64,
+    ///Transient reactance after EMF in d-axis
+    #[serde(rename = "Xd_p")]
+    pub xd_p: f64,
+    ///Transient reactance after EMF in q-axis
+    #[serde(rename = "Xq_p")]
+    pub xq_p: f64,
+    ///Sub-Transient reactance after EMF in d-axis
+    #[serde(rename = "Xd_pp")]
+    pub xd_pp: f64,
+    ///Sub-Transient reactance after EMF in q-axis
+    #[serde(rename = "Xq_pp")]
+    pub xq_pp: f64,
+    ///Time constant of transient d-axis voltage Units: s.
+    #[serde(rename = "Td0_p")]
+    pub td0_p: f64,
+    ///Time constant of transient q-axis voltage Units: s.
+    #[serde(rename = "Tq0_p")]
+    pub tq0_p: f64,
+    ///Time constant of sub-transient d-axis voltage Units: s.
+    #[serde(rename = "Td0_pp")]
+    pub td0_pp: f64,
+    ///Time constant of sub-transient q-axis voltage Units: s.
+    #[serde(rename = "Tq0_pp")]
+    pub tq0_pp: f64,
+}
 ///A topological directed edge connecting two buses. Arcs are used to define the `from_id` and `to_id` endpoints when defining a line or transformer.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct Arc {
@@ -17010,6 +18620,28 @@ pub struct Arc {
     pub from_id: i64,
     ///ID of the terminal bus.
     pub to_id: i64,
+}
+///Parameters of an average converter model
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct AverageConverter {
+    ///Rated voltage (V)
+    pub rated_voltage: f64,
+    ///Rated current (A)
+    pub rated_current: f64,
+}
+///Parameters of a Classic Machine: GENCLS in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct BaseMachine {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Resistance after EMF
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Reactance after EMF
+    #[serde(rename = "Xd_p")]
+    pub xd_p: f64,
+    ///Fixed EMF behind the impedance
+    pub eq_p: f64,
 }
 ///Policy requirement enforcing a minimum capacity reserve margin in the target year, such that `(total_capacity - peak_demand) / peak_demand >= capacity_reserve_fraction`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -17062,6 +18694,91 @@ pub struct CarbonTax {
     #[serde(default = "defaults::CarbonTax_tax_dollars_per_ton")]
     pub tax_dollars_per_ton: f64,
 }
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct CurrentModeControl {
+    pub kpc: f64,
+    pub kic: f64,
+    pub kffv: f64,
+}
+///Parameters Woodward Diesel Governor Model. DEGOV in PowerWorld
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct DEGOV {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Governor mechanism time constant
+    #[serde(rename = "T1")]
+    pub t1: f64,
+    ///Turbine power time constant
+    #[serde(rename = "T2")]
+    pub t2: f64,
+    ///Turbine exhaust temperature time constant
+    #[serde(rename = "T3")]
+    pub t3: f64,
+    ///Governor gain (reciproical of droop)
+    #[serde(rename = "K")]
+    pub k: f64,
+    ///Governor lead time constant
+    #[serde(rename = "T4")]
+    pub t4: f64,
+    ///Governor lag time constant
+    #[serde(rename = "T5")]
+    pub t5: f64,
+    ///Actuator time constant
+    #[serde(rename = "T6")]
+    pub t6: f64,
+    ///Engine time delay
+    #[serde(rename = "Td")]
+    pub td: f64,
+    ///Reference power set-point
+    #[serde(rename = "P_ref", default = "defaults::DEGOV_p_ref")]
+    pub p_ref: f64,
+}
+///Parameters Woodward Diesel Governor Model. DEGOV1 in PSSE
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct DEGOV1 {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Droop control Flag. 0 for throttle feedback and 1 for electric power feedback
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub droop_flag: Option<i64>,
+    ///Governor mechanism time constant
+    #[serde(rename = "T1")]
+    pub t1: f64,
+    ///Turbine power time constant
+    #[serde(rename = "T2")]
+    pub t2: f64,
+    ///Turbine exhaust temperature time constant
+    #[serde(rename = "T3")]
+    pub t3: f64,
+    ///Governor gain for actuator
+    #[serde(rename = "K")]
+    pub k: f64,
+    ///Governor lead time constant
+    #[serde(rename = "T4")]
+    pub t4: f64,
+    ///Governor lag time constant
+    #[serde(rename = "T5")]
+    pub t5: f64,
+    ///Actuator time constant
+    #[serde(rename = "T6")]
+    pub t6: f64,
+    ///Engine time delay
+    #[serde(rename = "Td")]
+    pub td: f64,
+    ///Operational control limits on actuator (Tmin, Tmax)
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "T_lim")]
+    pub t_lim: Vec<f64>,
+    ///Steady state droop parameter
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Power transducer time constant
+    #[serde(rename = "Te")]
+    pub te: f64,
+    ///Reference power set-point
+    #[serde(rename = "P_ref", default = "defaults::DEGOV1_p_ref")]
+    pub p_ref: f64,
+}
 ///Policy requirement that the total generation of the eligible technologies be at least a pre-determined fraction of the total annual demand across the eligible zones in the target year.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct EnergyShareRequirements {
@@ -17087,6 +18804,72 @@ pub struct ExistingDevices {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub existing_devices: Option<Vec<String>>,
 }
+///Parameters of 5 mass-spring shaft model. It contains a High-Pressure (HP) steam turbine, Intermediate-Pressure (IP) steam turbine, Low-Pressure (LP) steam turbine, the Rotor and an Exciter (EX) mover
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct FiveMassShaft {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Rotor inertia constant in MWs/MVA
+    #[serde(rename = "H")]
+    pub h: f64,
+    ///High pressure turbine inertia constant in MWs/MVA
+    #[serde(rename = "H_hp")]
+    pub h_hp: f64,
+    ///Intermediate pressure turbine inertia constant in MWs/MVA
+    #[serde(rename = "H_ip")]
+    pub h_ip: f64,
+    ///Low pressure turbine inertia constant in MWs/MVA
+    #[serde(rename = "H_lp")]
+    pub h_lp: f64,
+    ///Exciter inertia constant in MWs/MVA
+    #[serde(rename = "H_ex")]
+    pub h_ex: f64,
+    ///Rotor natural damping
+    #[serde(rename = "D")]
+    pub d: f64,
+    ///High pressure turbine natural damping
+    #[serde(rename = "D_hp")]
+    pub d_hp: f64,
+    ///Intermediate pressure turbine natural damping
+    #[serde(rename = "D_ip")]
+    pub d_ip: f64,
+    ///Low pressure turbine natural damping
+    #[serde(rename = "D_lp")]
+    pub d_lp: f64,
+    ///Exciter natural damping
+    #[serde(rename = "D_ex")]
+    pub d_ex: f64,
+    ///High-intermediate pressure turbine damping
+    #[serde(rename = "D_12")]
+    pub d_12: f64,
+    ///Intermediate-low pressure turbine damping
+    #[serde(rename = "D_23")]
+    pub d_23: f64,
+    ///Low pressure turbine-rotor damping
+    #[serde(rename = "D_34")]
+    pub d_34: f64,
+    ///Rotor-exciter damping
+    #[serde(rename = "D_45")]
+    pub d_45: f64,
+    ///High pressure turbine angle coefficient
+    #[serde(rename = "K_hp")]
+    pub k_hp: f64,
+    ///Intermediate pressure turbine angle coefficient
+    #[serde(rename = "K_ip")]
+    pub k_ip: f64,
+    ///Low pressure turbine angle coefficient
+    #[serde(rename = "K_lp")]
+    pub k_lp: f64,
+    ///Exciter angle coefficient
+    #[serde(rename = "K_ex")]
+    pub k_ex: f64,
+}
+///Parameters of a Fixed DC Source that returns a fixed DC voltage
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct FixedDCSource {
+    ///Voltage (V)
+    pub voltage: f64,
+}
 ///Supplemental attribute recording a component's forced outage status directly, rather than as a probability. `outage_status` is 1 when the component is outaged and 0 when it is available, and it can be backed by a time series drawn from a stochastic simulation or from historical records.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct FixedForcedOutage {
@@ -17103,6 +18886,89 @@ pub struct FixedForcedOutage {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub identifier: Option<Option<String>>,
+}
+///Parameters of a Fixed Frequency Estimator (i.e. no PLL)
+#[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+pub struct FixedFrequency {
+    ///Reference frequency
+    #[serde(default = "defaults::FixedFrequency_frequency")]
+    pub frequency: f64,
+}
+///Parameter of a full order flux stator-rotor model without zero sequence flux in the stator. The derivative of stator fluxes (ψd and ψq) is NOT neglected. Only one q-axis damping circuit is considered. All parameters are in machine per unit. Refer to Chapter 3 of Power System Stability and Control by P. Kundur or Chapter 11 of Power System Dynamics: Stability and Control, by J. Machowski, J. Bialek and J. Bumby, for more details. Note that the models are somewhat different (but equivalent) due to the different Park Transformation used in both books
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct FullMachine {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Resistance after EMF
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Field rotor winding resistance
+    #[serde(rename = "R_f")]
+    pub r_f: f64,
+    ///Damping rotor winding resistance on d-axis in per unit. This value is denoted as RD in Machowski
+    #[serde(rename = "R_1d")]
+    pub r_1d: f64,
+    ///Damping rotor winding resistance on q-axis in per unit. This value is denoted as RQ in Machowski
+    #[serde(rename = "R_1q")]
+    pub r_1q: f64,
+    ///Inductance of fictitious damping that represent the effect of the three-phase stator winding in the d-axis of the rotor, in per unit. This value is denoted as Lad + Ll in Kundur (and Ld in Machowski)
+    #[serde(rename = "L_d")]
+    pub l_d: f64,
+    ///Inductance of fictitious damping that represent the effect of the three-phase stator winding in the q-axis of the rotor, in per unit. This value is denoted as Laq + Ll in Kundur (and Ld in Machowski)
+    #[serde(rename = "L_q")]
+    pub l_q: f64,
+    ///Mutual inductance between stator winding and rotor field (and damping) winding inductance on d-axis, in per unit
+    #[serde(rename = "L_ad")]
+    pub l_ad: f64,
+    ///Mutual inductance between stator winding and rotor damping winding inductance on q-axis, in per unit
+    #[serde(rename = "L_aq")]
+    pub l_aq: f64,
+    ///Mutual inductance between rotor field winding and rotor damping winding inductance on d-axis, in per unit
+    #[serde(rename = "L_f1d")]
+    pub l_f1d: f64,
+    ///Field rotor winding inductance, in per unit
+    #[serde(rename = "L_ff")]
+    pub l_ff: f64,
+    ///Inductance of the d-axis rotor damping circuit, in per unit
+    #[serde(rename = "L_1d")]
+    pub l_1d: f64,
+    ///Inductance of the q-axis rotor damping circuit, in per unit
+    #[serde(rename = "L_1q")]
+    pub l_1q: f64,
+}
+///Parameters of Gas Turbine-Governor. GAST in PSSE and GAST_PTI in PowerWorld
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct GasTG {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Speed droop parameter
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Governor time constant
+    #[serde(rename = "T1")]
+    pub t1: f64,
+    ///Combustion chamber time constant
+    #[serde(rename = "T2")]
+    pub t2: f64,
+    ///Load limit time constant (exhaust gas measurement time)
+    #[serde(rename = "T3")]
+    pub t3: f64,
+    ///Ambient temperature load limit
+    #[serde(rename = "AT")]
+    pub at: f64,
+    ///Load limit feedback gain
+    #[serde(rename = "Kt")]
+    pub kt: f64,
+    ///Operational control limits on fuel valve opening (Vmin, Vmax)
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "V_lim")]
+    pub v_lim: Vec<f64>,
+    ///Speed damping coefficient of gas turbine rotor
+    #[serde(rename = "D_turb")]
+    pub d_turb: f64,
+    ///Reference load set-point
+    #[serde(rename = "P_ref", default = "defaults::GasTG_p_ref")]
+    pub p_ref: f64,
 }
 ///Supplemental attribute describing forced outages whose transitions follow geometric distributions, parameterized by the probability of entering an outage and the mean time to recovery. Both the outage and recovery probabilities can be backed by time series.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -17136,12 +19002,175 @@ pub struct HourlyMatching {
     ///Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`).
     pub available: bool,
 }
+///Parameters of Hybrid Current Controller Limiter. Regulates the magnitude of the inverter output current, but with a closed loop feedback regulated by a virtual impedance which provides ant-windup. Described in: Novel Hybrid Current Limiter for Grid-Forming Inverter Control During Unbalanced Faults by Baeckland and Seo, 2023
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct HybridOutputCurrentLimiter {
+    ///Maximum limit on current controller input current
+    #[serde(rename = "I_max")]
+    pub i_max: f64,
+    ///Real part of the virtual impedance
+    pub rv: f64,
+    ///Imaginary part of the virtual impedance
+    pub lv: f64,
+}
 ///Attribute to represent hydro power plants. Shared penstocks between units are recorded as PlantAssociation rows with role='penstock'.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct HydroPowerPlant {
     pub id: i64,
     ///Name of the hydro power plant
     pub name: String,
+}
+///IEEE stabilizing model PSS
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct IEEEST {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Code input for stabilizer
+    pub input_code: i64,
+    ///ACBus identification number for control. 0 identifies the bus connected to this component
+    pub remote_bus_control: i64,
+    ///Filter coefficient
+    #[serde(rename = "A1")]
+    pub a1: f64,
+    ///Filter coefficient
+    #[serde(rename = "A2")]
+    pub a2: f64,
+    ///Filter coefficient
+    #[serde(rename = "A3")]
+    pub a3: f64,
+    ///Filter coefficient
+    #[serde(rename = "A4")]
+    pub a4: f64,
+    ///Filter coefficient
+    #[serde(rename = "A5")]
+    pub a5: f64,
+    ///Filter coefficient
+    #[serde(rename = "A6")]
+    pub a6: f64,
+    ///Time constant
+    #[serde(rename = "T1")]
+    pub t1: f64,
+    ///Time constant
+    #[serde(rename = "T2")]
+    pub t2: f64,
+    ///Time constant
+    #[serde(rename = "T3")]
+    pub t3: f64,
+    ///Time constant
+    #[serde(rename = "T4")]
+    pub t4: f64,
+    ///Time constant
+    #[serde(rename = "T5")]
+    pub t5: f64,
+    ///Time constant
+    #[serde(rename = "T6")]
+    pub t6: f64,
+    ///Proportional gain
+    #[serde(rename = "Ks")]
+    pub ks: f64,
+    ///PSS output limits for regulator output (Ls_min, Ls_max)
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Ls_lim")]
+    pub ls_lim: Vec<f64>,
+    ///Cutoff limiter upper bound
+    #[serde(rename = "Vcu")]
+    pub vcu: f64,
+    ///Cutoff limiter lower bound
+    #[serde(rename = "Vcl")]
+    pub vcl: f64,
+}
+///Parameters of Instantaneous (Square) Current Controller Limiter. Regulates inverter output current on the d and q axis separately
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct InstantaneousOutputCurrentLimiter {
+    ///Maximum limit on d-axis current controller input current
+    #[serde(rename = "Id_max")]
+    pub id_max: f64,
+    ///Maximum limit on q-axis current controller input current
+    #[serde(rename = "Iq_max")]
+    pub iq_max: f64,
+}
+///Parameters of a Phase-Locked Loop (PLL) based on 'Operation of a phase locked loop system under distorted utility conditions' by Vikram Kaura, and Vladimir Blasko
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct KauraPLL {
+    ///PLL low-pass filter frequency
+    pub omega_lp: f64,
+    ///PLL proportional gain
+    pub kp_pll: f64,
+    ///PLL integral gain
+    pub ki_pll: f64,
+}
+///Parameters of a LCL filter outside the converter
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct LCFilter {
+    ///Filter inductance
+    pub lf: f64,
+    ///Filter resistance
+    pub rf: f64,
+    ///Filter capacitance
+    pub cf: f64,
+}
+///Parameters of a LCL filter outside the converter, the states are in the grid's reference frame
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct LCLFilter {
+    ///Series inductance of converter filter
+    pub lf: f64,
+    ///Series resistance of converter filter
+    pub rf: f64,
+    ///Shunt capacitance of converter filter
+    pub cf: f64,
+    ///Series inductance of converter filter to the grid
+    pub lg: f64,
+    ///Series resistance of converter filter to the grid
+    pub rg: f64,
+}
+///Parameters of Magnitude (Circular) Current Controller Limiter. Regulates only the magnitude of the inverter output current
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct MagnitudeOutputCurrentLimiter {
+    ///Maximum limit on current controller input current
+    #[serde(rename = "I_max")]
+    pub i_max: f64,
+}
+///Parameters of 6-states synchronous machine: Marconato model
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct MarconatoMachine {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Resistance after EMF
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Reactance after EMF in d-axis
+    #[serde(rename = "Xd")]
+    pub xd: f64,
+    ///Reactance after EMF in q-axis
+    #[serde(rename = "Xq")]
+    pub xq: f64,
+    ///Transient reactance after EMF in d-axis
+    #[serde(rename = "Xd_p")]
+    pub xd_p: f64,
+    ///Transient reactance after EMF in q-axis
+    #[serde(rename = "Xq_p")]
+    pub xq_p: f64,
+    ///Sub-Transient reactance after EMF in d-axis
+    #[serde(rename = "Xd_pp")]
+    pub xd_pp: f64,
+    ///Sub-Transient reactance after EMF in q-axis
+    #[serde(rename = "Xq_pp")]
+    pub xq_pp: f64,
+    ///Time constant of transient d-axis voltage
+    #[serde(rename = "Td0_p")]
+    pub td0_p: f64,
+    ///Time constant of transient q-axis voltage
+    #[serde(rename = "Tq0_p")]
+    pub tq0_p: f64,
+    ///Time constant of sub-transient d-axis voltage
+    #[serde(rename = "Td0_pp")]
+    pub td0_pp: f64,
+    ///Time constant of sub-transient q-axis voltage
+    #[serde(rename = "Tq0_pp")]
+    pub tq0_pp: f64,
+    ///Time constant of d-axis additional leakage, validation range
+    #[serde(rename = "T_AA")]
+    pub t_aa: f64,
 }
 ///Policy requirement that the total capacity of all eligible technologies in the target year be less than the specified limit in MW.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -17174,6 +19203,308 @@ pub struct MinimumCapacityRequirements {
     ///Minimum total capacity across all eligible resources. Units: MW.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub min_capacity_mw: Option<f64>,
+}
+///Parameters of 4-states synchronous machine: Simplified Marconato model The derivative of stator fluxes (ψd and ψq) is neglected and ωψd = ψd and ωψq = ψq is assumed (i.e. ω=1.0). This is standard when transmission network dynamics is neglected
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct OneDOneQMachine {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Resistance after EMF
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Reactance after EMF in d-axis
+    #[serde(rename = "Xd")]
+    pub xd: f64,
+    ///Reactance after EMF in q-axis
+    #[serde(rename = "Xq")]
+    pub xq: f64,
+    ///Transient reactance after EMF in d-axis
+    #[serde(rename = "Xd_p")]
+    pub xd_p: f64,
+    ///Transient reactance after EMF in q-axis
+    #[serde(rename = "Xq_p")]
+    pub xq_p: f64,
+    ///Time constant of transient d-axis voltage
+    #[serde(rename = "Td0_p")]
+    pub td0_p: f64,
+    ///Time constant of transient q-axis voltage
+    #[serde(rename = "Tq0_p")]
+    pub tq0_p: f64,
+}
+///IEEE dual-input stabilizer model
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct PSS2A {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///First input code for stabilizer
+    pub input_code_1: i64,
+    ///First input remote bus identification number for control. 0 identifies the local bus connected to this component
+    pub remote_bus_control_1: i64,
+    ///Second input code for stabilizer
+    pub input_code_2: i64,
+    ///Second input remote bus identification number for control. 0 identifies the local bus connected to this component
+    pub remote_bus_control_2: i64,
+    ///M parameter for ramp tracking filter
+    #[serde(rename = "M_rtf")]
+    pub m_rtf: i64,
+    ///N parameter for ramp tracking filter
+    #[serde(rename = "N_rtf")]
+    pub n_rtf: i64,
+    ///Time constant for first washout filter for first input
+    #[serde(rename = "Tw1")]
+    pub tw1: f64,
+    ///Time constant for second washout filter for first input
+    #[serde(rename = "Tw2")]
+    pub tw2: f64,
+    ///Time constant for low-pass filter for first input
+    #[serde(rename = "T6")]
+    pub t6: f64,
+    ///Time constant for first washout filter for second input
+    #[serde(rename = "Tw3")]
+    pub tw3: f64,
+    ///Time constant for second washout filter for second input
+    #[serde(rename = "Tw4")]
+    pub tw4: f64,
+    ///Time constant for low-pass filter for second input
+    #[serde(rename = "T7")]
+    pub t7: f64,
+    ///Gain for low-pass filter for second input
+    #[serde(rename = "Ks2")]
+    pub ks2: f64,
+    ///Gain for second input
+    #[serde(rename = "Ks3")]
+    pub ks3: f64,
+    ///Time constant for ramp tracking filter
+    #[serde(rename = "T8")]
+    pub t8: f64,
+    ///Time constant for ramp tracking filter
+    #[serde(rename = "T9")]
+    pub t9: f64,
+    ///Gain before lead-lag blocks
+    #[serde(rename = "Ks1")]
+    pub ks1: f64,
+    ///Time constant for first lead-lag block
+    #[serde(rename = "T1")]
+    pub t1: f64,
+    ///Time constant for first lead-lag block
+    #[serde(rename = "T2")]
+    pub t2: f64,
+    ///Time constant for second lead-lag block
+    #[serde(rename = "T3")]
+    pub t3: f64,
+    ///Time constant for second lead-lag block
+    #[serde(rename = "T4")]
+    pub t4: f64,
+    ///PSS output limits (Vst_min, Vst_max)
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Vst_lim")]
+    pub vst_lim: Vec<f64>,
+}
+///IEEE 421.5 2005 PSS2B IEEE Dual-Input Stabilizer Model
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct PSS2B {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///First input code for stabilizer
+    pub input_code_1: i64,
+    ///First input remote bus identification number for control. 0 identifies the local bus connected to this component
+    pub remote_bus_control_1: i64,
+    ///Second input code for stabilizer
+    pub input_code_2: i64,
+    ///Second input remote bus identification number for control. 0 identifies the local bus connected to this component
+    pub remote_bus_control_2: i64,
+    ///M parameter for ramp tracking filter
+    #[serde(rename = "M_rtf")]
+    pub m_rtf: i64,
+    ///N parameter for ramp tracking filter
+    #[serde(rename = "N_rtf")]
+    pub n_rtf: i64,
+    ///Time constant for first washout filter for first input
+    #[serde(rename = "Tw1")]
+    pub tw1: f64,
+    ///Time constant for second washout filter for first input
+    #[serde(rename = "Tw2")]
+    pub tw2: f64,
+    ///Time constant for low-pass filter for first input
+    #[serde(rename = "T6")]
+    pub t6: f64,
+    ///Time constant for first washout filter for second input
+    #[serde(rename = "Tw3")]
+    pub tw3: f64,
+    ///Time constant for second washout filter for second input
+    #[serde(rename = "Tw4")]
+    pub tw4: f64,
+    ///Time constant for low-pass filter for second input
+    #[serde(rename = "T7")]
+    pub t7: f64,
+    ///Gain for low-pass filter for second input
+    #[serde(rename = "Ks2")]
+    pub ks2: f64,
+    ///Gain for second input
+    #[serde(rename = "Ks3")]
+    pub ks3: f64,
+    ///Time constant for ramp tracking filter
+    #[serde(rename = "T8")]
+    pub t8: f64,
+    ///Time constant for ramp tracking filter
+    #[serde(rename = "T9")]
+    pub t9: f64,
+    ///Gain before lead-lag blocks
+    #[serde(rename = "Ks1")]
+    pub ks1: f64,
+    ///Time constant for first lead-lag block
+    #[serde(rename = "T1")]
+    pub t1: f64,
+    ///Time constant for first lead-lag block
+    #[serde(rename = "T2")]
+    pub t2: f64,
+    ///Time constant for second lead-lag block
+    #[serde(rename = "T3")]
+    pub t3: f64,
+    ///Time constant for second lead-lag block
+    #[serde(rename = "T4")]
+    pub t4: f64,
+    ///Time constant for third lead-lag block
+    #[serde(rename = "T10")]
+    pub t10: f64,
+    ///Time constant for third lead-lag block
+    #[serde(rename = "T11")]
+    pub t11: f64,
+    ///First input limits (Vs1_min, Vs1_max)
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Vs1_lim")]
+    pub vs1_lim: Vec<f64>,
+    ///Second input limits (Vs2_min, Vs2_max)
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Vs2_lim")]
+    pub vs2_lim: Vec<f64>,
+    ///PSS output limits (Vst_min, Vst_max)
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Vst_lim")]
+    pub vst_lim: Vec<f64>,
+}
+///IEEE 421.5 2016 PSS2C IEEE Dual-Input Stabilizer Model
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct PSS2C {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///First input code for stabilizer
+    pub input_code_1: i64,
+    ///First input remote bus identification number for control. 0 identifies the local bus connected to this component
+    pub remote_bus_control_1: i64,
+    ///Second input code for stabilizer
+    pub input_code_2: i64,
+    ///Second input remote bus identification number for control. 0 identifies the local bus connected to this component
+    pub remote_bus_control_2: i64,
+    ///M parameter for ramp tracking filter
+    #[serde(rename = "M_rtf")]
+    pub m_rtf: i64,
+    ///N parameter for ramp tracking filter
+    #[serde(rename = "N_rtf")]
+    pub n_rtf: i64,
+    ///Time constant for first washout filter for first input
+    #[serde(rename = "Tw1")]
+    pub tw1: f64,
+    ///Time constant for second washout filter for first input
+    #[serde(rename = "Tw2")]
+    pub tw2: f64,
+    ///Time constant for low-pass filter for first input
+    #[serde(rename = "T6")]
+    pub t6: f64,
+    ///Time constant for first washout filter for second input
+    #[serde(rename = "Tw3")]
+    pub tw3: f64,
+    ///Time constant for second washout filter for second input
+    #[serde(rename = "Tw4")]
+    pub tw4: f64,
+    ///Time constant for low-pass filter for second input
+    #[serde(rename = "T7")]
+    pub t7: f64,
+    ///Gain for low-pass filter for second input
+    #[serde(rename = "Ks2")]
+    pub ks2: f64,
+    ///Gain for second input
+    #[serde(rename = "Ks3")]
+    pub ks3: f64,
+    ///Time constant for ramp tracking filter
+    #[serde(rename = "T8")]
+    pub t8: f64,
+    ///Time constant for ramp tracking filter
+    #[serde(rename = "T9")]
+    pub t9: f64,
+    ///Gain before lead-lag blocks
+    #[serde(rename = "Ks1")]
+    pub ks1: f64,
+    ///Time constant for first lead-lag block
+    #[serde(rename = "T1")]
+    pub t1: f64,
+    ///Time constant for first lead-lag block
+    #[serde(rename = "T2")]
+    pub t2: f64,
+    ///Time constant for second lead-lag block
+    #[serde(rename = "T3")]
+    pub t3: f64,
+    ///Time constant for second lead-lag block
+    #[serde(rename = "T4")]
+    pub t4: f64,
+    ///Time constant for third lead-lag block
+    #[serde(rename = "T10")]
+    pub t10: f64,
+    ///Time constant for third lead-lag block
+    #[serde(rename = "T11")]
+    pub t11: f64,
+    ///First input limits (Vs1_min, Vs1_max)
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Vs1_lim")]
+    pub vs1_lim: Vec<f64>,
+    ///Second input limits (Vs2_min, Vs2_max)
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Vs2_lim")]
+    pub vs2_lim: Vec<f64>,
+    ///PSS output limits (Vst_min, Vst_max)
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Vst_lim")]
+    pub vst_lim: Vec<f64>,
+    ///Time constant for fourth lead-lag block
+    #[serde(rename = "T12")]
+    pub t12: f64,
+    ///Time constant for fourth lead-lag block
+    #[serde(rename = "T13")]
+    pub t13: f64,
+    ///PSS output hysteresis parameters (PSSOFF, PSSON)
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "PSS_Hysteresis_param")]
+    pub pss_hysteresis_param: Vec<f64>,
+    ///Stator leakage reactance
+    #[serde(rename = "Xcomp")]
+    pub xcomp: f64,
+    ///Time measured with compensated frequency
+    #[serde(rename = "Tcomp")]
+    pub tcomp: f64,
+    ///Hysteresis memory variable
+    #[serde(default = "defaults::PSS2C_hysteresis_binary_logic")]
+    pub hysteresis_binary_logic: i64,
+}
+///Parameters of a PSS that returns a fixed voltage to add to the reference for the AVR
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct PSSFixed {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Fixed voltage stabilization signal
+    #[serde(rename = "V_pss")]
+    pub v_pss: f64,
+}
+///Parameters of a PSS that returns a proportional droop voltage to add to the reference for the AVR
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct PSSSimple {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Proportional gain for frequency
+    #[serde(rename = "K_omega")]
+    pub k_omega: f64,
+    ///Proportional gain for active power
+    #[serde(rename = "K_p")]
+    pub k_p: f64,
 }
 ///Supplemental attribute describing outages that are scheduled in advance, naming the time series that carries the schedule.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -17219,6 +19550,75 @@ pub struct PortfolioFinancialData {
     ///Base economic year. All costs will be converted to a net present value in this year.
     pub base_year: i64,
 }
+///Parameters of Priority-Based Current Controller Limiter. Regulates the magnitude of the inverter output current and prioritizes a specific angle for the resultant current signal
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct PriorityOutputCurrentLimiter {
+    ///Maximum limit on current controller input current
+    #[serde(rename = "I_max")]
+    pub i_max: f64,
+    ///Pre-defined angle (measured against the d-axis) for Iref once limit Imax is hit
+    #[serde(rename = "phi_I")]
+    pub phi_i: f64,
+}
+///Parameters of RL series filter in algebraic representation
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct RLFilter {
+    ///Series resistance in p.u. of converter filter to the grid
+    pub rf: f64,
+    ///Series inductance in p.u. of converter filter to the grid
+    pub lf: f64,
+}
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ReactivePowerDroop {
+    pub kq: f64,
+    pub omegaf: f64,
+    #[serde(rename = "V_ref", default = "defaults::ReactivePowerDroop_v_ref")]
+    pub v_ref: f64,
+}
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ReactivePowerPI {
+    #[serde(rename = "Kp_q")]
+    pub kp_q: f64,
+    #[serde(rename = "Ki_q")]
+    pub ki_q: f64,
+    pub omegaf: f64,
+    #[serde(rename = "V_ref", default = "defaults::ReactivePowerPI_v_ref")]
+    pub v_ref: f64,
+    #[serde(rename = "Q_ref", default = "defaults::ReactivePowerPI_q_ref")]
+    pub q_ref: f64,
+}
+///Supplemental attribute grouping the setpoint voltage regulating devices that hold the voltage at one bus, so the reactive power required there can be split between them. The members' shares are their VoltageControlAssociation weights, each divided by the sum over the members in service (PSS/E RMPCT). The regulated bus is not stored: every member already resolves to the same bus. A bus regulated by two or more setpoint devices has exactly one sharing group containing all of them; a lone device has none.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ReactivePowerSharing {
+    ///Unique integer identifier for this supplemental attribute.
+    pub id: i64,
+    ///Name of the sharing group.
+    pub name: String,
+}
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ReactiveVirtualOscillator {
+    pub k2: f64,
+    #[serde(
+        rename = "V_ref",
+        default = "defaults::ReactiveVirtualOscillator_v_ref"
+    )]
+    pub v_ref: f64,
+    #[serde(
+        rename = "Q_ref",
+        default = "defaults::ReactiveVirtualOscillator_q_ref"
+    )]
+    pub q_ref: f64,
+}
+///Parameters of a Phase-Locked Loop (PLL) based on 'Reduced-order Structure-preserving Model for Parallel-connected Three-phase Grid-tied Inverters'
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ReducedOrderPLL {
+    ///PLL low-pass filter frequency
+    pub omega_lp: f64,
+    ///PLL proportional gain
+    pub kp_pll: f64,
+    ///PLL integral gain
+    pub ki_pll: f64,
+}
 ///Attribute to represent renewable power plants. Point of common coupling (PCC) connections between units are recorded as PlantAssociation rows with role='pcc'.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct RenewablePowerPlant {
@@ -17261,12 +19661,23 @@ impl AsRef<str> for ReservoirLocation {
         self.as_str()
     }
 }
-///Parameters of 4-states round-rotor synchronous machine with quadratic/exponential saturation: IEEE Std 1110 5.3.2 (Model 2.2). GENROU or GENROE model in PSSE and PSLF.
+///4-states round-rotor synchronous machine with exponential saturation: IEEE Std 1110 §5.3.2 (Model 2.2). GENROE model in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct RoundRotorExponential {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Round Rotor machine parameters
+    pub base_machine: i64,
+    ///Derived saturation coefficients for the exponential saturation model, computed from the Se input
+    ///Constraint: minItems=2, maxItems=2
+    pub saturation_coeffs: Vec<f64>,
+}
+///Parameters of 4-states round-rotor synchronous machine with quadratic/exponential saturation: IEEE Std 1110 5.3.2 (Model 2.2). GENROU or GENROE model in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct RoundRotorMachine {
-    ///Unique integer identifier for this component.
+    ///Unique integer identifier for this component
     pub id: i64,
-    ///Armature resistance.
+    ///Armature resistance
     #[serde(rename = "R")]
     pub r: f64,
     ///Time constant of transient d-axis voltage. Units: s.
@@ -17281,38 +19692,176 @@ pub struct RoundRotorMachine {
     ///Time constant of sub-transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_pp")]
     pub tq0_pp: f64,
-    ///Reactance after EMF in d-axis.
+    ///Reactance after EMF in d-axis
     #[serde(rename = "Xd")]
     pub xd: f64,
-    ///Reactance after EMF in q-axis.
+    ///Reactance after EMF in q-axis
     #[serde(rename = "Xq")]
     pub xq: f64,
-    ///Transient reactance after EMF in d-axis.
+    ///Transient reactance after EMF in d-axis
     #[serde(rename = "Xd_p")]
     pub xd_p: f64,
-    ///Transient reactance after EMF in q-axis.
+    ///Transient reactance after EMF in q-axis
     #[serde(rename = "Xq_p")]
     pub xq_p: f64,
-    ///Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp.
+    ///Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp
     #[serde(rename = "Xd_pp")]
     pub xd_pp: f64,
-    ///Stator leakage reactance.
+    ///Stator leakage reactance
     #[serde(rename = "Xl")]
     pub xl: f64,
-    ///Saturation factor at 1 and 1.2 pu flux: S(1.0) = B(|psi_pp|-A)^2.
+    ///Saturation factor at 1 and 1.2 pu flux: S(1.0) = B(|psi_pp|-A)^2
     ///Constraint: minItems=2, maxItems=2
     #[serde(rename = "Se")]
     pub se: Vec<f64>,
-    ///Do not modify
-    pub gamma_d1: f64,
-    ///Do not modify
-    pub gamma_q1: f64,
-    ///Do not modify
-    pub gamma_d2: f64,
-    ///Do not modify
-    pub gamma_q2: f64,
-    ///Do not modify
-    pub gamma_qd: f64,
+}
+///4-states round-rotor synchronous machine with quadratic saturation: IEEE Std 1110 §5.3.2 (Model 2.2). GENROU model in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct RoundRotorQuadratic {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Round Rotor machine parameters
+    pub base_machine: i64,
+    ///Derived saturation coefficients for the quadratic saturation model, computed from the Se input
+    ///Constraint: minItems=2, maxItems=2
+    pub saturation_coeffs: Vec<f64>,
+}
+///Speed-sensitive stabilizing model
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct STAB1 {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///K/T for washout filter
+    #[serde(rename = "KT")]
+    pub kt: f64,
+    ///Time constant for washout filter
+    #[serde(rename = "T")]
+    pub t: f64,
+    ///Time constant division T1/T3
+    #[serde(rename = "T1T3")]
+    pub t1_t3: f64,
+    ///Time constant
+    #[serde(rename = "T3")]
+    pub t3: f64,
+    ///Time constant division T2/T4
+    #[serde(rename = "T2T4")]
+    pub t2_t4: f64,
+    ///Time constant
+    #[serde(rename = "T4")]
+    pub t4: f64,
+    ///PSS output limit
+    #[serde(rename = "H_lim")]
+    pub h_lim: f64,
+}
+///3-states salient-pole synchronous machine with exponential saturation: IEEE Std 1110 §5.3.2 (Model 2.1). GENSAE in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct SalientPoleExponential {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Salient pole machine parameters
+    pub base_machine: i64,
+    ///Derived saturation coefficients for the exponential saturation model, computed from the Se input
+    ///Constraint: minItems=2, maxItems=2
+    pub saturation_coeffs: Vec<f64>,
+}
+///Parameters of 3-states salient-pole synchronous machine with quadratic/exponential saturation: IEEE Std 1110 §5.3.1 (Model 2.1). GENSAL or GENSAE model in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct SalientPoleMachine {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Armature resistance
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Time constant of transient d-axis voltage Units: s.
+    #[serde(rename = "Td0_p")]
+    pub td0_p: f64,
+    ///Time constant of sub-transient d-axis voltage Units: s.
+    #[serde(rename = "Td0_pp")]
+    pub td0_pp: f64,
+    ///Time constant of sub-transient q-axis voltage Units: s.
+    #[serde(rename = "Tq0_pp")]
+    pub tq0_pp: f64,
+    ///Reactance after EMF in d-axis
+    #[serde(rename = "Xd")]
+    pub xd: f64,
+    ///Reactance after EMF in q-axis
+    #[serde(rename = "Xq")]
+    pub xq: f64,
+    ///Transient reactance after EMF in d-axis
+    #[serde(rename = "Xd_p")]
+    pub xd_p: f64,
+    ///Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp
+    #[serde(rename = "Xd_pp")]
+    pub xd_pp: f64,
+    ///Stator leakage reactance
+    #[serde(rename = "Xl")]
+    pub xl: f64,
+    ///Saturation factor at 1 and 1.2 pu flux: Se(eqp) = B(eqp-A)^2
+    ///Constraint: minItems=2, maxItems=2
+    #[serde(rename = "Se")]
+    pub se: Vec<f64>,
+}
+///3-states salient-pole synchronous machine with quadratic saturation: IEEE Std 1110 §5.3.2 (Model 2.1). GENSAL in PSSE and PSLF
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct SalientPoleQuadratic {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Salient pole machine parameters
+    pub base_machine: i64,
+    ///Derived saturation coefficients for the quadratic saturation model, computed from the Se input
+    ///Constraint: minItems=2, maxItems=2
+    pub saturation_coeffs: Vec<f64>,
+}
+///Parameters of Saturation Current Controller Limiter. Regulates the magnitude of the inverter output current, and applies a closed loop feedback regulated by a static gain which provides ant-windup
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct SaturationOutputCurrentLimiter {
+    ///Maximum limit on current controller input current
+    #[serde(rename = "I_max")]
+    pub i_max: f64,
+    ///Defined feedback gain
+    pub kw: f64,
+}
+///Parameters of synchronous machine: Sauer Pai model
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct SauerPaiMachine {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Resistance after EMF
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Reactance after EMF in d-axis
+    #[serde(rename = "Xd")]
+    pub xd: f64,
+    ///Reactance after EMF in q-axis
+    #[serde(rename = "Xq")]
+    pub xq: f64,
+    ///Transient reactance after EMF in d-axis
+    #[serde(rename = "Xd_p")]
+    pub xd_p: f64,
+    ///Transient reactance after EMF in q-axis
+    #[serde(rename = "Xq_p")]
+    pub xq_p: f64,
+    ///Sub-Transient reactance after EMF in d-axis
+    #[serde(rename = "Xd_pp")]
+    pub xd_pp: f64,
+    ///Sub-Transient reactance after EMF in q-axis
+    #[serde(rename = "Xq_pp")]
+    pub xq_pp: f64,
+    ///Stator leakage reactance
+    #[serde(rename = "Xl")]
+    pub xl: f64,
+    ///Time constant of transient d-axis voltage Units: s.
+    #[serde(rename = "Td0_p")]
+    pub td0_p: f64,
+    ///Time constant of transient q-axis voltage Units: s.
+    #[serde(rename = "Tq0_p")]
+    pub tq0_p: f64,
+    ///Time constant of sub-transient d-axis voltage Units: s.
+    #[serde(rename = "Td0_pp")]
+    pub td0_pp: f64,
+    ///Time constant of sub-transient q-axis voltage Units: s.
+    #[serde(rename = "Tq0_pp")]
+    pub tq0_pp: f64,
 }
 ///Links a service to one component that contributes to it. One record per (service, member) pair: the many-to-many reserve-participation relation is normalized here rather than carried as a list on either side, so each membership is an individually addressable row. The type of either side is resolved through the entity registry rather than duplicated here, matching the shape of PlantAssociation and SupplementalAttributeAssociation. `entity_id` may name a Device (the reserve case), a Branch (TransmissionInterface), or another Service (GroupReserve), so no member-type discriminator is needed. The data model library stores the same relation on the device side as `Device.services`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -17321,6 +19870,141 @@ pub struct ServiceAssociation {
     pub service_id: i64,
     ///ID of the contributing member: a Device, a Branch, or another Service.
     pub entity_id: i64,
+}
+///Parameters of 4-states simplified Anderson-Fouad (SimpleAFMachine) model. The derivative of stator fluxes (ψd and ψq) is neglected and ωψd = ψd and ωψq = ψq is assumed (i.e. ω=1.0). This is standard when transmission network dynamics is neglected. If transmission dynamics is considered use the full order Anderson Fouad model
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct SimpleAFMachine {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Resistance after EMF
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Reactance after EMF in d-axis
+    #[serde(rename = "Xd")]
+    pub xd: f64,
+    ///Reactance after EMF in q-axis
+    #[serde(rename = "Xq")]
+    pub xq: f64,
+    ///Transient reactance after EMF in d-axis
+    #[serde(rename = "Xd_p")]
+    pub xd_p: f64,
+    ///Transient reactance after EMF in q-axis
+    #[serde(rename = "Xq_p")]
+    pub xq_p: f64,
+    ///Sub-Transient reactance after EMF in d-axis
+    #[serde(rename = "Xd_pp")]
+    pub xd_pp: f64,
+    ///Sub-Transient reactance after EMF in q-axis
+    #[serde(rename = "Xq_pp")]
+    pub xq_pp: f64,
+    ///Time constant of transient d-axis voltage Units: s.
+    #[serde(rename = "Td0_p")]
+    pub td0_p: f64,
+    ///Time constant of transient q-axis voltage Units: s.
+    #[serde(rename = "Tq0_p")]
+    pub tq0_p: f64,
+    ///Time constant of sub-transient d-axis voltage Units: s.
+    #[serde(rename = "Td0_pp")]
+    pub td0_pp: f64,
+    ///Time constant of sub-transient q-axis voltage Units: s.
+    #[serde(rename = "Tq0_pp")]
+    pub tq0_pp: f64,
+}
+///Parameter of a full order flux stator-rotor model without zero sequence flux in the stator. The derivative of stator fluxes (ψd and ψq) is neglected. This is standard when transmission network dynamics is neglected. Only one q-axis damping circuit is considered. All per unit are in machine per unit. Refer to Chapter 3 of Power System Stability and Control by P. Kundur or Chapter 11 of Power System Dynamics: Stability and Control, by J. Machowski, J. Bialek and J. Bumby, for more details. Note that the models are somewhat different (but equivalent) due to the different Park Transformation used in both books
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct SimpleFullMachine {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Resistance after EMF
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Field motor winding resistance
+    #[serde(rename = "R_f")]
+    pub r_f: f64,
+    ///Damping rotor winding resistance on d-axis, denoted as RD in Machowski
+    #[serde(rename = "R_1d")]
+    pub r_1d: f64,
+    ///Damping rotor winding resistance on q-axis, denoted as RQ in Machowski
+    #[serde(rename = "R_1q")]
+    pub r_1q: f64,
+    ///Inductance of fictitious damping that represent the effect of the three-phase stator winding in the d-axis of the rotor, in per unit. This value is denoted as Lad + Ll in Kundur (and Ld in Machowski)
+    #[serde(rename = "L_d")]
+    pub l_d: f64,
+    ///Inductance of fictitious damping that represent the effect of the three-phase stator winding in the q-axis of the rotor, in per unit. This value is denoted as Laq + Ll in Kundur
+    #[serde(rename = "L_q")]
+    pub l_q: f64,
+    ///Mutual inductance between stator winding and rotor field (and damping) winding inductance on d-axis
+    #[serde(rename = "L_ad")]
+    pub l_ad: f64,
+    ///Mutual inductance between stator winding and rotor damping winding inductance on q-axi
+    #[serde(rename = "L_aq")]
+    pub l_aq: f64,
+    ///Mutual inductance between rotor field winding and rotor damping winding inductance on d-axis
+    #[serde(rename = "L_f1d")]
+    pub l_f1d: f64,
+    ///Field rotor winding inductance
+    #[serde(rename = "L_ff")]
+    pub l_ff: f64,
+    ///Inductance of the d-axis rotor damping circuit
+    #[serde(rename = "L_1d")]
+    pub l_1d: f64,
+    ///Inductance of the q-axis rotor damping circuit
+    #[serde(rename = "L_1q")]
+    pub l_1q: f64,
+}
+///Parameters of 4-states synchronous machine: Simplified Marconato model The derivative of stator fluxes (ψd and ψq) is neglected and ωψd = ψd and ωψq = ψq is assumed (i.e. ω=1.0). This is standard when transmission network dynamics is neglected
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct SimpleMarconatoMachine {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Resistance after EMF
+    #[serde(rename = "R")]
+    pub r: f64,
+    ///Reactance after EMF in d-axis
+    #[serde(rename = "Xd")]
+    pub xd: f64,
+    ///Reactance after EMF in q-axis
+    #[serde(rename = "Xq")]
+    pub xq: f64,
+    ///Transient reactance after EMF in d-axis
+    #[serde(rename = "Xd_p")]
+    pub xd_p: f64,
+    ///Transient reactance after EMF in q-axis
+    #[serde(rename = "Xq_p")]
+    pub xq_p: f64,
+    ///Sub-Transient reactance after EMF in d-axis
+    #[serde(rename = "Xd_pp")]
+    pub xd_pp: f64,
+    ///Sub-Transient reactance after EMF in q-axis
+    #[serde(rename = "Xq_pp")]
+    pub xq_pp: f64,
+    ///Time constant of transient d-axis voltage
+    #[serde(rename = "Td0_p")]
+    pub td0_p: f64,
+    ///Time constant of transient q-axis voltage
+    #[serde(rename = "Tq0_p")]
+    pub tq0_p: f64,
+    ///Time constant of sub-transient d-axis voltage
+    #[serde(rename = "Td0_pp")]
+    pub td0_pp: f64,
+    ///Time constant of sub-transient q-axis voltage
+    #[serde(rename = "Tq0_pp")]
+    pub tq0_pp: f64,
+    ///Time constant of d-axis additional leakage
+    #[serde(rename = "T_AA")]
+    pub t_aa: f64,
+}
+///Parameters of single mass shaft model. Typically represents the rotor mass
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct SingleMass {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Rotor inertia constant in MWs/MVA
+    #[serde(rename = "H")]
+    pub h: f64,
+    ///Rotor natural damping
+    #[serde(rename = "D")]
+    pub d: f64,
 }
 ///Supplemental attribute representing a substation that groups node buses and switching devices of a full-topology (node-breaker) network model. Attach the attribute to every member component. Geospatial data is not stored here; attach a GeographicInfo attribute to the member components instead.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -17346,21 +20030,37 @@ pub struct SupplementalAttributeAssociation {
     ///Schema title of the referenced supplemental attribute (e.g. "EmissionsData", "GeographicInfo"). A free-form string, not an enum: new attribute types are added elsewhere in this repo continuously, and a closed enum here would go stale.
     pub attribute_type: String,
 }
+///Parameters of a fixed Turbine Governor that returns a fixed mechanical torque given by the product of P_ref*efficiency
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct TGFixed {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Efficiency factor that multiplies P_ref
+    pub efficiency: f64,
+    ///Reference power set-point
+    #[serde(rename = "P_ref", default = "defaults::TGFixed_p_ref")]
+    pub p_ref: f64,
+}
+///Parameters of a Simple one-state Turbine Governor
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct TGSimple {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Inverse droop parameter
+    pub d_t: f64,
+    ///Turbine governor low-pass time constant
+    #[serde(rename = "Tm")]
+    pub tm: f64,
+    ///Reference power set-point
+    #[serde(rename = "P_ref", default = "defaults::TGSimple_p_ref")]
+    pub p_ref: f64,
+}
 ///Attribute to represent ThermalGen power plants with synchronous generation. Shared shafts between units are recorded as PlantAssociation rows with role='shaft'.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct ThermalPowerPlant {
     pub id: i64,
     ///Name of the power plant
     pub name: String,
-}
-///Supplemental attribute storing the mapping between a zone and the associated buses in the base system.
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
-pub struct TopologyMapping {
-    ///ID for individual component.
-    pub id: i64,
-    ///List of buses in the base system that are associated with a zone.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub buses: Option<Vec<String>>,
 }
 ///A market trading hub: a named set of member buses at which hub-settled bids are priced. Membership is carried as TradingHubAssociation rows rather than a list on this record, matching the service-membership convention.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -17378,9 +20078,77 @@ pub struct TradingHubAssociation {
     ///ID of the associated entity: a bus or a market transaction.
     pub entity_id: i64,
 }
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct VirtualInertia {
+    #[serde(rename = "Ta")]
+    pub ta: f64,
+    pub kd: f64,
+    pub komega: f64,
+    #[serde(rename = "P_ref", default = "defaults::VirtualInertia_p_ref")]
+    pub p_ref: f64,
+}
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct VoltageModeControl {
+    pub kpv: f64,
+    pub kiv: f64,
+    pub kffv: f64,
+    pub rv: f64,
+    pub lv: f64,
+    pub kpc: f64,
+    pub kic: f64,
+    pub kffi: f64,
+    pub omegaad: f64,
+    pub kad: f64,
+}
+///Parameters for the DC-side with a Battery Energy Storage System from 'Grid-Coupled Dynamic Response of Battery-Driven Voltage Source Converters'
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ZeroOrderBESS {
+    ///Rated voltage (V)
+    pub rated_voltage: f64,
+    ///Rated current (A)
+    pub rated_current: f64,
+    ///Battery voltage
+    pub battery_voltage: f64,
+    ///Rated current (A)
+    pub battery_resistance: f64,
+    ///DC/DC inductance
+    pub dc_dc_inductor: f64,
+    ///DC-link capacitance
+    pub dc_link_capacitance: f64,
+    ///DC/DC converter switching frequency
+    pub fs: f64,
+    ///Voltage controller proportional gain
+    pub kpv: f64,
+    ///Voltage controller integral gain
+    pub kiv: f64,
+    ///Current controller proportional gain
+    pub kpi: f64,
+    ///Current controller integral gain
+    pub kii: f64,
+    ///Reference DC-voltage set-point
+    #[serde(rename = "Vdc_ref", default = "defaults::ZeroOrderBESS_vdc_ref")]
+    pub vdc_ref: f64,
+}
 #[allow(non_snake_case)]
 pub mod defaults {
     use super::*;
+    pub fn WPIDHY_p_ref() -> f64 {
+        1f64
+    }
+    pub fn VoltageDroopControl_available() -> bool {
+        true
+    }
+    pub fn VoltageDroopControl_voltage_units() -> VoltageUnitBasis {
+        ::serde_json::from_str::<VoltageUnitBasis>("\"COMPONENT_BASE\"")
+            .expect("schema default for VoltageDroopControl.voltage_units")
+    }
+    pub fn VoltageControlAssociation_terminal() -> VoltageControlTerminal {
+        ::serde_json::from_str::<VoltageControlTerminal>("\"UNDEFINED\"")
+            .expect("schema default for VoltageControlAssociation.terminal")
+    }
+    pub fn VoltageControlAssociation_weight() -> f64 {
+        1f64
+    }
     pub fn TwoWindingTransformer_admittance_units() -> AdmittanceUnitBasis {
         ::serde_json::from_str::<AdmittanceUnitBasis>("\"COMPONENT_BASE\"")
             .expect("schema default for TwoWindingTransformer.admittance_units")
@@ -17392,24 +20160,6 @@ pub mod defaults {
     pub fn TwoWindingTransformer_shunt_location() -> TwoWindingTransformerShuntLocation {
         ::serde_json::from_str::<TwoWindingTransformerShuntLocation>("\"PRIMARY\"")
             .expect("schema default for TwoWindingTransformer.shunt_location")
-    }
-    pub fn TwoTerminalVSCLine_ac_control_from() -> VSCACControlModes {
-        ::serde_json::from_str::<VSCACControlModes>("\"AC_VOLTAGE\"")
-            .expect("schema default for TwoTerminalVSCLine.ac_control_from")
-    }
-    pub fn TwoTerminalVSCLine_ac_control_to() -> VSCACControlModes {
-        ::serde_json::from_str::<VSCACControlModes>("\"AC_VOLTAGE\"")
-            .expect("schema default for TwoTerminalVSCLine.ac_control_to")
-    }
-    pub fn TwoTerminalVSCLine_ac_setpoint_from() -> f64 {
-        1f64
-    }
-    pub fn TwoTerminalVSCLine_ac_setpoint_to() -> f64 {
-        1f64
-    }
-    pub fn TwoTerminalVSCLine_admittance_units() -> AdmittanceUnitBasis {
-        ::serde_json::from_str::<AdmittanceUnitBasis>("\"NATURAL_UNITS\"")
-            .expect("schema default for TwoTerminalVSCLine.admittance_units")
     }
     pub fn TwoTerminalVSCLine_converter_loss_from() -> LossCurve {
         ::serde_json::from_str::<
@@ -17427,21 +20177,7 @@ pub mod defaults {
             )
             .expect("schema default for TwoTerminalVSCLine.converter_loss_to")
     }
-    pub fn TwoTerminalVSCLine_dc_control_from() -> VSCDCControlModes {
-        ::serde_json::from_str::<VSCDCControlModes>("\"DC_VOLTAGE\"")
-            .expect("schema default for TwoTerminalVSCLine.dc_control_from")
-    }
-    pub fn TwoTerminalVSCLine_dc_control_to() -> VSCDCControlModes {
-        ::serde_json::from_str::<VSCDCControlModes>("\"DC_VOLTAGE\"")
-            .expect("schema default for TwoTerminalVSCLine.dc_control_to")
-    }
     pub fn TwoTerminalVSCLine_dc_current() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalVSCLine_dc_setpoint_from() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalVSCLine_dc_setpoint_to() -> f64 {
         0f64
     }
     pub fn TwoTerminalVSCLine_dc_voltage_droop_from() -> f64 {
@@ -17474,12 +20210,6 @@ pub mod defaults {
     pub fn TwoTerminalVSCLine_rated_dc_voltage() -> f64 {
         0f64
     }
-    pub fn TwoTerminalVSCLine_rating_from() -> f64 {
-        100000000f64
-    }
-    pub fn TwoTerminalVSCLine_rating_to() -> f64 {
-        100000000f64
-    }
     pub fn TwoTerminalVSCLine_reactive_power_from() -> f64 {
         0f64
     }
@@ -17494,16 +20224,6 @@ pub mod defaults {
     pub fn TwoTerminalVSCLine_reactive_power_to() -> f64 {
         0f64
     }
-    pub fn TwoTerminalVSCLine_rmpct_from() -> f64 {
-        100f64
-    }
-    pub fn TwoTerminalVSCLine_rmpct_to() -> f64 {
-        100f64
-    }
-    pub fn TwoTerminalVSCLine_setpoint_voltage_units() -> VoltageUnitBasis {
-        ::serde_json::from_str::<VoltageUnitBasis>("\"NATURAL_UNITS\"")
-            .expect("schema default for TwoTerminalVSCLine.setpoint_voltage_units")
-    }
     pub fn TwoTerminalVSCLine_voltage_limits_from() -> MinMax {
         ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":999.9}")
             .expect("schema default for TwoTerminalVSCLine.voltage_limits_from")
@@ -17512,24 +20232,12 @@ pub mod defaults {
         ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":999.9}")
             .expect("schema default for TwoTerminalVSCLine.voltage_limits_to")
     }
-    pub fn TwoTerminalVSCLine_voltage_units() -> VoltageUnitBasis {
-        ::serde_json::from_str::<VoltageUnitBasis>("\"NATURAL_UNITS\"")
-            .expect("schema default for TwoTerminalVSCLine.voltage_units")
-    }
-    pub fn TwoTerminalLCCLine_active_power_limits_from() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":0.0}")
-            .expect("schema default for TwoTerminalLCCLine.active_power_limits_from")
-    }
-    pub fn TwoTerminalLCCLine_active_power_limits_to() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":0.0}")
-            .expect("schema default for TwoTerminalLCCLine.active_power_limits_to")
-    }
     pub fn TwoTerminalLCCLine_compounding_resistance() -> f64 {
         0f64
     }
-    pub fn TwoTerminalLCCLine_dc_voltage_units() -> VoltageUnitBasis {
-        ::serde_json::from_str::<VoltageUnitBasis>("\"NATURAL_UNITS\"")
-            .expect("schema default for TwoTerminalLCCLine.dc_voltage_units")
+    pub fn TwoTerminalLCCLine_control_mode() -> LCCControlMode {
+        ::serde_json::from_str::<LCCControlMode>("\"BLOCKED\"")
+            .expect("schema default for TwoTerminalLCCLine.control_mode")
     }
     pub fn TwoTerminalLCCLine_inverter_capacitor_reactance() -> f64 {
         0f64
@@ -17560,13 +20268,6 @@ pub mod defaults {
     }
     pub fn TwoTerminalLCCLine_min_compounding_voltage() -> f64 {
         0f64
-    }
-    pub fn TwoTerminalLCCLine_parameter_units() -> ImpedanceUnitBasis {
-        ::serde_json::from_str::<ImpedanceUnitBasis>("\"NATURAL_UNITS\"")
-            .expect("schema default for TwoTerminalLCCLine.parameter_units")
-    }
-    pub fn TwoTerminalLCCLine_power_mode() -> bool {
-        true
     }
     pub fn TwoTerminalLCCLine_reactive_power_limits_from() -> MinMax {
         ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":0.0}")
@@ -17607,17 +20308,9 @@ pub mod defaults {
     pub fn TransformerCircuit_base_power() -> f64 {
         100f64
     }
-    pub fn TransformerCircuit_control_limits() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.9,\"max\":1.1}")
-            .expect("schema default for TransformerCircuit.control_limits")
-    }
     pub fn TransformerCircuit_control_objective() -> TransformerControlObjective {
         ::serde_json::from_str::<TransformerControlObjective>("\"UNDEFINED\"")
             .expect("schema default for TransformerCircuit.control_objective")
-    }
-    pub fn TransformerCircuit_controlled_quantity_limits() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.9,\"max\":1.1}")
-            .expect("schema default for TransformerCircuit.controlled_quantity_limits")
     }
     pub fn TransformerCircuit_number_of_tap_positions() -> i64 {
         33i64
@@ -17679,16 +20372,8 @@ pub mod defaults {
     pub fn ThermalMultiStart_time_at_status() -> f64 {
         600000f64
     }
-    pub fn TModelHVDCLine_parameter_units() -> ImpedanceUnitBasis {
-        ::serde_json::from_str::<ImpedanceUnitBasis>("\"NATURAL_UNITS\"")
-            .expect("schema default for TModelHVDCLine.parameter_units")
-    }
     pub fn SynchronousCondenser_active_power_losses() -> f64 {
         0f64
-    }
-    pub fn SwitchedAdmittance_admittance_limits() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":1.0,\"max\":1.0}")
-            .expect("schema default for SwitchedAdmittance.admittance_limits")
     }
     pub fn SwitchedAdmittance_admittance_units() -> ShuntAdmittanceUnitBasis {
         ::serde_json::from_str::<ShuntAdmittanceUnitBasis>("\"COMPONENT_MVAR\"")
@@ -17828,10 +20513,25 @@ pub mod defaults {
         ::serde_json::from_str::<ScenariosTimeSeriesType>("\"Scenarios\"")
             .expect("schema default for Scenarios.time_series_type")
     }
+    pub fn ST8C_ifd_ref() -> f64 {
+        1f64
+    }
+    pub fn ST8C_v_ref() -> f64 {
+        1f64
+    }
+    pub fn ST6B_v_ref() -> f64 {
+        1f64
+    }
     pub fn SEXS_v_ref() -> f64 {
         1f64
     }
+    pub fn SCRX_v_ref() -> f64 {
+        1f64
+    }
     pub fn RetrofitPotential_retrofit_fraction() -> f64 {
+        1f64
+    }
+    pub fn RenewableEnergyVoltageConverterTypeA_q_ref() -> f64 {
         1f64
     }
     pub fn RenewableEnergyConverterTypeA_q_ref() -> f64 {
@@ -17856,6 +20556,9 @@ pub mod defaults {
     pub fn PowerLoad_conformity() -> LoadConformity {
         ::serde_json::from_str::<LoadConformity>("\"UNDEFINED\"")
             .expect("schema default for PowerLoad.conformity")
+    }
+    pub fn PIDGOV_p_ref() -> f64 {
+        1f64
     }
     pub fn OnlineReserve_deployed_fraction() -> f64 {
         0f64
@@ -17908,14 +20611,6 @@ pub mod defaults {
     pub fn MotorLoad_motor_technology() -> MotorLoadMotorTechnology {
         ::serde_json::from_str::<MotorLoadMotorTechnology>("\"UNDETERMINED\"")
             .expect("schema default for MotorLoad.motor_technology")
-    }
-    pub fn MonitoredLine_g() -> FromTo {
-        ::serde_json::from_str::<FromTo>("{\"from\":0.0,\"to\":0.0}")
-            .expect("schema default for MonitoredLine.g")
-    }
-    pub fn MonitoredLine_parameter_units() -> ImpedanceUnitBasis {
-        ::serde_json::from_str::<ImpedanceUnitBasis>("\"COMPONENT_BASE\"")
-            .expect("schema default for MonitoredLine.parameter_units")
     }
     pub fn Line_g() -> FromTo {
         ::serde_json::from_str::<FromTo>("{\"from\":0.0,\"to\":0.0}")
@@ -17976,21 +20671,7 @@ pub mod defaults {
     pub fn LoadCost_fixed() -> f64 {
         0f64
     }
-    pub fn InterconnectingConverter_ac_control() -> VSCACControlModes {
-        ::serde_json::from_str::<VSCACControlModes>("\"AC_REACTIVE_POWER\"")
-            .expect("schema default for InterconnectingConverter.ac_control")
-    }
-    pub fn InterconnectingConverter_ac_setpoint() -> f64 {
-        1f64
-    }
-    pub fn InterconnectingConverter_dc_control() -> VSCDCControlModes {
-        ::serde_json::from_str::<VSCDCControlModes>("\"DC_VOLTAGE\"")
-            .expect("schema default for InterconnectingConverter.dc_control")
-    }
     pub fn InterconnectingConverter_dc_current() -> f64 {
-        0f64
-    }
-    pub fn InterconnectingConverter_dc_setpoint() -> f64 {
         0f64
     }
     pub fn InterconnectingConverter_dc_voltage_droop() -> f64 {
@@ -18002,16 +20683,9 @@ pub mod defaults {
     pub fn InterconnectingConverter_power_factor_weighting_fraction() -> f64 {
         1f64
     }
-    pub fn InterconnectingConverter_rmpct() -> f64 {
-        100f64
-    }
     pub fn InterconnectingConverter_voltage_limits() -> MinMax {
         ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":999.9}")
             .expect("schema default for InterconnectingConverter.voltage_limits")
-    }
-    pub fn InterconnectingConverter_voltage_setpoint_units() -> VoltageUnitBasis {
-        ::serde_json::from_str::<VoltageUnitBasis>("\"COMPONENT_BASE\"")
-            .expect("schema default for InterconnectingConverter.voltage_setpoint_units")
     }
     pub fn LossCurve_power_units() -> UnitSystem {
         ::serde_json::from_str::<UnitSystem>("\"NATURAL_UNITS\"")
@@ -18028,6 +20702,15 @@ pub mod defaults {
     pub fn ImportExportCost_cost_type() -> ImportExportCostCostType {
         ::serde_json::from_str::<ImportExportCostCostType>("\"IMPORTEXPORT\"")
             .expect("schema default for ImportExportCost.cost_type")
+    }
+    pub fn IEEETurbineGov1_p_ref() -> f64 {
+        1f64
+    }
+    pub fn IEEET1_v_ref() -> f64 {
+        1f64
+    }
+    pub fn HydroTurbineGov_p_ref() -> f64 {
+        1f64
     }
     pub fn HydroTurbine_commitment_mode() -> CommitmentModes {
         ::serde_json::from_str::<CommitmentModes>("\"COMMITTED\"")
@@ -18150,6 +20833,9 @@ pub mod defaults {
     pub fn GenericArcImpedance_parameter_units() -> ImpedanceUnitBasis {
         ::serde_json::from_str::<ImpedanceUnitBasis>("\"COMPONENT_BASE\"")
             .expect("schema default for GenericArcImpedance.parameter_units")
+    }
+    pub fn GeneralGovModel_p_ref() -> f64 {
+        1f64
     }
     pub fn FixedAdmittance_admittance_units() -> ShuntAdmittanceUnitBasis {
         ::serde_json::from_str::<ShuntAdmittanceUnitBasis>("\"COMPONENT_MVAR\"")
@@ -18286,6 +20972,45 @@ pub mod defaults {
     }
     pub fn EmissionsData_start_up_adder() -> f64 {
         0f64
+    }
+    pub fn EXST1_v_ref() -> f64 {
+        1f64
+    }
+    pub fn EXPIC1_v_ref() -> f64 {
+        1f64
+    }
+    pub fn EXAC2_v_ref() -> f64 {
+        1f64
+    }
+    pub fn EXAC1A_v_ref() -> f64 {
+        1f64
+    }
+    pub fn EXAC1_v_ref() -> f64 {
+        1f64
+    }
+    pub fn EX4VSA_v_ref() -> f64 {
+        1f64
+    }
+    pub fn ESST4B_v_ref() -> f64 {
+        1f64
+    }
+    pub fn ESST1A_v_ref() -> f64 {
+        1f64
+    }
+    pub fn ESDC2A_v_ref() -> f64 {
+        1f64
+    }
+    pub fn ESDC1A_v_ref() -> f64 {
+        1f64
+    }
+    pub fn ESAC8B_v_ref() -> f64 {
+        1f64
+    }
+    pub fn ESAC6A_v_ref() -> f64 {
+        1f64
+    }
+    pub fn ESAC1A_v_ref() -> f64 {
+        1f64
     }
     pub fn DiscreteControlledACBranch_branch_status() -> DiscreteControlledACBranchBranchStatus {
         ::serde_json::from_str::<DiscreteControlledACBranchBranchStatus>("\"CLOSED\"")
@@ -18452,8 +21177,29 @@ pub mod defaults {
     pub fn ActiveRenewableControllerAB_p_ref() -> f64 {
         1f64
     }
+    pub fn AVRTypeII_v_ref() -> f64 {
+        1f64
+    }
+    pub fn AVRTypeI_v_ref() -> f64 {
+        1f64
+    }
     pub fn AGC_initial_ace() -> f64 {
         0f64
+    }
+    pub fn AVRFixed_v_ref() -> f64 {
+        1f64
+    }
+    pub fn AVRSimple_v_ref() -> f64 {
+        1f64
+    }
+    pub fn ActivePowerDroop_p_ref() -> f64 {
+        1f64
+    }
+    pub fn ActivePowerPI_p_ref() -> f64 {
+        1f64
+    }
+    pub fn ActiveVirtualOscillator_p_ref() -> f64 {
+        1f64
     }
     pub fn CapacityReserveMargin_capacity_reserve_fraction() -> f64 {
         0f64
@@ -18464,12 +21210,24 @@ pub mod defaults {
     pub fn CarbonTax_tax_dollars_per_ton() -> f64 {
         0f64
     }
+    pub fn DEGOV_p_ref() -> f64 {
+        1f64
+    }
+    pub fn DEGOV1_p_ref() -> f64 {
+        1f64
+    }
     pub fn EnergyShareRequirements_generation_fraction_requirement() -> f64 {
         0f64
     }
     pub fn FixedForcedOutage_monitored_components() -> Vec<i64> {
         ::serde_json::from_str::<Vec<i64>>("[]")
             .expect("schema default for FixedForcedOutage.monitored_components")
+    }
+    pub fn FixedFrequency_frequency() -> f64 {
+        1f64
+    }
+    pub fn GasTG_p_ref() -> f64 {
+        1f64
     }
     pub fn GeometricDistributionForcedOutage_mean_time_to_recovery() -> f64 {
         0f64
@@ -18480,6 +21238,9 @@ pub mod defaults {
     }
     pub fn GeometricDistributionForcedOutage_outage_transition_probability() -> f64 {
         0f64
+    }
+    pub fn PSS2C_hysteresis_binary_logic() -> i64 {
+        1i64
     }
     pub fn PlannedOutage_monitored_components() -> Vec<i64> {
         ::serde_json::from_str::<Vec<i64>>("[]")
@@ -18494,8 +21255,35 @@ pub mod defaults {
     pub fn PortfolioFinancialData_interest_rate() -> f64 {
         0f64
     }
+    pub fn ReactivePowerDroop_v_ref() -> f64 {
+        1f64
+    }
+    pub fn ReactivePowerPI_q_ref() -> f64 {
+        1f64
+    }
+    pub fn ReactivePowerPI_v_ref() -> f64 {
+        1f64
+    }
+    pub fn ReactiveVirtualOscillator_q_ref() -> f64 {
+        1f64
+    }
+    pub fn ReactiveVirtualOscillator_v_ref() -> f64 {
+        1f64
+    }
     pub fn Substation_grounding_resistance() -> f64 {
         0.1f64
+    }
+    pub fn TGFixed_p_ref() -> f64 {
+        1f64
+    }
+    pub fn TGSimple_p_ref() -> f64 {
+        1f64
+    }
+    pub fn VirtualInertia_p_ref() -> f64 {
+        1f64
+    }
+    pub fn ZeroOrderBESS_vdc_ref() -> f64 {
+        1.1f64
     }
 }
 #[cfg(test)]
@@ -18503,21 +21291,17 @@ mod default_tests {
     use super::*;
     #[test]
     fn every_schema_default_deserializes() {
+        let _ = defaults::WPIDHY_p_ref();
+        let _ = defaults::VoltageDroopControl_available();
+        let _ = defaults::VoltageDroopControl_voltage_units();
+        let _ = defaults::VoltageControlAssociation_terminal();
+        let _ = defaults::VoltageControlAssociation_weight();
         let _ = defaults::TwoWindingTransformer_admittance_units();
         let _ = defaults::TwoWindingTransformer_magnetizing_shunt();
         let _ = defaults::TwoWindingTransformer_shunt_location();
-        let _ = defaults::TwoTerminalVSCLine_ac_control_from();
-        let _ = defaults::TwoTerminalVSCLine_ac_control_to();
-        let _ = defaults::TwoTerminalVSCLine_ac_setpoint_from();
-        let _ = defaults::TwoTerminalVSCLine_ac_setpoint_to();
-        let _ = defaults::TwoTerminalVSCLine_admittance_units();
         let _ = defaults::TwoTerminalVSCLine_converter_loss_from();
         let _ = defaults::TwoTerminalVSCLine_converter_loss_to();
-        let _ = defaults::TwoTerminalVSCLine_dc_control_from();
-        let _ = defaults::TwoTerminalVSCLine_dc_control_to();
         let _ = defaults::TwoTerminalVSCLine_dc_current();
-        let _ = defaults::TwoTerminalVSCLine_dc_setpoint_from();
-        let _ = defaults::TwoTerminalVSCLine_dc_setpoint_to();
         let _ = defaults::TwoTerminalVSCLine_dc_voltage_droop_from();
         let _ = defaults::TwoTerminalVSCLine_dc_voltage_droop_to();
         let _ = defaults::TwoTerminalVSCLine_g();
@@ -18528,22 +21312,14 @@ mod default_tests {
         let _ = defaults::TwoTerminalVSCLine_rated_ac_voltage_from();
         let _ = defaults::TwoTerminalVSCLine_rated_ac_voltage_to();
         let _ = defaults::TwoTerminalVSCLine_rated_dc_voltage();
-        let _ = defaults::TwoTerminalVSCLine_rating_from();
-        let _ = defaults::TwoTerminalVSCLine_rating_to();
         let _ = defaults::TwoTerminalVSCLine_reactive_power_from();
         let _ = defaults::TwoTerminalVSCLine_reactive_power_limits_from();
         let _ = defaults::TwoTerminalVSCLine_reactive_power_limits_to();
         let _ = defaults::TwoTerminalVSCLine_reactive_power_to();
-        let _ = defaults::TwoTerminalVSCLine_rmpct_from();
-        let _ = defaults::TwoTerminalVSCLine_rmpct_to();
-        let _ = defaults::TwoTerminalVSCLine_setpoint_voltage_units();
         let _ = defaults::TwoTerminalVSCLine_voltage_limits_from();
         let _ = defaults::TwoTerminalVSCLine_voltage_limits_to();
-        let _ = defaults::TwoTerminalVSCLine_voltage_units();
-        let _ = defaults::TwoTerminalLCCLine_active_power_limits_from();
-        let _ = defaults::TwoTerminalLCCLine_active_power_limits_to();
         let _ = defaults::TwoTerminalLCCLine_compounding_resistance();
-        let _ = defaults::TwoTerminalLCCLine_dc_voltage_units();
+        let _ = defaults::TwoTerminalLCCLine_control_mode();
         let _ = defaults::TwoTerminalLCCLine_inverter_capacitor_reactance();
         let _ = defaults::TwoTerminalLCCLine_inverter_extinction_angle();
         let _ = defaults::TwoTerminalLCCLine_inverter_tap_limits();
@@ -18552,8 +21328,6 @@ mod default_tests {
         let _ = defaults::TwoTerminalLCCLine_inverter_transformer_ratio();
         let _ = defaults::TwoTerminalLCCLine_loss();
         let _ = defaults::TwoTerminalLCCLine_min_compounding_voltage();
-        let _ = defaults::TwoTerminalLCCLine_parameter_units();
-        let _ = defaults::TwoTerminalLCCLine_power_mode();
         let _ = defaults::TwoTerminalLCCLine_reactive_power_limits_from();
         let _ = defaults::TwoTerminalLCCLine_reactive_power_limits_to();
         let _ = defaults::TwoTerminalLCCLine_rectifier_capacitor_reactance();
@@ -18566,9 +21340,7 @@ mod default_tests {
         let _ = defaults::TransformerCircuit_active_power_flow();
         let _ = defaults::TransformerCircuit_alpha();
         let _ = defaults::TransformerCircuit_base_power();
-        let _ = defaults::TransformerCircuit_control_limits();
         let _ = defaults::TransformerCircuit_control_objective();
-        let _ = defaults::TransformerCircuit_controlled_quantity_limits();
         let _ = defaults::TransformerCircuit_number_of_tap_positions();
         let _ = defaults::TransformerCircuit_parameter_units();
         let _ = defaults::TransformerCircuit_r();
@@ -18586,9 +21358,7 @@ mod default_tests {
         let _ = defaults::ThermalStandard_time_at_status();
         let _ = defaults::ThermalMultiStart_commitment_mode();
         let _ = defaults::ThermalMultiStart_time_at_status();
-        let _ = defaults::TModelHVDCLine_parameter_units();
         let _ = defaults::SynchronousCondenser_active_power_losses();
-        let _ = defaults::SwitchedAdmittance_admittance_limits();
         let _ = defaults::SwitchedAdmittance_admittance_units();
         let _ = defaults::SwitchedAdmittance_control_mode();
         let _ = defaults::SwitchedAdmittance_regulated_bus_number();
@@ -18630,8 +21400,13 @@ mod default_tests {
         let _ = defaults::Source_reactive_power_limits();
         let _ = defaults::SingleTimeSeries_time_series_type();
         let _ = defaults::Scenarios_time_series_type();
+        let _ = defaults::ST8C_ifd_ref();
+        let _ = defaults::ST8C_v_ref();
+        let _ = defaults::ST6B_v_ref();
         let _ = defaults::SEXS_v_ref();
+        let _ = defaults::SCRX_v_ref();
         let _ = defaults::RetrofitPotential_retrofit_fraction();
+        let _ = defaults::RenewableEnergyVoltageConverterTypeA_q_ref();
         let _ = defaults::RenewableEnergyConverterTypeA_q_ref();
         let _ = defaults::RenewableEnergyConverterTypeA_r_source();
         let _ = defaults::RenewableEnergyConverterTypeA_x_source();
@@ -18639,6 +21414,7 @@ mod default_tests {
         let _ = defaults::ReactiveRenewableControllerAB_v_ref();
         let _ = defaults::Probabilistic_time_series_type();
         let _ = defaults::PowerLoad_conformity();
+        let _ = defaults::PIDGOV_p_ref();
         let _ = defaults::OnlineReserve_deployed_fraction();
         let _ = defaults::OnlineReserve_max_output_fraction();
         let _ = defaults::OnlineReserve_max_participation_factor();
@@ -18655,8 +21431,6 @@ mod default_tests {
         let _ = defaults::NodalACTransportTechnology_unit_size();
         let _ = defaults::NodalACTransportTechnology_voltage();
         let _ = defaults::MotorLoad_motor_technology();
-        let _ = defaults::MonitoredLine_g();
-        let _ = defaults::MonitoredLine_parameter_units();
         let _ = defaults::Line_g();
         let _ = defaults::Line_parameter_units();
         let _ = defaults::InterruptibleStandardLoad_conformity();
@@ -18675,20 +21449,17 @@ mod default_tests {
         let _ = defaults::InterruptiblePowerLoad_conformity();
         let _ = defaults::LoadCost_cost_type();
         let _ = defaults::LoadCost_fixed();
-        let _ = defaults::InterconnectingConverter_ac_control();
-        let _ = defaults::InterconnectingConverter_ac_setpoint();
-        let _ = defaults::InterconnectingConverter_dc_control();
         let _ = defaults::InterconnectingConverter_dc_current();
-        let _ = defaults::InterconnectingConverter_dc_setpoint();
         let _ = defaults::InterconnectingConverter_dc_voltage_droop();
         let _ = defaults::InterconnectingConverter_max_dc_current();
         let _ = defaults::InterconnectingConverter_power_factor_weighting_fraction();
-        let _ = defaults::InterconnectingConverter_rmpct();
         let _ = defaults::InterconnectingConverter_voltage_limits();
-        let _ = defaults::InterconnectingConverter_voltage_setpoint_units();
         let _ = defaults::LossCurve_power_units();
         let _ = defaults::LossCurve_value_curve();
         let _ = defaults::ImportExportCost_cost_type();
+        let _ = defaults::IEEETurbineGov1_p_ref();
+        let _ = defaults::IEEET1_v_ref();
+        let _ = defaults::HydroTurbineGov_p_ref();
         let _ = defaults::HydroTurbine_commitment_mode();
         let _ = defaults::HydroTurbine_conversion_factor();
         let _ = defaults::HydroTurbine_efficiency();
@@ -18722,6 +21493,7 @@ mod default_tests {
         let _ = defaults::HydroGenerationCost_cost_type();
         let _ = defaults::HydroGenerationCost_fixed();
         let _ = defaults::GenericArcImpedance_parameter_units();
+        let _ = defaults::GeneralGovModel_p_ref();
         let _ = defaults::FixedAdmittance_admittance_units();
         let _ = defaults::FACTSControlDevice_max_reactive_power();
         let _ = defaults::FACTSControlDevice_regulated_bus_number();
@@ -18758,6 +21530,19 @@ mod default_tests {
         let _ = defaults::EmissionsData_gwp();
         let _ = defaults::EmissionsData_mass_unit();
         let _ = defaults::EmissionsData_start_up_adder();
+        let _ = defaults::EXST1_v_ref();
+        let _ = defaults::EXPIC1_v_ref();
+        let _ = defaults::EXAC2_v_ref();
+        let _ = defaults::EXAC1A_v_ref();
+        let _ = defaults::EXAC1_v_ref();
+        let _ = defaults::EX4VSA_v_ref();
+        let _ = defaults::ESST4B_v_ref();
+        let _ = defaults::ESST1A_v_ref();
+        let _ = defaults::ESDC2A_v_ref();
+        let _ = defaults::ESDC1A_v_ref();
+        let _ = defaults::ESAC8B_v_ref();
+        let _ = defaults::ESAC6A_v_ref();
+        let _ = defaults::ESAC1A_v_ref();
         let _ = defaults::DiscreteControlledACBranch_branch_status();
         let _ = defaults::DiscreteControlledACBranch_discrete_branch_type();
         let _ = defaults::DiscreteControlledACBranch_normal_branch_status();
@@ -18796,19 +21581,40 @@ mod default_tests {
         let _ = defaults::PiecewiseStepData_function_type();
         let _ = defaults::LinearFunctionData_function_type();
         let _ = defaults::ActiveRenewableControllerAB_p_ref();
+        let _ = defaults::AVRTypeII_v_ref();
+        let _ = defaults::AVRTypeI_v_ref();
         let _ = defaults::AGC_initial_ace();
+        let _ = defaults::AVRFixed_v_ref();
+        let _ = defaults::AVRSimple_v_ref();
+        let _ = defaults::ActivePowerDroop_p_ref();
+        let _ = defaults::ActivePowerPI_p_ref();
+        let _ = defaults::ActiveVirtualOscillator_p_ref();
         let _ = defaults::CapacityReserveMargin_capacity_reserve_fraction();
         let _ = defaults::CarbonCaps_max_tons_mwh();
         let _ = defaults::CarbonTax_tax_dollars_per_ton();
+        let _ = defaults::DEGOV_p_ref();
+        let _ = defaults::DEGOV1_p_ref();
         let _ = defaults::EnergyShareRequirements_generation_fraction_requirement();
         let _ = defaults::FixedForcedOutage_monitored_components();
+        let _ = defaults::FixedFrequency_frequency();
+        let _ = defaults::GasTG_p_ref();
         let _ = defaults::GeometricDistributionForcedOutage_mean_time_to_recovery();
         let _ = defaults::GeometricDistributionForcedOutage_monitored_components();
         let _ = defaults::GeometricDistributionForcedOutage_outage_transition_probability();
+        let _ = defaults::PSS2C_hysteresis_binary_logic();
         let _ = defaults::PlannedOutage_monitored_components();
         let _ = defaults::PortfolioFinancialData_discount_rate();
         let _ = defaults::PortfolioFinancialData_inflation_rate();
         let _ = defaults::PortfolioFinancialData_interest_rate();
+        let _ = defaults::ReactivePowerDroop_v_ref();
+        let _ = defaults::ReactivePowerPI_q_ref();
+        let _ = defaults::ReactivePowerPI_v_ref();
+        let _ = defaults::ReactiveVirtualOscillator_q_ref();
+        let _ = defaults::ReactiveVirtualOscillator_v_ref();
         let _ = defaults::Substation_grounding_resistance();
+        let _ = defaults::TGFixed_p_ref();
+        let _ = defaults::TGSimple_p_ref();
+        let _ = defaults::VirtualInertia_p_ref();
+        let _ = defaults::ZeroOrderBESS_vdc_ref();
     }
 }

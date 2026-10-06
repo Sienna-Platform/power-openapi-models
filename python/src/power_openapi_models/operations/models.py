@@ -21,6 +21,7 @@ from power_openapi_models.core.models import (
     MarketBidCost,
     MarketBidTimeSeriesCost,
     MinMax,
+    OperationalFlowLimit,
     PiecewiseLinearData,
     PrimeMovers,
     RenewableGenerationCost,
@@ -35,7 +36,7 @@ from power_openapi_models.core.models import (
     UnitSystem,
     UpDown,
 )
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PositiveFloat, confloat
 from enum import Enum
 
 
@@ -195,6 +196,10 @@ class DiscreteControlledACBranch(BaseModel):
     rating: float = Field(
         ...,
         description="Thermal rating. Flow on the branch must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    operational_flow_limit: OperationalFlowLimit | None = Field(
+        None,
+        description="Operator-set minimum and maximum flow in each direction, applied in addition to `rating`. Absent means no operational limit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
     discrete_branch_type: DiscreteBranchType | None = Field(
         "OTHER", description="Type of discrete control."
@@ -393,9 +398,9 @@ class GenericArcImpedance(BaseModel):
         ...,
         description="Initial condition of reactive power flow on the line. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
-    max_flow: float = Field(
-        ...,
-        description="Maximum allowable flow on the generic impedance. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    operational_flow_limit: OperationalFlowLimit | None = Field(
+        None,
+        description="Operator-set minimum and maximum flow in each direction. Absent means no operational limit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
     arc: int = Field(..., description="An `Arc` defining this line `from` a bus `to` another bus.")
     base_power: float = Field(
@@ -699,7 +704,14 @@ class TransformerControlMode(Enum):
 class ImpedanceCorrectionData(BaseModel):
     id: int
     table_number: int
-    impedance_correction_curve: PiecewiseLinearData
+    tap_ratio_correction_curve: PiecewiseLinearData | None = Field(
+        None,
+        description="Impedance correction factor as a function of off-nominal tap ratio (x axis in tap ratio, y axis a multiplier on the winding impedance). Present only when `transformer_control_mode` is `TAP_RATIO`. Units: 1.",
+    )
+    phase_angle_correction_curve: PiecewiseLinearData | None = Field(
+        None,
+        description="Impedance correction factor as a function of phase-shift angle (x axis in radians, y axis a multiplier on the winding impedance). Present only when `transformer_control_mode` is `PHASE_SHIFT_ANGLE`. Units: rad.",
+    )
     transformer_winding: TransformerWinding
     transformer_control_mode: TransformerControlMode
 
@@ -902,71 +914,9 @@ class Line(BaseModel):
         None,
         description="Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
     )
-    angle_limits: MinMax = Field(..., description="Minimum and maximum angle limits. Units: rad.")
-    g: FromTo | None = Field(
-        {"from": 0.0, "to": 0.0},
-        description="Shunt conductance, specified both on the `from` and `to` ends of the line. These are commonly modeled with the same value. Units: per parameter_units — NATURAL_UNITS: S, COMPONENT_BASE: pu .",
-    )
-
-
-class MonitoredLine(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    active_power_flow: float = Field(
-        ...,
-        description="Initial condition of active power flow on the line. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    reactive_power_flow: float = Field(
-        ...,
-        description="Initial condition of reactive power flow on the line. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    arc: int = Field(..., description="An `Arc` defining this line `from` a bus `to` another bus.")
-    r: float = Field(
-        ...,
-        description="Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-    )
-    x: float = Field(
-        ...,
-        description="Reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-    )
-    base_power: float = Field(
-        ...,
-        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
-    )
-    power_units: UnitSystem = Field(
-        ...,
-        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
-    )
-    parameter_units: ImpedanceUnitBasis | None = Field(
-        "COMPONENT_BASE",
-        description="Unit basis for this line's impedance and shunt admittance fields (r, x, b, g).",
-    )
-    b: FromTo = Field(
-        ...,
-        description="Shunt susceptance, specified both on the `from` and `to` ends of the line. These are commonly modeled with the same value. Units: per parameter_units — NATURAL_UNITS: S, COMPONENT_BASE: pu .",
-    )
-    flow_limits: FromToToFrom = Field(
-        ...,
-        description="Minimum and maximum permissable flow on the line, if different from the thermal rating defined in `rating`. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    rating: float = Field(
-        ...,
-        description="Thermal rating. Flow through the transformer must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-    )
-    rating_b: float | None = Field(
+    operational_flow_limit: OperationalFlowLimit | None = Field(
         None,
-        description="Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-    )
-    rating_c: float | None = Field(
-        None,
-        description="Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        description="Operator-set minimum and maximum flow in each direction, applied in addition to `rating`. Absent means no operational limit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
     angle_limits: MinMax = Field(..., description="Minimum and maximum angle limits. Units: rad.")
     g: FromTo | None = Field(
@@ -1122,6 +1072,11 @@ class PlantAssociation(BaseModel):
         ...,
         description="Group number within the plant (shaft, penstock, PCC, or exclusion group, depending on the parent plant's type)",
     )
+
+
+class ReactivePowerSharing(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this supplemental attribute.")
+    name: str = Field(..., description="Name of the sharing group.")
 
 
 class PointToPointBid(BaseModel):
@@ -1554,6 +1509,7 @@ class SwitchedAdmittanceControlMode(Enum):
     DISCRETE_REACTIVE_PLANT = "DISCRETE_REACTIVE_PLANT"
     DISCRETE_REACTIVE_VSC = "DISCRETE_REACTIVE_VSC"
     DISCRETE_ADMITTANCE_REMOTE = "DISCRETE_ADMITTANCE_REMOTE"
+    DISCRETE_REACTIVE_FACTS = "DISCRETE_REACTIVE_FACTS"
 
 
 class SynchronousCondenser(BaseModel):
@@ -1609,29 +1565,22 @@ class TModelHVDCLine(BaseModel):
         ..., description="Initial condition of active power flow on the line. Units: MW."
     )
     arc: int = Field(..., description="An `Arc` defining this line `from` a bus `to` another bus.")
-    parameter_units: ImpedanceUnitBasis | None = Field(
-        "NATURAL_UNITS", description="Unit basis for this line's impedance field (r)."
-    )
     base_current: float = Field(
         ...,
-        description="Base current for per-unitization of this line's per-unit fields — this DC line per-unitizes against a current base, not a power base. Units: A.",
+        description="Base current of the line as recorded by the source data. No field of this component is per-unit on it. Units: A.",
     )
     r: float = Field(
         ...,
-        description="Total series resistance, split equally on both sides of the shunt capacitance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+        description="Total series resistance, split equally on both sides of the shunt capacitance. Units: ohm.",
     )
     l: float = Field(
         ...,
-        description="Total series inductance, split equally on both sides of the shunt capacitance. Per-unit on this line's `base_current`. Units: pu.",
+        description="Total series inductance, split equally on both sides of the shunt capacitance. Units: H.",
     )
-    c: float = Field(
-        ..., description="Shunt capacitance. Per-unit on this line's `base_current`. Units: pu."
-    )
-    active_power_limits_from: MinMax = Field(
-        ..., description="Minimum and maximum active power flows to the FROM node. Units: MW."
-    )
-    active_power_limits_to: MinMax = Field(
-        ..., description="Minimum and maximum active power flows to the TO node. Units: MW."
+    c: float = Field(..., description="Shunt capacitance. Units: F.")
+    operational_flow_limit: OperationalFlowLimit | None = Field(
+        None,
+        description="Operator-set minimum and maximum flow in each direction. Absent means no operational limit. Units: MW.",
     )
 
 
@@ -1712,6 +1661,10 @@ class ThermalMultiStart(BaseModel):
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
     )
+    switching_times: UpDown | None = Field(
+        None,
+        description="Time it takes the unit to switch ONLINE (`up`) or OFFLINE (`down`) after a start or shut-down is initiated. Set to `null` if not modeled. Units: min.",
+    )
 
 
 class ThermalPowerPlant(BaseModel):
@@ -1787,6 +1740,10 @@ class ThermalStandard(BaseModel):
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
+    )
+    switching_times: UpDown | None = Field(
+        None,
+        description="Time it takes the unit to switch ONLINE (`up`) or OFFLINE (`down`) after a start or shut-down is initiated. Set to `null` if not modeled. Units: min.",
     )
 
 
@@ -1870,13 +1827,21 @@ class TwoTerminalGenericHVDCLine(BaseModel):
         description="Initial condition of active power flow on the line. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
     arc: int = Field(..., description="An Arc defining this line `from` a bus `to` another bus.")
-    active_power_limits_from: MinMax = Field(
+    rating: float = Field(
         ...,
-        description="Minimum and maximum active power flows to the FROM node. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+        description="Transfer rating of the DC line, independent of the converter ratings at each end. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
     )
-    active_power_limits_to: MinMax = Field(
-        ...,
-        description="Minimum and maximum active power flows to the TO node. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    rating_from: float | None = Field(
+        None,
+        description="Converter rating in the `from` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    rating_to: float | None = Field(
+        None,
+        description="Converter rating in the `to` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    operational_flow_limit: OperationalFlowLimit | None = Field(
+        None,
+        description="Operator-set minimum and maximum flow in each direction, applied in addition to `rating`. Absent means no operational limit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
     reactive_power_limits_from: MinMax = Field(
         ...,
@@ -1900,174 +1865,10 @@ class TwoTerminalGenericHVDCLine(BaseModel):
     )
 
 
-class TwoTerminalLCCLine(BaseModel):
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    arc: int = Field(
-        ...,
-        description="An Arc defining this line `from` a rectifier bus `to` an inverter bus. The rectifier bus must be specified in the `from` bus and inverter bus in the `to` bus.",
-    )
-    active_power_flow: float = Field(
-        ...,
-        description="Initial condition of active power flow on the line. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    parameter_units: ImpedanceUnitBasis | None = Field(
-        "NATURAL_UNITS",
-        description="Unit basis for this line's impedance fields (r, rectifier/inverter rc/xc, capacitor reactances, compounding_resistance).",
-    )
-    r: float = Field(
-        ...,
-        description="Series resistance of the DC line. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-    )
-    transfer_setpoint: float = Field(
-        ...,
-        description="Desired set-point of power. If `power_mode = true` this value is in MW units, and if `power_mode = false` is in Amperes units. This parameter must not be specified in per-unit. A positive value represents the desired consumed power at the rectifier bus, while a negative value represents the desired power at the inverter bus (i.e. the absolute value of `transfer_setpoint` is the generated power at the inverter bus). Units: per power_mode — true: MW, false: A .",
-    )
-    dc_voltage_units: VoltageUnitBasis | None = Field(
-        "NATURAL_UNITS",
-        description="Unit basis for the DC voltage fields (scheduled_dc_voltage, switch_mode_voltage, min_compounding_voltage).",
-    )
-    scheduled_dc_voltage: float = Field(
-        ...,
-        description="Scheduled compounded DC voltage. By default this parameter is the scheduled DC voltage in the inverter bus. This parameter must not be specified in per-unit. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
-    )
-    rectifier_bridges: int = Field(
-        ..., description="Number of bridges in series in the rectifier side."
-    )
-    rectifier_delay_angle_limits: MinMax = Field(
-        ..., description="Minimum and maximum rectifier firing delay angle (alpha). Units: rad."
-    )
-    rectifier_rc: float = Field(
-        ...,
-        description="Rectifier commutating transformer resistance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-    )
-    rectifier_xc: float = Field(
-        ...,
-        description="Rectifier commutating transformer reactance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-    )
-    rectifier_base_voltage: float = Field(
-        ..., description="Rectifier primary base AC voltage, entered in kV. Units: kV."
-    )
-    inverter_bridges: int = Field(
-        ..., description="Number of bridges in series in the inverter side."
-    )
-    inverter_extinction_angle_limits: MinMax = Field(
-        ..., description="Minimum and maximum inverter extinction angle (gamma). Units: rad."
-    )
-    inverter_rc: float = Field(
-        ...,
-        description="Inverter commutating transformer resistance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-    )
-    inverter_xc: float = Field(
-        ...,
-        description="Inverter commutating transformer reactance per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-    )
-    inverter_base_voltage: float = Field(
-        ..., description="Inverter primary base AC voltage, entered in kV. Units: kV."
-    )
-    power_mode: bool | None = Field(
-        True,
-        description="Boolean flag to identify if the LCC line is in power mode or current mode. If `power_mode = true`, setpoint values must be specified in MW, and if `power_mode = false` setpoint values must be specified in Amperes.",
-    )
-    switch_mode_voltage: float | None = Field(
-        0.0,
-        description="Mode switch DC voltage. This parameter must not be added in per-unit. If LCC line is in power mode control, and DC voltage falls below this value, the line switch to current mode control. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
-    )
-    compounding_resistance: float | None = Field(
-        0.0,
-        description="Compounding Resistance. This parameter is for control of the DC voltage in the rectifier or inverter end. For inverter DC voltage control, the parameter is set to zero; for rectifier DC voltage control, the parameter is set to the DC line resistance; otherwise, set to a fraction of the DC line resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-    )
-    min_compounding_voltage: float | None = Field(
-        0.0,
-        description="Minimum compounded voltage. This parameter must not be added in per-unit. Only used in constant gamma operation (gamma_min = gamma_max), and the AC transformer is used to control the DC voltage. Units: kV. Units: per dc_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
-    )
-    rectifier_transformer_ratio: float | None = Field(
-        1.0,
-        description="Rectifier transformer ratio between the primary and secondary side AC voltages. Units: 1.",
-    )
-    rectifier_tap_setting: float | None = Field(
-        1.0, description="Rectifier transformer tap setting. Units: 1."
-    )
-    rectifier_tap_limits: MinMax | None = Field(
-        {"min": 0.51, "max": 1.5},
-        description="Minimum and maximum rectifier tap limits as a ratio between the primary and secondary side AC voltages. Units: 1.",
-    )
-    rectifier_tap_step: float | None = Field(
-        0.00625, description="Rectifier transformer tap step value. Units: 1."
-    )
-    rectifier_delay_angle: float | None = Field(
-        0.0, description="Rectifier firing delay angle (alpha). Units: rad."
-    )
-    rectifier_capacitor_reactance: float | None = Field(
-        0.0,
-        description="Commutating rectifier capacitor reactance magnitude per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-    )
-    inverter_transformer_ratio: float | None = Field(
-        1.0,
-        description="Inverter transformer ratio between the primary and secondary side AC voltages. Units: 1.",
-    )
-    inverter_tap_setting: float | None = Field(
-        1.0, description="Inverter transformer tap setting. Units: 1."
-    )
-    inverter_tap_limits: MinMax | None = Field(
-        {"min": 0.51, "max": 1.5},
-        description="Minimum and maximum inverter tap limits as a ratio between the primary and secondary side AC voltages. Units: 1.",
-    )
-    inverter_tap_step: float | None = Field(
-        0.00625, description="Inverter transformer tap step value. Units: 1."
-    )
-    inverter_extinction_angle: float | None = Field(
-        0.0, description="Inverter extinction angle (gamma). Units: rad."
-    )
-    inverter_capacitor_reactance: float | None = Field(
-        0.0,
-        description="Commutating inverter capacitor reactance magnitude per bridge. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-    )
-    active_power_limits_from: MinMax | None = Field(
-        {"min": 0.0, "max": 0.0},
-        description="Minimum and maximum active power flows to the FROM node. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    active_power_limits_to: MinMax | None = Field(
-        {"min": 0.0, "max": 0.0},
-        description="Minimum and maximum active power flows to the TO node. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    reactive_power_limits_from: MinMax | None = Field(
-        {"min": 0.0, "max": 0.0},
-        description="Minimum and maximum reactive power limits to the FROM node. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    reactive_power_limits_to: MinMax | None = Field(
-        {"min": 0.0, "max": 0.0},
-        description="Minimum and maximum reactive power limits to the TO node. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    loss: LossCurve | None = Field(
-        {
-            "power_units": "NATURAL_UNITS",
-            "value_curve": {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-            },
-        },
-        description="A generic loss model coefficients. It accepts a linear model with a constant loss and a proportional loss rate (MW of loss per MW of flow). It also accepts a Piecewise loss, with N segments to specify different proportional losses for different segments.",
-    )
-    base_power: float = Field(
-        ...,
-        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
-    )
-    power_units: UnitSystem = Field(
-        ...,
-        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
-    )
+class LCCControlMode(Enum):
+    BLOCKED = "BLOCKED"
+    POWER = "POWER"
+    CURRENT = "CURRENT"
 
 
 class TwoTerminalVSCLine(BaseModel):
@@ -2087,23 +1888,9 @@ class TwoTerminalVSCLine(BaseModel):
     )
     rating: float = Field(
         ...,
-        description="Maximum output power rating of the converter. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        description="Transfer rating of the DC line, independent of the converter ratings at each end. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
     )
-    active_power_limits_from: MinMax = Field(
-        ...,
-        description="Minimum and maximum active power flows to the FROM node. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    active_power_limits_to: MinMax = Field(
-        ...,
-        description="Minimum and maximum active power flows to the TO node. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    admittance_units: AdmittanceUnitBasis | None = Field(
-        "NATURAL_UNITS", description="Unit basis for the series conductance g."
-    )
-    g: float | None = Field(
-        0.0,
-        description="Series conductance of the DC line. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MW, COMPONENT_BASE: pu .",
-    )
+    g: float | None = Field(0.0, description="Series conductance of the DC line. Units: S.")
     dc_current: float | None = Field(
         0.0,
         description="DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: A.",
@@ -2113,26 +1900,32 @@ class TwoTerminalVSCLine(BaseModel):
         description="Initial condition of reactive power flowing into the from-bus. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
     dc_control_from: VSCDCControlModes | None = Field(
-        "DC_VOLTAGE", description="DC-side control mode of the `from` converter."
+        None,
+        description="DC-side control mode of the `from` converter. No default: an in-service converter always controls something on each side, so the mode is supplied explicitly.",
     )
     ac_control_from: VSCACControlModes | None = Field(
-        "AC_VOLTAGE", description="AC-side control mode of the `from` converter."
+        None,
+        description="AC-side control mode of the `from` converter. No default: an in-service converter always controls something on each side, so the mode is supplied explicitly.",
     )
-    setpoint_voltage_units: VoltageUnitBasis | None = Field(
-        "NATURAL_UNITS",
-        description="Unit basis for the DC_VOLTAGE/DC_VOLTAGE_DROOP/AC_VOLTAGE branches of dc_setpoint_from/to and ac_setpoint_from/to. Independent of voltage_units, which covers voltage_limits_from/to only.",
+    dc_power_setpoint_from: float | None = Field(
+        None,
+        description="Active-power order of the `from` bus converter, used when `dc_control_from` is `DC_POWER`; `null` otherwise. Positive means the converter supplies power to the AC network; negative means it withdraws power from it. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
-    dc_setpoint_from: float | None = Field(
-        0.0,
-        description="Converter DC setpoint in the `from` bus converter. When `dc_control_from` regulates DC voltage this number is the DC voltage on the DC side of the converter; when it controls DC power this value is the power demand in MW, if positive the converter is supplying power to the AC network at the `from` bus; if negative, the converter is withdrawing power from the AC network at the `from` bus. Units: per dc_control_from — DC_POWER: MW, DC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu), DC_VOLTAGE_DROOP: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .",
+    dc_voltage_setpoint_from: float | None = Field(
+        None,
+        description="DC-side voltage target of the `from` bus converter, used when `dc_control_from` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.",
     )
-    ac_setpoint_from: float | None = Field(
-        1.0,
-        description="Converter AC setpoint in the `from` bus converter. When `ac_control_from` regulates AC voltage this number is the AC voltage on the AC side of the converter; when it controls reactive power this value is the power factor setpoint. Units: per ac_control_from — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .",
+    power_factor_setpoint_from: confloat(ge=-1.0, le=1.0) | None = Field(
+        None,
+        description="Power-factor setpoint of the `from` bus converter, used when `ac_control_from` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.",
+    )
+    ac_voltage_setpoint_from: float | None = Field(
+        None,
+        description="AC-side voltage magnitude target of the `from` bus converter, used when `ac_control_from` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
     )
     rated_ac_voltage_from: float | None = Field(
         0.0,
-        description="Rated (base) AC voltage at the `from` converter's AC terminal in kV. Used as the AC voltage base for interpreting ac_setpoint_from when ac_control_from is AC_VOLTAGE; 0.0 means unspecified (the setpoint is taken as per-unit directly). Units: kV.",
+        description="Rated AC voltage at the `from` converter's AC terminal; 0.0 means unspecified. Units: kV.",
     )
     converter_loss_from: LossCurve | None = Field(
         {
@@ -2152,8 +1945,8 @@ class TwoTerminalVSCLine(BaseModel):
         100000000.0, description="Maximum stable dc current limits. Units: A."
     )
     rating_from: float | None = Field(
-        100000000.0,
-        description="Converter rating in the `from` bus. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        None,
+        description="Converter rating in the `from` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
     )
     reactive_power_limits_from: MinMax | None = Field(
         {"min": 0.0, "max": 0.0},
@@ -2163,39 +1956,45 @@ class TwoTerminalVSCLine(BaseModel):
         1.0,
         description="Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.",
     )
-    voltage_units: VoltageUnitBasis | None = Field(
-        "NATURAL_UNITS",
-        description="Unit basis for the DC bus voltage limits (voltage_limits_from/to only). Independent of setpoint_voltage_units, which covers dc_setpoint_from/to and ac_setpoint_from/to.",
-    )
     voltage_limits_from: MinMax | None = Field(
         {"min": 0.0, "max": 999.9},
-        description="Limits on the Voltage at the DC `from` Bus in kV. The DC base voltage is the `dc_setpoint` of the converter with `dc_voltage_control` enabled; exactly one converter must control the DC voltage. Units: kV. Units: per voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+        description="Minimum and maximum voltage at the DC `from` bus. Units: kV.",
     )
     dc_voltage_droop_from: float | None = Field(
         0.0,
-        description="DC-voltage droop gain on the `from` converter, used when `dc_control_from` is `DC_VOLTAGE_DROOP`: `V_dc = dc_setpoint_from - dc_voltage_droop_from * P_c`. Units: pu.",
+        description="DC-voltage droop gain on the `from` converter, used when `dc_control_from` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint_from - dc_voltage_droop_from * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.",
     )
     reactive_power_to: float | None = Field(
         0.0,
         description="Initial condition of reactive power flowing into the to-bus. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
     dc_control_to: VSCDCControlModes | None = Field(
-        "DC_VOLTAGE", description="DC-side control mode of the `to` converter."
+        None,
+        description="DC-side control mode of the `to` converter. No default: an in-service converter always controls something on each side, so the mode is supplied explicitly.",
     )
     ac_control_to: VSCACControlModes | None = Field(
-        "AC_VOLTAGE", description="AC-side control mode of the `to` converter."
+        None,
+        description="AC-side control mode of the `to` converter. No default: an in-service converter always controls something on each side, so the mode is supplied explicitly.",
     )
-    dc_setpoint_to: float | None = Field(
-        0.0,
-        description="Converter DC setpoint in the `to` bus converter. When `dc_control_to` regulates DC voltage this number is the DC voltage on the DC side of the converter; when it controls DC power this value is the power demand in MW, if positive the converter is supplying power to the AC network at the `to` bus; if negative, the converter is withdrawing power from the AC network at the `to` bus. Units: per dc_control_to — DC_POWER: MW, DC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu), DC_VOLTAGE_DROOP: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .",
+    dc_power_setpoint_to: float | None = Field(
+        None,
+        description="Active-power order of the `to` bus converter, used when `dc_control_to` is `DC_POWER`; `null` otherwise. Positive means the converter supplies power to the AC network; negative means it withdraws power from it. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
-    ac_setpoint_to: float | None = Field(
-        1.0,
-        description="Converter AC setpoint in the `to` bus converter. When `ac_control_to` regulates AC voltage this number is the AC voltage on the AC side of the converter; when it controls reactive power this value is the power factor setpoint. Units: per ac_control_to — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per setpoint_voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .",
+    dc_voltage_setpoint_to: float | None = Field(
+        None,
+        description="DC-side voltage target of the `to` bus converter, used when `dc_control_to` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.",
+    )
+    power_factor_setpoint_to: confloat(ge=-1.0, le=1.0) | None = Field(
+        None,
+        description="Power-factor setpoint of the `to` bus converter, used when `ac_control_to` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.",
+    )
+    ac_voltage_setpoint_to: float | None = Field(
+        None,
+        description="AC-side voltage magnitude target of the `to` bus converter, used when `ac_control_to` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
     )
     rated_ac_voltage_to: float | None = Field(
         0.0,
-        description="Rated (base) AC voltage at the `to` converter's AC terminal in kV. Used as the AC voltage base for interpreting ac_setpoint_to when ac_control_to is AC_VOLTAGE; 0.0 means unspecified (the setpoint is taken as per-unit directly). Units: kV.",
+        description="Rated AC voltage at the `to` converter's AC terminal; 0.0 means unspecified. Units: kV.",
     )
     converter_loss_to: LossCurve | None = Field(
         {
@@ -2215,8 +2014,12 @@ class TwoTerminalVSCLine(BaseModel):
         100000000.0, description="Maximum stable dc current limits. Units: A."
     )
     rating_to: float | None = Field(
-        100000000.0,
-        description="Converter rating in the `to` bus. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        None,
+        description="Converter rating in the `to` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    operational_flow_limit: OperationalFlowLimit | None = Field(
+        None,
+        description="Operator-set minimum and maximum flow in each direction, applied in addition to `rating`. Absent means no operational limit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
     reactive_power_limits_to: MinMax | None = Field(
         {"min": 0.0, "max": 0.0},
@@ -2228,15 +2031,14 @@ class TwoTerminalVSCLine(BaseModel):
     )
     voltage_limits_to: MinMax | None = Field(
         {"min": 0.0, "max": 999.9},
-        description="Limits on the Voltage at the DC `to` Bus in kV. The DC base voltage is the `dc_setpoint` of the converter with `dc_voltage_control` enabled; exactly one converter must control the DC voltage. Units: kV. Units: per voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+        description="Minimum and maximum voltage at the DC `to` bus. Units: kV.",
     )
     dc_voltage_droop_to: float | None = Field(
         0.0,
-        description="DC-voltage droop gain on the `to` converter, used when `dc_control_to` is `DC_VOLTAGE_DROOP`: `V_dc = dc_setpoint_to - dc_voltage_droop_to * P_c`. Units: pu.",
+        description="DC-voltage droop gain on the `to` converter, used when `dc_control_to` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint_to - dc_voltage_droop_to * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.",
     )
     rated_dc_voltage: float | None = Field(
-        0.0,
-        description="Rated (base) DC voltage of the link in kV. Used as the DC voltage base for interpreting DC-voltage setpoints; 0.0 means unspecified (DC-voltage setpoints are taken as per-unit directly). Units: kV.",
+        0.0, description="Rated DC voltage of the link; 0.0 means unspecified. Units: kV."
     )
     remote_bus_control_from: int | None = Field(
         None,
@@ -2245,14 +2047,6 @@ class TwoTerminalVSCLine(BaseModel):
     remote_bus_control_to: int | None = Field(
         None,
         description="Number of the AC bus whose voltage the `to` converter regulates when `ac_control_to` is `AC_VOLTAGE`; null regulates its own terminal bus.",
-    )
-    rmpct_from: float | None = Field(
-        100.0,
-        description="Percent of the total Mvar required to hold the voltage at the bus regulated by the `from` converter that is contributed by this converter. Units: 1.",
-    )
-    rmpct_to: float | None = Field(
-        100.0,
-        description="Percent of the total Mvar required to hold the voltage at the bus regulated by the `to` converter that is contributed by this converter. Units: 1.",
     )
     base_power: float = Field(
         ...,
@@ -2292,6 +2086,45 @@ class VirtualParticipant(BaseModel):
     )
     operation_cost: MarketBidCost | MarketBidTimeSeriesCost = Field(
         ..., description="Bid curves as an offer-curve operating cost.", discriminator="cost_type"
+    )
+
+
+class VoltageControlTerminal(Enum):
+    UNDEFINED = "UNDEFINED"
+    FROM = "FROM"
+    TO = "TO"
+
+
+class VoltageDroopControl(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this supplemental attribute.")
+    name: str = Field(..., description="Name of the voltage droop controller.")
+    available: bool | None = Field(
+        True,
+        description="Whether the controller is in service (PSS/E STATUS). While false, members regulate their own targets.",
+    )
+    regulated_bus_id: int = Field(
+        ...,
+        description="ID of the bus whose reactive power the controller regulates; overrides every member's own regulated bus while the controller is available.",
+    )
+    reactive_power_limits: MinMax = Field(
+        ...,
+        description="Reactive power held below `voltage_limits.min` (max, PSS/E QMAX) and above `voltage_limits.max` (min, PSS/E QMIN). Units: MVAr.",
+    )
+    deadband_reactive_power: float = Field(
+        ...,
+        description="Reactive power held while the regulated bus voltage is inside `deadband_voltage_limits` (PSS/E QDB). Must lie strictly between `reactive_power_limits.min` and `reactive_power_limits.max`. Units: MVAr.",
+    )
+    voltage_units: VoltageUnitBasis | None = Field(
+        "COMPONENT_BASE",
+        description="Unit basis for the voltage fields. COMPONENT_BASE (per-unit on the regulated bus base voltage) is PSS/E RAW native.",
+    )
+    deadband_voltage_limits: MinMax = Field(
+        ...,
+        description="Voltage band inside which the controller holds `deadband_reactive_power` (PSS/E VDBLOW, VDBHIGH). Must lie inside `voltage_limits`. Units: per voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
+    )
+    voltage_limits: MinMax = Field(
+        ...,
+        description="Voltages at which the characteristic reaches `reactive_power_limits.max` (min, PSS/E VLOW) and `reactive_power_limits.min` (max, PSS/E VHIGH). Units: per voltage_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
     )
 
 
@@ -2692,33 +2525,36 @@ class InterconnectingConverter(BaseModel):
         None, description="Linear or quadratic loss function with respect to the converter current."
     )
     dc_control: VSCDCControlModes | None = Field(
-        "DC_VOLTAGE", description="DC-side control mode of the converter."
+        None,
+        description="DC-side control mode of the converter. No default: an in-service converter always controls something on each side, so the mode is supplied explicitly.",
     )
     ac_control: VSCACControlModes | None = Field(
-        "AC_REACTIVE_POWER", description="AC-side control mode of the converter."
+        None,
+        description="AC-side control mode of the converter. No default: an in-service converter always controls something on each side, so the mode is supplied explicitly.",
     )
-    voltage_setpoint_units: VoltageUnitBasis | None = Field(
-        "COMPONENT_BASE", description="Unit basis for the DC/AC voltage setpoints."
+    dc_power_setpoint: float | None = Field(
+        None,
+        description="Active-power order of the converter, used when `dc_control` is `DC_POWER`; `null` otherwise. Positive means the converter supplies power to the AC network; negative means it withdraws power from it. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
-    dc_setpoint: float | None = Field(
-        0.0,
-        description="DC-voltage target (when `dc_control` regulates DC voltage) or active-power order (otherwise). Units: per dc_control — DC_POWER: MW, DC_VOLTAGE: (per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu), DC_VOLTAGE_DROOP: (per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .",
+    dc_voltage_setpoint: float | None = Field(
+        None,
+        description="DC-side voltage target of the converter, used when `dc_control` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.",
     )
-    ac_setpoint: float | None = Field(
-        1.0,
-        description="AC-voltage magnitude target (when `ac_control` regulates AC voltage) or power factor setpoint (otherwise). Units: per ac_control — AC_REACTIVE_POWER: 1, AC_VOLTAGE: (per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu) .",
+    power_factor_setpoint: confloat(ge=-1.0, le=1.0) | None = Field(
+        None,
+        description="Power-factor setpoint of the converter, used when `ac_control` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.",
+    )
+    ac_voltage_setpoint: float | None = Field(
+        None,
+        description="AC-side voltage magnitude target of the converter, used when `ac_control` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
     )
     dc_voltage_droop: float | None = Field(
         0.0,
-        description="DC-voltage droop gain relating DC voltage to converter active power as `V_dc = dc_setpoint - dc_voltage_droop * P_c`. A value of 0.0 disables droop. Units: pu.",
+        description="DC-voltage droop gain on the converter, used when `dc_control` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint - dc_voltage_droop * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.",
     )
     remote_bus_control: int | None = Field(
         None,
         description="Number of the AC bus whose voltage the converter regulates when `ac_control` is `AC_VOLTAGE`; null regulates its own terminal bus.",
-    )
-    rmpct: float | None = Field(
-        100.0,
-        description="Percent of the total Mvar required to hold the voltage at the bus regulated by this converter that is contributed by this converter. Units: 1.",
     )
     power_factor_weighting_fraction: float | None = Field(
         1.0,
@@ -2726,7 +2562,7 @@ class InterconnectingConverter(BaseModel):
     )
     voltage_limits: MinMax | None = Field(
         {"min": 0.0, "max": 999.9},
-        description="Limits on the voltage at the DC bus in per unit. Units: pu.",
+        description="Minimum and maximum voltage at the DC bus. Units: kV.",
     )
     dynamic_injector: int | None = Field(
         None, description="ID of the corresponding dynamic injection device, if any."
@@ -2764,12 +2600,17 @@ class SwitchedAdmittance(BaseModel):
         None,
         description="Solved-case switched shunt admittance (PSS/E BINIT); when present it is the shunt's effective admittance, used in place of `number_engaged` * `Y_increase`. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
     )
-    admittance_limits: MinMax | None = Field(
-        {"min": 1.0, "max": 1.0},
-        description="Shunt admittance limits for switched shunt model. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
+    voltage_limits: MinMax | None = Field(
+        None,
+        description="Regulated-voltage band (PSS/E VSWLO/VSWHI) at the regulated bus, per unit of its base voltage. `null` unless `control_mode` selects it. Units: pu.",
+    )
+    reactive_power_range_limits: MinMax | None = Field(
+        None,
+        description="Regulated reactive-power band (PSS/E VSWLO/VSWHI) as a fraction of the regulated device's reactive power range, the plant, converter or FACTS shunt at the regulated bus; 0.2 to 0.8 means 20 to 80 percent of that device's Qmin-to-Qmax span. `null` unless `control_mode` selects it. Units: 1.",
     )
     control_mode: SwitchedAdmittanceControlMode | None = Field(
-        "FIXED", description="Switched-shunt control mode."
+        "FIXED",
+        description="Switched-shunt control mode (PSS/E MODSW). Voltage modes use `voltage_limits`, reactive modes use `reactive_power_range_limits`; `UNDEFINED` and `FIXED` use neither.",
     )
     regulated_bus_number: int | None = Field(
         0,
@@ -2887,19 +2728,31 @@ class TransformerCircuit(BaseModel):
     regulated_bus_number: int | None = Field(
         0, description="Controlled bus number (PSS/E CONT; sign = regulation side)."
     )
-    control_limits: MinMax | None = Field(
-        {"min": 0.9, "max": 1.1},
-        description="Control band (PSS/E RMA/RMI), per `control_objective`. Units: per control_objective — UNDEFINED: 1, VOLTAGE_DISABLED: 1, REACTIVE_POWER_FLOW_DISABLED: 1, ACTIVE_POWER_FLOW_DISABLED: rad, CONTROL_OF_DC_LINE_DISABLED: 1, ASYMMETRIC_ACTIVE_POWER_FLOW_DISABLED: rad, FIXED: 1, VOLTAGE: 1, REACTIVE_POWER_FLOW: 1, ACTIVE_POWER_FLOW: rad, CONTROL_OF_DC_LINE: 1, ASYMMETRIC_ACTIVE_POWER_FLOW: rad .",
+    tap_ratio_limits: MinMax | None = Field(
+        None,
+        description="Tap-ratio actuator band (PSS/E RMA/RMI) when `control_objective` moves the tap; `null` otherwise. Under the tap-moving objectives it may be omitted and then defaults to 0.9 to 1.1, PSS/E's own RMI/RMA defaults, which is why it is the one band the conditional blocks do not require. Units: 1.",
     )
-    controlled_quantity_limits: MinMax | None = Field(
-        {"min": 0.9, "max": 1.1},
-        description="Controlled-quantity band (PSS/E VMA/VMI), per `control_objective`. Units: per control_objective — UNDEFINED: pu, VOLTAGE_DISABLED: pu, REACTIVE_POWER_FLOW_DISABLED: MVAr, ACTIVE_POWER_FLOW_DISABLED: MW, CONTROL_OF_DC_LINE_DISABLED: MW, ASYMMETRIC_ACTIVE_POWER_FLOW_DISABLED: MW, FIXED: pu, VOLTAGE: pu, REACTIVE_POWER_FLOW: MVAr, ACTIVE_POWER_FLOW: MW, CONTROL_OF_DC_LINE: MW, ASYMMETRIC_ACTIVE_POWER_FLOW: MW .",
+    phase_angle_limits: MinMax | None = Field(
+        None,
+        description="Phase-shift actuator band (PSS/E RMA/RMI when the objective moves the angle). `null` unless `control_objective` selects it. Units: rad.",
+    )
+    controlled_voltage_limits: MinMax | None = Field(
+        None,
+        description="Regulated-voltage target band (PSS/E VMA/VMI), per unit of the regulated bus's base voltage. `null` unless `control_objective` selects it. Units: pu.",
+    )
+    controlled_reactive_power_flow_limits: MinMax | None = Field(
+        None,
+        description="Regulated reactive-power-flow target band (PSS/E VMA/VMI). `null` unless `control_objective` selects it. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    controlled_active_power_flow_limits: MinMax | None = Field(
+        None,
+        description="Regulated active-power-flow target band (PSS/E VMA/VMI). `null` unless `control_objective` selects it. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
     number_of_tap_positions: int | None = Field(
         33, description="Number of tap positions (PSS/E NTP)."
     )
-    rating: float | None = Field(
-        None,
+    rating: float = Field(
+        ...,
         description="Thermal rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
     )
     rating_b: float | None = Field(
@@ -2909,6 +2762,10 @@ class TransformerCircuit(BaseModel):
     rating_c: float | None = Field(
         None,
         description="Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    operational_flow_limit: OperationalFlowLimit | None = Field(
+        None,
+        description="Operator-set minimum and maximum flow in each direction, applied in addition to `rating`. Absent means no operational limit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
     active_power_flow: float | None = Field(
         0.0,
@@ -2935,6 +2792,173 @@ class TransformerCircuit(BaseModel):
     )
 
 
+class TwoTerminalLCCLine(BaseModel):
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+    )
+    arc: int = Field(
+        ...,
+        description="An Arc defining this line `from` a rectifier bus `to` an inverter bus. The rectifier bus must be specified in the `from` bus and inverter bus in the `to` bus.",
+    )
+    active_power_flow: float = Field(
+        ...,
+        description="Initial condition of active power flow on the line. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    r: float = Field(..., description="Series resistance of the DC line. Units: ohm.")
+    power_transfer_setpoint: float | None = Field(
+        None,
+        description="Scheduled power transfer, used when `control_mode` is `POWER`; `null` otherwise. Must not be specified in per-unit. A positive value is the power consumed at the rectifier bus; a negative value is the power delivered at the inverter bus (its absolute value is the generated power at the inverter bus). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    current_transfer_setpoint: float | None = Field(
+        None,
+        description="Scheduled current transfer, used when `control_mode` is `CURRENT`; `null` otherwise. Units: A.",
+    )
+    scheduled_dc_voltage: float = Field(
+        ...,
+        description="Scheduled compounded DC voltage. By default this parameter is the scheduled DC voltage in the inverter bus. Units: kV.",
+    )
+    rectifier_bridges: int = Field(
+        ..., description="Number of bridges in series in the rectifier side."
+    )
+    rectifier_delay_angle_limits: MinMax = Field(
+        ..., description="Minimum and maximum rectifier firing delay angle (alpha). Units: rad."
+    )
+    rectifier_rc: float = Field(
+        ..., description="Rectifier commutating transformer resistance per bridge. Units: ohm."
+    )
+    rectifier_xc: float = Field(
+        ..., description="Rectifier commutating transformer reactance per bridge. Units: ohm."
+    )
+    rectifier_base_voltage: float = Field(
+        ..., description="Rectifier primary base AC voltage, entered in kV. Units: kV."
+    )
+    inverter_bridges: int = Field(
+        ..., description="Number of bridges in series in the inverter side."
+    )
+    inverter_extinction_angle_limits: MinMax = Field(
+        ..., description="Minimum and maximum inverter extinction angle (gamma). Units: rad."
+    )
+    inverter_rc: float = Field(
+        ..., description="Inverter commutating transformer resistance per bridge. Units: ohm."
+    )
+    inverter_xc: float = Field(
+        ..., description="Inverter commutating transformer reactance per bridge. Units: ohm."
+    )
+    inverter_base_voltage: float = Field(
+        ..., description="Inverter primary base AC voltage, entered in kV. Units: kV."
+    )
+    control_mode: LCCControlMode | None = Field(
+        "BLOCKED",
+        description="Control mode of the line (PSS/E MDC). `BLOCKED` holds no schedule, `POWER` holds `power_transfer_setpoint`, `CURRENT` holds `current_transfer_setpoint`.",
+    )
+    switch_mode_voltage: float | None = Field(
+        0.0,
+        description="Mode switch DC voltage. If `control_mode` is `POWER` and the DC voltage falls below this value, the line switches to current control. Units: kV.",
+    )
+    compounding_resistance: float | None = Field(
+        0.0,
+        description="Compounding Resistance. This parameter is for control of the DC voltage in the rectifier or inverter end. For inverter DC voltage control, the parameter is set to zero; for rectifier DC voltage control, the parameter is set to the DC line resistance; otherwise, set to a fraction of the DC line resistance. Units: ohm.",
+    )
+    min_compounding_voltage: float | None = Field(
+        0.0,
+        description="Minimum compounded voltage. Only used in constant gamma operation (gamma_min = gamma_max), and the AC transformer is used to control the DC voltage. Units: kV.",
+    )
+    rectifier_transformer_ratio: float | None = Field(
+        1.0,
+        description="Rectifier transformer ratio between the primary and secondary side AC voltages. Units: 1.",
+    )
+    rectifier_tap_setting: float | None = Field(
+        1.0, description="Rectifier transformer tap setting. Units: 1."
+    )
+    rectifier_tap_limits: MinMax | None = Field(
+        {"min": 0.51, "max": 1.5},
+        description="Minimum and maximum rectifier tap limits as a ratio between the primary and secondary side AC voltages. Units: 1.",
+    )
+    rectifier_tap_step: float | None = Field(
+        0.00625, description="Rectifier transformer tap step value. Units: 1."
+    )
+    rectifier_delay_angle: float | None = Field(
+        0.0, description="Rectifier firing delay angle (alpha). Units: rad."
+    )
+    rectifier_capacitor_reactance: float | None = Field(
+        0.0,
+        description="Commutating rectifier capacitor reactance magnitude per bridge. Units: ohm.",
+    )
+    inverter_transformer_ratio: float | None = Field(
+        1.0,
+        description="Inverter transformer ratio between the primary and secondary side AC voltages. Units: 1.",
+    )
+    inverter_tap_setting: float | None = Field(
+        1.0, description="Inverter transformer tap setting. Units: 1."
+    )
+    inverter_tap_limits: MinMax | None = Field(
+        {"min": 0.51, "max": 1.5},
+        description="Minimum and maximum inverter tap limits as a ratio between the primary and secondary side AC voltages. Units: 1.",
+    )
+    inverter_tap_step: float | None = Field(
+        0.00625, description="Inverter transformer tap step value. Units: 1."
+    )
+    inverter_extinction_angle: float | None = Field(
+        0.0, description="Inverter extinction angle (gamma). Units: rad."
+    )
+    inverter_capacitor_reactance: float | None = Field(
+        0.0,
+        description="Commutating inverter capacitor reactance magnitude per bridge. Units: ohm.",
+    )
+    rating: float = Field(
+        ...,
+        description="Transfer rating of the DC line, independent of the converter ratings at each end. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    rating_from: float | None = Field(
+        None,
+        description="Converter rating in the `from` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    rating_to: float | None = Field(
+        None,
+        description="Converter rating in the `to` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    operational_flow_limit: OperationalFlowLimit | None = Field(
+        None,
+        description="Operator-set minimum and maximum flow in each direction, applied in addition to `rating`. Absent means no operational limit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    reactive_power_limits_from: MinMax | None = Field(
+        {"min": 0.0, "max": 0.0},
+        description="Minimum and maximum reactive power limits to the FROM node. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    reactive_power_limits_to: MinMax | None = Field(
+        {"min": 0.0, "max": 0.0},
+        description="Minimum and maximum reactive power limits to the TO node. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    loss: LossCurve | None = Field(
+        {
+            "power_units": "NATURAL_UNITS",
+            "value_curve": {
+                "curve_type": "INPUT_OUTPUT",
+                "function_data": {
+                    "function_type": "LINEAR",
+                    "constant_term": 0,
+                    "proportional_term": 0,
+                },
+            },
+        },
+        description="A generic loss model coefficients. It accepts a linear model with a constant loss and a proportional loss rate (MW of loss per MW of flow). It also accepts a Piecewise loss, with N segments to specify different proportional losses for different segments.",
+    )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+    )
+    power_units: UnitSystem = Field(
+        ...,
+        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
+    )
+
+
 class TwoWindingTransformer(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
@@ -2955,4 +2979,20 @@ class TwoWindingTransformer(BaseModel):
     shunt_location: TwoWindingTransformerShuntLocation | None = Field(
         "PRIMARY",
         description="Placement of `magnetizing_shunt` on the two sides of the circuit arc.",
+    )
+
+
+class VoltageControlAssociation(BaseModel):
+    control_id: int = Field(
+        ...,
+        description="ID of the VoltageDroopControl or ReactivePowerSharing attribute the member belongs to.",
+    )
+    entity_id: int = Field(..., description="ID of the member device.")
+    weight: PositiveFloat | None = Field(
+        1.0,
+        description="Positive relative weight of this member. Its share of the reactive power required at the regulated bus is weight divided by the sum of the weights of the members in service. Units: 1.",
+    )
+    terminal: VoltageControlTerminal | None = Field(
+        "UNDEFINED",
+        description="Converter of a two-terminal member this row refers to; required for a TwoTerminalVSCLine member and UNDEFINED for every other member.",
     )

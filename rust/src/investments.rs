@@ -14,5 +14,5 @@ pub use crate::generated::{
     TechnologyFinancialData, ThermalFuels, ThermalGenerationCost, TimeSeriesAverageRateCurve,
     TimeSeriesIncrementalCurve, TimeSeriesInputOutputCurve, TimeSeriesLinearFunctionData,
     TimeSeriesPiecewiseLinearData, TimeSeriesPiecewiseStepData, TimeSeriesQuadraticFunctionData,
-    TopologyMapping, UnitSystem, UpDown, ValueCurve, XYCoords,
+    UnitSystem, UpDown, ValueCurve, XYCoords,
 };
