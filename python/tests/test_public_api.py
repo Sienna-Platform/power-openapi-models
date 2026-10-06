@@ -22,6 +22,11 @@ MODULES = [
     "timeseries",
 ]
 
+# DEGOV and DEGOV1 are both real types, declared in the dynamics selector, so the
+# alias check cannot tell DEGOV1 from a generated copy of DEGOV. Same exemption as
+# PowerOpenAPIModels' REAL_SUFFIXED_TYPES.
+REAL_SUFFIXED_TYPES = {"DEGOV1"}
+
 
 @pytest.mark.parametrize("name", MODULES)
 def test_module_reachable_from_top_level(name):
@@ -45,7 +50,9 @@ def test_py_typed_marker_is_present():
 def test_version_metadata():
     import power_openapi_models
 
-    assert power_openapi_models.__version__ == "0.1.0"
+    pyproject = (pathlib.Path(__file__).parents[1] / "pyproject.toml").read_text()
+    declared = re.search(r'^version = "([^"]+)"', pyproject, re.MULTILINE).group(1)
+    assert power_openapi_models.__version__ == declared
     assert isinstance(power_openapi_models.__schema_version__, str)
     assert power_openapi_models.__schema_version__
 
@@ -76,7 +83,11 @@ def test_no_digit_suffix_alias_classes(name):
     """
     models = importlib.import_module(f"power_openapi_models.{name}.models")
     names = {n for n in dir(models) if not n.startswith("_")}
-    leaked = [n for n in sorted(names) if n[-1].isdigit() and n.rstrip("0123456789") in names]
+    leaked = [
+        n
+        for n in sorted(names)
+        if n[-1].isdigit() and n.rstrip("0123456789") in names and n not in REAL_SUFFIXED_TYPES
+    ]
     assert not leaked, (
         f"{name}: generated alias classes {leaked} -- give each a named "
         f"$defs entry in SiennaSchemas, or collapse it in "
