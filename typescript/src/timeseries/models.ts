@@ -52,7 +52,7 @@ export const timeSeriesAssociationSixCountMin = 0;
 export const TimeSeriesAssociation = zod
   .union([
     zod
-      .object({
+      .strictObject({
         association_id: zod
           .int()
           .describe(
@@ -185,7 +185,7 @@ export const TimeSeriesAssociation = zod
         "A static time series on a regular grid: values at `initial_timestamp + k * resolution`. One of a closed set of six canonical time series types owned by the data layer. This schema records the association and its metadata; the dense values live in the store named by `uri`.",
       ),
     zod
-      .object({
+      .strictObject({
         association_id: zod
           .int()
           .describe(
@@ -310,7 +310,7 @@ export const TimeSeriesAssociation = zod
         "An irregular static time series, sampled at explicit timestamps rather than on a grid. Deliberately carries neither `initial_timestamp` nor `resolution`: an irregular series has no fixed cadence and its key holds no timestamp. The timestamp vector itself lives in the store rather than here, content-addressed so that many irregular series sharing one time axis store it once; `timestamps_uri` names which axis this series sits on, so a document plus the store's arrays describe the series completely.",
       ),
     zod
-      .object({
+      .strictObject({
         association_id: zod
           .int()
           .describe(
@@ -453,7 +453,7 @@ export const TimeSeriesAssociation = zod
         "A deterministic forecast: one horizon-length array per window, windows stepping by `interval`. One of a closed set of six canonical time series types owned by the data layer. This schema records the association and its metadata; the dense values live in the store named by `uri`.",
       ),
     zod
-      .object({
+      .strictObject({
         association_id: zod
           .int()
           .describe(
@@ -596,7 +596,7 @@ export const TimeSeriesAssociation = zod
         "A synthetic deterministic forecast derived from a SingleTimeSeries by `transform_single_time_series`. Field-identical to Deterministic, and it reads back as one; it stays a distinct type because the catalog records which rows are synthetic, and a request for Deterministic matches both while a request for this type narrows to the synthetic ones alone.",
       ),
     zod
-      .object({
+      .strictObject({
         association_id: zod
           .int()
           .describe(
@@ -745,7 +745,7 @@ export const TimeSeriesAssociation = zod
         "A probabilistic forecast: per-percentile, per-window horizon arrays. Adds a percentile axis in front of the deterministic layout.",
       ),
     zod
-      .object({
+      .strictObject({
         association_id: zod
           .int()
           .describe(
@@ -911,7 +911,7 @@ export const singleTimeSeriesArrayShapeItemMin = 0;
 export const singleTimeSeriesLengthMin = 0;
 
 export const SingleTimeSeries = zod
-  .object({
+  .strictObject({
     association_id: zod
       .int()
       .describe(
@@ -1056,7 +1056,7 @@ export const nonSequentialTimeSeriesArrayShapeItemMin = 0;
 export const nonSequentialTimeSeriesLengthMin = 0;
 
 export const NonSequentialTimeSeries = zod
-  .object({
+  .strictObject({
     association_id: zod
       .int()
       .describe(
@@ -1194,7 +1194,7 @@ export const deterministicArrayShapeItemMin = 0;
 export const deterministicCountMin = 0;
 
 export const Deterministic = zod
-  .object({
+  .strictObject({
     association_id: zod
       .int()
       .describe(
@@ -1349,7 +1349,7 @@ export const deterministicSingleTimeSeriesArrayShapeItemMin = 0;
 export const deterministicSingleTimeSeriesCountMin = 0;
 
 export const DeterministicSingleTimeSeries = zod
-  .object({
+  .strictObject({
     association_id: zod
       .int()
       .describe(
@@ -1508,7 +1508,7 @@ export const probabilisticArrayShapeItemMin = 0;
 export const probabilisticCountMin = 0;
 
 export const Probabilistic = zod
-  .object({
+  .strictObject({
     association_id: zod
       .int()
       .describe(
@@ -1669,7 +1669,7 @@ export const scenariosArrayShapeItemMin = 0;
 export const scenariosCountMin = 0;
 
 export const Scenarios = zod
-  .object({
+  .strictObject({
     association_id: zod
       .int()
       .describe(

@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 from enum import Enum, IntEnum
-from pydantic import BaseModel, Field, RootModel, confloat
+from pydantic import BaseModel, ConfigDict, Field, RootModel, confloat
 from typing import Literal
 
 
@@ -63,6 +63,9 @@ class ACBusType(Enum):
 
 
 class ChargeDischarge(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     charge: float
     discharge: float
 
@@ -72,6 +75,9 @@ class MinMaxByKey(RootModel[dict[str, MinMax]]):
 
 
 class OperationalFlowLimit(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     from_to_min: confloat(ge=0.0) = Field(..., title="FromToMin")
     from_to_max: confloat(ge=0.0) = Field(..., title="FromToMax")
     to_from_min: confloat(ge=0.0) = Field(..., title="ToFromMin")
@@ -79,11 +85,17 @@ class OperationalFlowLimit(BaseModel):
 
 
 class OutageFactors(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     planned: float | None = Field(None, title="Planned")
     forced: float | None = Field(None, title="Forced")
 
 
 class Arc(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     from_id: int = Field(..., description="ID of the initial bus.")
     to_id: int = Field(..., description="ID of the terminal bus.")
@@ -100,6 +112,9 @@ class CurveStyles(IntEnum):
 
 
 class StartUpStages(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     startup_stages_type: Literal["STAGES"] = "STAGES"
     cold: float
     hot: float
@@ -107,11 +122,17 @@ class StartUpStages(BaseModel):
 
 
 class DbdPnts(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     dbd1: float | None = None
     dbd2: float | None = None
 
 
 class DCBus(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     area: int | None = Field(None, description="ID of the area containing the DC bus.")
     available: bool = Field(
         ...,
@@ -194,6 +215,9 @@ class ShuntAdmittanceUnitBasis(Enum):
 
 
 class FdbdPnts(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     fdbd1: float | None = None
     fdbd2: float | None = None
 
@@ -204,6 +228,9 @@ class FuelUnit(Enum):
 
 
 class HydroReservoirCost(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     cost_type: Literal["HYDRO_RES"] = "HYDRO_RES"
     level_shortage_cost: float | None = 0.0
     level_surplus_cost: float | None = 0.0
@@ -211,6 +238,9 @@ class HydroReservoirCost(BaseModel):
 
 
 class LoadZone(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -266,6 +296,9 @@ class ReservoirLocation(Enum):
 
 
 class StartUpShutDown(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     startup: float | None = Field(None, title="StartUp")
     shutdown: float | None = Field(None, title="ShutDown")
 
@@ -322,11 +355,17 @@ class ThermalFuels(Enum):
 
 
 class TurbinePump(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     turbine: float
     pump: float
 
 
 class ACBus(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     number: int = Field(..., description="A unique bus identification number (positive integer).")
     name: str = Field(
@@ -355,6 +394,9 @@ class ACBus(BaseModel):
 
 
 class AverageRateCurve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     curve_type: Literal["AVERAGE_RATE"] = "AVERAGE_RATE"
     function_data: LinearFunctionData | PiecewiseStepData = Field(
         ..., discriminator="function_type"
@@ -364,6 +406,9 @@ class AverageRateCurve(BaseModel):
 
 
 class IncrementalCurve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     curve_type: Literal["INCREMENTAL"] = "INCREMENTAL"
     function_data: LinearFunctionData | PiecewiseStepData = Field(
         ..., discriminator="function_type"
@@ -373,6 +418,9 @@ class IncrementalCurve(BaseModel):
 
 
 class Area(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -409,6 +457,9 @@ class Area(BaseModel):
 
 
 class InputOutputCurve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     curve_type: Literal["INPUT_OUTPUT"] = "INPUT_OUTPUT"
     function_data: QuadraticFunctionData | LinearFunctionData | PiecewiseLinearData = Field(
         ..., discriminator="function_type"
@@ -435,6 +486,9 @@ class LossValueCurve(RootModel[InputOutputCurve | IncrementalCurve]):
 
 
 class LossCurve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     power_units: UnitSystem = UnitSystem.NATURAL_UNITS
     value_curve: LossValueCurve = Field(
         {
@@ -450,6 +504,9 @@ class LossCurve(BaseModel):
 
 
 class TimeSeriesAverageRateCurve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     curve_type: Literal["TIME_SERIES_AVERAGE_RATE"] = "TIME_SERIES_AVERAGE_RATE"
     function_data: FunctionData = Field(
         ...,
@@ -466,6 +523,9 @@ class TimeSeriesAverageRateCurve(BaseModel):
 
 
 class TimeSeriesIncrementalCurve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     curve_type: Literal["TIME_SERIES_INCREMENTAL"] = "TIME_SERIES_INCREMENTAL"
     function_data: FunctionData = Field(
         ...,
@@ -482,6 +542,9 @@ class TimeSeriesIncrementalCurve(BaseModel):
 
 
 class TimeSeriesInputOutputCurve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     curve_type: Literal["TIME_SERIES_INPUT_OUTPUT"] = "TIME_SERIES_INPUT_OUTPUT"
     function_data: FunctionData = Field(
         ...,
@@ -494,6 +557,9 @@ class TimeSeriesInputOutputCurve(BaseModel):
 
 
 class CurrentLossCurve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     power_units: UnitSystem = UnitSystem.NATURAL_UNITS
     value_curve: LossValueCurve = Field(
         {
@@ -534,6 +600,9 @@ class ValueCurve(
 
 
 class StorageCapitalCost(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     charge_capital_cost: ValueCurve
     discharge_capital_cost: ValueCurve
     energy_capital_cost: ValueCurve
@@ -541,6 +610,9 @@ class StorageCapitalCost(BaseModel):
 
 
 class CostCurve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     power_units: UnitSystem = UnitSystem.NATURAL_UNITS
     value_curve: ValueCurve
     variable_cost_type: Literal["COST"] = "COST"
@@ -559,6 +631,9 @@ class CostCurve(BaseModel):
 
 
 class EmissionsData(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     name: str = Field(..., description="Identifier for this emissions attribute")
     pollutant: PollutantType = Field(
@@ -590,6 +665,9 @@ class EmissionsData(BaseModel):
 
 
 class FuelCurve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     fuel_cost: float | None = Field(
         None,
         description="Fixed fuel cost in USD per one `fuel_units` of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
@@ -622,6 +700,9 @@ class FuelCurve(BaseModel):
 
 
 class RenewableGenerationCost(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     cost_type: Literal["RENEWABLE"] = "RENEWABLE"
     curtailment_cost: CostCurve | None = Field(
         default_factory=lambda: CostCurve.model_validate(
@@ -660,6 +741,9 @@ class ProductionVariableCostCurve(RootModel[CostCurve | FuelCurve]):
 
 
 class StorageCost(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     cost_type: Literal["STORAGE"] = "STORAGE"
     charge_variable_cost: CostCurve | None = None
     discharge_variable_cost: CostCurve | None = None
@@ -671,6 +755,9 @@ class StorageCost(BaseModel):
 
 
 class ImportExportCost(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     cost_type: Literal["IMPORTEXPORT"] = "IMPORTEXPORT"
     import_offer_curves: CostCurve | None = None
     export_offer_curves: CostCurve | None = None
@@ -685,6 +772,9 @@ class ImportExportCost(BaseModel):
 
 
 class ImportExportTimeSeriesCost(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     cost_type: Literal["IMPORT_EXPORT_TIME_SERIES"] = "IMPORT_EXPORT_TIME_SERIES"
     import_offer_curves: CostCurve = Field(
         ...,
@@ -706,12 +796,18 @@ class ImportExportTimeSeriesCost(BaseModel):
 
 
 class LoadCost(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     cost_type: Literal["LOAD"] = "LOAD"
     fixed: float | None = 0.0
     variable_operation_cost: CostCurve
 
 
 class MarketBidTimeSeriesCost(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     cost_type: Literal["MARKET_BID_TIME_SERIES"] = "MARKET_BID_TIME_SERIES"
     minimum_energy_offer: TimeSeriesInputOutputCurve = Field(
         ...,
@@ -755,11 +851,17 @@ class MarketBidTimeSeriesCost(BaseModel):
 
 
 class CapitalCost(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     capital_cost: ValueCurve
     interconnection_cost: float | None = 0.0
 
 
 class MarketBidCost(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     cost_type: Literal["MARKET_BID"] = "MARKET_BID"
     minimum_energy_offer: InputOutputCurve = Field(
         default_factory=lambda: InputOutputCurve.model_validate(
@@ -818,12 +920,18 @@ class MarketBidCost(BaseModel):
 
 
 class HydroGenerationCost(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     cost_type: Literal["HYDRO_GEN"] = "HYDRO_GEN"
     fixed: float | None = 0.0
     variable_operation_cost: ProductionVariableCostCurve
 
 
 class ThermalGenerationCost(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     cost_type: Literal["THERMAL"] = "THERMAL"
     fixed: float = Field(
         ...,

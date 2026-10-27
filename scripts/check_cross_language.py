@@ -16,6 +16,7 @@ type:
   * enum allowed values   a value one side permits and the other refuses
   * scalar type kinds     integer vs number, string vs bool
   * defaults              a differing default silently changes an omitted field
+  * closed objects        one side rejects an unknown property, the other drops it
 
 The Julia side is read from the generated sources rather than a live session, so
 this runs without a Julia install: `Base.@kwdef struct ... <: APIModel` for fields
@@ -477,7 +478,10 @@ def load_python_surface():
                             break
                 if members is not None:
                     enums[alias] = [m.value for m in members.values()]
-            surface.setdefault(attr, {"fields": fields, "required": required, "enums": enums})
+            closed = obj.model_config.get("extra") == "forbid"
+            surface.setdefault(
+                attr, {"fields": fields, "required": required, "enums": enums, "closed": closed}
+            )
     return Surface(language="Python", types=surface, files_scanned=files_scanned)
 
 
@@ -749,10 +753,12 @@ def _ts_parse_js_value(text, const_registry):
 
 
 def _ts_object_body(calls):
-    """The `(body_text, body_mask)` of the `zod.object({...})` call a parsed
-    chain resolves to, or None if it never resolves to one.
+    """The `(body_text, body_mask, closed)` of the `zod.object({...})` or
+    `zod.strictObject({...})` call a parsed chain resolves to, or None if it
+    never resolves to one. `closed` is True for `strictObject`, which rejects
+    an unknown key where `object` strips it.
 
-    Direct when `calls[0]` already is `object`. Otherwise searches every
+    Direct when `calls[0]` already is `object` or `strictObject`. Otherwise searches every
     `.and(...)` argument (itself a nested zod chain, parsed recursively) for
     one, keeping the rightmost match -- the one shape this repo actually
     generates that needs it is `EmissionsData`:
@@ -764,10 +770,11 @@ def _ts_object_body(calls):
     """
     if not calls:
         return None
-    if calls[0][0] == "object":
+    if calls[0][0] in ("object", "strictObject"):
         # `.object(...)`'s one argument is the `{ ... }` literal itself
         # (braces included) -- unwrap them to get the field-declaration body.
-        return _ts_bracketed_body(calls[0][1], calls[0][2], "{")
+        body, body_mask = _ts_bracketed_body(calls[0][1], calls[0][2], "{")
+        return body, body_mask, calls[0][0] == "strictObject"
     found = None
     for name, args_text, args_mask in calls:
         if name != "and":
@@ -898,7 +905,7 @@ def _ts_parse_file(text):
         obj = _ts_object_body(calls)
         if obj is None:
             continue
-        body, body_mask = obj
+        body, body_mask, closed = obj
         fields, required, enums = {}, set(), {}
         for field_name, field_calls in _ts_parse_object_fields(body, body_mask).items():
             info = _ts_field_info(field_calls, const_registry)
@@ -907,7 +914,12 @@ def _ts_parse_file(text):
                 required.add(field_name)
             if info["enums"] is not None:
                 enums[field_name] = info["enums"]
-        defined[m.group(1)] = {"fields": fields, "required": required, "enums": enums}
+        defined[m.group(1)] = {
+            "fields": fields,
+            "required": required,
+            "enums": enums,
+            "closed": closed,
+        }
 
     reexports = {
         m.group(1): m.group(2) for m in _TS_REEXPORT_RE.finditer(text) if not mask[m.start()]
@@ -1445,6 +1457,13 @@ def compare(a, b, label_a, label_b, schema_registry=None):
 
     for name in shared:
         av, bv = a[name], b[name]
+        # Julia reports no `closed`; compare it only where both sides do.
+        aclosed, bclosed = av.get("closed"), bv.get("closed")
+        if aclosed is not None and bclosed is not None and aclosed != bclosed:
+            closed_in = label_a if aclosed else label_b
+            problems.append(
+                ((name, None), f"{name}: rejects an unknown property only in {closed_in}")
+            )
         af, bf = set(av["fields"]), set(bv["fields"])
         for field in sorted(af - bf):
             msg = f"{name}.{field}: in {label_a}, missing from {label_b}"

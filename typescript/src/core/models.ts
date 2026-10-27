@@ -8,7 +8,7 @@
 import * as zod from "zod";
 
 export const ACBus = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
     number: zod
       .int()
@@ -35,7 +35,7 @@ export const ACBus = zod
       .optional()
       .describe("Voltage as a multiple of `base_voltage`. Units: pu."),
     voltage_limits: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -114,17 +114,17 @@ const capitalCostCapitalCostSixFunctionDataSevenFunctionTypeDefault = `TIME_SERI
 const capitalCostCapitalCostSixFunctionDataEightFunctionTypeDefault = `TIME_SERIES_PIECEWISE_STEP`;
 const capitalCostInterconnectionCostDefault = 0;
 export const CapitalCost = zod
-  .object({
+  .strictObject({
     capital_cost: zod
       .union([
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(capitalCostCapitalCostOneCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -148,7 +148,7 @@ export const CapitalCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -167,7 +167,7 @@ export const CapitalCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -175,7 +175,7 @@ export const CapitalCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -206,13 +206,13 @@ export const CapitalCost = zod
             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INCREMENTAL")
               .default(capitalCostCapitalCostTwoCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -231,7 +231,7 @@ export const CapitalCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -265,13 +265,13 @@ export const CapitalCost = zod
             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("AVERAGE_RATE")
               .default(capitalCostCapitalCostThreeCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -290,7 +290,7 @@ export const CapitalCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -324,14 +324,14 @@ export const CapitalCost = zod
             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_INPUT_OUTPUT")
               .default(capitalCostCapitalCostFourCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -350,7 +350,7 @@ export const CapitalCost = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -374,7 +374,7 @@ export const CapitalCost = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -382,7 +382,7 @@ export const CapitalCost = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -403,7 +403,7 @@ export const CapitalCost = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -424,7 +424,7 @@ export const CapitalCost = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -440,7 +440,7 @@ export const CapitalCost = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -456,7 +456,7 @@ export const CapitalCost = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -472,7 +472,7 @@ export const CapitalCost = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -502,14 +502,14 @@ export const CapitalCost = zod
             "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_INCREMENTAL")
               .default(capitalCostCapitalCostFiveCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -528,7 +528,7 @@ export const CapitalCost = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -552,7 +552,7 @@ export const CapitalCost = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -560,7 +560,7 @@ export const CapitalCost = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -581,7 +581,7 @@ export const CapitalCost = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -602,7 +602,7 @@ export const CapitalCost = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -618,7 +618,7 @@ export const CapitalCost = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -634,7 +634,7 @@ export const CapitalCost = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -650,7 +650,7 @@ export const CapitalCost = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -686,14 +686,14 @@ export const CapitalCost = zod
             "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_AVERAGE_RATE")
               .default(capitalCostCapitalCostSixCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -712,7 +712,7 @@ export const CapitalCost = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -736,7 +736,7 @@ export const CapitalCost = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -744,7 +744,7 @@ export const CapitalCost = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -765,7 +765,7 @@ export const CapitalCost = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -786,7 +786,7 @@ export const CapitalCost = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -802,7 +802,7 @@ export const CapitalCost = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -818,7 +818,7 @@ export const CapitalCost = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -834,7 +834,7 @@ export const CapitalCost = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -885,7 +885,7 @@ export type CapitalCost = zod.input<typeof CapitalCost>;
 export type CapitalCostOutput = zod.output<typeof CapitalCost>;
 
 export const ChargeDischarge = zod
-  .object({
+  .strictObject({
     charge: zod.number(),
     discharge: zod.number(),
   })
@@ -900,7 +900,7 @@ export const MinMaxByKey = zod
   .record(
     zod.string(),
     zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1052,17 +1052,17 @@ const storageCapitalCostEnergyCapitalCostSixFunctionDataSevenFunctionTypeDefault
 const storageCapitalCostEnergyCapitalCostSixFunctionDataEightFunctionTypeDefault = `TIME_SERIES_PIECEWISE_STEP`;
 const storageCapitalCostInterconnectionCostDefault = 0;
 export const StorageCapitalCost = zod
-  .object({
+  .strictObject({
     charge_capital_cost: zod
       .union([
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(storageCapitalCostChargeCapitalCostOneCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -1086,7 +1086,7 @@ export const StorageCapitalCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -1105,7 +1105,7 @@ export const StorageCapitalCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -1113,7 +1113,7 @@ export const StorageCapitalCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -1144,13 +1144,13 @@ export const StorageCapitalCost = zod
             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INCREMENTAL")
               .default(storageCapitalCostChargeCapitalCostTwoCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -1169,7 +1169,7 @@ export const StorageCapitalCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -1203,7 +1203,7 @@ export const StorageCapitalCost = zod
             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("AVERAGE_RATE")
               .default(
@@ -1211,7 +1211,7 @@ export const StorageCapitalCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -1230,7 +1230,7 @@ export const StorageCapitalCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -1264,14 +1264,14 @@ export const StorageCapitalCost = zod
             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_INPUT_OUTPUT")
               .default(storageCapitalCostChargeCapitalCostFourCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -1290,7 +1290,7 @@ export const StorageCapitalCost = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -1314,7 +1314,7 @@ export const StorageCapitalCost = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -1322,7 +1322,7 @@ export const StorageCapitalCost = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -1343,7 +1343,7 @@ export const StorageCapitalCost = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -1364,7 +1364,7 @@ export const StorageCapitalCost = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -1380,7 +1380,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -1396,7 +1396,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -1412,7 +1412,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -1442,14 +1442,14 @@ export const StorageCapitalCost = zod
             "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_INCREMENTAL")
               .default(storageCapitalCostChargeCapitalCostFiveCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -1468,7 +1468,7 @@ export const StorageCapitalCost = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -1492,7 +1492,7 @@ export const StorageCapitalCost = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -1500,7 +1500,7 @@ export const StorageCapitalCost = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -1521,7 +1521,7 @@ export const StorageCapitalCost = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -1542,7 +1542,7 @@ export const StorageCapitalCost = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -1558,7 +1558,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -1574,7 +1574,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -1590,7 +1590,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -1626,14 +1626,14 @@ export const StorageCapitalCost = zod
             "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_AVERAGE_RATE")
               .default(storageCapitalCostChargeCapitalCostSixCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -1652,7 +1652,7 @@ export const StorageCapitalCost = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -1676,7 +1676,7 @@ export const StorageCapitalCost = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -1684,7 +1684,7 @@ export const StorageCapitalCost = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -1705,7 +1705,7 @@ export const StorageCapitalCost = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -1726,7 +1726,7 @@ export const StorageCapitalCost = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -1742,7 +1742,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -1758,7 +1758,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -1774,7 +1774,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -1816,7 +1816,7 @@ export const StorageCapitalCost = zod
     discharge_capital_cost: zod
       .union([
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(
@@ -1824,7 +1824,7 @@ export const StorageCapitalCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -1848,7 +1848,7 @@ export const StorageCapitalCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -1867,7 +1867,7 @@ export const StorageCapitalCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -1875,7 +1875,7 @@ export const StorageCapitalCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -1906,7 +1906,7 @@ export const StorageCapitalCost = zod
             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INCREMENTAL")
               .default(
@@ -1914,7 +1914,7 @@ export const StorageCapitalCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -1933,7 +1933,7 @@ export const StorageCapitalCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -1967,7 +1967,7 @@ export const StorageCapitalCost = zod
             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("AVERAGE_RATE")
               .default(
@@ -1975,7 +1975,7 @@ export const StorageCapitalCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -1994,7 +1994,7 @@ export const StorageCapitalCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -2028,7 +2028,7 @@ export const StorageCapitalCost = zod
             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_INPUT_OUTPUT")
               .default(
@@ -2037,7 +2037,7 @@ export const StorageCapitalCost = zod
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -2056,7 +2056,7 @@ export const StorageCapitalCost = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -2080,7 +2080,7 @@ export const StorageCapitalCost = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -2088,7 +2088,7 @@ export const StorageCapitalCost = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -2109,7 +2109,7 @@ export const StorageCapitalCost = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -2130,7 +2130,7 @@ export const StorageCapitalCost = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -2146,7 +2146,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -2162,7 +2162,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -2178,7 +2178,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -2208,7 +2208,7 @@ export const StorageCapitalCost = zod
             "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_INCREMENTAL")
               .default(
@@ -2217,7 +2217,7 @@ export const StorageCapitalCost = zod
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -2236,7 +2236,7 @@ export const StorageCapitalCost = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -2260,7 +2260,7 @@ export const StorageCapitalCost = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -2268,7 +2268,7 @@ export const StorageCapitalCost = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -2289,7 +2289,7 @@ export const StorageCapitalCost = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -2310,7 +2310,7 @@ export const StorageCapitalCost = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -2326,7 +2326,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -2342,7 +2342,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -2358,7 +2358,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -2394,7 +2394,7 @@ export const StorageCapitalCost = zod
             "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_AVERAGE_RATE")
               .default(
@@ -2403,7 +2403,7 @@ export const StorageCapitalCost = zod
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -2422,7 +2422,7 @@ export const StorageCapitalCost = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -2446,7 +2446,7 @@ export const StorageCapitalCost = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -2454,7 +2454,7 @@ export const StorageCapitalCost = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -2475,7 +2475,7 @@ export const StorageCapitalCost = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -2496,7 +2496,7 @@ export const StorageCapitalCost = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -2512,7 +2512,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -2528,7 +2528,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -2544,7 +2544,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -2586,13 +2586,13 @@ export const StorageCapitalCost = zod
     energy_capital_cost: zod
       .union([
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(storageCapitalCostEnergyCapitalCostOneCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -2616,7 +2616,7 @@ export const StorageCapitalCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -2635,7 +2635,7 @@ export const StorageCapitalCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -2643,7 +2643,7 @@ export const StorageCapitalCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -2674,13 +2674,13 @@ export const StorageCapitalCost = zod
             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INCREMENTAL")
               .default(storageCapitalCostEnergyCapitalCostTwoCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -2699,7 +2699,7 @@ export const StorageCapitalCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -2733,7 +2733,7 @@ export const StorageCapitalCost = zod
             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("AVERAGE_RATE")
               .default(
@@ -2741,7 +2741,7 @@ export const StorageCapitalCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -2760,7 +2760,7 @@ export const StorageCapitalCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -2794,14 +2794,14 @@ export const StorageCapitalCost = zod
             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_INPUT_OUTPUT")
               .default(storageCapitalCostEnergyCapitalCostFourCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -2820,7 +2820,7 @@ export const StorageCapitalCost = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -2844,7 +2844,7 @@ export const StorageCapitalCost = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -2852,7 +2852,7 @@ export const StorageCapitalCost = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -2873,7 +2873,7 @@ export const StorageCapitalCost = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -2894,7 +2894,7 @@ export const StorageCapitalCost = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -2910,7 +2910,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -2926,7 +2926,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -2942,7 +2942,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -2972,14 +2972,14 @@ export const StorageCapitalCost = zod
             "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_INCREMENTAL")
               .default(storageCapitalCostEnergyCapitalCostFiveCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -2998,7 +2998,7 @@ export const StorageCapitalCost = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -3022,7 +3022,7 @@ export const StorageCapitalCost = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -3030,7 +3030,7 @@ export const StorageCapitalCost = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -3051,7 +3051,7 @@ export const StorageCapitalCost = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -3072,7 +3072,7 @@ export const StorageCapitalCost = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -3088,7 +3088,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -3104,7 +3104,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -3120,7 +3120,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -3156,14 +3156,14 @@ export const StorageCapitalCost = zod
             "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_AVERAGE_RATE")
               .default(storageCapitalCostEnergyCapitalCostSixCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -3182,7 +3182,7 @@ export const StorageCapitalCost = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -3206,7 +3206,7 @@ export const StorageCapitalCost = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -3214,7 +3214,7 @@ export const StorageCapitalCost = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -3235,7 +3235,7 @@ export const StorageCapitalCost = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -3256,7 +3256,7 @@ export const StorageCapitalCost = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -3272,7 +3272,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -3288,7 +3288,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -3304,7 +3304,7 @@ export const StorageCapitalCost = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -3363,7 +3363,7 @@ export const operationalFlowLimitToFromMinMin = 0;
 export const operationalFlowLimitToFromMaxMin = 0;
 
 export const OperationalFlowLimit = zod
-  .object({
+  .strictObject({
     from_to_min: zod.number().min(operationalFlowLimitFromToMinMin),
     from_to_max: zod.number().min(operationalFlowLimitFromToMaxMin),
     to_from_min: zod.number().min(operationalFlowLimitToFromMinMin),
@@ -3379,7 +3379,7 @@ export type OperationalFlowLimitOutput = zod.output<
 >;
 
 export const OutageFactors = zod
-  .object({
+  .strictObject({
     planned: zod.number().optional(),
     forced: zod.number().optional(),
   })
@@ -3395,7 +3395,7 @@ const areaPeakReactivePowerDefault = 0;
 const areaLoadResponseDefault = 0;
 const areaOutOfAreaLoadIdsDefault: never[] = [];
 export const Area = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
     name: zod
       .string()
@@ -3451,7 +3451,7 @@ export type Area = zod.input<typeof Area>;
 export type AreaOutput = zod.output<typeof Area>;
 
 export const Arc = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
     from_id: zod.int().describe("ID of the initial bus."),
     to_id: zod.int().describe("ID of the terminal bus."),
@@ -3610,16 +3610,16 @@ const marketBidCostDecrementalSlopeDefault = false;
 const marketBidCostCurveStyleDefault = 0;
 const marketBidCostCurveMultistepDefault = 0;
 export const MarketBidCost = zod
-  .object({
+  .strictObject({
     cost_type: zod.literal("MARKET_BID").default(marketBidCostCostTypeDefault),
     minimum_energy_offer: zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("INPUT_OUTPUT")
           .default(marketBidCostMinimumEnergyOfferCurveTypeDefault),
         function_data: zod.union([
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -3643,7 +3643,7 @@ export const MarketBidCost = zod
               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
             ),
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -3662,7 +3662,7 @@ export const MarketBidCost = zod
               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
             ),
           zod
-            .object({
+            .strictObject({
               function_type: zod
                 .literal("PIECEWISE_LINEAR")
                 .default(
@@ -3670,7 +3670,7 @@ export const MarketBidCost = zod
                 ),
               points: zod.array(
                 zod
-                  .object({
+                  .strictObject({
                     x: zod
                       .number()
                       .describe("Units: the wrapped function's input unit."),
@@ -3697,7 +3697,7 @@ export const MarketBidCost = zod
         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
       ),
     start_up: zod
-      .object({
+      .strictObject({
         startup_stages_type: zod
           .literal("STAGES")
           .default(marketBidCostStartUpStartupStagesTypeDefault),
@@ -3709,13 +3709,13 @@ export const MarketBidCost = zod
         "A triple of values, one for each stage of a thermal unit's start-up: `hot`, `warm`, and `cold`.",
       ),
     shut_down: zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("INPUT_OUTPUT")
           .default(marketBidCostShutDownCurveTypeDefault),
         function_data: zod.union([
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -3739,7 +3739,7 @@ export const MarketBidCost = zod
               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
             ),
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -3758,7 +3758,7 @@ export const MarketBidCost = zod
               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
             ),
           zod
-            .object({
+            .strictObject({
               function_type: zod
                 .literal("PIECEWISE_LINEAR")
                 .default(
@@ -3766,7 +3766,7 @@ export const MarketBidCost = zod
                 ),
               points: zod.array(
                 zod
-                  .object({
+                  .strictObject({
                     x: zod
                       .number()
                       .describe("Units: the wrapped function's input unit."),
@@ -3793,7 +3793,7 @@ export const MarketBidCost = zod
         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
       ),
     incremental_offer_curves: zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -3802,7 +3802,7 @@ export const MarketBidCost = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -3810,7 +3810,7 @@ export const MarketBidCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -3834,7 +3834,7 @@ export const MarketBidCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -3853,7 +3853,7 @@ export const MarketBidCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -3861,7 +3861,7 @@ export const MarketBidCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -3892,7 +3892,7 @@ export const MarketBidCost = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -3900,7 +3900,7 @@ export const MarketBidCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -3919,7 +3919,7 @@ export const MarketBidCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -3957,7 +3957,7 @@ export const MarketBidCost = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -3965,7 +3965,7 @@ export const MarketBidCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -3984,7 +3984,7 @@ export const MarketBidCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -4022,7 +4022,7 @@ export const MarketBidCost = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -4031,7 +4031,7 @@ export const MarketBidCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -4052,7 +4052,7 @@ export const MarketBidCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -4078,7 +4078,7 @@ export const MarketBidCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -4086,7 +4086,7 @@ export const MarketBidCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -4107,7 +4107,7 @@ export const MarketBidCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -4132,7 +4132,7 @@ export const MarketBidCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -4148,7 +4148,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -4164,7 +4164,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -4180,7 +4180,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -4210,7 +4210,7 @@ export const MarketBidCost = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -4219,7 +4219,7 @@ export const MarketBidCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -4240,7 +4240,7 @@ export const MarketBidCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -4266,7 +4266,7 @@ export const MarketBidCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -4274,7 +4274,7 @@ export const MarketBidCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -4295,7 +4295,7 @@ export const MarketBidCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -4320,7 +4320,7 @@ export const MarketBidCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -4336,7 +4336,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -4352,7 +4352,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -4368,7 +4368,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -4404,7 +4404,7 @@ export const MarketBidCost = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -4413,7 +4413,7 @@ export const MarketBidCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -4434,7 +4434,7 @@ export const MarketBidCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -4460,7 +4460,7 @@ export const MarketBidCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -4468,7 +4468,7 @@ export const MarketBidCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -4489,7 +4489,7 @@ export const MarketBidCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -4514,7 +4514,7 @@ export const MarketBidCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -4530,7 +4530,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -4546,7 +4546,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -4562,7 +4562,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -4605,7 +4605,7 @@ export const MarketBidCost = zod
           .literal("COST")
           .default(marketBidCostIncrementalOfferCurvesVariableCostTypeDefault),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(
@@ -4613,7 +4613,7 @@ export const MarketBidCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -4637,7 +4637,7 @@ export const MarketBidCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -4656,7 +4656,7 @@ export const MarketBidCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -4664,7 +4664,7 @@ export const MarketBidCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -4699,7 +4699,7 @@ export const MarketBidCost = zod
         "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
       ),
     decremental_offer_curves: zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -4708,7 +4708,7 @@ export const MarketBidCost = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -4716,7 +4716,7 @@ export const MarketBidCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -4740,7 +4740,7 @@ export const MarketBidCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -4759,7 +4759,7 @@ export const MarketBidCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -4767,7 +4767,7 @@ export const MarketBidCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -4798,7 +4798,7 @@ export const MarketBidCost = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -4806,7 +4806,7 @@ export const MarketBidCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -4825,7 +4825,7 @@ export const MarketBidCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -4863,7 +4863,7 @@ export const MarketBidCost = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -4871,7 +4871,7 @@ export const MarketBidCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -4890,7 +4890,7 @@ export const MarketBidCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -4928,7 +4928,7 @@ export const MarketBidCost = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -4937,7 +4937,7 @@ export const MarketBidCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -4958,7 +4958,7 @@ export const MarketBidCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -4984,7 +4984,7 @@ export const MarketBidCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -4992,7 +4992,7 @@ export const MarketBidCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -5013,7 +5013,7 @@ export const MarketBidCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -5038,7 +5038,7 @@ export const MarketBidCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -5054,7 +5054,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -5070,7 +5070,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -5086,7 +5086,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -5116,7 +5116,7 @@ export const MarketBidCost = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -5125,7 +5125,7 @@ export const MarketBidCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -5146,7 +5146,7 @@ export const MarketBidCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -5172,7 +5172,7 @@ export const MarketBidCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -5180,7 +5180,7 @@ export const MarketBidCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -5201,7 +5201,7 @@ export const MarketBidCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -5226,7 +5226,7 @@ export const MarketBidCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -5242,7 +5242,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -5258,7 +5258,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -5274,7 +5274,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -5310,7 +5310,7 @@ export const MarketBidCost = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -5319,7 +5319,7 @@ export const MarketBidCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -5340,7 +5340,7 @@ export const MarketBidCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -5366,7 +5366,7 @@ export const MarketBidCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -5374,7 +5374,7 @@ export const MarketBidCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -5395,7 +5395,7 @@ export const MarketBidCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -5420,7 +5420,7 @@ export const MarketBidCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -5436,7 +5436,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -5452,7 +5452,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -5468,7 +5468,7 @@ export const MarketBidCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -5511,7 +5511,7 @@ export const MarketBidCost = zod
           .literal("COST")
           .default(marketBidCostDecrementalOfferCurvesVariableCostTypeDefault),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(
@@ -5519,7 +5519,7 @@ export const MarketBidCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -5543,7 +5543,7 @@ export const MarketBidCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -5562,7 +5562,7 @@ export const MarketBidCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -5570,7 +5570,7 @@ export const MarketBidCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -5645,13 +5645,13 @@ const averageRateCurveCurveTypeDefault = `AVERAGE_RATE`;
 const averageRateCurveFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const averageRateCurveFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
 export const AverageRateCurve = zod
-  .object({
+  .strictObject({
     curve_type: zod
       .enum(["AVERAGE_RATE"])
       .default(averageRateCurveCurveTypeDefault),
     function_data: zod.union([
       zod
-        .object({
+        .strictObject({
           constant_term: zod
             .number()
             .describe("Units: the wrapped function's output unit."),
@@ -5668,7 +5668,7 @@ export const AverageRateCurve = zod
           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
         ),
       zod
-        .object({
+        .strictObject({
           function_type: zod
             .literal("PIECEWISE_STEP")
             .default(averageRateCurveFunctionDataTwoFunctionTypeDefault),
@@ -5758,7 +5758,7 @@ const costCurveVomCostDefault = {
   },
 };
 export const CostCurve = zod
-  .object({
+  .strictObject({
     power_units: zod
       .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
       .default("NATURAL_UNITS")
@@ -5768,13 +5768,13 @@ export const CostCurve = zod
     value_curve: zod
       .union([
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(costCurveValueCurveOneCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -5798,7 +5798,7 @@ export const CostCurve = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -5817,7 +5817,7 @@ export const CostCurve = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -5825,7 +5825,7 @@ export const CostCurve = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -5856,13 +5856,13 @@ export const CostCurve = zod
             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INCREMENTAL")
               .default(costCurveValueCurveTwoCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -5881,7 +5881,7 @@ export const CostCurve = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -5915,13 +5915,13 @@ export const CostCurve = zod
             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("AVERAGE_RATE")
               .default(costCurveValueCurveThreeCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -5940,7 +5940,7 @@ export const CostCurve = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -5974,14 +5974,14 @@ export const CostCurve = zod
             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_INPUT_OUTPUT")
               .default(costCurveValueCurveFourCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -6000,7 +6000,7 @@ export const CostCurve = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -6024,7 +6024,7 @@ export const CostCurve = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -6032,7 +6032,7 @@ export const CostCurve = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -6053,7 +6053,7 @@ export const CostCurve = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -6074,7 +6074,7 @@ export const CostCurve = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -6090,7 +6090,7 @@ export const CostCurve = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -6106,7 +6106,7 @@ export const CostCurve = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -6122,7 +6122,7 @@ export const CostCurve = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -6152,14 +6152,14 @@ export const CostCurve = zod
             "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_INCREMENTAL")
               .default(costCurveValueCurveFiveCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -6178,7 +6178,7 @@ export const CostCurve = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -6202,7 +6202,7 @@ export const CostCurve = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -6210,7 +6210,7 @@ export const CostCurve = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -6231,7 +6231,7 @@ export const CostCurve = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -6252,7 +6252,7 @@ export const CostCurve = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -6268,7 +6268,7 @@ export const CostCurve = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -6284,7 +6284,7 @@ export const CostCurve = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -6300,7 +6300,7 @@ export const CostCurve = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -6336,14 +6336,14 @@ export const CostCurve = zod
             "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_AVERAGE_RATE")
               .default(costCurveValueCurveSixCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -6362,7 +6362,7 @@ export const CostCurve = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -6386,7 +6386,7 @@ export const CostCurve = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -6394,7 +6394,7 @@ export const CostCurve = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -6415,7 +6415,7 @@ export const CostCurve = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -6436,7 +6436,7 @@ export const CostCurve = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -6452,7 +6452,7 @@ export const CostCurve = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -6468,7 +6468,7 @@ export const CostCurve = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -6484,7 +6484,7 @@ export const CostCurve = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -6527,13 +6527,13 @@ export const CostCurve = zod
       .enum(["COST"])
       .default(costCurveVariableCostTypeDefault),
     vom_cost: zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("INPUT_OUTPUT")
           .default(costCurveVomCostCurveTypeDefault),
         function_data: zod.union([
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -6555,7 +6555,7 @@ export const CostCurve = zod
               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
             ),
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -6572,13 +6572,13 @@ export const CostCurve = zod
               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
             ),
           zod
-            .object({
+            .strictObject({
               function_type: zod
                 .literal("PIECEWISE_LINEAR")
                 .default(costCurveVomCostFunctionDataThreeFunctionTypeDefault),
               points: zod.array(
                 zod
-                  .object({
+                  .strictObject({
                     x: zod
                       .number()
                       .describe("Units: the wrapped function's input unit."),
@@ -6647,7 +6647,7 @@ const currentLossCurveValueCurveDefault = {
   },
 };
 export const CurrentLossCurve = zod
-  .object({
+  .strictObject({
     power_units: zod
       .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
       .default("NATURAL_UNITS")
@@ -6657,13 +6657,13 @@ export const CurrentLossCurve = zod
     value_curve: zod
       .union([
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(currentLossCurveValueCurveOneCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -6687,7 +6687,7 @@ export const CurrentLossCurve = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -6706,7 +6706,7 @@ export const CurrentLossCurve = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -6714,7 +6714,7 @@ export const CurrentLossCurve = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -6745,13 +6745,13 @@ export const CurrentLossCurve = zod
             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INCREMENTAL")
               .default(currentLossCurveValueCurveTwoCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -6770,7 +6770,7 @@ export const CurrentLossCurve = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -6828,7 +6828,7 @@ export type CurveMultiStep = zod.input<typeof CurveMultiStep>;
 export type CurveMultiStepOutput = zod.output<typeof CurveMultiStep>;
 
 export const DbdPnts = zod
-  .object({
+  .strictObject({
     dbd1: zod.number().optional(),
     dbd2: zod.number().optional(),
   })
@@ -6840,7 +6840,7 @@ export type DbdPnts = zod.input<typeof DbdPnts>;
 export type DbdPntsOutput = zod.output<typeof DbdPnts>;
 
 export const DCBus = zod
-  .object({
+  .strictObject({
     area: zod
       .int()
       .optional()
@@ -6876,7 +6876,7 @@ export const DCBus = zod
       .number()
       .describe("A unique bus identification number (positive integer)."),
     voltage_limits: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -6942,7 +6942,7 @@ export const EmissionsData = zod
   .unknown()
   .and(zod.unknown())
   .and(
-    zod.object({
+    zod.strictObject({
       id: zod.int(),
       name: zod.string().describe("Identifier for this emissions attribute"),
       pollutant: zod
@@ -6967,13 +6967,13 @@ export const EmissionsData = zod
       emission_rate: zod
         .union([
           zod
-            .object({
+            .strictObject({
               curve_type: zod
                 .literal("INPUT_OUTPUT")
                 .default(emissionsDataThreeEmissionRateOneCurveTypeDefault),
               function_data: zod.union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -6997,7 +6997,7 @@ export const EmissionsData = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -7016,7 +7016,7 @@ export const EmissionsData = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -7024,7 +7024,7 @@ export const EmissionsData = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -7055,13 +7055,13 @@ export const EmissionsData = zod
               "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
             ),
           zod
-            .object({
+            .strictObject({
               curve_type: zod
                 .literal("INCREMENTAL")
                 .default(emissionsDataThreeEmissionRateTwoCurveTypeDefault),
               function_data: zod.union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -7080,7 +7080,7 @@ export const EmissionsData = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -7114,13 +7114,13 @@ export const EmissionsData = zod
               "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
             ),
           zod
-            .object({
+            .strictObject({
               curve_type: zod
                 .literal("AVERAGE_RATE")
                 .default(emissionsDataThreeEmissionRateThreeCurveTypeDefault),
               function_data: zod.union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -7139,7 +7139,7 @@ export const EmissionsData = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -7173,14 +7173,14 @@ export const EmissionsData = zod
               "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
             ),
           zod
-            .object({
+            .strictObject({
               curve_type: zod
                 .literal("TIME_SERIES_INPUT_OUTPUT")
                 .default(emissionsDataThreeEmissionRateFourCurveTypeDefault),
               function_data: zod
                 .union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -7199,7 +7199,7 @@ export const EmissionsData = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -7223,7 +7223,7 @@ export const EmissionsData = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -7231,7 +7231,7 @@ export const EmissionsData = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -7252,7 +7252,7 @@ export const EmissionsData = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -7277,7 +7277,7 @@ export const EmissionsData = zod
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("TIME_SERIES_LINEAR")
                         .default(
@@ -7293,7 +7293,7 @@ export const EmissionsData = zod
                       "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("TIME_SERIES_QUADRATIC")
                         .default(
@@ -7309,7 +7309,7 @@ export const EmissionsData = zod
                       "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("TIME_SERIES_PIECEWISE_LINEAR")
                         .default(
@@ -7325,7 +7325,7 @@ export const EmissionsData = zod
                       "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("TIME_SERIES_PIECEWISE_STEP")
                         .default(
@@ -7355,14 +7355,14 @@ export const EmissionsData = zod
               "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
             ),
           zod
-            .object({
+            .strictObject({
               curve_type: zod
                 .literal("TIME_SERIES_INCREMENTAL")
                 .default(emissionsDataThreeEmissionRateFiveCurveTypeDefault),
               function_data: zod
                 .union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -7381,7 +7381,7 @@ export const EmissionsData = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -7405,7 +7405,7 @@ export const EmissionsData = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -7413,7 +7413,7 @@ export const EmissionsData = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -7434,7 +7434,7 @@ export const EmissionsData = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -7459,7 +7459,7 @@ export const EmissionsData = zod
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("TIME_SERIES_LINEAR")
                         .default(
@@ -7475,7 +7475,7 @@ export const EmissionsData = zod
                       "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("TIME_SERIES_QUADRATIC")
                         .default(
@@ -7491,7 +7491,7 @@ export const EmissionsData = zod
                       "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("TIME_SERIES_PIECEWISE_LINEAR")
                         .default(
@@ -7507,7 +7507,7 @@ export const EmissionsData = zod
                       "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("TIME_SERIES_PIECEWISE_STEP")
                         .default(
@@ -7543,14 +7543,14 @@ export const EmissionsData = zod
               "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
             ),
           zod
-            .object({
+            .strictObject({
               curve_type: zod
                 .literal("TIME_SERIES_AVERAGE_RATE")
                 .default(emissionsDataThreeEmissionRateSixCurveTypeDefault),
               function_data: zod
                 .union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -7569,7 +7569,7 @@ export const EmissionsData = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -7593,7 +7593,7 @@ export const EmissionsData = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -7601,7 +7601,7 @@ export const EmissionsData = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -7622,7 +7622,7 @@ export const EmissionsData = zod
                       "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -7647,7 +7647,7 @@ export const EmissionsData = zod
                       "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("TIME_SERIES_LINEAR")
                         .default(
@@ -7663,7 +7663,7 @@ export const EmissionsData = zod
                       "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("TIME_SERIES_QUADRATIC")
                         .default(
@@ -7679,7 +7679,7 @@ export const EmissionsData = zod
                       "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("TIME_SERIES_PIECEWISE_LINEAR")
                         .default(
@@ -7695,7 +7695,7 @@ export const EmissionsData = zod
                       "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("TIME_SERIES_PIECEWISE_STEP")
                         .default(
@@ -7817,7 +7817,7 @@ export type ShuntAdmittanceUnitBasisOutput = zod.output<
 >;
 
 export const FdbdPnts = zod
-  .object({
+  .strictObject({
     fdbd1: zod.number().optional(),
     fdbd2: zod.number().optional(),
   })
@@ -7891,7 +7891,7 @@ const fuelCurveVomCostDefault = {
   },
 };
 export const FuelCurve = zod
-  .object({
+  .strictObject({
     fuel_cost: zod
       .number()
       .nullish()
@@ -7915,13 +7915,13 @@ export const FuelCurve = zod
         "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
       ),
     startup_fuel_offtake: zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("INPUT_OUTPUT")
           .default(fuelCurveStartupFuelOfftakeCurveTypeDefault),
         function_data: zod.union([
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -7945,7 +7945,7 @@ export const FuelCurve = zod
               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
             ),
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -7964,7 +7964,7 @@ export const FuelCurve = zod
               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
             ),
           zod
-            .object({
+            .strictObject({
               function_type: zod
                 .literal("PIECEWISE_LINEAR")
                 .default(
@@ -7972,7 +7972,7 @@ export const FuelCurve = zod
                 ),
               points: zod.array(
                 zod
-                  .object({
+                  .strictObject({
                     x: zod
                       .number()
                       .describe("Units: the wrapped function's input unit."),
@@ -8001,13 +8001,13 @@ export const FuelCurve = zod
     value_curve: zod
       .union([
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(fuelCurveValueCurveOneCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -8031,7 +8031,7 @@ export const FuelCurve = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -8050,7 +8050,7 @@ export const FuelCurve = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -8058,7 +8058,7 @@ export const FuelCurve = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -8089,13 +8089,13 @@ export const FuelCurve = zod
             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INCREMENTAL")
               .default(fuelCurveValueCurveTwoCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -8114,7 +8114,7 @@ export const FuelCurve = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -8148,13 +8148,13 @@ export const FuelCurve = zod
             "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("AVERAGE_RATE")
               .default(fuelCurveValueCurveThreeCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -8173,7 +8173,7 @@ export const FuelCurve = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -8207,14 +8207,14 @@ export const FuelCurve = zod
             "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_INPUT_OUTPUT")
               .default(fuelCurveValueCurveFourCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -8233,7 +8233,7 @@ export const FuelCurve = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -8257,7 +8257,7 @@ export const FuelCurve = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -8265,7 +8265,7 @@ export const FuelCurve = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -8286,7 +8286,7 @@ export const FuelCurve = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -8307,7 +8307,7 @@ export const FuelCurve = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -8323,7 +8323,7 @@ export const FuelCurve = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -8339,7 +8339,7 @@ export const FuelCurve = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -8355,7 +8355,7 @@ export const FuelCurve = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -8385,14 +8385,14 @@ export const FuelCurve = zod
             "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_INCREMENTAL")
               .default(fuelCurveValueCurveFiveCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -8411,7 +8411,7 @@ export const FuelCurve = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -8435,7 +8435,7 @@ export const FuelCurve = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -8443,7 +8443,7 @@ export const FuelCurve = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -8464,7 +8464,7 @@ export const FuelCurve = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -8485,7 +8485,7 @@ export const FuelCurve = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -8501,7 +8501,7 @@ export const FuelCurve = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -8517,7 +8517,7 @@ export const FuelCurve = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -8533,7 +8533,7 @@ export const FuelCurve = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -8569,14 +8569,14 @@ export const FuelCurve = zod
             "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("TIME_SERIES_AVERAGE_RATE")
               .default(fuelCurveValueCurveSixCurveTypeDefault),
             function_data: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -8595,7 +8595,7 @@ export const FuelCurve = zod
                     "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     constant_term: zod
                       .number()
                       .describe("Units: the wrapped function's output unit."),
@@ -8619,7 +8619,7 @@ export const FuelCurve = zod
                     "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
@@ -8627,7 +8627,7 @@ export const FuelCurve = zod
                       ),
                     points: zod.array(
                       zod
-                        .object({
+                        .strictObject({
                           x: zod
                             .number()
                             .describe(
@@ -8648,7 +8648,7 @@ export const FuelCurve = zod
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
@@ -8669,7 +8669,7 @@ export const FuelCurve = zod
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_LINEAR")
                       .default(
@@ -8685,7 +8685,7 @@ export const FuelCurve = zod
                     "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_QUADRATIC")
                       .default(
@@ -8701,7 +8701,7 @@ export const FuelCurve = zod
                     "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_LINEAR")
                       .default(
@@ -8717,7 +8717,7 @@ export const FuelCurve = zod
                     "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     function_type: zod
                       .literal("TIME_SERIES_PIECEWISE_STEP")
                       .default(
@@ -8760,13 +8760,13 @@ export const FuelCurve = zod
       .enum(["FUEL"])
       .default(fuelCurveVariableCostTypeDefault),
     vom_cost: zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("INPUT_OUTPUT")
           .default(fuelCurveVomCostCurveTypeDefault),
         function_data: zod.union([
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -8788,7 +8788,7 @@ export const FuelCurve = zod
               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
             ),
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -8805,13 +8805,13 @@ export const FuelCurve = zod
               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
             ),
           zod
-            .object({
+            .strictObject({
               function_type: zod
                 .literal("PIECEWISE_LINEAR")
                 .default(fuelCurveVomCostFunctionDataThreeFunctionTypeDefault),
               points: zod.array(
                 zod
-                  .object({
+                  .strictObject({
                     x: zod
                       .number()
                       .describe("Units: the wrapped function's input unit."),
@@ -9237,7 +9237,7 @@ const genericOperationCostThreeVariableOperationCostTwoVomCostDefault = {
 export const GenericOperationCost = zod
   .union([
     zod
-      .object({
+      .strictObject({
         cost_type: zod
           .literal("THERMAL")
           .default(genericOperationCostOneCostTypeDefault),
@@ -9251,7 +9251,7 @@ export const GenericOperationCost = zod
           .union([
             zod.number(),
             zod
-              .object({
+              .strictObject({
                 startup_stages_type: zod
                   .literal("STAGES")
                   .default(
@@ -9269,7 +9269,7 @@ export const GenericOperationCost = zod
         variable_operation_cost: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 power_units: zod
                   .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
                   .describe(
@@ -9278,7 +9278,7 @@ export const GenericOperationCost = zod
                 value_curve: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("INPUT_OUTPUT")
                           .default(
@@ -9286,7 +9286,7 @@ export const GenericOperationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -9312,7 +9312,7 @@ export const GenericOperationCost = zod
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -9333,7 +9333,7 @@ export const GenericOperationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_LINEAR")
                                 .default(
@@ -9341,7 +9341,7 @@ export const GenericOperationCost = zod
                                 ),
                               points: zod.array(
                                 zod
-                                  .object({
+                                  .strictObject({
                                     x: zod
                                       .number()
                                       .describe(
@@ -9374,7 +9374,7 @@ export const GenericOperationCost = zod
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("INCREMENTAL")
                           .default(
@@ -9382,7 +9382,7 @@ export const GenericOperationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -9403,7 +9403,7 @@ export const GenericOperationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_STEP")
                                 .default(
@@ -9441,7 +9441,7 @@ export const GenericOperationCost = zod
                         "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("AVERAGE_RATE")
                           .default(
@@ -9449,7 +9449,7 @@ export const GenericOperationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -9470,7 +9470,7 @@ export const GenericOperationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_STEP")
                                 .default(
@@ -9508,7 +9508,7 @@ export const GenericOperationCost = zod
                         "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_INPUT_OUTPUT")
                           .default(
@@ -9517,7 +9517,7 @@ export const GenericOperationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -9538,7 +9538,7 @@ export const GenericOperationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -9564,7 +9564,7 @@ export const GenericOperationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -9572,7 +9572,7 @@ export const GenericOperationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -9593,7 +9593,7 @@ export const GenericOperationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -9618,7 +9618,7 @@ export const GenericOperationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -9634,7 +9634,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -9650,7 +9650,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -9666,7 +9666,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -9696,7 +9696,7 @@ export const GenericOperationCost = zod
                         "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_INCREMENTAL")
                           .default(
@@ -9705,7 +9705,7 @@ export const GenericOperationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -9726,7 +9726,7 @@ export const GenericOperationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -9752,7 +9752,7 @@ export const GenericOperationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -9760,7 +9760,7 @@ export const GenericOperationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -9781,7 +9781,7 @@ export const GenericOperationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -9806,7 +9806,7 @@ export const GenericOperationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -9822,7 +9822,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -9838,7 +9838,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -9854,7 +9854,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -9890,7 +9890,7 @@ export const GenericOperationCost = zod
                         "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_AVERAGE_RATE")
                           .default(
@@ -9899,7 +9899,7 @@ export const GenericOperationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -9920,7 +9920,7 @@ export const GenericOperationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -9946,7 +9946,7 @@ export const GenericOperationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -9954,7 +9954,7 @@ export const GenericOperationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -9975,7 +9975,7 @@ export const GenericOperationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -10000,7 +10000,7 @@ export const GenericOperationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -10016,7 +10016,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -10032,7 +10032,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -10048,7 +10048,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -10093,7 +10093,7 @@ export const GenericOperationCost = zod
                     genericOperationCostOneVariableOperationCostOneVariableCostTypeDefault,
                   ),
                 vom_cost: zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -10101,7 +10101,7 @@ export const GenericOperationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -10127,7 +10127,7 @@ export const GenericOperationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -10148,7 +10148,7 @@ export const GenericOperationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -10156,7 +10156,7 @@ export const GenericOperationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -10193,7 +10193,7 @@ export const GenericOperationCost = zod
                 "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
               ),
             zod
-              .object({
+              .strictObject({
                 fuel_cost: zod
                   .number()
                   .nullish()
@@ -10217,7 +10217,7 @@ export const GenericOperationCost = zod
                     "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
                   ),
                 startup_fuel_offtake: zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -10225,7 +10225,7 @@ export const GenericOperationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -10251,7 +10251,7 @@ export const GenericOperationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -10272,7 +10272,7 @@ export const GenericOperationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -10280,7 +10280,7 @@ export const GenericOperationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -10315,7 +10315,7 @@ export const GenericOperationCost = zod
                 value_curve: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("INPUT_OUTPUT")
                           .default(
@@ -10323,7 +10323,7 @@ export const GenericOperationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -10349,7 +10349,7 @@ export const GenericOperationCost = zod
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -10370,7 +10370,7 @@ export const GenericOperationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_LINEAR")
                                 .default(
@@ -10378,7 +10378,7 @@ export const GenericOperationCost = zod
                                 ),
                               points: zod.array(
                                 zod
-                                  .object({
+                                  .strictObject({
                                     x: zod
                                       .number()
                                       .describe(
@@ -10411,7 +10411,7 @@ export const GenericOperationCost = zod
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("INCREMENTAL")
                           .default(
@@ -10419,7 +10419,7 @@ export const GenericOperationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -10440,7 +10440,7 @@ export const GenericOperationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_STEP")
                                 .default(
@@ -10478,7 +10478,7 @@ export const GenericOperationCost = zod
                         "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("AVERAGE_RATE")
                           .default(
@@ -10486,7 +10486,7 @@ export const GenericOperationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -10507,7 +10507,7 @@ export const GenericOperationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_STEP")
                                 .default(
@@ -10545,7 +10545,7 @@ export const GenericOperationCost = zod
                         "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_INPUT_OUTPUT")
                           .default(
@@ -10554,7 +10554,7 @@ export const GenericOperationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -10575,7 +10575,7 @@ export const GenericOperationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -10601,7 +10601,7 @@ export const GenericOperationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -10609,7 +10609,7 @@ export const GenericOperationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -10630,7 +10630,7 @@ export const GenericOperationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -10655,7 +10655,7 @@ export const GenericOperationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -10671,7 +10671,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -10687,7 +10687,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -10703,7 +10703,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -10733,7 +10733,7 @@ export const GenericOperationCost = zod
                         "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_INCREMENTAL")
                           .default(
@@ -10742,7 +10742,7 @@ export const GenericOperationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -10763,7 +10763,7 @@ export const GenericOperationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -10789,7 +10789,7 @@ export const GenericOperationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -10797,7 +10797,7 @@ export const GenericOperationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -10818,7 +10818,7 @@ export const GenericOperationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -10843,7 +10843,7 @@ export const GenericOperationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -10859,7 +10859,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -10875,7 +10875,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -10891,7 +10891,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -10927,7 +10927,7 @@ export const GenericOperationCost = zod
                         "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_AVERAGE_RATE")
                           .default(
@@ -10936,7 +10936,7 @@ export const GenericOperationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -10957,7 +10957,7 @@ export const GenericOperationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -10983,7 +10983,7 @@ export const GenericOperationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -10991,7 +10991,7 @@ export const GenericOperationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -11012,7 +11012,7 @@ export const GenericOperationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -11037,7 +11037,7 @@ export const GenericOperationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -11053,7 +11053,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -11069,7 +11069,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -11085,7 +11085,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -11130,7 +11130,7 @@ export const GenericOperationCost = zod
                     genericOperationCostOneVariableOperationCostTwoVariableCostTypeDefault,
                   ),
                 vom_cost: zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -11138,7 +11138,7 @@ export const GenericOperationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -11164,7 +11164,7 @@ export const GenericOperationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -11185,7 +11185,7 @@ export const GenericOperationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -11193,7 +11193,7 @@ export const GenericOperationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -11236,12 +11236,12 @@ export const GenericOperationCost = zod
       })
       .describe("Cost representation for thermal generation units"),
     zod
-      .object({
+      .strictObject({
         cost_type: zod
           .literal("RENEWABLE")
           .default(genericOperationCostTwoCostTypeDefault),
         curtailment_cost: zod
-          .object({
+          .strictObject({
             power_units: zod
               .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
               .describe(
@@ -11250,7 +11250,7 @@ export const GenericOperationCost = zod
             value_curve: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -11258,7 +11258,7 @@ export const GenericOperationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -11284,7 +11284,7 @@ export const GenericOperationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -11305,7 +11305,7 @@ export const GenericOperationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -11313,7 +11313,7 @@ export const GenericOperationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -11346,7 +11346,7 @@ export const GenericOperationCost = zod
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INCREMENTAL")
                       .default(
@@ -11354,7 +11354,7 @@ export const GenericOperationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -11375,7 +11375,7 @@ export const GenericOperationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -11413,7 +11413,7 @@ export const GenericOperationCost = zod
                     "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("AVERAGE_RATE")
                       .default(
@@ -11421,7 +11421,7 @@ export const GenericOperationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -11442,7 +11442,7 @@ export const GenericOperationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -11480,7 +11480,7 @@ export const GenericOperationCost = zod
                     "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INPUT_OUTPUT")
                       .default(
@@ -11489,7 +11489,7 @@ export const GenericOperationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -11510,7 +11510,7 @@ export const GenericOperationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -11536,7 +11536,7 @@ export const GenericOperationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -11544,7 +11544,7 @@ export const GenericOperationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -11565,7 +11565,7 @@ export const GenericOperationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -11590,7 +11590,7 @@ export const GenericOperationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -11606,7 +11606,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -11622,7 +11622,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -11638,7 +11638,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -11668,7 +11668,7 @@ export const GenericOperationCost = zod
                     "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INCREMENTAL")
                       .default(
@@ -11677,7 +11677,7 @@ export const GenericOperationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -11698,7 +11698,7 @@ export const GenericOperationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -11724,7 +11724,7 @@ export const GenericOperationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -11732,7 +11732,7 @@ export const GenericOperationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -11753,7 +11753,7 @@ export const GenericOperationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -11778,7 +11778,7 @@ export const GenericOperationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -11794,7 +11794,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -11810,7 +11810,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -11826,7 +11826,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -11862,7 +11862,7 @@ export const GenericOperationCost = zod
                     "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_AVERAGE_RATE")
                       .default(
@@ -11871,7 +11871,7 @@ export const GenericOperationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -11892,7 +11892,7 @@ export const GenericOperationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -11918,7 +11918,7 @@ export const GenericOperationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -11926,7 +11926,7 @@ export const GenericOperationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -11947,7 +11947,7 @@ export const GenericOperationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -11972,7 +11972,7 @@ export const GenericOperationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -11988,7 +11988,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -12004,7 +12004,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -12020,7 +12020,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -12065,7 +12065,7 @@ export const GenericOperationCost = zod
                 genericOperationCostTwoCurtailmentCostVariableCostTypeDefault,
               ),
             vom_cost: zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -12073,7 +12073,7 @@ export const GenericOperationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -12097,7 +12097,7 @@ export const GenericOperationCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -12116,7 +12116,7 @@ export const GenericOperationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -12124,7 +12124,7 @@ export const GenericOperationCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -12160,7 +12160,7 @@ export const GenericOperationCost = zod
             "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
           ),
         variable_operation_cost: zod
-          .object({
+          .strictObject({
             power_units: zod
               .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
               .describe(
@@ -12169,7 +12169,7 @@ export const GenericOperationCost = zod
             value_curve: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -12177,7 +12177,7 @@ export const GenericOperationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -12203,7 +12203,7 @@ export const GenericOperationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -12224,7 +12224,7 @@ export const GenericOperationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -12232,7 +12232,7 @@ export const GenericOperationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -12265,7 +12265,7 @@ export const GenericOperationCost = zod
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INCREMENTAL")
                       .default(
@@ -12273,7 +12273,7 @@ export const GenericOperationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -12294,7 +12294,7 @@ export const GenericOperationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -12332,7 +12332,7 @@ export const GenericOperationCost = zod
                     "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("AVERAGE_RATE")
                       .default(
@@ -12340,7 +12340,7 @@ export const GenericOperationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -12361,7 +12361,7 @@ export const GenericOperationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -12399,7 +12399,7 @@ export const GenericOperationCost = zod
                     "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INPUT_OUTPUT")
                       .default(
@@ -12408,7 +12408,7 @@ export const GenericOperationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -12429,7 +12429,7 @@ export const GenericOperationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -12455,7 +12455,7 @@ export const GenericOperationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -12463,7 +12463,7 @@ export const GenericOperationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -12484,7 +12484,7 @@ export const GenericOperationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -12509,7 +12509,7 @@ export const GenericOperationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -12525,7 +12525,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -12541,7 +12541,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -12557,7 +12557,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -12587,7 +12587,7 @@ export const GenericOperationCost = zod
                     "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INCREMENTAL")
                       .default(
@@ -12596,7 +12596,7 @@ export const GenericOperationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -12617,7 +12617,7 @@ export const GenericOperationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -12643,7 +12643,7 @@ export const GenericOperationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -12651,7 +12651,7 @@ export const GenericOperationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -12672,7 +12672,7 @@ export const GenericOperationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -12697,7 +12697,7 @@ export const GenericOperationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -12713,7 +12713,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -12729,7 +12729,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -12745,7 +12745,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -12781,7 +12781,7 @@ export const GenericOperationCost = zod
                     "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_AVERAGE_RATE")
                       .default(
@@ -12790,7 +12790,7 @@ export const GenericOperationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -12811,7 +12811,7 @@ export const GenericOperationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -12837,7 +12837,7 @@ export const GenericOperationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -12845,7 +12845,7 @@ export const GenericOperationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -12866,7 +12866,7 @@ export const GenericOperationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -12891,7 +12891,7 @@ export const GenericOperationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -12907,7 +12907,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -12923,7 +12923,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -12939,7 +12939,7 @@ export const GenericOperationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -12984,7 +12984,7 @@ export const GenericOperationCost = zod
                 genericOperationCostTwoVariableOperationCostVariableCostTypeDefault,
               ),
             vom_cost: zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -12992,7 +12992,7 @@ export const GenericOperationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -13016,7 +13016,7 @@ export const GenericOperationCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -13035,7 +13035,7 @@ export const GenericOperationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -13043,7 +13043,7 @@ export const GenericOperationCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -13083,7 +13083,7 @@ export const GenericOperationCost = zod
       })
       .describe("Cost representation for renewable generation units"),
     zod
-      .object({
+      .strictObject({
         cost_type: zod
           .literal("HYDRO_GEN")
           .default(genericOperationCostThreeCostTypeDefault),
@@ -13091,7 +13091,7 @@ export const GenericOperationCost = zod
         variable_operation_cost: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 power_units: zod
                   .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
                   .describe(
@@ -13100,7 +13100,7 @@ export const GenericOperationCost = zod
                 value_curve: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("INPUT_OUTPUT")
                           .default(
@@ -13108,7 +13108,7 @@ export const GenericOperationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -13134,7 +13134,7 @@ export const GenericOperationCost = zod
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -13155,7 +13155,7 @@ export const GenericOperationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_LINEAR")
                                 .default(
@@ -13163,7 +13163,7 @@ export const GenericOperationCost = zod
                                 ),
                               points: zod.array(
                                 zod
-                                  .object({
+                                  .strictObject({
                                     x: zod
                                       .number()
                                       .describe(
@@ -13196,7 +13196,7 @@ export const GenericOperationCost = zod
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("INCREMENTAL")
                           .default(
@@ -13204,7 +13204,7 @@ export const GenericOperationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -13225,7 +13225,7 @@ export const GenericOperationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_STEP")
                                 .default(
@@ -13263,7 +13263,7 @@ export const GenericOperationCost = zod
                         "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("AVERAGE_RATE")
                           .default(
@@ -13271,7 +13271,7 @@ export const GenericOperationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -13292,7 +13292,7 @@ export const GenericOperationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_STEP")
                                 .default(
@@ -13330,7 +13330,7 @@ export const GenericOperationCost = zod
                         "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_INPUT_OUTPUT")
                           .default(
@@ -13339,7 +13339,7 @@ export const GenericOperationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -13360,7 +13360,7 @@ export const GenericOperationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -13386,7 +13386,7 @@ export const GenericOperationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -13394,7 +13394,7 @@ export const GenericOperationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -13415,7 +13415,7 @@ export const GenericOperationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -13440,7 +13440,7 @@ export const GenericOperationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -13456,7 +13456,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -13472,7 +13472,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -13488,7 +13488,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -13518,7 +13518,7 @@ export const GenericOperationCost = zod
                         "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_INCREMENTAL")
                           .default(
@@ -13527,7 +13527,7 @@ export const GenericOperationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -13548,7 +13548,7 @@ export const GenericOperationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -13574,7 +13574,7 @@ export const GenericOperationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -13582,7 +13582,7 @@ export const GenericOperationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -13603,7 +13603,7 @@ export const GenericOperationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -13628,7 +13628,7 @@ export const GenericOperationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -13644,7 +13644,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -13660,7 +13660,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -13676,7 +13676,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -13712,7 +13712,7 @@ export const GenericOperationCost = zod
                         "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_AVERAGE_RATE")
                           .default(
@@ -13721,7 +13721,7 @@ export const GenericOperationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -13742,7 +13742,7 @@ export const GenericOperationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -13768,7 +13768,7 @@ export const GenericOperationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -13776,7 +13776,7 @@ export const GenericOperationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -13797,7 +13797,7 @@ export const GenericOperationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -13822,7 +13822,7 @@ export const GenericOperationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -13838,7 +13838,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -13854,7 +13854,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -13870,7 +13870,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -13915,7 +13915,7 @@ export const GenericOperationCost = zod
                     genericOperationCostThreeVariableOperationCostOneVariableCostTypeDefault,
                   ),
                 vom_cost: zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -13923,7 +13923,7 @@ export const GenericOperationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -13949,7 +13949,7 @@ export const GenericOperationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -13970,7 +13970,7 @@ export const GenericOperationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -13978,7 +13978,7 @@ export const GenericOperationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -14015,7 +14015,7 @@ export const GenericOperationCost = zod
                 "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
               ),
             zod
-              .object({
+              .strictObject({
                 fuel_cost: zod
                   .number()
                   .nullish()
@@ -14039,7 +14039,7 @@ export const GenericOperationCost = zod
                     "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
                   ),
                 startup_fuel_offtake: zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -14047,7 +14047,7 @@ export const GenericOperationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -14073,7 +14073,7 @@ export const GenericOperationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -14094,7 +14094,7 @@ export const GenericOperationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -14102,7 +14102,7 @@ export const GenericOperationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -14137,7 +14137,7 @@ export const GenericOperationCost = zod
                 value_curve: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("INPUT_OUTPUT")
                           .default(
@@ -14145,7 +14145,7 @@ export const GenericOperationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -14171,7 +14171,7 @@ export const GenericOperationCost = zod
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -14192,7 +14192,7 @@ export const GenericOperationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_LINEAR")
                                 .default(
@@ -14200,7 +14200,7 @@ export const GenericOperationCost = zod
                                 ),
                               points: zod.array(
                                 zod
-                                  .object({
+                                  .strictObject({
                                     x: zod
                                       .number()
                                       .describe(
@@ -14233,7 +14233,7 @@ export const GenericOperationCost = zod
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("INCREMENTAL")
                           .default(
@@ -14241,7 +14241,7 @@ export const GenericOperationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -14262,7 +14262,7 @@ export const GenericOperationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_STEP")
                                 .default(
@@ -14300,7 +14300,7 @@ export const GenericOperationCost = zod
                         "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("AVERAGE_RATE")
                           .default(
@@ -14308,7 +14308,7 @@ export const GenericOperationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -14329,7 +14329,7 @@ export const GenericOperationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_STEP")
                                 .default(
@@ -14367,7 +14367,7 @@ export const GenericOperationCost = zod
                         "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_INPUT_OUTPUT")
                           .default(
@@ -14376,7 +14376,7 @@ export const GenericOperationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -14397,7 +14397,7 @@ export const GenericOperationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -14423,7 +14423,7 @@ export const GenericOperationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -14431,7 +14431,7 @@ export const GenericOperationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -14452,7 +14452,7 @@ export const GenericOperationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -14477,7 +14477,7 @@ export const GenericOperationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -14493,7 +14493,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -14509,7 +14509,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -14525,7 +14525,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -14555,7 +14555,7 @@ export const GenericOperationCost = zod
                         "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_INCREMENTAL")
                           .default(
@@ -14564,7 +14564,7 @@ export const GenericOperationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -14585,7 +14585,7 @@ export const GenericOperationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -14611,7 +14611,7 @@ export const GenericOperationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -14619,7 +14619,7 @@ export const GenericOperationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -14640,7 +14640,7 @@ export const GenericOperationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -14665,7 +14665,7 @@ export const GenericOperationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -14681,7 +14681,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -14697,7 +14697,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -14713,7 +14713,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -14749,7 +14749,7 @@ export const GenericOperationCost = zod
                         "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_AVERAGE_RATE")
                           .default(
@@ -14758,7 +14758,7 @@ export const GenericOperationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -14779,7 +14779,7 @@ export const GenericOperationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -14805,7 +14805,7 @@ export const GenericOperationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -14813,7 +14813,7 @@ export const GenericOperationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -14834,7 +14834,7 @@ export const GenericOperationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -14859,7 +14859,7 @@ export const GenericOperationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -14875,7 +14875,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -14891,7 +14891,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -14907,7 +14907,7 @@ export const GenericOperationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -14952,7 +14952,7 @@ export const GenericOperationCost = zod
                     genericOperationCostThreeVariableOperationCostTwoVariableCostTypeDefault,
                   ),
                 vom_cost: zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -14960,7 +14960,7 @@ export const GenericOperationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -14986,7 +14986,7 @@ export const GenericOperationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -15007,7 +15007,7 @@ export const GenericOperationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -15015,7 +15015,7 @@ export const GenericOperationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -15198,7 +15198,7 @@ const hydroGenerationCostVariableOperationCostTwoVomCostDefault = {
   },
 };
 export const HydroGenerationCost = zod
-  .object({
+  .strictObject({
     cost_type: zod
       .enum(["HYDRO_GEN"])
       .default(hydroGenerationCostCostTypeDefault),
@@ -15206,7 +15206,7 @@ export const HydroGenerationCost = zod
     variable_operation_cost: zod
       .union([
         zod
-          .object({
+          .strictObject({
             power_units: zod
               .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
               .describe(
@@ -15215,7 +15215,7 @@ export const HydroGenerationCost = zod
             value_curve: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -15223,7 +15223,7 @@ export const HydroGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -15249,7 +15249,7 @@ export const HydroGenerationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -15270,7 +15270,7 @@ export const HydroGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -15278,7 +15278,7 @@ export const HydroGenerationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -15311,7 +15311,7 @@ export const HydroGenerationCost = zod
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INCREMENTAL")
                       .default(
@@ -15319,7 +15319,7 @@ export const HydroGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -15340,7 +15340,7 @@ export const HydroGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -15378,7 +15378,7 @@ export const HydroGenerationCost = zod
                     "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("AVERAGE_RATE")
                       .default(
@@ -15386,7 +15386,7 @@ export const HydroGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -15407,7 +15407,7 @@ export const HydroGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -15445,7 +15445,7 @@ export const HydroGenerationCost = zod
                     "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INPUT_OUTPUT")
                       .default(
@@ -15454,7 +15454,7 @@ export const HydroGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -15475,7 +15475,7 @@ export const HydroGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -15501,7 +15501,7 @@ export const HydroGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -15509,7 +15509,7 @@ export const HydroGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -15530,7 +15530,7 @@ export const HydroGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -15555,7 +15555,7 @@ export const HydroGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -15571,7 +15571,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -15587,7 +15587,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -15603,7 +15603,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -15633,7 +15633,7 @@ export const HydroGenerationCost = zod
                     "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INCREMENTAL")
                       .default(
@@ -15642,7 +15642,7 @@ export const HydroGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -15663,7 +15663,7 @@ export const HydroGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -15689,7 +15689,7 @@ export const HydroGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -15697,7 +15697,7 @@ export const HydroGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -15718,7 +15718,7 @@ export const HydroGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -15743,7 +15743,7 @@ export const HydroGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -15759,7 +15759,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -15775,7 +15775,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -15791,7 +15791,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -15827,7 +15827,7 @@ export const HydroGenerationCost = zod
                     "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_AVERAGE_RATE")
                       .default(
@@ -15836,7 +15836,7 @@ export const HydroGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -15857,7 +15857,7 @@ export const HydroGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -15883,7 +15883,7 @@ export const HydroGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -15891,7 +15891,7 @@ export const HydroGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -15912,7 +15912,7 @@ export const HydroGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -15937,7 +15937,7 @@ export const HydroGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -15953,7 +15953,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -15969,7 +15969,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -15985,7 +15985,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -16030,7 +16030,7 @@ export const HydroGenerationCost = zod
                 hydroGenerationCostVariableOperationCostOneVariableCostTypeDefault,
               ),
             vom_cost: zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -16038,7 +16038,7 @@ export const HydroGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -16062,7 +16062,7 @@ export const HydroGenerationCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -16081,7 +16081,7 @@ export const HydroGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -16089,7 +16089,7 @@ export const HydroGenerationCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -16126,7 +16126,7 @@ export const HydroGenerationCost = zod
             "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
           ),
         zod
-          .object({
+          .strictObject({
             fuel_cost: zod
               .number()
               .nullish()
@@ -16150,7 +16150,7 @@ export const HydroGenerationCost = zod
                 "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
               ),
             startup_fuel_offtake: zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -16158,7 +16158,7 @@ export const HydroGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -16182,7 +16182,7 @@ export const HydroGenerationCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -16201,7 +16201,7 @@ export const HydroGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -16209,7 +16209,7 @@ export const HydroGenerationCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -16244,7 +16244,7 @@ export const HydroGenerationCost = zod
             value_curve: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -16252,7 +16252,7 @@ export const HydroGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -16278,7 +16278,7 @@ export const HydroGenerationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -16299,7 +16299,7 @@ export const HydroGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -16307,7 +16307,7 @@ export const HydroGenerationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -16340,7 +16340,7 @@ export const HydroGenerationCost = zod
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INCREMENTAL")
                       .default(
@@ -16348,7 +16348,7 @@ export const HydroGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -16369,7 +16369,7 @@ export const HydroGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -16407,7 +16407,7 @@ export const HydroGenerationCost = zod
                     "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("AVERAGE_RATE")
                       .default(
@@ -16415,7 +16415,7 @@ export const HydroGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -16436,7 +16436,7 @@ export const HydroGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -16474,7 +16474,7 @@ export const HydroGenerationCost = zod
                     "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INPUT_OUTPUT")
                       .default(
@@ -16483,7 +16483,7 @@ export const HydroGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -16504,7 +16504,7 @@ export const HydroGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -16530,7 +16530,7 @@ export const HydroGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -16538,7 +16538,7 @@ export const HydroGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -16559,7 +16559,7 @@ export const HydroGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -16584,7 +16584,7 @@ export const HydroGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -16600,7 +16600,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -16616,7 +16616,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -16632,7 +16632,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -16662,7 +16662,7 @@ export const HydroGenerationCost = zod
                     "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INCREMENTAL")
                       .default(
@@ -16671,7 +16671,7 @@ export const HydroGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -16692,7 +16692,7 @@ export const HydroGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -16718,7 +16718,7 @@ export const HydroGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -16726,7 +16726,7 @@ export const HydroGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -16747,7 +16747,7 @@ export const HydroGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -16772,7 +16772,7 @@ export const HydroGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -16788,7 +16788,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -16804,7 +16804,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -16820,7 +16820,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -16856,7 +16856,7 @@ export const HydroGenerationCost = zod
                     "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_AVERAGE_RATE")
                       .default(
@@ -16865,7 +16865,7 @@ export const HydroGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -16886,7 +16886,7 @@ export const HydroGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -16912,7 +16912,7 @@ export const HydroGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -16920,7 +16920,7 @@ export const HydroGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -16941,7 +16941,7 @@ export const HydroGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -16966,7 +16966,7 @@ export const HydroGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -16982,7 +16982,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -16998,7 +16998,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -17014,7 +17014,7 @@ export const HydroGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -17059,7 +17059,7 @@ export const HydroGenerationCost = zod
                 hydroGenerationCostVariableOperationCostTwoVariableCostTypeDefault,
               ),
             vom_cost: zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -17067,7 +17067,7 @@ export const HydroGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -17091,7 +17091,7 @@ export const HydroGenerationCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -17110,7 +17110,7 @@ export const HydroGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -17118,7 +17118,7 @@ export const HydroGenerationCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -17169,7 +17169,7 @@ const hydroReservoirCostLevelShortageCostDefault = 0;
 const hydroReservoirCostLevelSurplusCostDefault = 0;
 const hydroReservoirCostSpillageCostDefault = 0;
 export const HydroReservoirCost = zod
-  .object({
+  .strictObject({
     cost_type: zod
       .literal("HYDRO_RES")
       .default(hydroReservoirCostCostTypeDefault),
@@ -17444,7 +17444,7 @@ const hydroStorageGenerationCostTwoEnergySurplusCostDefault = 0;
 export const HydroStorageGenerationCost = zod
   .union([
     zod
-      .object({
+      .strictObject({
         cost_type: zod
           .literal("HYDRO_GEN")
           .default(hydroStorageGenerationCostOneCostTypeDefault),
@@ -17452,7 +17452,7 @@ export const HydroStorageGenerationCost = zod
         variable_operation_cost: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 power_units: zod
                   .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
                   .describe(
@@ -17461,7 +17461,7 @@ export const HydroStorageGenerationCost = zod
                 value_curve: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("INPUT_OUTPUT")
                           .default(
@@ -17469,7 +17469,7 @@ export const HydroStorageGenerationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -17495,7 +17495,7 @@ export const HydroStorageGenerationCost = zod
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -17516,7 +17516,7 @@ export const HydroStorageGenerationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_LINEAR")
                                 .default(
@@ -17524,7 +17524,7 @@ export const HydroStorageGenerationCost = zod
                                 ),
                               points: zod.array(
                                 zod
-                                  .object({
+                                  .strictObject({
                                     x: zod
                                       .number()
                                       .describe(
@@ -17557,7 +17557,7 @@ export const HydroStorageGenerationCost = zod
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("INCREMENTAL")
                           .default(
@@ -17565,7 +17565,7 @@ export const HydroStorageGenerationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -17586,7 +17586,7 @@ export const HydroStorageGenerationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_STEP")
                                 .default(
@@ -17624,7 +17624,7 @@ export const HydroStorageGenerationCost = zod
                         "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("AVERAGE_RATE")
                           .default(
@@ -17632,7 +17632,7 @@ export const HydroStorageGenerationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -17653,7 +17653,7 @@ export const HydroStorageGenerationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_STEP")
                                 .default(
@@ -17691,7 +17691,7 @@ export const HydroStorageGenerationCost = zod
                         "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_INPUT_OUTPUT")
                           .default(
@@ -17700,7 +17700,7 @@ export const HydroStorageGenerationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -17721,7 +17721,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -17747,7 +17747,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -17755,7 +17755,7 @@ export const HydroStorageGenerationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -17776,7 +17776,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -17801,7 +17801,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -17817,7 +17817,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -17833,7 +17833,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -17849,7 +17849,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -17879,7 +17879,7 @@ export const HydroStorageGenerationCost = zod
                         "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_INCREMENTAL")
                           .default(
@@ -17888,7 +17888,7 @@ export const HydroStorageGenerationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -17909,7 +17909,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -17935,7 +17935,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -17943,7 +17943,7 @@ export const HydroStorageGenerationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -17964,7 +17964,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -17989,7 +17989,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -18005,7 +18005,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -18021,7 +18021,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -18037,7 +18037,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -18073,7 +18073,7 @@ export const HydroStorageGenerationCost = zod
                         "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_AVERAGE_RATE")
                           .default(
@@ -18082,7 +18082,7 @@ export const HydroStorageGenerationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -18103,7 +18103,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -18129,7 +18129,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -18137,7 +18137,7 @@ export const HydroStorageGenerationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -18158,7 +18158,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -18183,7 +18183,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -18199,7 +18199,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -18215,7 +18215,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -18231,7 +18231,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -18276,7 +18276,7 @@ export const HydroStorageGenerationCost = zod
                     hydroStorageGenerationCostOneVariableOperationCostOneVariableCostTypeDefault,
                   ),
                 vom_cost: zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -18284,7 +18284,7 @@ export const HydroStorageGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -18310,7 +18310,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -18331,7 +18331,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -18339,7 +18339,7 @@ export const HydroStorageGenerationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -18376,7 +18376,7 @@ export const HydroStorageGenerationCost = zod
                 "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
               ),
             zod
-              .object({
+              .strictObject({
                 fuel_cost: zod
                   .number()
                   .nullish()
@@ -18400,7 +18400,7 @@ export const HydroStorageGenerationCost = zod
                     "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
                   ),
                 startup_fuel_offtake: zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -18408,7 +18408,7 @@ export const HydroStorageGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -18434,7 +18434,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -18455,7 +18455,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -18463,7 +18463,7 @@ export const HydroStorageGenerationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -18498,7 +18498,7 @@ export const HydroStorageGenerationCost = zod
                 value_curve: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("INPUT_OUTPUT")
                           .default(
@@ -18506,7 +18506,7 @@ export const HydroStorageGenerationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -18532,7 +18532,7 @@ export const HydroStorageGenerationCost = zod
                               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -18553,7 +18553,7 @@ export const HydroStorageGenerationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_LINEAR")
                                 .default(
@@ -18561,7 +18561,7 @@ export const HydroStorageGenerationCost = zod
                                 ),
                               points: zod.array(
                                 zod
-                                  .object({
+                                  .strictObject({
                                     x: zod
                                       .number()
                                       .describe(
@@ -18594,7 +18594,7 @@ export const HydroStorageGenerationCost = zod
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("INCREMENTAL")
                           .default(
@@ -18602,7 +18602,7 @@ export const HydroStorageGenerationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -18623,7 +18623,7 @@ export const HydroStorageGenerationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_STEP")
                                 .default(
@@ -18661,7 +18661,7 @@ export const HydroStorageGenerationCost = zod
                         "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("AVERAGE_RATE")
                           .default(
@@ -18669,7 +18669,7 @@ export const HydroStorageGenerationCost = zod
                           ),
                         function_data: zod.union([
                           zod
-                            .object({
+                            .strictObject({
                               constant_term: zod
                                 .number()
                                 .describe(
@@ -18690,7 +18690,7 @@ export const HydroStorageGenerationCost = zod
                               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                             ),
                           zod
-                            .object({
+                            .strictObject({
                               function_type: zod
                                 .literal("PIECEWISE_STEP")
                                 .default(
@@ -18728,7 +18728,7 @@ export const HydroStorageGenerationCost = zod
                         "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_INPUT_OUTPUT")
                           .default(
@@ -18737,7 +18737,7 @@ export const HydroStorageGenerationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -18758,7 +18758,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -18784,7 +18784,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -18792,7 +18792,7 @@ export const HydroStorageGenerationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -18813,7 +18813,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -18838,7 +18838,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -18854,7 +18854,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -18870,7 +18870,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -18886,7 +18886,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -18916,7 +18916,7 @@ export const HydroStorageGenerationCost = zod
                         "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_INCREMENTAL")
                           .default(
@@ -18925,7 +18925,7 @@ export const HydroStorageGenerationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -18946,7 +18946,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -18972,7 +18972,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -18980,7 +18980,7 @@ export const HydroStorageGenerationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -19001,7 +19001,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -19026,7 +19026,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -19042,7 +19042,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -19058,7 +19058,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -19074,7 +19074,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -19110,7 +19110,7 @@ export const HydroStorageGenerationCost = zod
                         "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         curve_type: zod
                           .literal("TIME_SERIES_AVERAGE_RATE")
                           .default(
@@ -19119,7 +19119,7 @@ export const HydroStorageGenerationCost = zod
                         function_data: zod
                           .union([
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -19140,7 +19140,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 constant_term: zod
                                   .number()
                                   .describe(
@@ -19166,7 +19166,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_LINEAR")
                                   .default(
@@ -19174,7 +19174,7 @@ export const HydroStorageGenerationCost = zod
                                   ),
                                 points: zod.array(
                                   zod
-                                    .object({
+                                    .strictObject({
                                       x: zod
                                         .number()
                                         .describe(
@@ -19195,7 +19195,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("PIECEWISE_STEP")
                                   .default(
@@ -19220,7 +19220,7 @@ export const HydroStorageGenerationCost = zod
                                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_LINEAR")
                                   .default(
@@ -19236,7 +19236,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_QUADRATIC")
                                   .default(
@@ -19252,7 +19252,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                                   .default(
@@ -19268,7 +19268,7 @@ export const HydroStorageGenerationCost = zod
                                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                               ),
                             zod
-                              .object({
+                              .strictObject({
                                 function_type: zod
                                   .literal("TIME_SERIES_PIECEWISE_STEP")
                                   .default(
@@ -19313,7 +19313,7 @@ export const HydroStorageGenerationCost = zod
                     hydroStorageGenerationCostOneVariableOperationCostTwoVariableCostTypeDefault,
                   ),
                 vom_cost: zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -19321,7 +19321,7 @@ export const HydroStorageGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -19347,7 +19347,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -19368,7 +19368,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -19376,7 +19376,7 @@ export const HydroStorageGenerationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -19419,12 +19419,12 @@ export const HydroStorageGenerationCost = zod
       })
       .describe("Cost representation for hydro gen units"),
     zod
-      .object({
+      .strictObject({
         cost_type: zod
           .literal("STORAGE")
           .default(hydroStorageGenerationCostTwoCostTypeDefault),
         charge_variable_cost: zod
-          .object({
+          .strictObject({
             power_units: zod
               .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
               .describe(
@@ -19433,7 +19433,7 @@ export const HydroStorageGenerationCost = zod
             value_curve: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -19441,7 +19441,7 @@ export const HydroStorageGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -19467,7 +19467,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -19488,7 +19488,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -19496,7 +19496,7 @@ export const HydroStorageGenerationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -19529,7 +19529,7 @@ export const HydroStorageGenerationCost = zod
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INCREMENTAL")
                       .default(
@@ -19537,7 +19537,7 @@ export const HydroStorageGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -19558,7 +19558,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -19596,7 +19596,7 @@ export const HydroStorageGenerationCost = zod
                     "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("AVERAGE_RATE")
                       .default(
@@ -19604,7 +19604,7 @@ export const HydroStorageGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -19625,7 +19625,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -19663,7 +19663,7 @@ export const HydroStorageGenerationCost = zod
                     "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INPUT_OUTPUT")
                       .default(
@@ -19672,7 +19672,7 @@ export const HydroStorageGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -19693,7 +19693,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -19719,7 +19719,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -19727,7 +19727,7 @@ export const HydroStorageGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -19748,7 +19748,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -19773,7 +19773,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -19789,7 +19789,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -19805,7 +19805,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -19821,7 +19821,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -19851,7 +19851,7 @@ export const HydroStorageGenerationCost = zod
                     "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INCREMENTAL")
                       .default(
@@ -19860,7 +19860,7 @@ export const HydroStorageGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -19881,7 +19881,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -19907,7 +19907,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -19915,7 +19915,7 @@ export const HydroStorageGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -19936,7 +19936,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -19961,7 +19961,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -19977,7 +19977,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -19993,7 +19993,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -20009,7 +20009,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -20045,7 +20045,7 @@ export const HydroStorageGenerationCost = zod
                     "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_AVERAGE_RATE")
                       .default(
@@ -20054,7 +20054,7 @@ export const HydroStorageGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -20075,7 +20075,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -20101,7 +20101,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -20109,7 +20109,7 @@ export const HydroStorageGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -20130,7 +20130,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -20155,7 +20155,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -20171,7 +20171,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -20187,7 +20187,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -20203,7 +20203,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -20248,7 +20248,7 @@ export const HydroStorageGenerationCost = zod
                 hydroStorageGenerationCostTwoChargeVariableCostVariableCostTypeDefault,
               ),
             vom_cost: zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -20256,7 +20256,7 @@ export const HydroStorageGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -20280,7 +20280,7 @@ export const HydroStorageGenerationCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -20299,7 +20299,7 @@ export const HydroStorageGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -20307,7 +20307,7 @@ export const HydroStorageGenerationCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -20345,7 +20345,7 @@ export const HydroStorageGenerationCost = zod
             "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
           ),
         discharge_variable_cost: zod
-          .object({
+          .strictObject({
             power_units: zod
               .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
               .describe(
@@ -20354,7 +20354,7 @@ export const HydroStorageGenerationCost = zod
             value_curve: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -20362,7 +20362,7 @@ export const HydroStorageGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -20388,7 +20388,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -20409,7 +20409,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -20417,7 +20417,7 @@ export const HydroStorageGenerationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -20450,7 +20450,7 @@ export const HydroStorageGenerationCost = zod
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INCREMENTAL")
                       .default(
@@ -20458,7 +20458,7 @@ export const HydroStorageGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -20479,7 +20479,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -20517,7 +20517,7 @@ export const HydroStorageGenerationCost = zod
                     "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("AVERAGE_RATE")
                       .default(
@@ -20525,7 +20525,7 @@ export const HydroStorageGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -20546,7 +20546,7 @@ export const HydroStorageGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -20584,7 +20584,7 @@ export const HydroStorageGenerationCost = zod
                     "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INPUT_OUTPUT")
                       .default(
@@ -20593,7 +20593,7 @@ export const HydroStorageGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -20614,7 +20614,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -20640,7 +20640,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -20648,7 +20648,7 @@ export const HydroStorageGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -20669,7 +20669,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -20694,7 +20694,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -20710,7 +20710,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -20726,7 +20726,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -20742,7 +20742,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -20772,7 +20772,7 @@ export const HydroStorageGenerationCost = zod
                     "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INCREMENTAL")
                       .default(
@@ -20781,7 +20781,7 @@ export const HydroStorageGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -20802,7 +20802,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -20828,7 +20828,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -20836,7 +20836,7 @@ export const HydroStorageGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -20857,7 +20857,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -20882,7 +20882,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -20898,7 +20898,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -20914,7 +20914,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -20930,7 +20930,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -20966,7 +20966,7 @@ export const HydroStorageGenerationCost = zod
                     "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_AVERAGE_RATE")
                       .default(
@@ -20975,7 +20975,7 @@ export const HydroStorageGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -20996,7 +20996,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -21022,7 +21022,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -21030,7 +21030,7 @@ export const HydroStorageGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -21051,7 +21051,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -21076,7 +21076,7 @@ export const HydroStorageGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -21092,7 +21092,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -21108,7 +21108,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -21124,7 +21124,7 @@ export const HydroStorageGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -21169,7 +21169,7 @@ export const HydroStorageGenerationCost = zod
                 hydroStorageGenerationCostTwoDischargeVariableCostVariableCostTypeDefault,
               ),
             vom_cost: zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -21177,7 +21177,7 @@ export const HydroStorageGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -21201,7 +21201,7 @@ export const HydroStorageGenerationCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -21220,7 +21220,7 @@ export const HydroStorageGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -21228,7 +21228,7 @@ export const HydroStorageGenerationCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -21273,7 +21273,7 @@ export const HydroStorageGenerationCost = zod
           .union([
             zod.number(),
             zod
-              .object({
+              .strictObject({
                 charge: zod.number(),
                 discharge: zod.number(),
               })
@@ -21420,12 +21420,12 @@ const importExportCostExportOfferCurvesVomCostDefault = {
   },
 };
 export const ImportExportCost = zod
-  .object({
+  .strictObject({
     cost_type: zod
       .literal("IMPORTEXPORT")
       .default(importExportCostCostTypeDefault),
     import_offer_curves: zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -21434,7 +21434,7 @@ export const ImportExportCost = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -21442,7 +21442,7 @@ export const ImportExportCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -21466,7 +21466,7 @@ export const ImportExportCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -21485,7 +21485,7 @@ export const ImportExportCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -21493,7 +21493,7 @@ export const ImportExportCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -21524,7 +21524,7 @@ export const ImportExportCost = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -21532,7 +21532,7 @@ export const ImportExportCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -21551,7 +21551,7 @@ export const ImportExportCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -21589,7 +21589,7 @@ export const ImportExportCost = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -21597,7 +21597,7 @@ export const ImportExportCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -21616,7 +21616,7 @@ export const ImportExportCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -21654,7 +21654,7 @@ export const ImportExportCost = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -21663,7 +21663,7 @@ export const ImportExportCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -21684,7 +21684,7 @@ export const ImportExportCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -21710,7 +21710,7 @@ export const ImportExportCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -21718,7 +21718,7 @@ export const ImportExportCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -21739,7 +21739,7 @@ export const ImportExportCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -21764,7 +21764,7 @@ export const ImportExportCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -21780,7 +21780,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -21796,7 +21796,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -21812,7 +21812,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -21842,7 +21842,7 @@ export const ImportExportCost = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -21851,7 +21851,7 @@ export const ImportExportCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -21872,7 +21872,7 @@ export const ImportExportCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -21898,7 +21898,7 @@ export const ImportExportCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -21906,7 +21906,7 @@ export const ImportExportCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -21927,7 +21927,7 @@ export const ImportExportCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -21952,7 +21952,7 @@ export const ImportExportCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -21968,7 +21968,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -21984,7 +21984,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -22000,7 +22000,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -22036,7 +22036,7 @@ export const ImportExportCost = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -22045,7 +22045,7 @@ export const ImportExportCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -22066,7 +22066,7 @@ export const ImportExportCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -22092,7 +22092,7 @@ export const ImportExportCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -22100,7 +22100,7 @@ export const ImportExportCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -22121,7 +22121,7 @@ export const ImportExportCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -22146,7 +22146,7 @@ export const ImportExportCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -22162,7 +22162,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -22178,7 +22178,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -22194,7 +22194,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -22237,7 +22237,7 @@ export const ImportExportCost = zod
           .literal("COST")
           .default(importExportCostImportOfferCurvesVariableCostTypeDefault),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(
@@ -22245,7 +22245,7 @@ export const ImportExportCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -22269,7 +22269,7 @@ export const ImportExportCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -22288,7 +22288,7 @@ export const ImportExportCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -22296,7 +22296,7 @@ export const ImportExportCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -22332,7 +22332,7 @@ export const ImportExportCost = zod
         "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
       ),
     export_offer_curves: zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -22341,7 +22341,7 @@ export const ImportExportCost = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -22349,7 +22349,7 @@ export const ImportExportCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -22373,7 +22373,7 @@ export const ImportExportCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -22392,7 +22392,7 @@ export const ImportExportCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -22400,7 +22400,7 @@ export const ImportExportCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -22431,7 +22431,7 @@ export const ImportExportCost = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -22439,7 +22439,7 @@ export const ImportExportCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -22458,7 +22458,7 @@ export const ImportExportCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -22496,7 +22496,7 @@ export const ImportExportCost = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -22504,7 +22504,7 @@ export const ImportExportCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -22523,7 +22523,7 @@ export const ImportExportCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -22561,7 +22561,7 @@ export const ImportExportCost = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -22570,7 +22570,7 @@ export const ImportExportCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -22591,7 +22591,7 @@ export const ImportExportCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -22617,7 +22617,7 @@ export const ImportExportCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -22625,7 +22625,7 @@ export const ImportExportCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -22646,7 +22646,7 @@ export const ImportExportCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -22671,7 +22671,7 @@ export const ImportExportCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -22687,7 +22687,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -22703,7 +22703,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -22719,7 +22719,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -22749,7 +22749,7 @@ export const ImportExportCost = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -22758,7 +22758,7 @@ export const ImportExportCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -22779,7 +22779,7 @@ export const ImportExportCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -22805,7 +22805,7 @@ export const ImportExportCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -22813,7 +22813,7 @@ export const ImportExportCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -22834,7 +22834,7 @@ export const ImportExportCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -22859,7 +22859,7 @@ export const ImportExportCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -22875,7 +22875,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -22891,7 +22891,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -22907,7 +22907,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -22943,7 +22943,7 @@ export const ImportExportCost = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -22952,7 +22952,7 @@ export const ImportExportCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -22973,7 +22973,7 @@ export const ImportExportCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -22999,7 +22999,7 @@ export const ImportExportCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -23007,7 +23007,7 @@ export const ImportExportCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -23028,7 +23028,7 @@ export const ImportExportCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -23053,7 +23053,7 @@ export const ImportExportCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -23069,7 +23069,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -23085,7 +23085,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -23101,7 +23101,7 @@ export const ImportExportCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -23144,7 +23144,7 @@ export const ImportExportCost = zod
           .literal("COST")
           .default(importExportCostExportOfferCurvesVariableCostTypeDefault),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(
@@ -23152,7 +23152,7 @@ export const ImportExportCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -23176,7 +23176,7 @@ export const ImportExportCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -23195,7 +23195,7 @@ export const ImportExportCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -23203,7 +23203,7 @@ export const ImportExportCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -23374,12 +23374,12 @@ const importExportTimeSeriesCostExportOfferCurvesVomCostDefault = {
   },
 };
 export const ImportExportTimeSeriesCost = zod
-  .object({
+  .strictObject({
     cost_type: zod
       .literal("IMPORT_EXPORT_TIME_SERIES")
       .default(importExportTimeSeriesCostCostTypeDefault),
     import_offer_curves: zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -23388,7 +23388,7 @@ export const ImportExportTimeSeriesCost = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -23396,7 +23396,7 @@ export const ImportExportTimeSeriesCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -23420,7 +23420,7 @@ export const ImportExportTimeSeriesCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -23439,7 +23439,7 @@ export const ImportExportTimeSeriesCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -23447,7 +23447,7 @@ export const ImportExportTimeSeriesCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -23480,7 +23480,7 @@ export const ImportExportTimeSeriesCost = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -23488,7 +23488,7 @@ export const ImportExportTimeSeriesCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -23507,7 +23507,7 @@ export const ImportExportTimeSeriesCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -23545,7 +23545,7 @@ export const ImportExportTimeSeriesCost = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -23553,7 +23553,7 @@ export const ImportExportTimeSeriesCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -23572,7 +23572,7 @@ export const ImportExportTimeSeriesCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -23610,7 +23610,7 @@ export const ImportExportTimeSeriesCost = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -23619,7 +23619,7 @@ export const ImportExportTimeSeriesCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -23640,7 +23640,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -23666,7 +23666,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -23674,7 +23674,7 @@ export const ImportExportTimeSeriesCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -23695,7 +23695,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -23720,7 +23720,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -23736,7 +23736,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -23752,7 +23752,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -23768,7 +23768,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -23798,7 +23798,7 @@ export const ImportExportTimeSeriesCost = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -23807,7 +23807,7 @@ export const ImportExportTimeSeriesCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -23828,7 +23828,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -23854,7 +23854,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -23862,7 +23862,7 @@ export const ImportExportTimeSeriesCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -23883,7 +23883,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -23908,7 +23908,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -23924,7 +23924,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -23940,7 +23940,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -23956,7 +23956,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -23992,7 +23992,7 @@ export const ImportExportTimeSeriesCost = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -24001,7 +24001,7 @@ export const ImportExportTimeSeriesCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -24022,7 +24022,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -24048,7 +24048,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -24056,7 +24056,7 @@ export const ImportExportTimeSeriesCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -24077,7 +24077,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -24102,7 +24102,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -24118,7 +24118,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -24134,7 +24134,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -24150,7 +24150,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -24195,7 +24195,7 @@ export const ImportExportTimeSeriesCost = zod
             importExportTimeSeriesCostImportOfferCurvesVariableCostTypeDefault,
           ),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(
@@ -24203,7 +24203,7 @@ export const ImportExportTimeSeriesCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -24227,7 +24227,7 @@ export const ImportExportTimeSeriesCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -24246,7 +24246,7 @@ export const ImportExportTimeSeriesCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -24254,7 +24254,7 @@ export const ImportExportTimeSeriesCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -24289,7 +24289,7 @@ export const ImportExportTimeSeriesCost = zod
         "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
       ),
     export_offer_curves: zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -24298,7 +24298,7 @@ export const ImportExportTimeSeriesCost = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -24306,7 +24306,7 @@ export const ImportExportTimeSeriesCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -24330,7 +24330,7 @@ export const ImportExportTimeSeriesCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -24349,7 +24349,7 @@ export const ImportExportTimeSeriesCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -24357,7 +24357,7 @@ export const ImportExportTimeSeriesCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -24390,7 +24390,7 @@ export const ImportExportTimeSeriesCost = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -24398,7 +24398,7 @@ export const ImportExportTimeSeriesCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -24417,7 +24417,7 @@ export const ImportExportTimeSeriesCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -24455,7 +24455,7 @@ export const ImportExportTimeSeriesCost = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -24463,7 +24463,7 @@ export const ImportExportTimeSeriesCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -24482,7 +24482,7 @@ export const ImportExportTimeSeriesCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -24520,7 +24520,7 @@ export const ImportExportTimeSeriesCost = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -24529,7 +24529,7 @@ export const ImportExportTimeSeriesCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -24550,7 +24550,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -24576,7 +24576,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -24584,7 +24584,7 @@ export const ImportExportTimeSeriesCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -24605,7 +24605,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -24630,7 +24630,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -24646,7 +24646,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -24662,7 +24662,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -24678,7 +24678,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -24708,7 +24708,7 @@ export const ImportExportTimeSeriesCost = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -24717,7 +24717,7 @@ export const ImportExportTimeSeriesCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -24738,7 +24738,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -24764,7 +24764,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -24772,7 +24772,7 @@ export const ImportExportTimeSeriesCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -24793,7 +24793,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -24818,7 +24818,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -24834,7 +24834,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -24850,7 +24850,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -24866,7 +24866,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -24902,7 +24902,7 @@ export const ImportExportTimeSeriesCost = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -24911,7 +24911,7 @@ export const ImportExportTimeSeriesCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -24932,7 +24932,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -24958,7 +24958,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -24966,7 +24966,7 @@ export const ImportExportTimeSeriesCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -24987,7 +24987,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -25012,7 +25012,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -25028,7 +25028,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -25044,7 +25044,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -25060,7 +25060,7 @@ export const ImportExportTimeSeriesCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -25105,7 +25105,7 @@ export const ImportExportTimeSeriesCost = zod
             importExportTimeSeriesCostExportOfferCurvesVariableCostTypeDefault,
           ),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(
@@ -25113,7 +25113,7 @@ export const ImportExportTimeSeriesCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -25137,7 +25137,7 @@ export const ImportExportTimeSeriesCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -25156,7 +25156,7 @@ export const ImportExportTimeSeriesCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -25164,7 +25164,7 @@ export const ImportExportTimeSeriesCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -25225,13 +25225,13 @@ const incrementalCurveCurveTypeDefault = `INCREMENTAL`;
 const incrementalCurveFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const incrementalCurveFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
 export const IncrementalCurve = zod
-  .object({
+  .strictObject({
     curve_type: zod
       .enum(["INCREMENTAL"])
       .default(incrementalCurveCurveTypeDefault),
     function_data: zod.union([
       zod
-        .object({
+        .strictObject({
           constant_term: zod
             .number()
             .describe("Units: the wrapped function's output unit."),
@@ -25248,7 +25248,7 @@ export const IncrementalCurve = zod
           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
         ),
       zod
-        .object({
+        .strictObject({
           function_type: zod
             .literal("PIECEWISE_STEP")
             .default(incrementalCurveFunctionDataTwoFunctionTypeDefault),
@@ -25292,13 +25292,13 @@ const inputOutputCurveFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const inputOutputCurveFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const inputOutputCurveFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
 export const InputOutputCurve = zod
-  .object({
+  .strictObject({
     curve_type: zod
       .enum(["INPUT_OUTPUT"])
       .default(inputOutputCurveCurveTypeDefault),
     function_data: zod.union([
       zod
-        .object({
+        .strictObject({
           constant_term: zod
             .number()
             .describe("Units: the wrapped function's output unit."),
@@ -25320,7 +25320,7 @@ export const InputOutputCurve = zod
           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
         ),
       zod
-        .object({
+        .strictObject({
           constant_term: zod
             .number()
             .describe("Units: the wrapped function's output unit."),
@@ -25337,13 +25337,13 @@ export const InputOutputCurve = zod
           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
         ),
       zod
-        .object({
+        .strictObject({
           function_type: zod
             .literal("PIECEWISE_LINEAR")
             .default(inputOutputCurveFunctionDataThreeFunctionTypeDefault),
           points: zod.array(
             zod
-              .object({
+              .strictObject({
                 x: zod
                   .number()
                   .describe("Units: the wrapped function's input unit."),
@@ -25434,11 +25434,11 @@ const loadCostVariableOperationCostVomCostDefault = {
   },
 };
 export const LoadCost = zod
-  .object({
+  .strictObject({
     cost_type: zod.literal("LOAD").default(loadCostCostTypeDefault),
     fixed: zod.number().default(loadCostFixedDefault),
     variable_operation_cost: zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -25447,7 +25447,7 @@ export const LoadCost = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -25455,7 +25455,7 @@ export const LoadCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -25479,7 +25479,7 @@ export const LoadCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -25498,7 +25498,7 @@ export const LoadCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -25506,7 +25506,7 @@ export const LoadCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -25537,7 +25537,7 @@ export const LoadCost = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -25545,7 +25545,7 @@ export const LoadCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -25564,7 +25564,7 @@ export const LoadCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -25602,7 +25602,7 @@ export const LoadCost = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -25610,7 +25610,7 @@ export const LoadCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -25629,7 +25629,7 @@ export const LoadCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -25667,7 +25667,7 @@ export const LoadCost = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -25676,7 +25676,7 @@ export const LoadCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -25697,7 +25697,7 @@ export const LoadCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -25723,7 +25723,7 @@ export const LoadCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -25731,7 +25731,7 @@ export const LoadCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -25752,7 +25752,7 @@ export const LoadCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -25777,7 +25777,7 @@ export const LoadCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -25793,7 +25793,7 @@ export const LoadCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -25809,7 +25809,7 @@ export const LoadCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -25825,7 +25825,7 @@ export const LoadCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -25855,7 +25855,7 @@ export const LoadCost = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -25864,7 +25864,7 @@ export const LoadCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -25885,7 +25885,7 @@ export const LoadCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -25911,7 +25911,7 @@ export const LoadCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -25919,7 +25919,7 @@ export const LoadCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -25940,7 +25940,7 @@ export const LoadCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -25965,7 +25965,7 @@ export const LoadCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -25981,7 +25981,7 @@ export const LoadCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -25997,7 +25997,7 @@ export const LoadCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -26013,7 +26013,7 @@ export const LoadCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -26049,7 +26049,7 @@ export const LoadCost = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -26058,7 +26058,7 @@ export const LoadCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -26079,7 +26079,7 @@ export const LoadCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -26105,7 +26105,7 @@ export const LoadCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -26113,7 +26113,7 @@ export const LoadCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -26134,7 +26134,7 @@ export const LoadCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -26159,7 +26159,7 @@ export const LoadCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -26175,7 +26175,7 @@ export const LoadCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -26191,7 +26191,7 @@ export const LoadCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -26207,7 +26207,7 @@ export const LoadCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -26250,13 +26250,13 @@ export const LoadCost = zod
           .literal("COST")
           .default(loadCostVariableOperationCostVariableCostTypeDefault),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(loadCostVariableOperationCostVomCostCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -26280,7 +26280,7 @@ export const LoadCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -26299,7 +26299,7 @@ export const LoadCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -26307,7 +26307,7 @@ export const LoadCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -26348,7 +26348,7 @@ export type LoadCost = zod.input<typeof LoadCost>;
 export type LoadCostOutput = zod.output<typeof LoadCost>;
 
 export const LoadZone = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
     name: zod
       .string()
@@ -26407,7 +26407,7 @@ const lossCurveValueCurveDefault = {
   },
 };
 export const LossCurve = zod
-  .object({
+  .strictObject({
     power_units: zod
       .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
       .default("NATURAL_UNITS")
@@ -26417,13 +26417,13 @@ export const LossCurve = zod
     value_curve: zod
       .union([
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(lossCurveValueCurveOneCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -26447,7 +26447,7 @@ export const LossCurve = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -26466,7 +26466,7 @@ export const LossCurve = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -26474,7 +26474,7 @@ export const LossCurve = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -26505,13 +26505,13 @@ export const LossCurve = zod
             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
           ),
         zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INCREMENTAL")
               .default(lossCurveValueCurveTwoCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -26530,7 +26530,7 @@ export const LossCurve = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_STEP")
                     .default(
@@ -26602,13 +26602,13 @@ const lossValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
 export const LossValueCurve = zod
   .union([
     zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("INPUT_OUTPUT")
           .default(lossValueCurveOneCurveTypeDefault),
         function_data: zod.union([
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -26630,7 +26630,7 @@ export const LossValueCurve = zod
               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
             ),
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -26647,13 +26647,13 @@ export const LossValueCurve = zod
               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
             ),
           zod
-            .object({
+            .strictObject({
               function_type: zod
                 .literal("PIECEWISE_LINEAR")
                 .default(lossValueCurveOneFunctionDataThreeFunctionTypeDefault),
               points: zod.array(
                 zod
-                  .object({
+                  .strictObject({
                     x: zod
                       .number()
                       .describe("Units: the wrapped function's input unit."),
@@ -26680,13 +26680,13 @@ export const LossValueCurve = zod
         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
       ),
     zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("INCREMENTAL")
           .default(lossValueCurveTwoCurveTypeDefault),
         function_data: zod.union([
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -26703,7 +26703,7 @@ export const LossValueCurve = zod
               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
             ),
           zod
-            .object({
+            .strictObject({
               function_type: zod
                 .literal("PIECEWISE_STEP")
                 .default(lossValueCurveTwoFunctionDataTwoFunctionTypeDefault),
@@ -26883,19 +26883,19 @@ const marketBidTimeSeriesCostDecrementalSlopeDefault = false;
 const marketBidTimeSeriesCostCurveStyleDefault = 0;
 const marketBidTimeSeriesCostCurveMultistepDefault = 0;
 export const MarketBidTimeSeriesCost = zod
-  .object({
+  .strictObject({
     cost_type: zod
       .literal("MARKET_BID_TIME_SERIES")
       .default(marketBidTimeSeriesCostCostTypeDefault),
     minimum_energy_offer: zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("TIME_SERIES_INPUT_OUTPUT")
           .default(marketBidTimeSeriesCostMinimumEnergyOfferCurveTypeDefault),
         function_data: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 constant_term: zod
                   .number()
                   .describe("Units: the wrapped function's output unit."),
@@ -26914,7 +26914,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
               ),
             zod
-              .object({
+              .strictObject({
                 constant_term: zod
                   .number()
                   .describe("Units: the wrapped function's output unit."),
@@ -26938,7 +26938,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("PIECEWISE_LINEAR")
                   .default(
@@ -26946,7 +26946,7 @@ export const MarketBidTimeSeriesCost = zod
                   ),
                 points: zod.array(
                   zod
-                    .object({
+                    .strictObject({
                       x: zod
                         .number()
                         .describe("Units: the wrapped function's input unit."),
@@ -26963,7 +26963,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("PIECEWISE_STEP")
                   .default(
@@ -26984,7 +26984,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_LINEAR")
                   .default(
@@ -27000,7 +27000,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_QUADRATIC")
                   .default(
@@ -27016,7 +27016,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                   .default(
@@ -27032,7 +27032,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_PIECEWISE_STEP")
                   .default(
@@ -27067,14 +27067,14 @@ export const MarketBidTimeSeriesCost = zod
         "Store-minted id of a time series of three-stage (hot, warm, cold) start-up costs.",
       ),
     shut_down: zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("TIME_SERIES_INPUT_OUTPUT")
           .default(marketBidTimeSeriesCostShutDownCurveTypeDefault),
         function_data: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 constant_term: zod
                   .number()
                   .describe("Units: the wrapped function's output unit."),
@@ -27093,7 +27093,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
               ),
             zod
-              .object({
+              .strictObject({
                 constant_term: zod
                   .number()
                   .describe("Units: the wrapped function's output unit."),
@@ -27117,7 +27117,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("PIECEWISE_LINEAR")
                   .default(
@@ -27125,7 +27125,7 @@ export const MarketBidTimeSeriesCost = zod
                   ),
                 points: zod.array(
                   zod
-                    .object({
+                    .strictObject({
                       x: zod
                         .number()
                         .describe("Units: the wrapped function's input unit."),
@@ -27142,7 +27142,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("PIECEWISE_STEP")
                   .default(
@@ -27163,7 +27163,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_LINEAR")
                   .default(
@@ -27179,7 +27179,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_QUADRATIC")
                   .default(
@@ -27195,7 +27195,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                   .default(
@@ -27211,7 +27211,7 @@ export const MarketBidTimeSeriesCost = zod
                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_PIECEWISE_STEP")
                   .default(
@@ -27241,7 +27241,7 @@ export const MarketBidTimeSeriesCost = zod
         "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
       ),
     incremental_offer_curves: zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -27250,7 +27250,7 @@ export const MarketBidTimeSeriesCost = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -27258,7 +27258,7 @@ export const MarketBidTimeSeriesCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -27282,7 +27282,7 @@ export const MarketBidTimeSeriesCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -27301,7 +27301,7 @@ export const MarketBidTimeSeriesCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -27309,7 +27309,7 @@ export const MarketBidTimeSeriesCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -27342,7 +27342,7 @@ export const MarketBidTimeSeriesCost = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -27350,7 +27350,7 @@ export const MarketBidTimeSeriesCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -27369,7 +27369,7 @@ export const MarketBidTimeSeriesCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -27407,7 +27407,7 @@ export const MarketBidTimeSeriesCost = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -27415,7 +27415,7 @@ export const MarketBidTimeSeriesCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -27434,7 +27434,7 @@ export const MarketBidTimeSeriesCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -27472,7 +27472,7 @@ export const MarketBidTimeSeriesCost = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -27481,7 +27481,7 @@ export const MarketBidTimeSeriesCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -27502,7 +27502,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -27528,7 +27528,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -27536,7 +27536,7 @@ export const MarketBidTimeSeriesCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -27557,7 +27557,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -27582,7 +27582,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -27598,7 +27598,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -27614,7 +27614,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -27630,7 +27630,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -27660,7 +27660,7 @@ export const MarketBidTimeSeriesCost = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -27669,7 +27669,7 @@ export const MarketBidTimeSeriesCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -27690,7 +27690,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -27716,7 +27716,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -27724,7 +27724,7 @@ export const MarketBidTimeSeriesCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -27745,7 +27745,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -27770,7 +27770,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -27786,7 +27786,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -27802,7 +27802,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -27818,7 +27818,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -27854,7 +27854,7 @@ export const MarketBidTimeSeriesCost = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -27863,7 +27863,7 @@ export const MarketBidTimeSeriesCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -27884,7 +27884,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -27910,7 +27910,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -27918,7 +27918,7 @@ export const MarketBidTimeSeriesCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -27939,7 +27939,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -27964,7 +27964,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -27980,7 +27980,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -27996,7 +27996,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -28012,7 +28012,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -28057,7 +28057,7 @@ export const MarketBidTimeSeriesCost = zod
             marketBidTimeSeriesCostIncrementalOfferCurvesVariableCostTypeDefault,
           ),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(
@@ -28065,7 +28065,7 @@ export const MarketBidTimeSeriesCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -28089,7 +28089,7 @@ export const MarketBidTimeSeriesCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -28108,7 +28108,7 @@ export const MarketBidTimeSeriesCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -28116,7 +28116,7 @@ export const MarketBidTimeSeriesCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -28151,7 +28151,7 @@ export const MarketBidTimeSeriesCost = zod
         "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
       ),
     decremental_offer_curves: zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -28160,7 +28160,7 @@ export const MarketBidTimeSeriesCost = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -28168,7 +28168,7 @@ export const MarketBidTimeSeriesCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -28192,7 +28192,7 @@ export const MarketBidTimeSeriesCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -28211,7 +28211,7 @@ export const MarketBidTimeSeriesCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -28219,7 +28219,7 @@ export const MarketBidTimeSeriesCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -28252,7 +28252,7 @@ export const MarketBidTimeSeriesCost = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -28260,7 +28260,7 @@ export const MarketBidTimeSeriesCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -28279,7 +28279,7 @@ export const MarketBidTimeSeriesCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -28317,7 +28317,7 @@ export const MarketBidTimeSeriesCost = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -28325,7 +28325,7 @@ export const MarketBidTimeSeriesCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -28344,7 +28344,7 @@ export const MarketBidTimeSeriesCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -28382,7 +28382,7 @@ export const MarketBidTimeSeriesCost = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -28391,7 +28391,7 @@ export const MarketBidTimeSeriesCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -28412,7 +28412,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -28438,7 +28438,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -28446,7 +28446,7 @@ export const MarketBidTimeSeriesCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -28467,7 +28467,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -28492,7 +28492,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -28508,7 +28508,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -28524,7 +28524,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -28540,7 +28540,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -28570,7 +28570,7 @@ export const MarketBidTimeSeriesCost = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -28579,7 +28579,7 @@ export const MarketBidTimeSeriesCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -28600,7 +28600,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -28626,7 +28626,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -28634,7 +28634,7 @@ export const MarketBidTimeSeriesCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -28655,7 +28655,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -28680,7 +28680,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -28696,7 +28696,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -28712,7 +28712,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -28728,7 +28728,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -28764,7 +28764,7 @@ export const MarketBidTimeSeriesCost = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -28773,7 +28773,7 @@ export const MarketBidTimeSeriesCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -28794,7 +28794,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -28820,7 +28820,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -28828,7 +28828,7 @@ export const MarketBidTimeSeriesCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -28849,7 +28849,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -28874,7 +28874,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -28890,7 +28890,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -28906,7 +28906,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -28922,7 +28922,7 @@ export const MarketBidTimeSeriesCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -28967,7 +28967,7 @@ export const MarketBidTimeSeriesCost = zod
             marketBidTimeSeriesCostDecrementalOfferCurvesVariableCostTypeDefault,
           ),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(
@@ -28975,7 +28975,7 @@ export const MarketBidTimeSeriesCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -28999,7 +28999,7 @@ export const MarketBidTimeSeriesCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -29018,7 +29018,7 @@ export const MarketBidTimeSeriesCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -29026,7 +29026,7 @@ export const MarketBidTimeSeriesCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -29263,7 +29263,7 @@ const productionVariableCostCurveTwoVomCostDefault = {
 export const ProductionVariableCostCurve = zod
   .union([
     zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -29272,7 +29272,7 @@ export const ProductionVariableCostCurve = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -29280,7 +29280,7 @@ export const ProductionVariableCostCurve = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -29304,7 +29304,7 @@ export const ProductionVariableCostCurve = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -29323,7 +29323,7 @@ export const ProductionVariableCostCurve = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -29331,7 +29331,7 @@ export const ProductionVariableCostCurve = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -29362,7 +29362,7 @@ export const ProductionVariableCostCurve = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -29370,7 +29370,7 @@ export const ProductionVariableCostCurve = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -29389,7 +29389,7 @@ export const ProductionVariableCostCurve = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -29427,7 +29427,7 @@ export const ProductionVariableCostCurve = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -29435,7 +29435,7 @@ export const ProductionVariableCostCurve = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -29454,7 +29454,7 @@ export const ProductionVariableCostCurve = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -29492,7 +29492,7 @@ export const ProductionVariableCostCurve = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -29501,7 +29501,7 @@ export const ProductionVariableCostCurve = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -29522,7 +29522,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -29548,7 +29548,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -29556,7 +29556,7 @@ export const ProductionVariableCostCurve = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -29577,7 +29577,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -29602,7 +29602,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -29618,7 +29618,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -29634,7 +29634,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -29650,7 +29650,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -29680,7 +29680,7 @@ export const ProductionVariableCostCurve = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -29689,7 +29689,7 @@ export const ProductionVariableCostCurve = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -29710,7 +29710,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -29736,7 +29736,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -29744,7 +29744,7 @@ export const ProductionVariableCostCurve = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -29765,7 +29765,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -29790,7 +29790,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -29806,7 +29806,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -29822,7 +29822,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -29838,7 +29838,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -29874,7 +29874,7 @@ export const ProductionVariableCostCurve = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -29883,7 +29883,7 @@ export const ProductionVariableCostCurve = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -29904,7 +29904,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -29930,7 +29930,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -29938,7 +29938,7 @@ export const ProductionVariableCostCurve = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -29959,7 +29959,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -29984,7 +29984,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -30000,7 +30000,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -30016,7 +30016,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -30032,7 +30032,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -30075,13 +30075,13 @@ export const ProductionVariableCostCurve = zod
           .literal("COST")
           .default(productionVariableCostCurveOneVariableCostTypeDefault),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(productionVariableCostCurveOneVomCostCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -30105,7 +30105,7 @@ export const ProductionVariableCostCurve = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -30124,7 +30124,7 @@ export const ProductionVariableCostCurve = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -30132,7 +30132,7 @@ export const ProductionVariableCostCurve = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -30167,7 +30167,7 @@ export const ProductionVariableCostCurve = zod
         "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
       ),
     zod
-      .object({
+      .strictObject({
         fuel_cost: zod
           .number()
           .nullish()
@@ -30191,7 +30191,7 @@ export const ProductionVariableCostCurve = zod
             "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
           ),
         startup_fuel_offtake: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(
@@ -30199,7 +30199,7 @@ export const ProductionVariableCostCurve = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -30223,7 +30223,7 @@ export const ProductionVariableCostCurve = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -30242,7 +30242,7 @@ export const ProductionVariableCostCurve = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -30250,7 +30250,7 @@ export const ProductionVariableCostCurve = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -30283,7 +30283,7 @@ export const ProductionVariableCostCurve = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -30291,7 +30291,7 @@ export const ProductionVariableCostCurve = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -30315,7 +30315,7 @@ export const ProductionVariableCostCurve = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -30334,7 +30334,7 @@ export const ProductionVariableCostCurve = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -30342,7 +30342,7 @@ export const ProductionVariableCostCurve = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -30373,7 +30373,7 @@ export const ProductionVariableCostCurve = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -30381,7 +30381,7 @@ export const ProductionVariableCostCurve = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -30400,7 +30400,7 @@ export const ProductionVariableCostCurve = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -30438,7 +30438,7 @@ export const ProductionVariableCostCurve = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -30446,7 +30446,7 @@ export const ProductionVariableCostCurve = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -30465,7 +30465,7 @@ export const ProductionVariableCostCurve = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -30503,7 +30503,7 @@ export const ProductionVariableCostCurve = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -30512,7 +30512,7 @@ export const ProductionVariableCostCurve = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -30533,7 +30533,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -30559,7 +30559,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -30567,7 +30567,7 @@ export const ProductionVariableCostCurve = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -30588,7 +30588,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -30613,7 +30613,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -30629,7 +30629,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -30645,7 +30645,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -30661,7 +30661,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -30691,7 +30691,7 @@ export const ProductionVariableCostCurve = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -30700,7 +30700,7 @@ export const ProductionVariableCostCurve = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -30721,7 +30721,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -30747,7 +30747,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -30755,7 +30755,7 @@ export const ProductionVariableCostCurve = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -30776,7 +30776,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -30801,7 +30801,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -30817,7 +30817,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -30833,7 +30833,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -30849,7 +30849,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -30885,7 +30885,7 @@ export const ProductionVariableCostCurve = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -30894,7 +30894,7 @@ export const ProductionVariableCostCurve = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -30915,7 +30915,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -30941,7 +30941,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -30949,7 +30949,7 @@ export const ProductionVariableCostCurve = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -30970,7 +30970,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -30995,7 +30995,7 @@ export const ProductionVariableCostCurve = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -31011,7 +31011,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -31027,7 +31027,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -31043,7 +31043,7 @@ export const ProductionVariableCostCurve = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -31086,13 +31086,13 @@ export const ProductionVariableCostCurve = zod
           .literal("FUEL")
           .default(productionVariableCostCurveTwoVariableCostTypeDefault),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(productionVariableCostCurveTwoVomCostCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -31116,7 +31116,7 @@ export const ProductionVariableCostCurve = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -31135,7 +31135,7 @@ export const ProductionVariableCostCurve = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -31143,7 +31143,7 @@ export const ProductionVariableCostCurve = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -31308,12 +31308,12 @@ const renewableGenerationCostVariableOperationCostVomCostDefault = {
 };
 const renewableGenerationCostFixedDefault = 0;
 export const RenewableGenerationCost = zod
-  .object({
+  .strictObject({
     cost_type: zod
       .enum(["RENEWABLE"])
       .default(renewableGenerationCostCostTypeDefault),
     curtailment_cost: zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -31322,7 +31322,7 @@ export const RenewableGenerationCost = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -31330,7 +31330,7 @@ export const RenewableGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -31354,7 +31354,7 @@ export const RenewableGenerationCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -31373,7 +31373,7 @@ export const RenewableGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -31381,7 +31381,7 @@ export const RenewableGenerationCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -31414,7 +31414,7 @@ export const RenewableGenerationCost = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -31422,7 +31422,7 @@ export const RenewableGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -31441,7 +31441,7 @@ export const RenewableGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -31479,7 +31479,7 @@ export const RenewableGenerationCost = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -31487,7 +31487,7 @@ export const RenewableGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -31506,7 +31506,7 @@ export const RenewableGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -31544,7 +31544,7 @@ export const RenewableGenerationCost = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -31553,7 +31553,7 @@ export const RenewableGenerationCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -31574,7 +31574,7 @@ export const RenewableGenerationCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -31600,7 +31600,7 @@ export const RenewableGenerationCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -31608,7 +31608,7 @@ export const RenewableGenerationCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -31629,7 +31629,7 @@ export const RenewableGenerationCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -31654,7 +31654,7 @@ export const RenewableGenerationCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -31670,7 +31670,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -31686,7 +31686,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -31702,7 +31702,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -31732,7 +31732,7 @@ export const RenewableGenerationCost = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -31741,7 +31741,7 @@ export const RenewableGenerationCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -31762,7 +31762,7 @@ export const RenewableGenerationCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -31788,7 +31788,7 @@ export const RenewableGenerationCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -31796,7 +31796,7 @@ export const RenewableGenerationCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -31817,7 +31817,7 @@ export const RenewableGenerationCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -31842,7 +31842,7 @@ export const RenewableGenerationCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -31858,7 +31858,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -31874,7 +31874,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -31890,7 +31890,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -31926,7 +31926,7 @@ export const RenewableGenerationCost = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -31935,7 +31935,7 @@ export const RenewableGenerationCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -31956,7 +31956,7 @@ export const RenewableGenerationCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -31982,7 +31982,7 @@ export const RenewableGenerationCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -31990,7 +31990,7 @@ export const RenewableGenerationCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -32011,7 +32011,7 @@ export const RenewableGenerationCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -32036,7 +32036,7 @@ export const RenewableGenerationCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -32052,7 +32052,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -32068,7 +32068,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -32084,7 +32084,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -32129,7 +32129,7 @@ export const RenewableGenerationCost = zod
             renewableGenerationCostCurtailmentCostVariableCostTypeDefault,
           ),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(
@@ -32137,7 +32137,7 @@ export const RenewableGenerationCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -32161,7 +32161,7 @@ export const RenewableGenerationCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -32180,7 +32180,7 @@ export const RenewableGenerationCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -32188,7 +32188,7 @@ export const RenewableGenerationCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -32244,7 +32244,7 @@ export const RenewableGenerationCost = zod
         "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
       ),
     variable_operation_cost: zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -32253,7 +32253,7 @@ export const RenewableGenerationCost = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -32261,7 +32261,7 @@ export const RenewableGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -32285,7 +32285,7 @@ export const RenewableGenerationCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -32304,7 +32304,7 @@ export const RenewableGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -32312,7 +32312,7 @@ export const RenewableGenerationCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -32345,7 +32345,7 @@ export const RenewableGenerationCost = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -32353,7 +32353,7 @@ export const RenewableGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -32372,7 +32372,7 @@ export const RenewableGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -32410,7 +32410,7 @@ export const RenewableGenerationCost = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -32418,7 +32418,7 @@ export const RenewableGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -32437,7 +32437,7 @@ export const RenewableGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -32475,7 +32475,7 @@ export const RenewableGenerationCost = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -32484,7 +32484,7 @@ export const RenewableGenerationCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -32505,7 +32505,7 @@ export const RenewableGenerationCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -32531,7 +32531,7 @@ export const RenewableGenerationCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -32539,7 +32539,7 @@ export const RenewableGenerationCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -32560,7 +32560,7 @@ export const RenewableGenerationCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -32585,7 +32585,7 @@ export const RenewableGenerationCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -32601,7 +32601,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -32617,7 +32617,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -32633,7 +32633,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -32663,7 +32663,7 @@ export const RenewableGenerationCost = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -32672,7 +32672,7 @@ export const RenewableGenerationCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -32693,7 +32693,7 @@ export const RenewableGenerationCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -32719,7 +32719,7 @@ export const RenewableGenerationCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -32727,7 +32727,7 @@ export const RenewableGenerationCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -32748,7 +32748,7 @@ export const RenewableGenerationCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -32773,7 +32773,7 @@ export const RenewableGenerationCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -32789,7 +32789,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -32805,7 +32805,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -32821,7 +32821,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -32857,7 +32857,7 @@ export const RenewableGenerationCost = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -32866,7 +32866,7 @@ export const RenewableGenerationCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -32887,7 +32887,7 @@ export const RenewableGenerationCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -32913,7 +32913,7 @@ export const RenewableGenerationCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -32921,7 +32921,7 @@ export const RenewableGenerationCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -32942,7 +32942,7 @@ export const RenewableGenerationCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -32967,7 +32967,7 @@ export const RenewableGenerationCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -32983,7 +32983,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -32999,7 +32999,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -33015,7 +33015,7 @@ export const RenewableGenerationCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -33060,7 +33060,7 @@ export const RenewableGenerationCost = zod
             renewableGenerationCostVariableOperationCostVariableCostTypeDefault,
           ),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(
@@ -33068,7 +33068,7 @@ export const RenewableGenerationCost = zod
               ),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -33092,7 +33092,7 @@ export const RenewableGenerationCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -33111,7 +33111,7 @@ export const RenewableGenerationCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -33119,7 +33119,7 @@ export const RenewableGenerationCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -33172,7 +33172,7 @@ export type ReservoirLocation = zod.input<typeof ReservoirLocation>;
 export type ReservoirLocationOutput = zod.output<typeof ReservoirLocation>;
 
 export const StartUpShutDown = zod
-  .object({
+  .strictObject({
     startup: zod.number().optional(),
     shutdown: zod.number().optional(),
   })
@@ -33185,7 +33185,7 @@ export type StartUpShutDownOutput = zod.output<typeof StartUpShutDown>;
 
 const startUpStagesStartupStagesTypeDefault = `STAGES`;
 export const StartUpStages = zod
-  .object({
+  .strictObject({
     startup_stages_type: zod
       .literal("STAGES")
       .default(startUpStagesStartupStagesTypeDefault),
@@ -33323,10 +33323,10 @@ const storageCostStartUpDefault = 0;
 const storageCostEnergyShortageCostDefault = 0;
 const storageCostEnergySurplusCostDefault = 0;
 export const StorageCost = zod
-  .object({
+  .strictObject({
     cost_type: zod.enum(["STORAGE"]).default(storageCostCostTypeDefault),
     charge_variable_cost: zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -33335,7 +33335,7 @@ export const StorageCost = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -33343,7 +33343,7 @@ export const StorageCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -33367,7 +33367,7 @@ export const StorageCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -33386,7 +33386,7 @@ export const StorageCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -33394,7 +33394,7 @@ export const StorageCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -33425,7 +33425,7 @@ export const StorageCost = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -33433,7 +33433,7 @@ export const StorageCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -33452,7 +33452,7 @@ export const StorageCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -33490,7 +33490,7 @@ export const StorageCost = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -33498,7 +33498,7 @@ export const StorageCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -33517,7 +33517,7 @@ export const StorageCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -33555,7 +33555,7 @@ export const StorageCost = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -33564,7 +33564,7 @@ export const StorageCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -33585,7 +33585,7 @@ export const StorageCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -33611,7 +33611,7 @@ export const StorageCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -33619,7 +33619,7 @@ export const StorageCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -33640,7 +33640,7 @@ export const StorageCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -33665,7 +33665,7 @@ export const StorageCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -33681,7 +33681,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -33697,7 +33697,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -33713,7 +33713,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -33743,7 +33743,7 @@ export const StorageCost = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -33752,7 +33752,7 @@ export const StorageCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -33773,7 +33773,7 @@ export const StorageCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -33799,7 +33799,7 @@ export const StorageCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -33807,7 +33807,7 @@ export const StorageCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -33828,7 +33828,7 @@ export const StorageCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -33853,7 +33853,7 @@ export const StorageCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -33869,7 +33869,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -33885,7 +33885,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -33901,7 +33901,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -33937,7 +33937,7 @@ export const StorageCost = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -33946,7 +33946,7 @@ export const StorageCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -33967,7 +33967,7 @@ export const StorageCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -33993,7 +33993,7 @@ export const StorageCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -34001,7 +34001,7 @@ export const StorageCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -34022,7 +34022,7 @@ export const StorageCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -34047,7 +34047,7 @@ export const StorageCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -34063,7 +34063,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -34079,7 +34079,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -34095,7 +34095,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -34138,13 +34138,13 @@ export const StorageCost = zod
           .literal("COST")
           .default(storageCostChargeVariableCostVariableCostTypeDefault),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(storageCostChargeVariableCostVomCostCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -34168,7 +34168,7 @@ export const StorageCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -34187,7 +34187,7 @@ export const StorageCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -34195,7 +34195,7 @@ export const StorageCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -34231,7 +34231,7 @@ export const StorageCost = zod
         "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
       ),
     discharge_variable_cost: zod
-      .object({
+      .strictObject({
         power_units: zod
           .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
           .describe(
@@ -34240,7 +34240,7 @@ export const StorageCost = zod
         value_curve: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -34248,7 +34248,7 @@ export const StorageCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -34272,7 +34272,7 @@ export const StorageCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -34291,7 +34291,7 @@ export const StorageCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -34299,7 +34299,7 @@ export const StorageCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -34330,7 +34330,7 @@ export const StorageCost = zod
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
@@ -34338,7 +34338,7 @@ export const StorageCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -34357,7 +34357,7 @@ export const StorageCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -34395,7 +34395,7 @@ export const StorageCost = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("AVERAGE_RATE")
                   .default(
@@ -34403,7 +34403,7 @@ export const StorageCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -34422,7 +34422,7 @@ export const StorageCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
@@ -34460,7 +34460,7 @@ export const StorageCost = zod
                 "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INPUT_OUTPUT")
                   .default(
@@ -34469,7 +34469,7 @@ export const StorageCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -34490,7 +34490,7 @@ export const StorageCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -34516,7 +34516,7 @@ export const StorageCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -34524,7 +34524,7 @@ export const StorageCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -34545,7 +34545,7 @@ export const StorageCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -34570,7 +34570,7 @@ export const StorageCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -34586,7 +34586,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -34602,7 +34602,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -34618,7 +34618,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -34648,7 +34648,7 @@ export const StorageCost = zod
                 "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_INCREMENTAL")
                   .default(
@@ -34657,7 +34657,7 @@ export const StorageCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -34678,7 +34678,7 @@ export const StorageCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -34704,7 +34704,7 @@ export const StorageCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -34712,7 +34712,7 @@ export const StorageCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -34733,7 +34733,7 @@ export const StorageCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -34758,7 +34758,7 @@ export const StorageCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -34774,7 +34774,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -34790,7 +34790,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -34806,7 +34806,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -34842,7 +34842,7 @@ export const StorageCost = zod
                 "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
               ),
             zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("TIME_SERIES_AVERAGE_RATE")
                   .default(
@@ -34851,7 +34851,7 @@ export const StorageCost = zod
                 function_data: zod
                   .union([
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -34872,7 +34872,7 @@ export const StorageCost = zod
                         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         constant_term: zod
                           .number()
                           .describe(
@@ -34898,7 +34898,7 @@ export const StorageCost = zod
                         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_LINEAR")
                           .default(
@@ -34906,7 +34906,7 @@ export const StorageCost = zod
                           ),
                         points: zod.array(
                           zod
-                            .object({
+                            .strictObject({
                               x: zod
                                 .number()
                                 .describe(
@@ -34927,7 +34927,7 @@ export const StorageCost = zod
                         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("PIECEWISE_STEP")
                           .default(
@@ -34952,7 +34952,7 @@ export const StorageCost = zod
                         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_LINEAR")
                           .default(
@@ -34968,7 +34968,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_QUADRATIC")
                           .default(
@@ -34984,7 +34984,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_LINEAR")
                           .default(
@@ -35000,7 +35000,7 @@ export const StorageCost = zod
                         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                       ),
                     zod
-                      .object({
+                      .strictObject({
                         function_type: zod
                           .literal("TIME_SERIES_PIECEWISE_STEP")
                           .default(
@@ -35043,13 +35043,13 @@ export const StorageCost = zod
           .literal("COST")
           .default(storageCostDischargeVariableCostVariableCostTypeDefault),
         vom_cost: zod
-          .object({
+          .strictObject({
             curve_type: zod
               .literal("INPUT_OUTPUT")
               .default(storageCostDischargeVariableCostVomCostCurveTypeDefault),
             function_data: zod.union([
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -35073,7 +35073,7 @@ export const StorageCost = zod
                   "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                 ),
               zod
-                .object({
+                .strictObject({
                   constant_term: zod
                     .number()
                     .describe("Units: the wrapped function's output unit."),
@@ -35092,7 +35092,7 @@ export const StorageCost = zod
                   "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                 ),
               zod
-                .object({
+                .strictObject({
                   function_type: zod
                     .literal("PIECEWISE_LINEAR")
                     .default(
@@ -35100,7 +35100,7 @@ export const StorageCost = zod
                     ),
                   points: zod.array(
                     zod
-                      .object({
+                      .strictObject({
                         x: zod
                           .number()
                           .describe(
@@ -35141,7 +35141,7 @@ export const StorageCost = zod
       .union([
         zod.number(),
         zod
-          .object({
+          .strictObject({
             charge: zod.number(),
             discharge: zod.number(),
           })
@@ -35358,7 +35358,7 @@ const thermalGenerationCostVariableOperationCostTwoVomCostDefault = {
   },
 };
 export const ThermalGenerationCost = zod
-  .object({
+  .strictObject({
     cost_type: zod
       .enum(["THERMAL"])
       .default(thermalGenerationCostCostTypeDefault),
@@ -35372,7 +35372,7 @@ export const ThermalGenerationCost = zod
       .union([
         zod.number(),
         zod
-          .object({
+          .strictObject({
             startup_stages_type: zod
               .literal("STAGES")
               .default(thermalGenerationCostStartUpTwoStartupStagesTypeDefault),
@@ -35388,7 +35388,7 @@ export const ThermalGenerationCost = zod
     variable_operation_cost: zod
       .union([
         zod
-          .object({
+          .strictObject({
             power_units: zod
               .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
               .describe(
@@ -35397,7 +35397,7 @@ export const ThermalGenerationCost = zod
             value_curve: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -35405,7 +35405,7 @@ export const ThermalGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -35431,7 +35431,7 @@ export const ThermalGenerationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -35452,7 +35452,7 @@ export const ThermalGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -35460,7 +35460,7 @@ export const ThermalGenerationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -35493,7 +35493,7 @@ export const ThermalGenerationCost = zod
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INCREMENTAL")
                       .default(
@@ -35501,7 +35501,7 @@ export const ThermalGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -35522,7 +35522,7 @@ export const ThermalGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -35560,7 +35560,7 @@ export const ThermalGenerationCost = zod
                     "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("AVERAGE_RATE")
                       .default(
@@ -35568,7 +35568,7 @@ export const ThermalGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -35589,7 +35589,7 @@ export const ThermalGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -35627,7 +35627,7 @@ export const ThermalGenerationCost = zod
                     "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INPUT_OUTPUT")
                       .default(
@@ -35636,7 +35636,7 @@ export const ThermalGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -35657,7 +35657,7 @@ export const ThermalGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -35683,7 +35683,7 @@ export const ThermalGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -35691,7 +35691,7 @@ export const ThermalGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -35712,7 +35712,7 @@ export const ThermalGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -35737,7 +35737,7 @@ export const ThermalGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -35753,7 +35753,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -35769,7 +35769,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -35785,7 +35785,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -35815,7 +35815,7 @@ export const ThermalGenerationCost = zod
                     "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INCREMENTAL")
                       .default(
@@ -35824,7 +35824,7 @@ export const ThermalGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -35845,7 +35845,7 @@ export const ThermalGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -35871,7 +35871,7 @@ export const ThermalGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -35879,7 +35879,7 @@ export const ThermalGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -35900,7 +35900,7 @@ export const ThermalGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -35925,7 +35925,7 @@ export const ThermalGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -35941,7 +35941,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -35957,7 +35957,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -35973,7 +35973,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -36009,7 +36009,7 @@ export const ThermalGenerationCost = zod
                     "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_AVERAGE_RATE")
                       .default(
@@ -36018,7 +36018,7 @@ export const ThermalGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -36039,7 +36039,7 @@ export const ThermalGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -36065,7 +36065,7 @@ export const ThermalGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -36073,7 +36073,7 @@ export const ThermalGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -36094,7 +36094,7 @@ export const ThermalGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -36119,7 +36119,7 @@ export const ThermalGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -36135,7 +36135,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -36151,7 +36151,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -36167,7 +36167,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -36212,7 +36212,7 @@ export const ThermalGenerationCost = zod
                 thermalGenerationCostVariableOperationCostOneVariableCostTypeDefault,
               ),
             vom_cost: zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -36220,7 +36220,7 @@ export const ThermalGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -36244,7 +36244,7 @@ export const ThermalGenerationCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -36263,7 +36263,7 @@ export const ThermalGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -36271,7 +36271,7 @@ export const ThermalGenerationCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -36308,7 +36308,7 @@ export const ThermalGenerationCost = zod
             "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
           ),
         zod
-          .object({
+          .strictObject({
             fuel_cost: zod
               .number()
               .nullish()
@@ -36332,7 +36332,7 @@ export const ThermalGenerationCost = zod
                 "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
               ),
             startup_fuel_offtake: zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -36340,7 +36340,7 @@ export const ThermalGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -36364,7 +36364,7 @@ export const ThermalGenerationCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -36383,7 +36383,7 @@ export const ThermalGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -36391,7 +36391,7 @@ export const ThermalGenerationCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -36426,7 +36426,7 @@ export const ThermalGenerationCost = zod
             value_curve: zod
               .union([
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INPUT_OUTPUT")
                       .default(
@@ -36434,7 +36434,7 @@ export const ThermalGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -36460,7 +36460,7 @@ export const ThermalGenerationCost = zod
                           "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -36481,7 +36481,7 @@ export const ThermalGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_LINEAR")
                             .default(
@@ -36489,7 +36489,7 @@ export const ThermalGenerationCost = zod
                             ),
                           points: zod.array(
                             zod
-                              .object({
+                              .strictObject({
                                 x: zod
                                   .number()
                                   .describe(
@@ -36522,7 +36522,7 @@ export const ThermalGenerationCost = zod
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("INCREMENTAL")
                       .default(
@@ -36530,7 +36530,7 @@ export const ThermalGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -36551,7 +36551,7 @@ export const ThermalGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -36589,7 +36589,7 @@ export const ThermalGenerationCost = zod
                     "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("AVERAGE_RATE")
                       .default(
@@ -36597,7 +36597,7 @@ export const ThermalGenerationCost = zod
                       ),
                     function_data: zod.union([
                       zod
-                        .object({
+                        .strictObject({
                           constant_term: zod
                             .number()
                             .describe(
@@ -36618,7 +36618,7 @@ export const ThermalGenerationCost = zod
                           "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                         ),
                       zod
-                        .object({
+                        .strictObject({
                           function_type: zod
                             .literal("PIECEWISE_STEP")
                             .default(
@@ -36656,7 +36656,7 @@ export const ThermalGenerationCost = zod
                     "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INPUT_OUTPUT")
                       .default(
@@ -36665,7 +36665,7 @@ export const ThermalGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -36686,7 +36686,7 @@ export const ThermalGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -36712,7 +36712,7 @@ export const ThermalGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -36720,7 +36720,7 @@ export const ThermalGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -36741,7 +36741,7 @@ export const ThermalGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -36766,7 +36766,7 @@ export const ThermalGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -36782,7 +36782,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -36798,7 +36798,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -36814,7 +36814,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -36844,7 +36844,7 @@ export const ThermalGenerationCost = zod
                     "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_INCREMENTAL")
                       .default(
@@ -36853,7 +36853,7 @@ export const ThermalGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -36874,7 +36874,7 @@ export const ThermalGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -36900,7 +36900,7 @@ export const ThermalGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -36908,7 +36908,7 @@ export const ThermalGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -36929,7 +36929,7 @@ export const ThermalGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -36954,7 +36954,7 @@ export const ThermalGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -36970,7 +36970,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -36986,7 +36986,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -37002,7 +37002,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -37038,7 +37038,7 @@ export const ThermalGenerationCost = zod
                     "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
                   ),
                 zod
-                  .object({
+                  .strictObject({
                     curve_type: zod
                       .literal("TIME_SERIES_AVERAGE_RATE")
                       .default(
@@ -37047,7 +37047,7 @@ export const ThermalGenerationCost = zod
                     function_data: zod
                       .union([
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -37068,7 +37068,7 @@ export const ThermalGenerationCost = zod
                             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             constant_term: zod
                               .number()
                               .describe(
@@ -37094,7 +37094,7 @@ export const ThermalGenerationCost = zod
                             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_LINEAR")
                               .default(
@@ -37102,7 +37102,7 @@ export const ThermalGenerationCost = zod
                               ),
                             points: zod.array(
                               zod
-                                .object({
+                                .strictObject({
                                   x: zod
                                     .number()
                                     .describe(
@@ -37123,7 +37123,7 @@ export const ThermalGenerationCost = zod
                             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("PIECEWISE_STEP")
                               .default(
@@ -37148,7 +37148,7 @@ export const ThermalGenerationCost = zod
                             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_LINEAR")
                               .default(
@@ -37164,7 +37164,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_QUADRATIC")
                               .default(
@@ -37180,7 +37180,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_LINEAR")
                               .default(
@@ -37196,7 +37196,7 @@ export const ThermalGenerationCost = zod
                             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
                           ),
                         zod
-                          .object({
+                          .strictObject({
                             function_type: zod
                               .literal("TIME_SERIES_PIECEWISE_STEP")
                               .default(
@@ -37241,7 +37241,7 @@ export const ThermalGenerationCost = zod
                 thermalGenerationCostVariableOperationCostTwoVariableCostTypeDefault,
               ),
             vom_cost: zod
-              .object({
+              .strictObject({
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
@@ -37249,7 +37249,7 @@ export const ThermalGenerationCost = zod
                   ),
                 function_data: zod.union([
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -37273,7 +37273,7 @@ export const ThermalGenerationCost = zod
                       "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       constant_term: zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
@@ -37292,7 +37292,7 @@ export const ThermalGenerationCost = zod
                       "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
                   zod
-                    .object({
+                    .strictObject({
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
@@ -37300,7 +37300,7 @@ export const ThermalGenerationCost = zod
                         ),
                       points: zod.array(
                         zod
-                          .object({
+                          .strictObject({
                             x: zod
                               .number()
                               .describe(
@@ -37349,7 +37349,7 @@ export type ThermalGenerationCostOutput = zod.output<
 >;
 
 export const TurbinePump = zod
-  .object({
+  .strictObject({
     turbine: zod.number(),
     pump: zod.number(),
   })
@@ -37408,13 +37408,13 @@ const valueCurveSixFunctionDataEightFunctionTypeDefault = `TIME_SERIES_PIECEWISE
 export const ValueCurve = zod
   .union([
     zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("INPUT_OUTPUT")
           .default(valueCurveOneCurveTypeDefault),
         function_data: zod.union([
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -37436,7 +37436,7 @@ export const ValueCurve = zod
               "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
             ),
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -37453,13 +37453,13 @@ export const ValueCurve = zod
               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
             ),
           zod
-            .object({
+            .strictObject({
               function_type: zod
                 .literal("PIECEWISE_LINEAR")
                 .default(valueCurveOneFunctionDataThreeFunctionTypeDefault),
               points: zod.array(
                 zod
-                  .object({
+                  .strictObject({
                     x: zod
                       .number()
                       .describe("Units: the wrapped function's input unit."),
@@ -37486,13 +37486,13 @@ export const ValueCurve = zod
         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
       ),
     zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("INCREMENTAL")
           .default(valueCurveTwoCurveTypeDefault),
         function_data: zod.union([
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -37509,7 +37509,7 @@ export const ValueCurve = zod
               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
             ),
           zod
-            .object({
+            .strictObject({
               function_type: zod
                 .literal("PIECEWISE_STEP")
                 .default(valueCurveTwoFunctionDataTwoFunctionTypeDefault),
@@ -37541,13 +37541,13 @@ export const ValueCurve = zod
         "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
       ),
     zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("AVERAGE_RATE")
           .default(valueCurveThreeCurveTypeDefault),
         function_data: zod.union([
           zod
-            .object({
+            .strictObject({
               constant_term: zod
                 .number()
                 .describe("Units: the wrapped function's output unit."),
@@ -37564,7 +37564,7 @@ export const ValueCurve = zod
               "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
             ),
           zod
-            .object({
+            .strictObject({
               function_type: zod
                 .literal("PIECEWISE_STEP")
                 .default(valueCurveThreeFunctionDataTwoFunctionTypeDefault),
@@ -37596,14 +37596,14 @@ export const ValueCurve = zod
         "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
       ),
     zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("TIME_SERIES_INPUT_OUTPUT")
           .default(valueCurveFourCurveTypeDefault),
         function_data: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 constant_term: zod
                   .number()
                   .describe("Units: the wrapped function's output unit."),
@@ -37620,7 +37620,7 @@ export const ValueCurve = zod
                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
               ),
             zod
-              .object({
+              .strictObject({
                 constant_term: zod
                   .number()
                   .describe("Units: the wrapped function's output unit."),
@@ -37642,13 +37642,13 @@ export const ValueCurve = zod
                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("PIECEWISE_LINEAR")
                   .default(valueCurveFourFunctionDataThreeFunctionTypeDefault),
                 points: zod.array(
                   zod
-                    .object({
+                    .strictObject({
                       x: zod
                         .number()
                         .describe("Units: the wrapped function's input unit."),
@@ -37665,7 +37665,7 @@ export const ValueCurve = zod
                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("PIECEWISE_STEP")
                   .default(valueCurveFourFunctionDataFourFunctionTypeDefault),
@@ -37684,7 +37684,7 @@ export const ValueCurve = zod
                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_LINEAR")
                   .default(valueCurveFourFunctionDataFiveFunctionTypeDefault),
@@ -37698,7 +37698,7 @@ export const ValueCurve = zod
                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_QUADRATIC")
                   .default(valueCurveFourFunctionDataSixFunctionTypeDefault),
@@ -37712,7 +37712,7 @@ export const ValueCurve = zod
                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                   .default(valueCurveFourFunctionDataSevenFunctionTypeDefault),
@@ -37726,7 +37726,7 @@ export const ValueCurve = zod
                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_PIECEWISE_STEP")
                   .default(valueCurveFourFunctionDataEightFunctionTypeDefault),
@@ -37754,14 +37754,14 @@ export const ValueCurve = zod
         "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
       ),
     zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("TIME_SERIES_INCREMENTAL")
           .default(valueCurveFiveCurveTypeDefault),
         function_data: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 constant_term: zod
                   .number()
                   .describe("Units: the wrapped function's output unit."),
@@ -37778,7 +37778,7 @@ export const ValueCurve = zod
                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
               ),
             zod
-              .object({
+              .strictObject({
                 constant_term: zod
                   .number()
                   .describe("Units: the wrapped function's output unit."),
@@ -37800,13 +37800,13 @@ export const ValueCurve = zod
                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("PIECEWISE_LINEAR")
                   .default(valueCurveFiveFunctionDataThreeFunctionTypeDefault),
                 points: zod.array(
                   zod
-                    .object({
+                    .strictObject({
                       x: zod
                         .number()
                         .describe("Units: the wrapped function's input unit."),
@@ -37823,7 +37823,7 @@ export const ValueCurve = zod
                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("PIECEWISE_STEP")
                   .default(valueCurveFiveFunctionDataFourFunctionTypeDefault),
@@ -37842,7 +37842,7 @@ export const ValueCurve = zod
                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_LINEAR")
                   .default(valueCurveFiveFunctionDataFiveFunctionTypeDefault),
@@ -37856,7 +37856,7 @@ export const ValueCurve = zod
                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_QUADRATIC")
                   .default(valueCurveFiveFunctionDataSixFunctionTypeDefault),
@@ -37870,7 +37870,7 @@ export const ValueCurve = zod
                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                   .default(valueCurveFiveFunctionDataSevenFunctionTypeDefault),
@@ -37884,7 +37884,7 @@ export const ValueCurve = zod
                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_PIECEWISE_STEP")
                   .default(valueCurveFiveFunctionDataEightFunctionTypeDefault),
@@ -37918,14 +37918,14 @@ export const ValueCurve = zod
         "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
       ),
     zod
-      .object({
+      .strictObject({
         curve_type: zod
           .literal("TIME_SERIES_AVERAGE_RATE")
           .default(valueCurveSixCurveTypeDefault),
         function_data: zod
           .union([
             zod
-              .object({
+              .strictObject({
                 constant_term: zod
                   .number()
                   .describe("Units: the wrapped function's output unit."),
@@ -37942,7 +37942,7 @@ export const ValueCurve = zod
                 "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
               ),
             zod
-              .object({
+              .strictObject({
                 constant_term: zod
                   .number()
                   .describe("Units: the wrapped function's output unit."),
@@ -37964,13 +37964,13 @@ export const ValueCurve = zod
                 "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("PIECEWISE_LINEAR")
                   .default(valueCurveSixFunctionDataThreeFunctionTypeDefault),
                 points: zod.array(
                   zod
-                    .object({
+                    .strictObject({
                       x: zod
                         .number()
                         .describe("Units: the wrapped function's input unit."),
@@ -37987,7 +37987,7 @@ export const ValueCurve = zod
                 "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("PIECEWISE_STEP")
                   .default(valueCurveSixFunctionDataFourFunctionTypeDefault),
@@ -38006,7 +38006,7 @@ export const ValueCurve = zod
                 "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_LINEAR")
                   .default(valueCurveSixFunctionDataFiveFunctionTypeDefault),
@@ -38020,7 +38020,7 @@ export const ValueCurve = zod
                 "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_QUADRATIC")
                   .default(valueCurveSixFunctionDataSixFunctionTypeDefault),
@@ -38034,7 +38034,7 @@ export const ValueCurve = zod
                 "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_PIECEWISE_LINEAR")
                   .default(valueCurveSixFunctionDataSevenFunctionTypeDefault),
@@ -38048,7 +38048,7 @@ export const ValueCurve = zod
                 "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
               ),
             zod
-              .object({
+              .strictObject({
                 function_type: zod
                   .literal("TIME_SERIES_PIECEWISE_STEP")
                   .default(valueCurveSixFunctionDataEightFunctionTypeDefault),
@@ -38149,14 +38149,14 @@ const timeSeriesAverageRateCurveFunctionDataSixFunctionTypeDefault = `TIME_SERIE
 const timeSeriesAverageRateCurveFunctionDataSevenFunctionTypeDefault = `TIME_SERIES_PIECEWISE_LINEAR`;
 const timeSeriesAverageRateCurveFunctionDataEightFunctionTypeDefault = `TIME_SERIES_PIECEWISE_STEP`;
 export const TimeSeriesAverageRateCurve = zod
-  .object({
+  .strictObject({
     curve_type: zod
       .enum(["TIME_SERIES_AVERAGE_RATE"])
       .default(timeSeriesAverageRateCurveCurveTypeDefault),
     function_data: zod
       .union([
         zod
-          .object({
+          .strictObject({
             constant_term: zod
               .number()
               .describe("Units: the wrapped function's output unit."),
@@ -38175,7 +38175,7 @@ export const TimeSeriesAverageRateCurve = zod
             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
           ),
         zod
-          .object({
+          .strictObject({
             constant_term: zod
               .number()
               .describe("Units: the wrapped function's output unit."),
@@ -38199,7 +38199,7 @@ export const TimeSeriesAverageRateCurve = zod
             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("PIECEWISE_LINEAR")
               .default(
@@ -38207,7 +38207,7 @@ export const TimeSeriesAverageRateCurve = zod
               ),
             points: zod.array(
               zod
-                .object({
+                .strictObject({
                   x: zod
                     .number()
                     .describe("Units: the wrapped function's input unit."),
@@ -38224,7 +38224,7 @@ export const TimeSeriesAverageRateCurve = zod
             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("PIECEWISE_STEP")
               .default(
@@ -38245,7 +38245,7 @@ export const TimeSeriesAverageRateCurve = zod
             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("TIME_SERIES_LINEAR")
               .default(
@@ -38261,7 +38261,7 @@ export const TimeSeriesAverageRateCurve = zod
             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("TIME_SERIES_QUADRATIC")
               .default(
@@ -38277,7 +38277,7 @@ export const TimeSeriesAverageRateCurve = zod
             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("TIME_SERIES_PIECEWISE_LINEAR")
               .default(
@@ -38293,7 +38293,7 @@ export const TimeSeriesAverageRateCurve = zod
             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("TIME_SERIES_PIECEWISE_STEP")
               .default(
@@ -38346,14 +38346,14 @@ const timeSeriesIncrementalCurveFunctionDataSixFunctionTypeDefault = `TIME_SERIE
 const timeSeriesIncrementalCurveFunctionDataSevenFunctionTypeDefault = `TIME_SERIES_PIECEWISE_LINEAR`;
 const timeSeriesIncrementalCurveFunctionDataEightFunctionTypeDefault = `TIME_SERIES_PIECEWISE_STEP`;
 export const TimeSeriesIncrementalCurve = zod
-  .object({
+  .strictObject({
     curve_type: zod
       .enum(["TIME_SERIES_INCREMENTAL"])
       .default(timeSeriesIncrementalCurveCurveTypeDefault),
     function_data: zod
       .union([
         zod
-          .object({
+          .strictObject({
             constant_term: zod
               .number()
               .describe("Units: the wrapped function's output unit."),
@@ -38372,7 +38372,7 @@ export const TimeSeriesIncrementalCurve = zod
             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
           ),
         zod
-          .object({
+          .strictObject({
             constant_term: zod
               .number()
               .describe("Units: the wrapped function's output unit."),
@@ -38396,7 +38396,7 @@ export const TimeSeriesIncrementalCurve = zod
             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("PIECEWISE_LINEAR")
               .default(
@@ -38404,7 +38404,7 @@ export const TimeSeriesIncrementalCurve = zod
               ),
             points: zod.array(
               zod
-                .object({
+                .strictObject({
                   x: zod
                     .number()
                     .describe("Units: the wrapped function's input unit."),
@@ -38421,7 +38421,7 @@ export const TimeSeriesIncrementalCurve = zod
             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("PIECEWISE_STEP")
               .default(
@@ -38442,7 +38442,7 @@ export const TimeSeriesIncrementalCurve = zod
             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("TIME_SERIES_LINEAR")
               .default(
@@ -38458,7 +38458,7 @@ export const TimeSeriesIncrementalCurve = zod
             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("TIME_SERIES_QUADRATIC")
               .default(
@@ -38474,7 +38474,7 @@ export const TimeSeriesIncrementalCurve = zod
             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("TIME_SERIES_PIECEWISE_LINEAR")
               .default(
@@ -38490,7 +38490,7 @@ export const TimeSeriesIncrementalCurve = zod
             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("TIME_SERIES_PIECEWISE_STEP")
               .default(
@@ -38543,14 +38543,14 @@ const timeSeriesInputOutputCurveFunctionDataSixFunctionTypeDefault = `TIME_SERIE
 const timeSeriesInputOutputCurveFunctionDataSevenFunctionTypeDefault = `TIME_SERIES_PIECEWISE_LINEAR`;
 const timeSeriesInputOutputCurveFunctionDataEightFunctionTypeDefault = `TIME_SERIES_PIECEWISE_STEP`;
 export const TimeSeriesInputOutputCurve = zod
-  .object({
+  .strictObject({
     curve_type: zod
       .enum(["TIME_SERIES_INPUT_OUTPUT"])
       .default(timeSeriesInputOutputCurveCurveTypeDefault),
     function_data: zod
       .union([
         zod
-          .object({
+          .strictObject({
             constant_term: zod
               .number()
               .describe("Units: the wrapped function's output unit."),
@@ -38569,7 +38569,7 @@ export const TimeSeriesInputOutputCurve = zod
             "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
           ),
         zod
-          .object({
+          .strictObject({
             constant_term: zod
               .number()
               .describe("Units: the wrapped function's output unit."),
@@ -38593,7 +38593,7 @@ export const TimeSeriesInputOutputCurve = zod
             "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("PIECEWISE_LINEAR")
               .default(
@@ -38601,7 +38601,7 @@ export const TimeSeriesInputOutputCurve = zod
               ),
             points: zod.array(
               zod
-                .object({
+                .strictObject({
                   x: zod
                     .number()
                     .describe("Units: the wrapped function's input unit."),
@@ -38618,7 +38618,7 @@ export const TimeSeriesInputOutputCurve = zod
             "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("PIECEWISE_STEP")
               .default(
@@ -38639,7 +38639,7 @@ export const TimeSeriesInputOutputCurve = zod
             "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("TIME_SERIES_LINEAR")
               .default(
@@ -38655,7 +38655,7 @@ export const TimeSeriesInputOutputCurve = zod
             "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("TIME_SERIES_QUADRATIC")
               .default(
@@ -38671,7 +38671,7 @@ export const TimeSeriesInputOutputCurve = zod
             "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("TIME_SERIES_PIECEWISE_LINEAR")
               .default(
@@ -38687,7 +38687,7 @@ export const TimeSeriesInputOutputCurve = zod
             "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
           ),
         zod
-          .object({
+          .strictObject({
             function_type: zod
               .literal("TIME_SERIES_PIECEWISE_STEP")
               .default(

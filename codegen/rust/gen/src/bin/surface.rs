@@ -9,7 +9,10 @@
 //! struct declaration alone says none of that.
 //!
 //! Output: {"files": 1, "types": {Name: {"fields": {wire: {"kind", "default"}},
-//! "required": [wire...], "enums": {wire: [value...]}}}}
+//! "required": [wire...], "enums": {wire: [value...]}, "closed": bool}}}
+//!
+//! `closed` is `#[serde(deny_unknown_fields)]`: the struct rejects an unknown
+//! property rather than dropping it.
 
 use std::collections::BTreeMap;
 use std::{env, fs, process};
@@ -185,9 +188,14 @@ fn main() {
             }
             out_fields.insert(wire, json!({"kind": kind(inner), "default": default_json}));
         }
+        let closed = s.attrs.iter().any(|a| {
+            a.path().is_ident("serde")
+                && a.parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
+                    .is_ok_and(|items| items.iter().any(|m| m.path().is_ident("deny_unknown_fields")))
+        });
         types.insert(
             s.ident.to_string(),
-            json!({"fields": out_fields, "required": required, "enums": out_enums}),
+            json!({"fields": out_fields, "required": required, "enums": out_enums, "closed": closed}),
         );
     }
     println!("{}", json!({"files": 1, "types": types}));

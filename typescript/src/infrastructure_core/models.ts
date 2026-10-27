@@ -17,7 +17,7 @@ export type UnitSystem = zod.input<typeof UnitSystem>;
 export type UnitSystemOutput = zod.output<typeof UnitSystem>;
 
 export const ComplexNumber = zod
-  .object({
+  .strictObject({
     real: zod.number().optional(),
     imag: zod.number().optional(),
   })
@@ -27,7 +27,7 @@ export type ComplexNumber = zod.input<typeof ComplexNumber>;
 export type ComplexNumberOutput = zod.output<typeof ComplexNumber>;
 
 export const TwoDimensionalFunctionPoint = zod
-  .object({
+  .strictObject({
     x: zod.number().describe("Units: the wrapped function's input unit."),
     y: zod.number().describe("Units: the wrapped function's output unit."),
   })
@@ -41,7 +41,7 @@ export type TwoDimensionalFunctionPointOutput = zod.output<
 >;
 
 export const MinMax = zod
-  .object({
+  .strictObject({
     max: zod.number().optional(),
     min: zod.number().optional(),
   })
@@ -53,7 +53,7 @@ export type MinMax = zod.input<typeof MinMax>;
 export type MinMaxOutput = zod.output<typeof MinMax>;
 
 export const UpDown = zod
-  .object({
+  .strictObject({
     down: zod.number(),
     up: zod.number(),
   })
@@ -65,7 +65,7 @@ export type UpDown = zod.input<typeof UpDown>;
 export type UpDownOutput = zod.output<typeof UpDown>;
 
 export const InOut = zod
-  .object({
+  .strictObject({
     in: zod.number().optional(),
     out: zod.number().optional(),
   })
@@ -77,7 +77,7 @@ export type InOut = zod.input<typeof InOut>;
 export type InOutOutput = zod.output<typeof InOut>;
 
 export const FromTo = zod
-  .object({
+  .strictObject({
     from: zod.number().optional(),
     to: zod.number().optional(),
   })
@@ -89,7 +89,7 @@ export type FromTo = zod.input<typeof FromTo>;
 export type FromToOutput = zod.output<typeof FromTo>;
 
 export const FromToToFrom = zod
-  .object({
+  .strictObject({
     from_to: zod.number().optional(),
     to_from: zod.number().optional(),
   })
@@ -111,7 +111,7 @@ const functionDataEightFunctionTypeDefault = `TIME_SERIES_PIECEWISE_STEP`;
 export const FunctionData = zod
   .union([
     zod
-      .object({
+      .strictObject({
         constant_term: zod
           .number()
           .describe("Units: the wrapped function's output unit."),
@@ -128,7 +128,7 @@ export const FunctionData = zod
         "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
       ),
     zod
-      .object({
+      .strictObject({
         constant_term: zod
           .number()
           .describe("Units: the wrapped function's output unit."),
@@ -150,13 +150,13 @@ export const FunctionData = zod
         "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
       ),
     zod
-      .object({
+      .strictObject({
         function_type: zod
           .literal("PIECEWISE_LINEAR")
           .default(functionDataThreeFunctionTypeDefault),
         points: zod.array(
           zod
-            .object({
+            .strictObject({
               x: zod
                 .number()
                 .describe("Units: the wrapped function's input unit."),
@@ -171,7 +171,7 @@ export const FunctionData = zod
         "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
       ),
     zod
-      .object({
+      .strictObject({
         function_type: zod
           .literal("PIECEWISE_STEP")
           .default(functionDataFourFunctionTypeDefault),
@@ -186,7 +186,7 @@ export const FunctionData = zod
         "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
       ),
     zod
-      .object({
+      .strictObject({
         function_type: zod
           .literal("TIME_SERIES_LINEAR")
           .default(functionDataFiveFunctionTypeDefault),
@@ -200,7 +200,7 @@ export const FunctionData = zod
         "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
       ),
     zod
-      .object({
+      .strictObject({
         function_type: zod
           .literal("TIME_SERIES_QUADRATIC")
           .default(functionDataSixFunctionTypeDefault),
@@ -214,7 +214,7 @@ export const FunctionData = zod
         "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
       ),
     zod
-      .object({
+      .strictObject({
         function_type: zod
           .literal("TIME_SERIES_PIECEWISE_LINEAR")
           .default(functionDataSevenFunctionTypeDefault),
@@ -228,7 +228,7 @@ export const FunctionData = zod
         "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
       ),
     zod
-      .object({
+      .strictObject({
         function_type: zod
           .literal("TIME_SERIES_PIECEWISE_STEP")
           .default(functionDataEightFunctionTypeDefault),
@@ -251,7 +251,7 @@ export type FunctionDataOutput = zod.output<typeof FunctionData>;
 
 const linearFunctionDataFunctionTypeDefault = `LINEAR`;
 export const LinearFunctionData = zod
-  .object({
+  .strictObject({
     constant_term: zod
       .number()
       .describe("Units: the wrapped function's output unit."),
@@ -273,7 +273,7 @@ export type LinearFunctionDataOutput = zod.output<typeof LinearFunctionData>;
 
 const quadraticFunctionDataFunctionTypeDefault = `QUADRATIC`;
 export const QuadraticFunctionData = zod
-  .object({
+  .strictObject({
     constant_term: zod
       .number()
       .describe("Units: the wrapped function's output unit."),
@@ -302,13 +302,13 @@ export type QuadraticFunctionDataOutput = zod.output<
 
 const piecewiseLinearDataFunctionTypeDefault = `PIECEWISE_LINEAR`;
 export const PiecewiseLinearData = zod
-  .object({
+  .strictObject({
     function_type: zod
       .enum(["PIECEWISE_LINEAR"])
       .default(piecewiseLinearDataFunctionTypeDefault),
     points: zod.array(
       zod
-        .object({
+        .strictObject({
           x: zod.number().describe("Units: the wrapped function's input unit."),
           y: zod
             .number()
@@ -326,7 +326,7 @@ export type PiecewiseLinearDataOutput = zod.output<typeof PiecewiseLinearData>;
 
 const piecewiseStepDataFunctionTypeDefault = `PIECEWISE_STEP`;
 export const PiecewiseStepData = zod
-  .object({
+  .strictObject({
     function_type: zod
       .enum(["PIECEWISE_STEP"])
       .default(piecewiseStepDataFunctionTypeDefault),
@@ -346,7 +346,7 @@ export type PiecewiseStepDataOutput = zod.output<typeof PiecewiseStepData>;
 
 const timeSeriesLinearFunctionDataFunctionTypeDefault = `TIME_SERIES_LINEAR`;
 export const TimeSeriesLinearFunctionData = zod
-  .object({
+  .strictObject({
     function_type: zod
       .enum(["TIME_SERIES_LINEAR"])
       .default(timeSeriesLinearFunctionDataFunctionTypeDefault),
@@ -369,7 +369,7 @@ export type TimeSeriesLinearFunctionDataOutput = zod.output<
 
 const timeSeriesQuadraticFunctionDataFunctionTypeDefault = `TIME_SERIES_QUADRATIC`;
 export const TimeSeriesQuadraticFunctionData = zod
-  .object({
+  .strictObject({
     function_type: zod
       .enum(["TIME_SERIES_QUADRATIC"])
       .default(timeSeriesQuadraticFunctionDataFunctionTypeDefault),
@@ -392,7 +392,7 @@ export type TimeSeriesQuadraticFunctionDataOutput = zod.output<
 
 const timeSeriesPiecewiseLinearDataFunctionTypeDefault = `TIME_SERIES_PIECEWISE_LINEAR`;
 export const TimeSeriesPiecewiseLinearData = zod
-  .object({
+  .strictObject({
     function_type: zod
       .enum(["TIME_SERIES_PIECEWISE_LINEAR"])
       .default(timeSeriesPiecewiseLinearDataFunctionTypeDefault),
@@ -415,7 +415,7 @@ export type TimeSeriesPiecewiseLinearDataOutput = zod.output<
 
 const timeSeriesPiecewiseStepDataFunctionTypeDefault = `TIME_SERIES_PIECEWISE_STEP`;
 export const TimeSeriesPiecewiseStepData = zod
-  .object({
+  .strictObject({
     function_type: zod
       .enum(["TIME_SERIES_PIECEWISE_STEP"])
       .default(timeSeriesPiecewiseStepDataFunctionTypeDefault),
@@ -437,7 +437,7 @@ export type TimeSeriesPiecewiseStepDataOutput = zod.output<
 >;
 
 export const GeographicInfo = zod
-  .object({
+  .strictObject({
     id: zod.int(),
     geo_json: zod.record(zod.string(), zod.unknown()),
   })
@@ -449,7 +449,7 @@ export type GeographicInfo = zod.input<typeof GeographicInfo>;
 export type GeographicInfoOutput = zod.output<typeof GeographicInfo>;
 
 export const DataSource = zod
-  .object({
+  .strictObject({
     id: zod.int(),
     organization: zod
       .string()
@@ -507,7 +507,7 @@ export type DataSource = zod.input<typeof DataSource>;
 export type DataSourceOutput = zod.output<typeof DataSource>;
 
 export const SupplementalAttributeAssociation = zod
-  .object({
+  .strictObject({
     component_id: zod
       .int()
       .describe("ID of the component the attribute describes."),
