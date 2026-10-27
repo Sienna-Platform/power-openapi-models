@@ -64,19 +64,33 @@ lists every schema change.
   property, so the Python↔TypeScript and Python↔Rust gates fail when one
   language drops a property that another rejects.
 
-## [0.1.0] — 2026-09-29
+## [0.2.0] — 2026-10-05
 
-First release. Three packages, one version, one tag, one schema pin.
+Generated from SiennaSchemas v0.2.0. The first release of all three packages from
+one tag. Before it, the Rust crate 0.1.0 was published by hand on 2026-09-30.
 
-### Added — Python (`power-openapi-models`, PyPI)
+### Changed — schema (all three packages)
 
-- Typed pydantic v2 models for the Sienna power system data format, generated
-  from SiennaSchemas.
-- Six generated modules: `infrastructure_core`, `core`, `operations`,
-  `investments`, `dynamics`, `timeseries`, plus the hand-written `document`
-  module (`SystemDocument`, `read_document`, `write_document`).
-- PEP 561 `py.typed` marker; the package ships as fully typed.
-- `__version__` and `__schema_version__` for runtime provenance.
+- `SystemDocument` and `PortfolioDocument` require `schema_version`. A document
+  without a stamp does not read. Regenerate it with a current producer.
+- Shared voltage control: `VoltageControlAssociation`, `ReactivePowerSharing` and
+  `VoltageDroopControl`. `SystemDocument` has an optional
+  `voltage_control_associations` container. Like `trading_hub_associations`, it
+  is written only when it has rows.
+- The dynamic generator and dynamic inverter component families,
+  `OperationalFlowLimit` with an optional `operational_flow_limit` on the branch
+  types, and `switching_times` on `ThermalStandard` and `ThermalMultiStart`.
+- A field whose unit changed with a mode enum is now one field for each
+  quantity. For example, `TransformerCircuit.control_limits` and
+  `controlled_quantity_limits` become `*_limits` bands,
+  `SwitchedAdmittance.admittance_limits` becomes `voltage_limits`, and
+  `TwoTerminalLCCLine.power_mode` becomes `control_mode`.
+- HVDC impedance, voltage and voltage-droop fields are in natural units only.
+- Removed: `MonitoredLine` (use `Line.operational_flow_limit`),
+  `GenericArcImpedance.max_flow`, and `TopologyMapping`.
+
+### Added — Python
+
 - Schema-version stamp on `SystemDocument` and `PortfolioDocument`: readers check
   `schema_version` on the raw JSON before decoding and raise `SchemaVersionError`
   (`check_schema_version`); writers stamp the shipped schema version and encode
@@ -86,16 +100,8 @@ First release. Three packages, one version, one tag, one schema pin.
   `source-version`); `upgrade_document` and `upgrade_portfolio_document` re-stamp.
   Strict bundles ship in `power_openapi_models/bundles/`.
 
-### Added — TypeScript (`@sienna-platform/power-openapi-models`, npm)
+### Added — TypeScript
 
-- zod schemas for the same six domains, generated from the same schemas, with
-  `zod.input`/`zod.output` types inferred from them. Runtime validation at
-  parity with pydantic, not compile-time types only.
-- Subpath exports per domain plus `./document`, dual ESM/CJS with `.d.ts`.
-- `zod` is a **peer** dependency (`^4`), so a consumer cannot end up with two
-  copies of zod. The generated code uses the zod v4 API.
-- Hand-written `document.ts` mirroring `Core/SystemDocument.json`, the
-  counterpart of Python's `document.py`.
 - Schema-version stamp on both documents, with the same reader rule, canonical
   encoding and `upgrade*` functions as Python: `readDocument` throws
   `SchemaVersionError` (`checkSchemaVersion`) before decoding, and
@@ -126,17 +132,14 @@ First release. Three packages, one version, one tag, one schema pin.
 - `make sync-bundles` copies the strict bundles and reader-rule vectors from a
   release tarball into the three packages; `make stamp-fixtures` re-stamps the
   root fixtures to the pinned schema version after a regeneration.
-- Multi-language layout: `python/`, `typescript/`, and `rust/`.
-  Shared at the root: the `.schema-version` pin, the fixtures both languages
-  round-trip, `codegen/`, and the cross-language check.
-- `scripts/check_version_sync.py` — a `v*` tag cannot publish one language at a
-  version the others do not carry, and with `--require` cannot silently publish
-  nothing.
-- A Python↔TypeScript and Python↔Rust equivalence gate in CI, both blocking.
-  `check_cross_language.py --no-julia` runs them without the Julia arm, which
-  needs a `PowerOpenAPIModels` checkout matching the pinned schema.
+- A Python↔Rust equivalence gate in CI. It and the Python↔TypeScript gate both
+  block. `check_cross_language.py --no-julia` runs both without the Julia arm,
+  which needs a `PowerOpenAPIModels` checkout matching the pinned schema.
 - `release-rust.yml`, publishing from the same `v*` tag over crates.io trusted
   publishing, and a Rust regeneration-drift job.
+- Release on merge: a SiennaSchemas release opens a PR here that regenerates
+  all three packages and bumps the version, and merging a version bump tags
+  `vX.Y.Z` and publishes all three packages.
 
 ### Changed from the schema
 
@@ -152,7 +155,7 @@ First release. Three packages, one version, one tag, one schema pin.
 
 ### Fixed
 
-- **`openapi-to-rust` had its own version of the same defects**, each found by the
+- **`openapi-to-rust` had its own version of the 0.1.0 generator defects**, each found by the
   Python↔Rust gate and fixed in `codegen/rust/`, never in the output:
   - it drops schema `default`s: an optional defaulted field decoded to `None`
     where Python gives the default, a required defaulted field was required, and
@@ -166,6 +169,45 @@ First release. Three packages, one version, one tag, one schema pin.
     but not structs.
   It also needed `serde_json`'s `float_roundtrip`: without it a parsed float can be
   one ULP off, which broke byte-identical round-trips.
+
+## [0.1.0] — 2026-09-29
+
+First release. Two packages, one version, one tag, one schema pin. The Rust
+crate 0.1.0 was published by hand on 2026-09-30, from a later commit. The 0.2.0
+section lists the Rust SDK.
+
+### Added — Python (`power-openapi-models`, PyPI)
+
+- Typed pydantic v2 models for the Sienna power system data format, generated
+  from SiennaSchemas.
+- Six generated modules: `infrastructure_core`, `core`, `operations`,
+  `investments`, `dynamics`, `timeseries`, plus the hand-written `document`
+  module (`SystemDocument`, `read_document`, `write_document`).
+- PEP 561 `py.typed` marker; the package ships as fully typed.
+- `__version__` and `__schema_version__` for runtime provenance.
+
+### Added — TypeScript (`@sienna-platform/power-openapi-models`, npm)
+
+- zod schemas for the same six domains, generated from the same schemas, with
+  `zod.input`/`zod.output` types inferred from them. Runtime validation at
+  parity with pydantic, not compile-time types only.
+- Subpath exports per domain plus `./document`, dual ESM/CJS with `.d.ts`.
+- `zod` is a **peer** dependency (`^4`), so a consumer cannot end up with two
+  copies of zod. The generated code uses the zod v4 API.
+- Hand-written `document.ts` mirroring `Core/SystemDocument.json`, the
+  counterpart of Python's `document.py`.
+
+### Added — repository
+
+- Multi-language layout: `python/`, `typescript/`, and a prepared `rust/`.
+  Shared at the root: the `.schema-version` pin, the fixtures both languages
+  round-trip, `codegen/`, and the cross-language check.
+- `scripts/check_version_sync.py` — a `v*` tag cannot publish one language at a
+  version the others do not carry, and with `--require` cannot silently publish
+  nothing.
+- A Python↔TypeScript equivalence gate in CI.
+
+### Fixed
 
 - **Both generators silently dropped schema defaults, in opposite places.** The
   new Python↔TypeScript gate found 156 field-level disagreements between the two
@@ -192,4 +234,6 @@ First release. Three packages, one version, one tag, one schema pin.
   compared nothing, and compares Julia's JSON keys rather than its snake_cased
   struct identifiers.
 
+[0.3.0]: https://github.com/Sienna-Platform/power-openapi-models/releases/tag/v0.3.0
+[0.2.0]: https://github.com/Sienna-Platform/power-openapi-models/releases/tag/v0.2.0
 [0.1.0]: https://github.com/Sienna-Platform/power-openapi-models/releases/tag/v0.1.0
