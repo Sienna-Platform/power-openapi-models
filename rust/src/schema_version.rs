@@ -223,8 +223,8 @@ pub(crate) fn bundle_violations(
 
 /// Pushes the offending `/json/pointer: reason` entries under one error. A failed
 /// `anyOf`/`oneOf` descends into its closest branch, the one with the fewest leaves.
-#[cfg(feature = "source-version")]
-fn leaves(error: &jsonschema::ValidationError<'_>, out: &mut Vec<String>) {
+#[cfg(any(feature = "source-version", feature = "validate"))]
+pub(crate) fn leaves(error: &jsonschema::ValidationError<'_>, out: &mut Vec<String>) {
     use jsonschema::error::ValidationErrorKind;
 
     match error.kind() {

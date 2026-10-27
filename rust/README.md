@@ -98,6 +98,41 @@ needs the `source-version` cargo feature and fails without it.
 `write_document_with_bundles` takes the bundle directory explicitly. `upgrade_document`
 and `upgrade_portfolio_document` read a file and rewrite it at the current version.
 
+## Validation
+
+The generated types check shape: a missing field, a wrong type, or a property
+the schema does not know. They accept a reserved feature name or a number out of
+its bounds. The `validate` cargo feature adds `validate::Validator`, which
+checks a value against one definition of this crate's strict bundle: a component
+type, or a row type such as `TimeSeriesAssociation`. The bundle is compiled in, so
+the check needs no filesystem.
+
+```rust
+# #[cfg(feature = "validate")] {
+use power_openapi_models::validate::Validator;
+use serde_json::json;
+
+// Compile once, then check every row with it.
+let rows = Validator::new("TimeSeriesAssociation")?;
+let row = json!({
+    "association_id": 1, "owner_id": 7, "owner_type": "ThermalStandard",
+    "owner_category": "Component", "time_series_type": "SingleTimeSeries",
+    "name": "max_active_power", "features": {"resolution": "high"},
+    "uri": "6044a282e6ea37af7982ca551b8d5dca932fe4fb696bf9cfa14e7316e2693286",
+    "element_type": "f64", "element_shape": [],
+    "initial_timestamp": "2030-01-01T00:00:00Z", "resolution": "PT1H", "length": 24
+});
+// `resolution` is a reserved feature name.
+assert!(rows.validate(&row).is_err());
+# }
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+`violations` returns every offending path as `/json/pointer: reason`; a failed
+`oneOf` reports its closest branch, so a time series row reports against its own
+type. Formats are not checked, so a timestamp without an offset passes, as it does
+in the generated types.
+
 ## Layout
 
 | Module | Contents |
@@ -105,6 +140,7 @@ and `upgrade_portfolio_document` read a file and rewrite it at the current versi
 | `infrastructure_core`, `core`, `operations`, `investments`, `dynamics`, `timeseries` | The types of one SiennaSchemas spec, as the other packages' domain modules. |
 | `generated` | Every generated type, including the enums generated for inline schemas. |
 | `document` | `SystemDocument`, `PortfolioDocument`, and their JSON I/O. Hand-written. |
+| `validate` | `Validator`, the schema check behind the `validate` feature. Hand-written. |
 
 Type names are the schema titles verbatim (`ACBus`, `AGC`), with two exceptions
 that are not valid Rust type names: `FromTo_ToFrom` is `FromToToFrom` and
@@ -137,6 +173,11 @@ Because serde cannot tell an omitted defaulted field from an explicit one, a typ
 value writes its defaults out. `SystemDocument` avoids the consequence: its own
 optional fields (`trading_hub_associations`, `ext`) are `Option`s, so `None` means
 "the input did not carry it" and stays omitted.
+
+**Unknown properties are rejected.** Every generated struct denies a property
+its schema does not list, as the strict bundles and the two document types do, so
+a misspelled field is an error rather than a silently dropped value. The
+exceptions are the string-keyed maps below, whose schemas allow any key.
 
 **Enums reject unlisted values**, including the integer ones (`curve_style`
 accepts `0` and `1`, nothing else).

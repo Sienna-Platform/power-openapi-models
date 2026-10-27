@@ -5,6 +5,23 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added — Rust
+
+- The `validate` cargo feature and `validate::Validator`: a check of one value
+  against one definition of the crate's strict bundle, for example a component
+  or a `TimeSeriesAssociation` row. The bundle is compiled in. The check catches
+  what the generated types accept, such as reserved feature names and values
+  out of bounds. `DocumentError::Schema` reports each failing path.
+
+### Changed — Rust
+
+- Every generated struct denies unknown properties, except the string-keyed
+  maps. Before, serde dropped a property the schema does not list, so a
+  misspelled field read without error. The strict bundles and the two document
+  types already rejected such a property.
+
 ## [0.1.0] — Unreleased
 
 First release. Three packages, one version, one tag, one schema pin.

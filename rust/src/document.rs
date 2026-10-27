@@ -68,6 +68,12 @@ pub enum DocumentError {
         message: String,
         paths: Vec<String>,
     },
+    /// A value breaks the schema definition `definition` names. `paths` lists
+    /// every offending JSON path as `/json/pointer: reason`.
+    Schema {
+        definition: String,
+        paths: Vec<String>,
+    },
 }
 
 impl fmt::Display for DocumentError {
@@ -82,6 +88,18 @@ impl fmt::Display for DocumentError {
                 document,
             } => write!(f, "{}", message(*outcome, reader, document)),
             Self::SourceVersion { message, .. } => write!(f, "{message}"),
+            Self::Schema { definition, paths } => {
+                write!(
+                    f,
+                    "value is not a valid {definition} at schema {}: {} path(s) fail:",
+                    crate::SCHEMA_VERSION,
+                    paths.len()
+                )?;
+                for path in paths {
+                    write!(f, "\n  {path}")?;
+                }
+                Ok(())
+            }
         }
     }
 }
