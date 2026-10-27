@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or a `TimeSeriesAssociation` row. The bundle is compiled in. The check catches
   what the generated types accept, such as reserved feature names and values
   out of bounds. `DocumentError::Schema` reports each failing path.
+- The `units` module: the unit and quantity of each annotated field, the
+  sibling field that selects a unit or holds a `pu` base, and the unit
+  conversion factors. The generator writes it from the SiennaSchemas `x-unit`
+  annotations and `Core/units.json`, by the same rules as the Julia `units.jl`.
 
 ### Changed — Rust
 

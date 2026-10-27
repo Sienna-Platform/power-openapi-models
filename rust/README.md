@@ -133,6 +133,27 @@ assert!(rows.validate(&row).is_err());
 type. Formats are not checked, so a timestamp without an offset passes, as it does
 in the generated types.
 
+## Units
+
+`units` holds the unit of each field that the schema annotates, generated from the
+SiennaSchemas `x-unit` annotations. A field has a fixed unit, or a sibling field
+selects it, such as `power_units`. Types and fields use their Rust names.
+
+```rust
+use power_openapi_models::generated::UnitSystem;
+use power_openapi_models::units::{conversion_factor, field_unit, unit_base, FieldUnit};
+
+if let Some(FieldUnit::Discriminated { discriminator, units }) =
+    field_unit("ThermalStandard", "active_power")
+{
+    assert_eq!(discriminator, "power_units");
+    let natural = units.iter().find(|(k, _)| *k == UnitSystem::NaturalUnits.as_str());
+    assert_eq!(natural.map(|(_, u)| u.unit), Some("MW"));
+}
+assert_eq!(unit_base("ACBus", "magnitude"), Some("base_voltage"));
+assert_eq!(conversion_factor("ActivePower", "kW"), Some(0.001));
+```
+
 ## Layout
 
 | Module | Contents |
@@ -141,6 +162,7 @@ in the generated types.
 | `generated` | Every generated type, including the enums generated for inline schemas. |
 | `document` | `SystemDocument`, `PortfolioDocument`, and their JSON I/O. Hand-written. |
 | `validate` | `Validator`, the schema check behind the `validate` feature. Hand-written. |
+| `units` | The unit of each annotated field, and the unit conversion factors. |
 
 Type names are the schema titles verbatim (`ACBus`, `AGC`), with two exceptions
 that are not valid Rust type names: `FromTo_ToFrom` is `FromToToFrom` and

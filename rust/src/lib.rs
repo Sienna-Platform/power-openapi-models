@@ -10,6 +10,7 @@ pub mod operations;
 pub mod schema_version;
 pub mod timeseries;
 pub mod timestamp;
+pub mod units;
 #[cfg(feature = "validate")]
 pub mod validate;
 
