@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.2.0",
+  "schema_version": "0.3.0",
   "combined_cycle_associations": [],
   "components": {
     "ACBus": [
@@ -520,6 +520,7 @@
         "peak_active_power": 0.0,
         "peak_reactive_power": 0.0,
         "load_response": 0.0,
+        "out_of_area_load_ids": [],
         "base_power": 100.0,
         "power_units": "NATURAL_UNITS"
       }

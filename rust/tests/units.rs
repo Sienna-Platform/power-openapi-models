@@ -44,4 +44,6 @@ fn keyed_by_rust_field_name() {
 fn conversion_factors() {
     assert_eq!(conversion_factor("ActivePower", "kW"), Some(0.001));
     assert_eq!(conversion_factor("ActivePower", "pu"), None);
+    // units.json stores the nominal frequency (60.0) here, not a factor.
+    assert_eq!(conversion_factor("Frequency", "Hz"), Some(1.0));
 }

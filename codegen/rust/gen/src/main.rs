@@ -466,7 +466,7 @@ fn set_serde_default(attrs: &mut Vec<syn::Attribute>, path: &str) {
 }
 
 /// The Rust identifier openapi-to-rust gave each schema. Usually the schema name
-/// itself; `FromTo_ToFrom` and `XY_Coords` are re-cased. Matching ignores
+/// itself; `FromTo_ToFrom` is re-cased. Matching ignores
 /// punctuation and case and fails loudly unless exactly one type matches.
 fn rust_idents(file: &syn::File, schemas: &Schemas) -> BTreeMap<String, String> {
     let squash = |s: &str| s.chars().filter(|c| c.is_alphanumeric()).collect::<String>().to_lowercase();
@@ -584,6 +584,8 @@ fn write_domains(out: &Path, domains: &Value, idents: &BTreeMap<String, String>)
 
 /// `unit -> quantities` and `(quantity, unit) -> factor` from `Core/units.json`.
 /// A factor that is null (a `pu` base) or 0.0 (not converted here) is left out.
+/// A quantity's default unit has the factor 1.0: `Frequency`/`Hz` stores the
+/// nominal system frequency (60.0) in `to_default`, which is not a factor.
 struct Vocabulary {
     by_unit: BTreeMap<String, BTreeSet<String>>,
     factors: BTreeMap<(String, String), f64>,
@@ -591,11 +593,22 @@ struct Vocabulary {
 
 fn load_vocabulary(raw: &Value) -> Vocabulary {
     let mut vocabulary = Vocabulary { by_unit: BTreeMap::new(), factors: BTreeMap::new() };
+    let defaults: BTreeSet<(&str, &str)> = raw["quantity_kinds"]
+        .as_array()
+        .expect("quantity_kinds")
+        .iter()
+        .map(|q| (q["name"].as_str().expect("name"), q["default_unit"].as_str().expect("default_unit")))
+        .collect();
     for entry in raw["allowed_units"].as_array().expect("allowed_units") {
         let quantity = entry["quantity_kind"].as_str().expect("quantity_kind").to_string();
         let unit = entry["unit"].as_str().expect("unit").to_string();
         vocabulary.by_unit.entry(unit.clone()).or_default().insert(quantity.clone());
-        if let Some(factor) = entry["to_default"].as_f64().filter(|f| *f != 0.0) {
+        let factor = if defaults.contains(&(quantity.as_str(), unit.as_str())) {
+            Some(1.0)
+        } else {
+            entry["to_default"].as_f64()
+        };
+        if let Some(factor) = factor.filter(|f| *f != 0.0) {
             vocabulary.factors.insert((quantity, unit), factor);
         }
     }

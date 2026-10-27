@@ -3,7 +3,7 @@
  * Do not edit manually.
  * PowerOperationsOpenAPIModels
  * Power system operations models: Branch, StaticInjection, and Service components
- * OpenAPI spec version: 0.2.0
+ * OpenAPI spec version: 0.3.0
  */
 import * as zod from "zod";
 
@@ -340,6 +340,137 @@ export type DiscreteControlledACBranch = zod.input<
 export type DiscreteControlledACBranchOutput = zod.output<
   typeof DiscreteControlledACBranch
 >;
+
+export const seriesCompensatorThreeOperationalFlowLimitFromToMinMin = 0;
+
+export const seriesCompensatorThreeOperationalFlowLimitFromToMaxMin = 0;
+
+export const seriesCompensatorThreeOperationalFlowLimitToFromMinMin = 0;
+
+export const seriesCompensatorThreeOperationalFlowLimitToFromMaxMin = 0;
+
+export const SeriesCompensator = zod
+  .unknown()
+  .and(zod.unknown())
+  .and(
+    zod.strictObject({
+      id: zod.int().describe("Unique integer identifier for this component."),
+      name: zod
+        .string()
+        .describe(
+          "Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+        ),
+      available: zod
+        .boolean()
+        .describe(
+          "Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+        ),
+      active_power_flow: zod
+        .number()
+        .describe(
+          "Initial condition of active power flow through the compensator. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+        ),
+      reactive_power_flow: zod
+        .number()
+        .describe(
+          "Initial condition of reactive power flow through the compensator. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+        ),
+      arc: zod
+        .int()
+        .describe("An `Arc` defining this line `from` a bus `to` another bus."),
+      r: zod
+        .number()
+        .describe(
+          "Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+        ),
+      x: zod
+        .number()
+        .describe(
+          "Series reactance; negative for a capacitor. Under `DISPATCHABLE` and `ACTIVE_POWER_FLOW`, the present value. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+        ),
+      rating: zod
+        .number()
+        .describe(
+          "Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        ),
+      control_mode: zod
+        .enum(["FIXED", "BYPASSED", "DISPATCHABLE", "ACTIVE_POWER_FLOW"])
+        .optional()
+        .default("FIXED")
+        .describe(
+          "Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.",
+        ),
+      reactance_limits: zod
+        .strictObject({
+          max: zod.number().optional(),
+          min: zod.number().optional(),
+        })
+        .optional()
+        .describe(
+          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+        ),
+      active_power_flow_setpoint: zod
+        .number()
+        .optional()
+        .describe(
+          "Active power flow, from the `from` bus to the `to` bus, the compensator holds. Required when `control_mode` is `ACTIVE_POWER_FLOW`. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+        ),
+      rating_b: zod
+        .number()
+        .optional()
+        .describe(
+          "Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        ),
+      rating_c: zod
+        .number()
+        .optional()
+        .describe(
+          "Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        ),
+      operational_flow_limit: zod
+        .strictObject({
+          from_to_min: zod
+            .number()
+            .min(seriesCompensatorThreeOperationalFlowLimitFromToMinMin),
+          from_to_max: zod
+            .number()
+            .min(seriesCompensatorThreeOperationalFlowLimitFromToMaxMin),
+          to_from_min: zod
+            .number()
+            .min(seriesCompensatorThreeOperationalFlowLimitToFromMinMin),
+          to_from_max: zod
+            .number()
+            .min(seriesCompensatorThreeOperationalFlowLimitToFromMaxMin),
+        })
+        .optional()
+        .describe(
+          "Operator-set flow limits on a directed branch: a minimum and a maximum flow in each direction, applied in addition to the branch's thermal rating.",
+        ),
+      base_power: zod
+        .number()
+        .describe(
+          "System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+        ),
+      power_units: zod
+        .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
+        .describe(
+          "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+        ),
+      parameter_units: zod
+        .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
+        .optional()
+        .default("COMPONENT_BASE")
+        .describe(
+          "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
+        ),
+    }),
+  )
+  .describe(
+    "A series compensator on an `Arc`: a series capacitor or reactor, or a thyristor-controlled or static synchronous series compensator, with one series reactance. Devices that also inject at a bus, such as a UPFC, are not covered.",
+  );
+
+export type SeriesCompensator = zod.input<typeof SeriesCompensator>;
+export type SeriesCompensatorOutput = zod.output<typeof SeriesCompensator>;
 
 const energyReservoirStorageOperationCostOneCostTypeDefault = `STORAGE`;
 const energyReservoirStorageOperationCostOneChargeVariableCostValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
@@ -1270,7 +1401,7 @@ export const EnergyReservoirStorage = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -2195,7 +2326,7 @@ export const EnergyReservoirStorage = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -3352,7 +3483,7 @@ export const EnergyReservoirStorage = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -4276,7 +4407,7 @@ export const EnergyReservoirStorage = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -5625,7 +5756,7 @@ export const EnergyReservoirStorage = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -6549,7 +6680,7 @@ export const EnergyReservoirStorage = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -7519,7 +7650,7 @@ export const EnergyReservoirStorage = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -8443,7 +8574,7 @@ export const EnergyReservoirStorage = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -9728,7 +9859,7 @@ export const GroupReserve = zod
                   .describe("Units: the curve's y-axis unit."),
               })
               .describe(
-                "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
               .strictObject({
@@ -11168,7 +11299,7 @@ export const HybridSystem = zod
                       .describe("Units: the curve's y-axis unit."),
                   })
                   .describe(
-                    "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                    "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                   ),
                 zod
                   .strictObject({
@@ -12088,7 +12219,7 @@ export const HybridSystem = zod
                       .describe("Units: the curve's y-axis unit."),
                   })
                   .describe(
-                    "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                    "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                   ),
                 zod
                   .strictObject({
@@ -13792,7 +13923,7 @@ export const HydroDispatch = zod
                               .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
-                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                           ),
                         zod
                           .strictObject({
@@ -14485,13 +14616,18 @@ export const HydroDispatch = zod
                       .number()
                       .nullish()
                       .describe(
-                        "Fixed fuel cost per unit of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
+                        "Fixed fuel cost in USD per one `fuel_units` of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
                       ),
                     fuel_cost_time_series: zod
                       .int()
                       .nullish()
                       .describe(
                         "Store-minted id of the fuel-cost time series association, or null when fuel_cost carries a fixed value. Exactly one of the two is set.",
+                      ),
+                    fuel_units: zod
+                      .enum(["MMBTU", "GJ"])
+                      .describe(
+                        "Fuel quantity a `FuelCurve` is expressed in: `MMBTU` (million British thermal units) or `GJ` (gigajoules) of heat content.",
                       ),
                     power_units: zod
                       .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
@@ -14824,7 +14960,7 @@ export const HydroDispatch = zod
                               .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
-                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                           ),
                         zod
                           .strictObject({
@@ -15509,7 +15645,7 @@ export const HydroDispatch = zod
                       ),
                   })
                   .describe(
-                    "Variable operation cost of a device expressed in fuel consumed — MBTU, liters, m^3 — together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
+                    "Variable operation cost of a device expressed in fuel consumed, in the fuel quantity `fuel_units` names, together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form, whose y axis is fuel per hour; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
                   ),
               ])
               .describe(
@@ -15953,7 +16089,7 @@ export const HydroDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -16877,7 +17013,7 @@ export const HydroDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -18220,7 +18356,7 @@ export const HydroDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -19144,7 +19280,7 @@ export const HydroDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -20106,7 +20242,7 @@ export const HydroDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -21030,7 +21166,7 @@ export const HydroDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -22668,7 +22804,7 @@ export const HydroPumpTurbine = zod
                               .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
-                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                           ),
                         zod
                           .strictObject({
@@ -23361,13 +23497,18 @@ export const HydroPumpTurbine = zod
                       .number()
                       .nullish()
                       .describe(
-                        "Fixed fuel cost per unit of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
+                        "Fixed fuel cost in USD per one `fuel_units` of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
                       ),
                     fuel_cost_time_series: zod
                       .int()
                       .nullish()
                       .describe(
                         "Store-minted id of the fuel-cost time series association, or null when fuel_cost carries a fixed value. Exactly one of the two is set.",
+                      ),
+                    fuel_units: zod
+                      .enum(["MMBTU", "GJ"])
+                      .describe(
+                        "Fuel quantity a `FuelCurve` is expressed in: `MMBTU` (million British thermal units) or `GJ` (gigajoules) of heat content.",
                       ),
                     power_units: zod
                       .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
@@ -23700,7 +23841,7 @@ export const HydroPumpTurbine = zod
                               .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
-                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                           ),
                         zod
                           .strictObject({
@@ -24385,7 +24526,7 @@ export const HydroPumpTurbine = zod
                       ),
                   })
                   .describe(
-                    "Variable operation cost of a device expressed in fuel consumed — MBTU, liters, m^3 — together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
+                    "Variable operation cost of a device expressed in fuel consumed, in the fuel quantity `fuel_units` names, together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form, whose y axis is fuel per hour; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
                   ),
               ])
               .describe(
@@ -24831,7 +24972,7 @@ export const HydroPumpTurbine = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -25755,7 +25896,7 @@ export const HydroPumpTurbine = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -27098,7 +27239,7 @@ export const HydroPumpTurbine = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -28022,7 +28163,7 @@ export const HydroPumpTurbine = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -28988,7 +29129,7 @@ export const HydroPumpTurbine = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -29912,7 +30053,7 @@ export const HydroPumpTurbine = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -31823,7 +31964,7 @@ export const HydroReservoir = zod
                         .describe("Units: the curve's y-axis unit."),
                     })
                     .describe(
-                      "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                      "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                     ),
                   zod
                     .strictObject({
@@ -32747,7 +32888,7 @@ export const HydroReservoir = zod
                         .describe("Units: the curve's y-axis unit."),
                     })
                     .describe(
-                      "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                      "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                     ),
                   zod
                     .strictObject({
@@ -33709,7 +33850,7 @@ export const HydroReservoir = zod
                         .describe("Units: the curve's y-axis unit."),
                     })
                     .describe(
-                      "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                      "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                     ),
                   zod
                     .strictObject({
@@ -34633,7 +34774,7 @@ export const HydroReservoir = zod
                         .describe("Units: the curve's y-axis unit."),
                     })
                     .describe(
-                      "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                      "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                     ),
                   zod
                     .strictObject({
@@ -36227,7 +36368,7 @@ export const HydroTurbine = zod
                               .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
-                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                           ),
                         zod
                           .strictObject({
@@ -36920,13 +37061,18 @@ export const HydroTurbine = zod
                       .number()
                       .nullish()
                       .describe(
-                        "Fixed fuel cost per unit of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
+                        "Fixed fuel cost in USD per one `fuel_units` of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
                       ),
                     fuel_cost_time_series: zod
                       .int()
                       .nullish()
                       .describe(
                         "Store-minted id of the fuel-cost time series association, or null when fuel_cost carries a fixed value. Exactly one of the two is set.",
+                      ),
+                    fuel_units: zod
+                      .enum(["MMBTU", "GJ"])
+                      .describe(
+                        "Fuel quantity a `FuelCurve` is expressed in: `MMBTU` (million British thermal units) or `GJ` (gigajoules) of heat content.",
                       ),
                     power_units: zod
                       .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
@@ -37259,7 +37405,7 @@ export const HydroTurbine = zod
                               .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
-                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                           ),
                         zod
                           .strictObject({
@@ -37944,7 +38090,7 @@ export const HydroTurbine = zod
                       ),
                   })
                   .describe(
-                    "Variable operation cost of a device expressed in fuel consumed — MBTU, liters, m^3 — together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
+                    "Variable operation cost of a device expressed in fuel consumed, in the fuel quantity `fuel_units` names, together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form, whose y axis is fuel per hour; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
                   ),
               ])
               .describe(
@@ -38388,7 +38534,7 @@ export const HydroTurbine = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -39312,7 +39458,7 @@ export const HydroTurbine = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -40655,7 +40801,7 @@ export const HydroTurbine = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -41579,7 +41725,7 @@ export const HydroTurbine = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -42541,7 +42687,7 @@ export const HydroTurbine = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -43465,7 +43611,7 @@ export const HydroTurbine = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -44207,7 +44353,7 @@ export const HydroTurbine = zod
     efficiency: zod
       .number()
       .default(hydroTurbineEfficiencyDefault)
-      .describe("Turbine efficiency [0, 1.0]."),
+      .describe("Turbine efficiency [0, 1.0]. Units: 1."),
     turbine_type: zod
       .enum([
         "UNKNOWN",
@@ -44359,7 +44505,7 @@ export type ImpedanceCorrectionDataOutput = zod.output<
 >;
 
 const interconnectingConverterFiveDcCurrentDefault = 0;
-const interconnectingConverterFiveMaxDcCurrentDefault = 100000000;
+const interconnectingConverterFiveMaxDcCurrentDefault = 9999;
 const interconnectingConverterFiveLossFunctionValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
@@ -44383,9 +44529,11 @@ const interconnectingConverterFiveLossFunctionValueCurveDefault = {
     proportional_term: 0 as const,
   },
 };
+const interconnectingConverterFiveRatedDcVoltageDefault = 0;
 export const interconnectingConverterFivePowerFactorSetpointMin = -1;
 export const interconnectingConverterFivePowerFactorSetpointMax = 1;
 
+const interconnectingConverterFiveRatedAcVoltageDefault = 0;
 const interconnectingConverterFiveDcVoltageDroopDefault = 0;
 const interconnectingConverterFiveRemoteBusControlDefault = null;
 const interconnectingConverterFivePowerFactorWeightingFractionDefault = 1;
@@ -44453,11 +44601,13 @@ export const InterconnectingConverter = zod
       dc_current: zod
         .number()
         .default(interconnectingConverterFiveDcCurrentDefault)
-        .describe("DC current on the converter. Units: A."),
+        .describe("DC current on the converter. Units: kA."),
       max_dc_current: zod
         .number()
         .default(interconnectingConverterFiveMaxDcCurrentDefault)
-        .describe("Maximum stable dc current limits. Units: A."),
+        .describe(
+          "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
+        ),
       loss_function: zod
         .strictObject({
           power_units: zod
@@ -44638,7 +44788,7 @@ export const InterconnectingConverter = zod
         })
         .optional()
         .describe(
-          "Losses of a device as a function of the flow through it, together with the power basis the curve is expressed in. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+          "Losses of a device as a function of the current through it (a converter's DC current), together with the basis the curve is expressed in. `power_units` governs both axes: the y values are power and the x values current, each per-unit on the component's base (current's base being base power over base voltage) or natural. Units: x-axis per power_units — NATURAL_UNITS: kA, COMPONENT_BASE: pu ; y-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
         ),
       dc_control: zod
         .enum(["DC_POWER", "DC_VOLTAGE", "DC_VOLTAGE_DROOP"])
@@ -44664,6 +44814,12 @@ export const InterconnectingConverter = zod
         .describe(
           "DC-side voltage target of the converter, used when `dc_control` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.",
         ),
+      rated_dc_voltage: zod
+        .number()
+        .default(interconnectingConverterFiveRatedDcVoltageDefault)
+        .describe(
+          "Rated DC voltage of the converter, the base for `dc_voltage_setpoint` and `voltage_limits`; 0.0 means unspecified. Units: kV.",
+        ),
       power_factor_setpoint: zod
         .number()
         .min(interconnectingConverterFivePowerFactorSetpointMin)
@@ -44677,6 +44833,12 @@ export const InterconnectingConverter = zod
         .nullish()
         .describe(
           "AC-side voltage magnitude target of the converter, used when `ac_control` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
+        ),
+      rated_ac_voltage: zod
+        .number()
+        .default(interconnectingConverterFiveRatedAcVoltageDefault)
+        .describe(
+          "Rated AC voltage at the converter's AC terminal, the base for `ac_voltage_setpoint`; 0.0 means unspecified. Units: kV.",
         ),
       dc_voltage_droop: zod
         .number()
@@ -44716,7 +44878,7 @@ export const InterconnectingConverter = zod
     }),
   )
   .describe(
-    "Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus. Voltage and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them.",
+    "Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus. Voltage and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them. `rated_dc_voltage` and `rated_ac_voltage` record the voltage bases, so a consumer can convert the voltage fields to per unit.",
   );
 
 export type InterconnectingConverter = zod.input<
@@ -45491,7 +45653,7 @@ export const InterruptiblePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -46618,7 +46780,7 @@ export const InterruptiblePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -47542,7 +47704,7 @@ export const InterruptiblePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -48891,7 +49053,7 @@ export const InterruptiblePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -49815,7 +49977,7 @@ export const InterruptiblePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -50785,7 +50947,7 @@ export const InterruptiblePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -51709,7 +51871,7 @@ export const InterruptiblePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -53195,7 +53357,7 @@ export const InterruptibleStandardLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -54324,7 +54486,7 @@ export const InterruptibleStandardLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -55248,7 +55410,7 @@ export const InterruptibleStandardLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -56601,7 +56763,7 @@ export const InterruptibleStandardLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -57525,7 +57687,7 @@ export const InterruptibleStandardLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -58497,7 +58659,7 @@ export const InterruptibleStandardLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -59421,7 +59583,7 @@ export const InterruptibleStandardLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -60720,7 +60882,7 @@ export const OfflineReserve = zod
                   .describe("Units: the curve's y-axis unit."),
               })
               .describe(
-                "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
               .strictObject({
@@ -61736,7 +61898,7 @@ export const OnlineReserve = zod
                   .describe("Units: the curve's y-axis unit."),
               })
               .describe(
-                "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
               ),
             zod
               .strictObject({
@@ -63260,7 +63422,7 @@ export const PointToPointBid = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -64184,7 +64346,7 @@ export const PointToPointBid = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -65525,7 +65687,7 @@ export const PointToPointBid = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -66449,7 +66611,7 @@ export const PointToPointBid = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -68105,7 +68267,7 @@ export const RenewableDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -69030,7 +69192,7 @@ export const RenewableDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -70160,7 +70322,7 @@ export const RenewableDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -71084,7 +71246,7 @@ export const RenewableDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -72427,7 +72589,7 @@ export const RenewableDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -73351,7 +73513,7 @@ export const RenewableDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -74317,7 +74479,7 @@ export const RenewableDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -75241,7 +75403,7 @@ export const RenewableDispatch = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -76855,7 +77017,7 @@ export const ShiftablePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -77982,7 +78144,7 @@ export const ShiftablePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -78906,7 +79068,7 @@ export const ShiftablePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -80253,7 +80415,7 @@ export const ShiftablePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -81177,7 +81339,7 @@ export const ShiftablePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -82145,7 +82307,7 @@ export const ShiftablePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -83069,7 +83231,7 @@ export const ShiftablePowerLoad = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -84542,7 +84704,7 @@ export const Source = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -85467,7 +85629,7 @@ export const Source = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -86790,7 +86952,7 @@ export const Source = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -87714,7 +87876,7 @@ export const Source = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -88676,7 +88838,7 @@ export const Source = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -89600,7 +89762,7 @@ export const Source = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -90677,7 +90839,7 @@ export const TModelHVDCLine = zod
     base_current: zod
       .number()
       .describe(
-        "Base current of the line as recorded by the source data. No field of this component is per-unit on it. Units: A.",
+        "Base current of the line as recorded by the source data. No field of this component is per-unit on it. Units: kA.",
       ),
     r: zod
       .number()
@@ -91715,7 +91877,7 @@ export const ThermalMultiStart = zod
                               .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
-                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                           ),
                         zod
                           .strictObject({
@@ -92408,13 +92570,18 @@ export const ThermalMultiStart = zod
                       .number()
                       .nullish()
                       .describe(
-                        "Fixed fuel cost per unit of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
+                        "Fixed fuel cost in USD per one `fuel_units` of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
                       ),
                     fuel_cost_time_series: zod
                       .int()
                       .nullish()
                       .describe(
                         "Store-minted id of the fuel-cost time series association, or null when fuel_cost carries a fixed value. Exactly one of the two is set.",
+                      ),
+                    fuel_units: zod
+                      .enum(["MMBTU", "GJ"])
+                      .describe(
+                        "Fuel quantity a `FuelCurve` is expressed in: `MMBTU` (million British thermal units) or `GJ` (gigajoules) of heat content.",
                       ),
                     power_units: zod
                       .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
@@ -92747,7 +92914,7 @@ export const ThermalMultiStart = zod
                               .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
-                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                           ),
                         zod
                           .strictObject({
@@ -93432,7 +93599,7 @@ export const ThermalMultiStart = zod
                       ),
                   })
                   .describe(
-                    "Variable operation cost of a device expressed in fuel consumed — MBTU, liters, m^3 — together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
+                    "Variable operation cost of a device expressed in fuel consumed, in the fuel quantity `fuel_units` names, together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form, whose y axis is fuel per hour; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
                   ),
               ])
               .describe(
@@ -93878,7 +94045,7 @@ export const ThermalMultiStart = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -94802,7 +94969,7 @@ export const ThermalMultiStart = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -96145,7 +96312,7 @@ export const ThermalMultiStart = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -97069,7 +97236,7 @@ export const ThermalMultiStart = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -98035,7 +98202,7 @@ export const ThermalMultiStart = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -98959,7 +99126,7 @@ export const ThermalMultiStart = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -100596,7 +100763,7 @@ export const ThermalStandard = zod
                               .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
-                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                           ),
                         zod
                           .strictObject({
@@ -101289,13 +101456,18 @@ export const ThermalStandard = zod
                       .number()
                       .nullish()
                       .describe(
-                        "Fixed fuel cost per unit of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
+                        "Fixed fuel cost in USD per one `fuel_units` of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
                       ),
                     fuel_cost_time_series: zod
                       .int()
                       .nullish()
                       .describe(
                         "Store-minted id of the fuel-cost time series association, or null when fuel_cost carries a fixed value. Exactly one of the two is set.",
+                      ),
+                    fuel_units: zod
+                      .enum(["MMBTU", "GJ"])
+                      .describe(
+                        "Fuel quantity a `FuelCurve` is expressed in: `MMBTU` (million British thermal units) or `GJ` (gigajoules) of heat content.",
                       ),
                     power_units: zod
                       .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
@@ -101628,7 +101800,7 @@ export const ThermalStandard = zod
                               .describe("Units: the curve's y-axis unit."),
                           })
                           .describe(
-                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                           ),
                         zod
                           .strictObject({
@@ -102313,7 +102485,7 @@ export const ThermalStandard = zod
                       ),
                   })
                   .describe(
-                    "Variable operation cost of a device expressed in fuel consumed — MBTU, liters, m^3 — together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
+                    "Variable operation cost of a device expressed in fuel consumed, in the fuel quantity `fuel_units` names, together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form, whose y axis is fuel per hour; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
                   ),
               ])
               .describe(
@@ -102757,7 +102929,7 @@ export const ThermalStandard = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -103681,7 +103853,7 @@ export const ThermalStandard = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -105024,7 +105196,7 @@ export const ThermalStandard = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -105948,7 +106120,7 @@ export const ThermalStandard = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -106910,7 +107082,7 @@ export const ThermalStandard = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -107834,7 +108006,7 @@ export const ThermalStandard = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -109354,7 +109526,7 @@ export const TwoTerminalGenericHVDCLine = zod
       })
       .optional()
       .describe(
-        "Losses of a device as a function of the flow through it, together with the power basis the curve is expressed in. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+        "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     base_power: zod
       .number()
@@ -109459,7 +109631,7 @@ export const TwoTerminalLCCLine = zod
         .number()
         .nullish()
         .describe(
-          "Scheduled current transfer, used when `control_mode` is `CURRENT`; `null` otherwise. Units: A.",
+          "Scheduled current transfer, used when `control_mode` is `CURRENT`; `null` otherwise. Units: kA.",
         ),
       scheduled_dc_voltage: zod
         .number()
@@ -109523,7 +109695,7 @@ export const TwoTerminalLCCLine = zod
         .optional()
         .default("BLOCKED")
         .describe(
-          "Control mode of an LCC-HVDC line (PSS/E MDC). BLOCKED: the line is blocked and holds no schedule. POWER: the line holds a power schedule (power_transfer_setpoint, MW). CURRENT: the line holds a current schedule (current_transfer_setpoint, A).",
+          "Control mode of an LCC-HVDC line (PSS/E MDC). BLOCKED: the line is blocked and holds no schedule. POWER: the line holds a power schedule (power_transfer_setpoint, MW). CURRENT: the line holds a current schedule (current_transfer_setpoint, kA).",
         ),
       switch_mode_voltage: zod
         .number()
@@ -109856,7 +110028,7 @@ export const TwoTerminalLCCLine = zod
           },
         })
         .describe(
-          "Losses of a device as a function of the flow through it, together with the power basis the curve is expressed in. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+          "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
         ),
       base_power: zod
         .number()
@@ -109907,7 +110079,7 @@ const twoTerminalVSCLineNineConverterLossFromValueCurveDefault = {
     proportional_term: 0 as const,
   },
 };
-const twoTerminalVSCLineNineMaxDcCurrentFromDefault = 100000000;
+const twoTerminalVSCLineNineMaxDcCurrentFromDefault = 9999;
 const twoTerminalVSCLineNinePowerFactorWeightingFractionFromDefault = 1;
 const twoTerminalVSCLineNineDcVoltageDroopFromDefault = 0;
 const twoTerminalVSCLineNineReactivePowerToDefault = 0;
@@ -109938,7 +110110,7 @@ const twoTerminalVSCLineNineConverterLossToValueCurveDefault = {
     proportional_term: 0 as const,
   },
 };
-const twoTerminalVSCLineNineMaxDcCurrentToDefault = 100000000;
+const twoTerminalVSCLineNineMaxDcCurrentToDefault = 9999;
 export const twoTerminalVSCLineNineOperationalFlowLimitFromToMinMin = 0;
 
 export const twoTerminalVSCLineNineOperationalFlowLimitFromToMaxMin = 0;
@@ -109995,7 +110167,7 @@ export const TwoTerminalVSCLine = zod
         .number()
         .default(twoTerminalVSCLineNineDcCurrentDefault)
         .describe(
-          "DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: A.",
+          "DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: kA.",
         ),
       reactive_power_from: zod
         .number()
@@ -110238,12 +110410,14 @@ export const TwoTerminalVSCLine = zod
           },
         })
         .describe(
-          "Losses of a device as a function of the flow through it, together with the power basis the curve is expressed in. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+          "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
         ),
       max_dc_current_from: zod
         .number()
         .default(twoTerminalVSCLineNineMaxDcCurrentFromDefault)
-        .describe("Maximum stable dc current limits. Units: A."),
+        .describe(
+          "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
+        ),
       rating_from: zod
         .number()
         .optional()
@@ -110523,12 +110697,14 @@ export const TwoTerminalVSCLine = zod
           },
         })
         .describe(
-          "Losses of a device as a function of the flow through it, together with the power basis the curve is expressed in. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+          "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
         ),
       max_dc_current_to: zod
         .number()
         .default(twoTerminalVSCLineNineMaxDcCurrentToDefault)
-        .describe("Maximum stable dc current limits. Units: A."),
+        .describe(
+          "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
+        ),
       rating_to: zod
         .number()
         .optional()
@@ -111428,7 +111604,7 @@ export const VirtualParticipant = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -112352,7 +112528,7 @@ export const VirtualParticipant = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -113699,7 +113875,7 @@ export const VirtualParticipant = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -114623,7 +114799,7 @@ export const VirtualParticipant = zod
                           .describe("Units: the curve's y-axis unit."),
                       })
                       .describe(
-                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+                        "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
                       ),
                     zod
                       .strictObject({
@@ -115477,7 +115653,7 @@ export type VSCDCControlModesOutput = zod.output<typeof VSCDCControlModes>;
 export const LCCControlMode = zod
   .enum(["BLOCKED", "POWER", "CURRENT"])
   .describe(
-    "Control mode of an LCC-HVDC line (PSS/E MDC). BLOCKED: the line is blocked and holds no schedule. POWER: the line holds a power schedule (power_transfer_setpoint, MW). CURRENT: the line holds a current schedule (current_transfer_setpoint, A).",
+    "Control mode of an LCC-HVDC line (PSS/E MDC). BLOCKED: the line is blocked and holds no schedule. POWER: the line holds a power schedule (power_transfer_setpoint, MW). CURRENT: the line holds a current schedule (current_transfer_setpoint, kA).",
   );
 
 export type LCCControlMode = zod.input<typeof LCCControlMode>;
@@ -115535,6 +115711,19 @@ export type SwitchedAdmittanceControlMode = zod.input<
 >;
 export type SwitchedAdmittanceControlModeOutput = zod.output<
   typeof SwitchedAdmittanceControlMode
+>;
+
+export const SeriesCompensatorControlMode = zod
+  .enum(["FIXED", "BYPASSED", "DISPATCHABLE", "ACTIVE_POWER_FLOW"])
+  .describe(
+    "Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.",
+  );
+
+export type SeriesCompensatorControlMode = zod.input<
+  typeof SeriesCompensatorControlMode
+>;
+export type SeriesCompensatorControlModeOutput = zod.output<
+  typeof SeriesCompensatorControlMode
 >;
 
 export const ReserveDirection = zod
@@ -115700,6 +115889,9 @@ export type { ComplexNumberOutput } from "../infrastructure_core/models";
 export { CostCurve } from "../core/models";
 export type { CostCurveOutput } from "../core/models";
 
+export { CurrentLossCurve } from "../core/models";
+export type { CurrentLossCurveOutput } from "../core/models";
+
 export { CurveMultiStep } from "../core/models";
 export type { CurveMultiStepOutput } from "../core/models";
 
@@ -115717,6 +115909,9 @@ export type { FromToToFromOutput } from "../infrastructure_core/models";
 
 export { FuelCurve } from "../core/models";
 export type { FuelCurveOutput } from "../core/models";
+
+export { FuelUnit } from "../core/models";
+export type { FuelUnitOutput } from "../core/models";
 
 export { FunctionData } from "../infrastructure_core/models";
 export type { FunctionDataOutput } from "../infrastructure_core/models";
@@ -115838,5 +116033,5 @@ export type { UpDownOutput } from "../infrastructure_core/models";
 export { ValueCurve } from "../core/models";
 export type { ValueCurveOutput } from "../core/models";
 
-export { XYCoords } from "../infrastructure_core/models";
-export type { XYCoordsOutput } from "../infrastructure_core/models";
+export { TwoDimensionalFunctionPoint } from "../infrastructure_core/models";
+export type { TwoDimensionalFunctionPointOutput } from "../infrastructure_core/models";

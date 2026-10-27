@@ -71,7 +71,7 @@ def dedupe_core_against_infrastructure_core() -> bool:
     core/models.py is generated from openapi-core.json alone, with no ref
     mapping (see the Makefile comment): its own schema graph reaches into
     Core/common.json for several of infrastructure_core's 20 types (UnitSystem,
-    the function-data family, XY_Coords, ...), and datamodel-codegen's
+    the function-data family, TwoDimensionalFunctionPoint, ...), and datamodel-codegen's
     --external-ref-mapping keys on a $ref's *file path*, not the individual
     $def -- common.json is the $defs home for BOTH selectors, so mapping it
     wholesale to infrastructure_core.models would misroute core's own types

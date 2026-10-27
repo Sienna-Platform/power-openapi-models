@@ -213,6 +213,29 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
+        "Area",
+        "scheduled_net_interchange",
+        FieldUnit::Discriminated {
+            discriminator: "power_units",
+            units: &[
+                (
+                    "NATURAL_UNITS",
+                    Unit {
+                        unit: "MW",
+                        quantity: "ActivePower",
+                    },
+                ),
+                (
+                    "COMPONENT_BASE",
+                    Unit {
+                        unit: "pu",
+                        quantity: "ActivePower",
+                    },
+                ),
+            ],
+        },
+    ),
+    (
         "AreaInterchange",
         "active_power_flow",
         FieldUnit::Discriminated {
@@ -1687,6 +1710,14 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
     ),
     (
         "HydroPumpTurbine",
+        "efficiency",
+        FieldUnit::Fixed(Unit {
+            unit: "1",
+            quantity: "Fraction",
+        }),
+    ),
+    (
+        "HydroPumpTurbine",
         "minimum_time",
         FieldUnit::Fixed(Unit {
             unit: "min",
@@ -2135,6 +2166,14 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
     ),
     (
         "HydroTurbine",
+        "efficiency",
+        FieldUnit::Fixed(Unit {
+            unit: "1",
+            quantity: "Fraction",
+        }),
+    ),
+    (
+        "HydroTurbine",
         "outflow_limits",
         FieldUnit::Fixed(Unit {
             unit: "m3/s",
@@ -2379,7 +2418,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         "InterconnectingConverter",
         "dc_current",
         FieldUnit::Fixed(Unit {
-            unit: "A",
+            unit: "kA",
             quantity: "CurrentFlow",
         }),
     ),
@@ -2426,7 +2465,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         "InterconnectingConverter",
         "max_dc_current",
         FieldUnit::Fixed(Unit {
-            unit: "A",
+            unit: "kA",
             quantity: "CurrentFlow",
         }),
     ),
@@ -2444,6 +2483,22 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         FieldUnit::Fixed(Unit {
             unit: "1",
             quantity: "Fraction",
+        }),
+    ),
+    (
+        "InterconnectingConverter",
+        "rated_ac_voltage",
+        FieldUnit::Fixed(Unit {
+            unit: "kV",
+            quantity: "Voltage",
+        }),
+    ),
+    (
+        "InterconnectingConverter",
+        "rated_dc_voltage",
+        FieldUnit::Fixed(Unit {
+            unit: "kV",
+            quantity: "Voltage",
         }),
     ),
     (
@@ -3961,6 +4016,244 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
+        "SeriesCompensator",
+        "active_power_flow",
+        FieldUnit::Discriminated {
+            discriminator: "power_units",
+            units: &[
+                (
+                    "NATURAL_UNITS",
+                    Unit {
+                        unit: "MW",
+                        quantity: "ActivePower",
+                    },
+                ),
+                (
+                    "COMPONENT_BASE",
+                    Unit {
+                        unit: "pu",
+                        quantity: "ActivePower",
+                    },
+                ),
+            ],
+        },
+    ),
+    (
+        "SeriesCompensator",
+        "active_power_flow_setpoint",
+        FieldUnit::Discriminated {
+            discriminator: "power_units",
+            units: &[
+                (
+                    "NATURAL_UNITS",
+                    Unit {
+                        unit: "MW",
+                        quantity: "ActivePower",
+                    },
+                ),
+                (
+                    "COMPONENT_BASE",
+                    Unit {
+                        unit: "pu",
+                        quantity: "ActivePower",
+                    },
+                ),
+            ],
+        },
+    ),
+    (
+        "SeriesCompensator",
+        "base_power",
+        FieldUnit::Fixed(Unit {
+            unit: "MVA",
+            quantity: "ApparentPower",
+        }),
+    ),
+    (
+        "SeriesCompensator",
+        "operational_flow_limit",
+        FieldUnit::Discriminated {
+            discriminator: "power_units",
+            units: &[
+                (
+                    "NATURAL_UNITS",
+                    Unit {
+                        unit: "MW",
+                        quantity: "ActivePower",
+                    },
+                ),
+                (
+                    "COMPONENT_BASE",
+                    Unit {
+                        unit: "pu",
+                        quantity: "ActivePower",
+                    },
+                ),
+            ],
+        },
+    ),
+    (
+        "SeriesCompensator",
+        "r",
+        FieldUnit::Discriminated {
+            discriminator: "parameter_units",
+            units: &[
+                (
+                    "NATURAL_UNITS",
+                    Unit {
+                        unit: "ohm",
+                        quantity: "Resistance",
+                    },
+                ),
+                (
+                    "COMPONENT_BASE",
+                    Unit {
+                        unit: "pu",
+                        quantity: "Resistance",
+                    },
+                ),
+            ],
+        },
+    ),
+    (
+        "SeriesCompensator",
+        "rating",
+        FieldUnit::Discriminated {
+            discriminator: "power_units",
+            units: &[
+                (
+                    "NATURAL_UNITS",
+                    Unit {
+                        unit: "MVA",
+                        quantity: "ApparentPower",
+                    },
+                ),
+                (
+                    "COMPONENT_BASE",
+                    Unit {
+                        unit: "pu",
+                        quantity: "ApparentPower",
+                    },
+                ),
+            ],
+        },
+    ),
+    (
+        "SeriesCompensator",
+        "rating_b",
+        FieldUnit::Discriminated {
+            discriminator: "power_units",
+            units: &[
+                (
+                    "NATURAL_UNITS",
+                    Unit {
+                        unit: "MVA",
+                        quantity: "ApparentPower",
+                    },
+                ),
+                (
+                    "COMPONENT_BASE",
+                    Unit {
+                        unit: "pu",
+                        quantity: "ApparentPower",
+                    },
+                ),
+            ],
+        },
+    ),
+    (
+        "SeriesCompensator",
+        "rating_c",
+        FieldUnit::Discriminated {
+            discriminator: "power_units",
+            units: &[
+                (
+                    "NATURAL_UNITS",
+                    Unit {
+                        unit: "MVA",
+                        quantity: "ApparentPower",
+                    },
+                ),
+                (
+                    "COMPONENT_BASE",
+                    Unit {
+                        unit: "pu",
+                        quantity: "ApparentPower",
+                    },
+                ),
+            ],
+        },
+    ),
+    (
+        "SeriesCompensator",
+        "reactance_limits",
+        FieldUnit::Discriminated {
+            discriminator: "parameter_units",
+            units: &[
+                (
+                    "NATURAL_UNITS",
+                    Unit {
+                        unit: "ohm",
+                        quantity: "Reactance",
+                    },
+                ),
+                (
+                    "COMPONENT_BASE",
+                    Unit {
+                        unit: "pu",
+                        quantity: "Reactance",
+                    },
+                ),
+            ],
+        },
+    ),
+    (
+        "SeriesCompensator",
+        "reactive_power_flow",
+        FieldUnit::Discriminated {
+            discriminator: "power_units",
+            units: &[
+                (
+                    "NATURAL_UNITS",
+                    Unit {
+                        unit: "MVAr",
+                        quantity: "ReactivePower",
+                    },
+                ),
+                (
+                    "COMPONENT_BASE",
+                    Unit {
+                        unit: "pu",
+                        quantity: "ReactivePower",
+                    },
+                ),
+            ],
+        },
+    ),
+    (
+        "SeriesCompensator",
+        "x",
+        FieldUnit::Discriminated {
+            discriminator: "parameter_units",
+            units: &[
+                (
+                    "NATURAL_UNITS",
+                    Unit {
+                        unit: "ohm",
+                        quantity: "Reactance",
+                    },
+                ),
+                (
+                    "COMPONENT_BASE",
+                    Unit {
+                        unit: "pu",
+                        quantity: "Reactance",
+                    },
+                ),
+            ],
+        },
+    ),
+    (
         "ShiftablePowerLoad",
         "active_power",
         FieldUnit::Discriminated {
@@ -4967,7 +5260,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         "TModelHVDCLine",
         "base_current",
         FieldUnit::Fixed(Unit {
-            unit: "A",
+            unit: "kA",
             quantity: "CurrentFlow",
         }),
     ),
@@ -6143,7 +6436,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         "TwoTerminalLCCLine",
         "current_transfer_setpoint",
         FieldUnit::Fixed(Unit {
-            unit: "A",
+            unit: "kA",
             quantity: "CurrentFlow",
         }),
     ),
@@ -6551,7 +6844,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         "TwoTerminalVSCLine",
         "dc_current",
         FieldUnit::Fixed(Unit {
-            unit: "A",
+            unit: "kA",
             quantity: "CurrentFlow",
         }),
     ),
@@ -6645,7 +6938,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         "TwoTerminalVSCLine",
         "max_dc_current_from",
         FieldUnit::Fixed(Unit {
-            unit: "A",
+            unit: "kA",
             quantity: "CurrentFlow",
         }),
     ),
@@ -6653,7 +6946,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         "TwoTerminalVSCLine",
         "max_dc_current_to",
         FieldUnit::Fixed(Unit {
-            unit: "A",
+            unit: "kA",
             quantity: "CurrentFlow",
         }),
     ),
@@ -7074,7 +7367,7 @@ pub static CONVERSION_FACTORS: &[(&str, &str, f64)] = &[
     ("EmissionRate", "t/MWh", 1f64),
     ("Fraction", "1", 1f64),
     ("FractionPerTime", "1/min", 1f64),
-    ("Frequency", "Hz", 60f64),
+    ("Frequency", "Hz", 1f64),
     ("HeadRate", "m/s", 1f64),
     ("HeatRate", "MMBtu/MWh", 1f64),
     ("Impedance", "ohm", 1f64),

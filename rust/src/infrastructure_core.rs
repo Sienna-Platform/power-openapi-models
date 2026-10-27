@@ -4,5 +4,6 @@ pub use crate::generated::{
     ComplexNumber, DataSource, FromTo, FromToToFrom, FunctionData, GeographicInfo, InOut,
     LinearFunctionData, MinMax, PiecewiseLinearData, PiecewiseStepData, QuadraticFunctionData,
     SupplementalAttributeAssociation, TimeSeriesLinearFunctionData, TimeSeriesPiecewiseLinearData,
-    TimeSeriesPiecewiseStepData, TimeSeriesQuadraticFunctionData, UnitSystem, UpDown, XYCoords,
+    TimeSeriesPiecewiseStepData, TimeSeriesQuadraticFunctionData, TwoDimensionalFunctionPoint,
+    UnitSystem, UpDown,
 };

@@ -6,6 +6,7 @@ from power_openapi_models.core.models import (
     AdmittanceUnitBasis,
     ComplexNumber,
     CostCurve,
+    CurrentLossCurve,
     EnergyUnitBasis,
     FromTo,
     FromToToFrom,
@@ -223,6 +224,13 @@ class DiscreteControlledACBranch(BaseModel):
     normal_branch_status: NormalBranchStatus | None = Field(
         "CLOSED", description="Normal (as-designed) open or close status of the device."
     )
+
+
+class SeriesCompensatorControlMode(Enum):
+    FIXED = "FIXED"
+    BYPASSED = "BYPASSED"
+    DISPATCHABLE = "DISPATCHABLE"
+    ACTIVE_POWER_FLOW = "ACTIVE_POWER_FLOW"
 
 
 class EnergyReservoirStorage(BaseModel):
@@ -714,7 +722,7 @@ class HydroTurbine(BaseModel):
     outflow_limits: MinMax | None = Field(
         None, description="Turbine outflow limits. Set to `null` if not applicable. Units: m3/s."
     )
-    efficiency: float | None = Field(1.0, description="Turbine efficiency [0, 1.0].")
+    efficiency: float | None = Field(1.0, description="Turbine efficiency [0, 1.0]. Units: 1.")
     turbine_type: TurbineType | None = Field("UNKNOWN", description="Type of the turbine.")
     conversion_factor: float | None = Field(
         1.0, description="Conversion factor from flow/volume to energy: m^3 -> p.u-hr. Units: 1."
@@ -1675,7 +1683,7 @@ class TModelHVDCLine(BaseModel):
     arc: int = Field(..., description="An `Arc` defining this line `from` a bus `to` another bus.")
     base_current: float = Field(
         ...,
-        description="Base current of the line as recorded by the source data. No field of this component is per-unit on it. Units: A.",
+        description="Base current of the line as recorded by the source data. No field of this component is per-unit on it. Units: kA.",
     )
     r: float = Field(
         ...,
@@ -2025,7 +2033,7 @@ class TwoTerminalVSCLine(BaseModel):
     g: float | None = Field(0.0, description="Series conductance of the DC line. Units: S.")
     dc_current: float | None = Field(
         0.0,
-        description="DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: A.",
+        description="DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: kA.",
     )
     reactive_power_from: float | None = Field(
         0.0,
@@ -2074,7 +2082,7 @@ class TwoTerminalVSCLine(BaseModel):
         description="Loss model coefficients in the `from` bus converter. It accepts a linear model or quadratic. Same converter data is used in both ends.",
     )
     max_dc_current_from: float | None = Field(
-        100000000.0, description="Maximum stable dc current limits. Units: A."
+        9999.0, description="Maximum stable dc current limits. 9999 means no limit. Units: kA."
     )
     rating_from: float | None = Field(
         None,
@@ -2143,7 +2151,7 @@ class TwoTerminalVSCLine(BaseModel):
         description="Loss model coefficients in the `to` bus converter. It accepts a linear model or quadratic. Same converter data is used in both ends.",
     )
     max_dc_current_to: float | None = Field(
-        100000000.0, description="Maximum stable dc current limits. Units: A."
+        9999.0, description="Maximum stable dc current limits. 9999 means no limit. Units: kA."
     )
     rating_to: float | None = Field(
         None,
@@ -2314,6 +2322,78 @@ class CombinedCycleBlock(BaseModel):
     configuration: CombinedCycleConfiguration
     heat_recovery_to_steam_factor: float | None = Field(
         0.0, description="Factor for heat recovery to steam conversion"
+    )
+
+
+class SeriesCompensator(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+    )
+    active_power_flow: float = Field(
+        ...,
+        description="Initial condition of active power flow through the compensator. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    reactive_power_flow: float = Field(
+        ...,
+        description="Initial condition of reactive power flow through the compensator. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    arc: int = Field(..., description="An `Arc` defining this line `from` a bus `to` another bus.")
+    r: float = Field(
+        ...,
+        description="Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+    )
+    x: float = Field(
+        ...,
+        description="Series reactance; negative for a capacitor. Under `DISPATCHABLE` and `ACTIVE_POWER_FLOW`, the present value. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+    )
+    rating: float = Field(
+        ...,
+        description="Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    control_mode: SeriesCompensatorControlMode | None = Field(
+        "FIXED",
+        description="How the series reactance is set. `FIXED` holds `x`; `BYPASSED` shorts the compensator into a zero-impedance tie; `DISPATCHABLE` makes the reactance a decision within `reactance_limits`; `ACTIVE_POWER_FLOW` sets it to hold `active_power_flow_setpoint`.",
+    )
+    reactance_limits: MinMax | None = Field(
+        None,
+        description="Minimum and maximum series reactance. Required when `control_mode` is `DISPATCHABLE` or `ACTIVE_POWER_FLOW`. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+    )
+    active_power_flow_setpoint: float | None = Field(
+        None,
+        description="Active power flow, from the `from` bus to the `to` bus, the compensator holds. Required when `control_mode` is `ACTIVE_POWER_FLOW`. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    rating_b: float | None = Field(
+        None,
+        description="Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    rating_c: float | None = Field(
+        None,
+        description="Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    operational_flow_limit: OperationalFlowLimit | None = Field(
+        None,
+        description="Operator-set minimum and maximum flow in each direction. Absent means no operational limit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+    )
+    power_units: UnitSystem = Field(
+        ...,
+        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
+    )
+    parameter_units: ImpedanceUnitBasis | None = Field(
+        "COMPONENT_BASE",
+        description="Unit basis for r and x. COMPONENT_BASE is per-unit on this component's base_power, which records the system base.",
     )
 
 
@@ -2613,7 +2693,7 @@ class HydroPumpTurbine(BaseModel):
         description="Initial active power set point of the pump unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
     efficiency: TurbinePump | None = Field(
-        {"turbine": 1.0, "pump": 1.0}, description="Turbine/Pump efficiency [0, 1.0]."
+        {"turbine": 1.0, "pump": 1.0}, description="Turbine/Pump efficiency [0, 1.0]. Units: 1."
     )
     transition_time: TurbinePump | None = Field(
         {"turbine": 0.0, "pump": 0.0},
@@ -2679,12 +2759,13 @@ class InterconnectingConverter(BaseModel):
         None,
         description="Minimum and maximum reactive power limits. Set to `null` if not applicable. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
-    dc_current: float | None = Field(0.0, description="DC current on the converter. Units: A.")
+    dc_current: float | None = Field(0.0, description="DC current on the converter. Units: kA.")
     max_dc_current: float | None = Field(
-        100000000.0, description="Maximum stable dc current limits. Units: A."
+        9999.0, description="Maximum stable dc current limits. 9999 means no limit. Units: kA."
     )
-    loss_function: LossCurve | None = Field(
-        None, description="Linear or quadratic loss function with respect to the converter current."
+    loss_function: CurrentLossCurve | None = Field(
+        None,
+        description="Linear or quadratic loss (power) as a function of the converter's DC current.",
     )
     dc_control: VSCDCControlModes | None = Field(
         None,
@@ -2702,6 +2783,10 @@ class InterconnectingConverter(BaseModel):
         None,
         description="DC-side voltage target of the converter, used when `dc_control` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.",
     )
+    rated_dc_voltage: float | None = Field(
+        0.0,
+        description="Rated DC voltage of the converter, the base for `dc_voltage_setpoint` and `voltage_limits`; 0.0 means unspecified. Units: kV.",
+    )
     power_factor_setpoint: confloat(ge=-1.0, le=1.0) | None = Field(
         None,
         description="Power-factor setpoint of the converter, used when `ac_control` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.",
@@ -2709,6 +2794,10 @@ class InterconnectingConverter(BaseModel):
     ac_voltage_setpoint: float | None = Field(
         None,
         description="AC-side voltage magnitude target of the converter, used when `ac_control` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
+    )
+    rated_ac_voltage: float | None = Field(
+        0.0,
+        description="Rated AC voltage at the converter's AC terminal, the base for `ac_voltage_setpoint`; 0.0 means unspecified. Units: kV.",
     )
     dc_voltage_droop: float | None = Field(
         0.0,
@@ -2991,7 +3080,7 @@ class TwoTerminalLCCLine(BaseModel):
     )
     current_transfer_setpoint: float | None = Field(
         None,
-        description="Scheduled current transfer, used when `control_mode` is `CURRENT`; `null` otherwise. Units: A.",
+        description="Scheduled current transfer, used when `control_mode` is `CURRENT`; `null` otherwise. Units: kA.",
     )
     scheduled_dc_voltage: float = Field(
         ...,
