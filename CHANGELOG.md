@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-10-26
+
+Generated from SiennaSchemas v0.3.0. Schema 0.3.0 starts a new compatibility
+line: a reader rejects a document stamped 0.2.x as incompatible. Regenerate such
+documents with a current producer. The
+[SiennaSchemas changelog](https://github.com/Sienna-Platform/SiennaSchemas/blob/v0.3.0/CHANGELOG.md)
+lists every schema change.
+
+### Changed — schema (all three packages)
+
+- `XY_Coords` is renamed to `TwoDimensionalFunctionPoint` (`XYCoords` in Rust before).
+- New types: `SeriesCompensator`, `CurrentLossCurve`, `FuelUnit`,
+  `IntervalAlignment`.
+- `FuelCurve.fuel_units` is required and has no default.
+- New fields: `Area.scheduled_net_interchange`, `Area.out_of_area_load_ids`
+  (default `[]`), `InterconnectingConverter.rated_dc_voltage` and
+  `rated_ac_voltage`, `DataSource.license`, and `interval_alignment` on the time
+  series types.
+- Seven DC current fields are in kA, not A. An old value still reads, but it is
+  1000 times too large.
+
 ### Added — Rust
 
 - The `validate` cargo feature and `validate::Validator`: a check of one value
@@ -40,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   property, so the Python↔TypeScript and Python↔Rust gates fail when one
   language drops a property that another rejects.
 
-## [0.1.0] — Unreleased
+## [0.1.0] — 2026-09-29
 
 First release. Three packages, one version, one tag, one schema pin.
 

@@ -164,9 +164,8 @@ assert_eq!(conversion_factor("ActivePower", "kW"), Some(0.001));
 | `validate` | `Validator`, the schema check behind the `validate` feature. Hand-written. |
 | `units` | The unit of each annotated field, and the unit conversion factors. |
 
-Type names are the schema titles verbatim (`ACBus`, `AGC`), with two exceptions
-that are not valid Rust type names: `FromTo_ToFrom` is `FromToToFrom` and
-`XY_Coords` is `XYCoords`. Field names are the schema's property names in
+Type names are the schema titles verbatim (`ACBus`, `AGC`), with one exception
+that is not a valid Rust type name: `FromTo_ToFrom` is `FromToToFrom`. Field names are the schema's property names in
 snake case; where a property is not (`K_d`), `#[serde(rename)]` keeps the wire key.
 
 ## Behaviour worth knowing

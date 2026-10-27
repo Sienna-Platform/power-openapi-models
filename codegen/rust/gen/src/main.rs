@@ -466,7 +466,7 @@ fn set_serde_default(attrs: &mut Vec<syn::Attribute>, path: &str) {
 }
 
 /// The Rust identifier openapi-to-rust gave each schema. Usually the schema name
-/// itself; `FromTo_ToFrom` and `XY_Coords` are re-cased. Matching ignores
+/// itself; `FromTo_ToFrom` is re-cased. Matching ignores
 /// punctuation and case and fails loudly unless exactly one type matches.
 fn rust_idents(file: &syn::File, schemas: &Schemas) -> BTreeMap<String, String> {
     let squash = |s: &str| s.chars().filter(|c| c.is_alphanumeric()).collect::<String>().to_lowercase();
