@@ -115,11 +115,11 @@ generate-rust: $(O2R)
 	  --output-dir $(RUST_BUILD)/o2r --quiet
 
 	@# Fixes what openapi-to-rust gets wrong (schema defaults) and writes the
-	@# per-domain modules. See codegen/rust/gen/src/main.rs.
+	@# per-domain modules and units.rs. See codegen/rust/gen/src/main.rs.
 	@echo "==> Post-processing"
 	cargo run --quiet --release --manifest-path codegen/rust/gen/Cargo.toml \
 	  --bin power-openapi-models-postprocess -- \
-	  $(RUST_BUILD)/bundle.json $(RUST_BUILD)/o2r/types.rs rust/src
+	  $(RUST_BUILD)/bundle.json $(RUST_BUILD)/o2r/types.rs rust/src $(SCHEMA_DIR)/Core/units.json
 
 	@echo "==> Formatting"
 	cd rust && cargo fmt

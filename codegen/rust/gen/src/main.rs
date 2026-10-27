@@ -1,15 +1,16 @@
 //! Post-processes openapi-to-rust's `types.rs` and writes the crate's generated
 //! sources. Each `fn` below fixes one generator defect and says which.
 //!
-//!   postprocess BUNDLE.json TYPES.rs OUT_DIR
+//!   postprocess BUNDLE.json TYPES.rs OUT_DIR UNITS.json
 //!
-//! Writes OUT_DIR/generated.rs plus one OUT_DIR/<domain>.rs per SiennaSchemas spec.
+//! Writes OUT_DIR/generated.rs, OUT_DIR/units.rs, and one OUT_DIR/<domain>.rs per
+//! SiennaSchemas spec. UNITS.json is SiennaSchemas' `Core/units.json`.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::{env, fs, path::Path, process};
 
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote};
+use quote::{format_ident, quote, ToTokens};
 use serde_json::Value;
 use syn::punctuated::Punctuated;
 use syn::{Fields, GenericArgument, Item, Meta, PathArguments, Token, Type};
@@ -23,8 +24,8 @@ fn die(message: String) -> ! {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 4 {
-        eprintln!("usage: postprocess BUNDLE.json TYPES.rs OUT_DIR");
+    if args.len() != 5 {
+        eprintln!("usage: postprocess BUNDLE.json TYPES.rs OUT_DIR UNITS.json");
         process::exit(2);
     }
     let bundle: Value = serde_json::from_str(&fs::read_to_string(&args[1]).expect("read bundle"))
@@ -41,12 +42,16 @@ fn main() {
     let defaults = apply_schema_defaults(&mut file, &schemas);
     integer_enums(&mut file, &schemas);
     derive_partial_eq(&mut file);
+    deny_unknown_fields(&mut file);
     lenient_timestamps(&mut file);
     order_fields_like_schema(&mut file, &schemas);
     let idents = rust_idents(&file, &schemas);
     let out = Path::new(&args[3]);
     write_generated(out, &file, &defaults);
     write_domains(out, &bundle["x-domains"], &idents);
+    let vocabulary: Value =
+        serde_json::from_str(&fs::read_to_string(&args[4]).expect("read units.json")).expect("parse units.json");
+    write_units(out, &file, &schemas, &idents, &vocabulary);
 }
 
 /// One defaulted field: the function that produces its default, and that
@@ -361,6 +366,30 @@ fn derive_partial_eq(file: &mut syn::File) {
     }
 }
 
+/// DEFECT: openapi-to-rust lets serde ignore a property the schema does not know,
+/// so a misspelled field reads without error and is dropped. The strict bundles
+/// close every object that has no explicit `additionalProperties`, and the
+/// document types already deny unknown fields; the rows and components inside
+/// them must too. A struct with a `flatten` field is skipped: its schema allows
+/// extra keys, and serde cannot combine the two attributes.
+fn deny_unknown_fields(file: &mut syn::File) {
+    let mentions = |attr: &syn::Attribute, path: &str, word: &str| {
+        attr.path().is_ident(path) && attr.to_token_stream().to_string().contains(word)
+    };
+    for item in &mut file.items {
+        let Item::Struct(s) = item else { continue };
+        let Fields::Named(fields) = &s.fields else { continue };
+        let flattens = fields
+            .named
+            .iter()
+            .any(|f| f.attrs.iter().any(|a| mentions(a, "serde", "flatten")));
+        let deserializes = s.attrs.iter().any(|a| mentions(a, "derive", "Deserialize"));
+        if deserializes && !flattens {
+            s.attrs.push(syn::parse_quote!(#[serde(deny_unknown_fields)]));
+        }
+    }
+}
+
 fn is_required(schema: &Value, property: &str) -> bool {
     schema
         .get("required")
@@ -551,4 +580,217 @@ fn write_domains(out: &Path, domains: &Value, idents: &BTreeMap<String, String>)
         );
         fs::write(out.join(format!("{domain}.rs")), text).expect("write domain");
     }
+}
+
+/// `unit -> quantities` and `(quantity, unit) -> factor` from `Core/units.json`.
+/// A factor that is null (a `pu` base) or 0.0 (not converted here) is left out.
+struct Vocabulary {
+    by_unit: BTreeMap<String, BTreeSet<String>>,
+    factors: BTreeMap<(String, String), f64>,
+}
+
+fn load_vocabulary(raw: &Value) -> Vocabulary {
+    let mut vocabulary = Vocabulary { by_unit: BTreeMap::new(), factors: BTreeMap::new() };
+    for entry in raw["allowed_units"].as_array().expect("allowed_units") {
+        let quantity = entry["quantity_kind"].as_str().expect("quantity_kind").to_string();
+        let unit = entry["unit"].as_str().expect("unit").to_string();
+        vocabulary.by_unit.entry(unit.clone()).or_default().insert(quantity.clone());
+        if let Some(factor) = entry["to_default"].as_f64().filter(|f| *f != 0.0) {
+            vocabulary.factors.insert((quantity, unit), factor);
+        }
+    }
+    vocabulary
+}
+
+/// The quantities that the unambiguous branches of one `x-units` map settle.
+/// A branch whose unit names one quantity pins it; an ambiguous branch beside it
+/// takes the pin, but only when exactly one pin exists and it is a candidate of
+/// every ambiguous branch. Without that guard a magnetizing shunt's
+/// `{S, MVAr, pu}` reads as ReactivePower, but it is a Susceptance.
+fn infer_quantities(vocabulary: &Vocabulary, units: &[&str]) -> BTreeMap<String, String> {
+    let candidates = |u: &str| vocabulary.by_unit.get(u).cloned().unwrap_or_default();
+    let pins: BTreeSet<String> =
+        units.iter().map(|u| candidates(u)).filter(|q| q.len() == 1).flatten().collect();
+    let ambiguous: Vec<&str> = units.iter().copied().filter(|u| candidates(u).len() > 1).collect();
+    let mut out = BTreeMap::new();
+    if let [pin] = Vec::from_iter(&pins)[..] {
+        if ambiguous.iter().all(|u| candidates(u).contains(pin)) {
+            for u in ambiguous {
+                out.insert(u.to_string(), pin.clone());
+            }
+        }
+    }
+    out
+}
+
+/// The quantity `unit` measures on `site`: the only one the vocabulary lists for
+/// it, else the property's `x-quantity` (a string, or a unit -> quantity object),
+/// else the sibling branches. Fails rather than guess.
+fn resolve_quantity(
+    vocabulary: &Vocabulary,
+    site: &str,
+    unit: &str,
+    declared: Option<&Value>,
+    inferred: &BTreeMap<String, String>,
+) -> String {
+    let Some(quantities) = vocabulary.by_unit.get(unit) else {
+        die(format!("{site} declares unit \"{unit}\", which is absent from units.json"));
+    };
+    if let [only] = Vec::from_iter(quantities)[..] {
+        return only.clone();
+    }
+    let from_schema = match declared {
+        Some(Value::String(q)) => Some(q.as_str()),
+        Some(Value::Object(map)) => map.get(unit).and_then(Value::as_str),
+        _ => None,
+    };
+    if let Some(q) = from_schema.or(inferred.get(unit).map(String::as_str)) {
+        return q.to_string();
+    }
+    die(format!(
+        "{site} declares ambiguous unit \"{unit}\" across quantities {quantities:?}, and no \
+         sibling branch settles it. Declare \"x-quantity\" on that property in the schemas."
+    ))
+}
+
+/// Writes OUT_DIR/units.rs from the `x-unit` annotations
+/// (SiennaSchemas docs/UNIT_ANNOTATIONS.md) and `Core/units.json`, by the same
+/// rules as PowerOpenAPIModels' `scripts/emit_units.jl`. Types and fields are
+/// keyed by their Rust names; discriminator values by their wire values.
+fn write_units(
+    out: &Path,
+    file: &syn::File,
+    schemas: &Schemas,
+    idents: &BTreeMap<String, String>,
+    raw_vocabulary: &Value,
+) {
+    let vocabulary = load_vocabulary(raw_vocabulary);
+    let mut fields: BTreeMap<String, BTreeMap<String, String>> = BTreeMap::new();
+    for item in &file.items {
+        let Item::Struct(s) = item else { continue };
+        let Fields::Named(named) = &s.fields else { continue };
+        let map = fields.entry(s.ident.to_string()).or_default();
+        for field in &named.named {
+            let ident = field.ident.as_ref().expect("named field").to_string();
+            let ident = ident.trim_start_matches("r#").to_string();
+            map.insert(serde_rename(&field.attrs).unwrap_or_else(|| ident.clone()), ident);
+        }
+    }
+    let mut units: BTreeMap<(String, String), TokenStream> = BTreeMap::new();
+    let mut bases: BTreeMap<(String, String), String> = BTreeMap::new();
+    for (name, schema) in schemas {
+        let Some(properties) = schema.get("properties").and_then(Value::as_object) else {
+            continue;
+        };
+        let type_name = &idents[name];
+        let rust_field = |wire: &str| -> String {
+            match fields.get(type_name).and_then(|m| m.get(wire)) {
+                Some(ident) => ident.clone(),
+                None => die(format!("{name}.{wire}: unit annotation but no struct field")),
+            }
+        };
+        for (prop, spec) in properties {
+            let site = format!("{name}.{prop}");
+            let declared = spec.get("x-quantity");
+            let unit = |unit: &str, inferred: &BTreeMap<String, String>| {
+                let quantity = resolve_quantity(&vocabulary, &site, unit, declared, inferred);
+                quote!(Unit { unit: #unit, quantity: #quantity })
+            };
+            let tokens = if let Some(map) = spec.get("x-units") {
+                let Some(discriminator) = spec.get("x-unit-discriminator").and_then(Value::as_str) else {
+                    die(format!("{site}: x-units without x-unit-discriminator"));
+                };
+                let branches: Vec<(&String, &str)> = map
+                    .as_object()
+                    .unwrap_or_else(|| die(format!("{site}: x-units is not an object")))
+                    .iter()
+                    .map(|(k, v)| {
+                        (k, v.as_str().unwrap_or_else(|| die(format!("{site}.{k}: x-units value is not a unit"))))
+                    })
+                    .collect();
+                let inferred = infer_quantities(&vocabulary, &branches.iter().map(|b| b.1).collect::<Vec<_>>());
+                let discriminator = rust_field(discriminator);
+                let entries = branches.iter().map(|(k, u)| {
+                    let resolved = unit(u, &inferred);
+                    quote!((#k, #resolved))
+                });
+                Some(quote!(FieldUnit::Discriminated { discriminator: #discriminator, units: &[#(#entries),*] }))
+            } else if let Some(fixed) = spec.get("x-unit") {
+                let fixed = fixed.as_str().unwrap_or_else(|| die(format!("{site}: x-unit is not a string")));
+                let resolved = unit(fixed, &BTreeMap::new());
+                Some(quote!(FieldUnit::Fixed(#resolved)))
+            } else {
+                None
+            };
+            if let Some(tokens) = tokens {
+                units.insert((type_name.clone(), rust_field(prop)), tokens);
+            }
+            if let Some(base) = spec.get("x-unit-base") {
+                let base = base.as_str().unwrap_or_else(|| die(format!("{site}: x-unit-base is not a string")));
+                bases.insert((type_name.clone(), rust_field(prop)), rust_field(base));
+            }
+        }
+    }
+    let unit_rows = units.iter().map(|((t, f), u)| quote!((#t, #f, #u)));
+    let base_rows = bases.iter().map(|((t, f), b)| quote!((#t, #f, #b)));
+    let factor_rows = vocabulary.factors.iter().map(|((q, u), f)| quote!((#q, #u, #f)));
+    let tokens = quote! {
+        /// One unit and the quantity it measures, both as `Core/units.json` spells them.
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        pub struct Unit {
+            pub unit: &'static str,
+            pub quantity: &'static str,
+        }
+
+        /// The unit of one field.
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        pub enum FieldUnit {
+            /// The field always has this unit.
+            Fixed(Unit),
+            /// The sibling field `discriminator` selects the unit. `units` maps each
+            /// of its wire values (`as_str()` of the enum) to a unit.
+            Discriminated {
+                discriminator: &'static str,
+                units: &'static [(&'static str, Unit)],
+            },
+        }
+
+        /// `(type, field, unit)` for every annotated field, sorted.
+        pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[#(#unit_rows),*];
+
+        /// `(type, field, base field)`: the sibling field that holds the base of a `pu` value, sorted.
+        pub static UNIT_BASES: &[(&str, &str, &str)] = &[#(#base_rows),*];
+
+        /// `(quantity, unit, factor)`: a value in `unit` times `factor` is in the
+        /// quantity's default unit. `pu` units have no factor, sorted.
+        pub static CONVERSION_FACTORS: &[(&str, &str, f64)] = &[#(#factor_rows),*];
+
+        /// The unit of `type_name.field`, if the schema declares one.
+        pub fn field_unit(type_name: &str, field: &str) -> Option<FieldUnit> {
+            let i = FIELD_UNITS.binary_search_by(|(t, f, _)| (*t, *f).cmp(&(type_name, field))).ok()?;
+            Some(FIELD_UNITS[i].2)
+        }
+
+        /// The field that holds the base of the `pu` value in `type_name.field`.
+        pub fn unit_base(type_name: &str, field: &str) -> Option<&'static str> {
+            let i = UNIT_BASES.binary_search_by(|(t, f, _)| (*t, *f).cmp(&(type_name, field))).ok()?;
+            Some(UNIT_BASES[i].2)
+        }
+
+        /// The factor from `unit` to the default unit of `quantity`.
+        pub fn conversion_factor(quantity: &str, unit: &str) -> Option<f64> {
+            let i = CONVERSION_FACTORS.binary_search_by(|(q, u, _)| (*q, *u).cmp(&(quantity, unit))).ok()?;
+            Some(CONVERSION_FACTORS[i].2)
+        }
+    };
+    let file: syn::File = syn::parse2(tokens).expect("units module");
+    let text = format!(
+        "// @generated by codegen/rust from the SiennaSchemas x-unit annotations. Do not edit.\n\
+         //! The unit of each annotated field, and the unit conversion factors.\n\
+         //!\n\
+         //! Types and fields are keyed by their Rust names (`FixedAdmittance`, `y`).\n\
+         {}",
+        prettyplease::unparse(&file)
+    );
+    fs::write(out.join("units.rs"), text).expect("write units.rs");
 }

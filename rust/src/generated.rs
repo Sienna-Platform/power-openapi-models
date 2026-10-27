@@ -24,6 +24,7 @@ mod tri_state_serde {
 }
 ///Woodward PID Hydro Governor
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct WPIDHY {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -71,6 +72,7 @@ pub struct WPIDHY {
 }
 ///Supplemental attribute for a voltage droop controller (PSS/E voltage droop control): a set of generators jointly regulating the reactive power at one bus along a Q–V characteristic. While the controller is available its regulated bus and characteristic override each member's own voltage target; while it is unavailable the members fall back to their own targets. Membership and each member's relative reactive power weight are VoltageControlAssociation rows. The characteristic holds `reactive_power_limits.max` below `voltage_limits.min`, ramps to `deadband_reactive_power` at `deadband_voltage_limits.min`, holds it through `deadband_voltage_limits.max`, ramps to `reactive_power_limits.min` at `voltage_limits.max`, and holds it above.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct VoltageDroopControl {
     ///Unique integer identifier for this supplemental attribute.
     pub id: i64,
@@ -91,6 +93,7 @@ pub struct VoltageDroopControl {
 }
 ///Links a voltage control group (a VoltageDroopControl or a ReactivePowerSharing attribute) to one member device and records the member's relative reactive power weight. One row per (control, member). `entity_id` names a device that regulates voltage to a setpoint; `terminal` picks the converter for a two-terminal member (a TwoTerminalVSCLine) and is UNDEFINED for every other member. A device, or a two-terminal line's converter, belongs to at most one group of either kind. PSS/E RMPCT imports as weight = RMPCT / 100, so the PSS/E default of 100 is the default weight of 1.0.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct VoltageControlAssociation {
     ///ID of the VoltageDroopControl or ReactivePowerSharing attribute the member belongs to.
     pub control_id: i64,
@@ -135,6 +138,7 @@ impl AsRef<str> for VoltageControlTerminal {
 }
 ///A virtual (convergence) market participant. Supply offers map to the operating cost's incremental offer curves; demand bids map to decremental offer curves. Settles either at a settlement point or at associated trading hubs — the two are mutually exclusive; hub membership is carried as TradingHubAssociation rows rather than a list on this record, matching the trading hub's own membership convention.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct VirtualParticipant {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -354,6 +358,7 @@ impl<'de> serde::Deserialize<'de> for VirtualParticipantOperationCost {
 
 All series electrical data — the modeled arc, tap, phase shift, series impedance `r`/`x`, ratings, per-winding base power, base voltages, and control — lives on the single `TransformerCircuit` referenced by `circuit`; availability is circuit-level. The `magnetizing_shunt` admittance and its `shunt_location` are transformer-level. The model uses an equivalent circuit assuming the impedance is on the high-voltage side and allocates iron losses and magnetizing susceptance according to `shunt_location`. The transformer's device base is the circuit's `base_power`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TwoWindingTransformer {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -400,6 +405,7 @@ impl AsRef<str> for TwoWindingTransformerShuntLocation {
 }
 ///A High Voltage Voltage-Source Converter DC line, which must be connected to an ACBus on each end. This model is appropriate for operational simulations with a linearized DC power flow approximation with losses using a voltage-current model. For modeling a DC network, see TModelHVDCLine. Impedance, voltage, and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TwoTerminalVSCLine {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -558,6 +564,7 @@ pub struct TwoTerminalVSCLine {
 }
 ///A Non-Capacitor Line Commutated Converter (LCC)-HVDC transmission line. As implemented in PSS/E. Impedance, voltage, and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TwoTerminalLCCLine {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -702,6 +709,7 @@ impl AsRef<str> for LCCControlMode {
 }
 ///A High Voltage DC line, which must be connected to an ACBus on each end. This model is appropriate for operational simulations with a linearized DC power flow approximation with losses proportional to the power flow. For modeling a DC network, see TModelHVDCLine.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TwoTerminalGenericHVDCLine {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -733,6 +741,7 @@ pub struct TwoTerminalGenericHVDCLine {
 }
 ///A collection of transmission branches whose combined flow is monitored and constrained as an interface.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TransmissionInterface {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -763,6 +772,7 @@ pub struct TransmissionInterfaceDirectionMapping {
 
 A `TwoWindingTransformer` has one circuit; a `ThreeWindingTransformer` has three, each connecting a terminal bus to the star bus. Circuit `available` is the single source of truth for availability; the owning transformer derives its availability from its circuits. `r`/`x` are the circuit impedance (for a two-winding transformer, the series impedance; for a three-winding transformer, the star-leg equivalent), in pu (device base) on `base_power` referenced to `base_voltage_primary`. Tap-changer / phase-shifter control is described by the flat control fields: `control_objective = UNDEFINED` means the circuit has no control block. Each objective selects exactly one actuator band (`tap_ratio_limits` or `phase_angle_limits`) and one target band (`controlled_voltage_limits`, `controlled_reactive_power_flow_limits` or `controlled_active_power_flow_limits`); every other band is `null`. For a `TwoWindingTransformer`, the single circuit's `base_power` is the transformer's device base.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TransformerCircuit {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -1722,6 +1732,7 @@ impl<'de> serde::Deserialize<'de> for TimeSeriesAssociation {
 }
 ///A three-winding transformer, modeled as an equivalent star: each referenced `TransformerCircuit` connects a terminal bus to the star (hidden) bus and carries that winding's series electrical data; availability is circuit-level. The pairwise measured impedances `r_12`/`x_12`, `r_23`/`x_23`, `r_31`/`x_31` (PSS/E CZ = 1, each in pu on the corresponding `base_power_12`/`base_power_23`/`base_power_31` and referenced to the first-index winding's base voltage) are optional and must be set together or all be absent; the star-leg impedances derived from them at parse time live on the circuits and are not synced back. Power-flow and Ybus assembly read the per-circuit star-leg impedances, not the pairwise fields. The model is described in Chapter 3.6 of J.D. Glover, M.S. Sarma and T. Overbye: Power Systems Analysis and Design.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ThreeWindingTransformer {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -1832,6 +1843,7 @@ impl AsRef<str> for AdmittanceUnitBasis {
 
 This is a standard representation with options to include a minimum up time, minimum down time, and ramp limits. For a more detailed representation of the start-up and shut-down processes, including hot starts, see `ThermalMultiStart`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ThermalStandard {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -2373,6 +2385,7 @@ impl<'de> serde::Deserialize<'de> for ThermalStandardOperationCost {
 
 `ThermalMultiStart` has a detailed representation of the start-up process based on the time elapsed since the last shut down, as well as a detailed shut-down process. The model is based on "Tight and Compact MILP Formulation for the Thermal Unit Commitment Problem.". For a simplified representation of the start-up and shut-down processes, see `ThermalStandard`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ThermalMultiStart {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -2916,6 +2929,7 @@ impl<'de> serde::Deserialize<'de> for ThermalMultiStartOperationCost {
 }
 ///A pair of values, one for the start-up phase and one for the shut-down phase of a unit's cycle.
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct StartUpShutDown {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub startup: Option<f64>,
@@ -2926,6 +2940,7 @@ pub struct StartUpShutDown {
 
 This line must be connected to a `DCBus` on each end. It uses a T-Model of the line impedance. This is suitable for operational simulations with a multi-terminal DC network. This line has no independent per-component power base, so its power fields are always natural units. Impedance, voltage, and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TModelHVDCLine {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -2950,6 +2965,7 @@ pub struct TModelHVDCLine {
 }
 ///Parameters of a turbine governor type II
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TGTypeII {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -2969,6 +2985,7 @@ pub struct TGTypeII {
 }
 ///Parameters of a turbine governor type I
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TGTypeI {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -2997,6 +3014,7 @@ pub struct TGTypeI {
 }
 ///A Synchronous Machine connected to the system to provide inertia or reactive power support.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SynchronousCondenser {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -3030,6 +3048,7 @@ pub struct SynchronousCondenser {
 
 Most often used in power flow studies, iterating over the steps to see impacts of admittance on the results. Total admittance is `number_engaged` * `Y_increase`, unless `solved_admittance` is set, in which case that value is the effective admittance. There is no fixed base admittance: a PSS/E SWITCHED SHUNT record carries only BINIT and the per-block increments.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SwitchedAdmittance {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -3121,6 +3140,7 @@ impl AsRef<str> for SwitchedAdmittanceControlMode {
 }
 ///Candidate generation technology for a region, representing either a thermal or a renewable generation technology. It carries the capital and operating cost of new capacity together with the operating characteristics the added units take on — capacity limits, ramp and time limits, outage derating, fuel, and start-up fuel use.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SupplyTechnology {
     ///ID for individual component.
     pub id: i64,
@@ -3434,6 +3454,7 @@ impl<'de> Deserialize<'de> for SupplyTechnologyCapacityLimits {
 }
 ///A pair of values representing planned and forced outage factors as fractions of total availability.
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct OutageFactors {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub planned: Option<f64>,
@@ -3442,6 +3463,7 @@ pub struct OutageFactors {
 }
 ///Candidate storage technology in a region. Charge capacity, discharge capacity, and energy capacity are added independently, each with its own capital cost, unit size, and capacity limits; charge and discharge efficiency, self-discharge losses, and limits on the ratio of energy to discharge capacity complete the description.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct StorageTechnology {
     ///ID for individual component.
     pub id: i64,
@@ -3859,6 +3881,7 @@ impl<'de> Deserialize<'de> for StorageTechnologyCapacityLimitsCharge {
 }
 ///Investment cost for candidate generation and transmission technologies which includes overnight capital costs and last-mile interconnection costs.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct StorageCapitalCost {
     pub charge_capital_cost: ValueCurve,
     pub discharge_capital_cost: ValueCurve,
@@ -3868,6 +3891,7 @@ pub struct StorageCapitalCost {
 }
 ///Steam Turbine-Governor. This model considers both TGOV1 or TGOV1DU in PSS/E
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SteamTurbineGov1 {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -3906,6 +3930,7 @@ A `StandardLoad` breaks the ZIP into three pieces: Z (constant impedance), I (co
 
 For an alternative exponential formulation of the ZIP model, see `ExponentialLoad`. For a simpler load model with no voltage dependency, see `PowerLoad`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct StandardLoad {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -3968,6 +3993,7 @@ pub struct StandardLoad {
 
 Commonly used in dynamics simulations to represent a very large machine on a single bus or for the representation of import/exports in operational simulations.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct Source {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -4343,6 +4369,7 @@ impl<'de> serde::Deserialize<'de> for SourceOperationCost {
 }
 ///A static time series on a regular grid: values at `initial_timestamp + k * resolution`. One of a closed set of six canonical time series types owned by the data layer. This schema records the association and its metadata; the dense values live in the store named by `uri`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SingleTimeSeries {
     ///Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.
     pub association_id: i64,
@@ -4423,6 +4450,7 @@ impl AsRef<str> for SingleTimeSeriesTimeSeriesType {
 
 These loads are used to model demand response. This load has a target demand profile (set by a `max_active_power` time series for an operational simulation). Load in the profile can be shifted to later time periods to aid in satisfying other system needs; however, any shifted load must be served within a designated time horizon (e.g., 24 hours), which is set by `load_balance_time_horizon`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ShiftablePowerLoad {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -4924,6 +4952,7 @@ impl<'de> serde::Deserialize<'de> for ShiftablePowerLoadOperationCost {
 }
 ///A series compensator on an `Arc`: a series capacitor or reactor, or a thyristor-controlled or static synchronous series compensator, with one series reactance. Devices that also inject at a bus, such as a UPFC, are not covered.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SeriesCompensator {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -4999,6 +5028,7 @@ impl AsRef<str> for SeriesCompensatorControlMode {
 }
 ///A scenarios forecast: per-scenario, per-window horizon arrays. Adds a scenario axis in front of the deterministic layout.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct Scenarios {
     ///Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.
     pub association_id: i64,
@@ -5082,6 +5112,7 @@ impl AsRef<str> for ScenariosTimeSeriesType {
 }
 ///In these excitation systems, voltage (and also current in compounded systems) is transformed to an appropriate level. Rectifiers, either controlled or non-controlled, provide the necessary direct current for the generator field. Parameters of IEEE Std 421.5 Type ST8C Excitacion System. ST8C in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ST8C {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -5165,6 +5196,7 @@ pub struct ST8C {
 }
 ///In these excitation systems, voltage (and also current in compounded systems) is transformed to an appropriate level. Rectifiers, either controlled or non-controlled, provide the necessary direct current for the generator field. Parameters of IEEE Std 421.5 Type ST6B Excitacion System. ST6B in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ST6B {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -5217,6 +5249,7 @@ pub struct ST6B {
 }
 ///Parameters of Simplified Excitation System Model - SEXS in PSSE
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SEXS {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -5240,6 +5273,7 @@ pub struct SEXS {
 }
 ///This exciter is based on an IEEE type SCRX solid state exciter. The output field voltage is varied by a control system to maintain the system voltage at Vref. Please note that this exciter model has no initialization capabilities - this means that it will respond to whatever inputs it receives regardless of the state of the machine model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SCRX {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -5267,6 +5301,7 @@ pub struct SCRX {
 }
 ///Supplemental attribute defining which existing generators mapped to a supply technology are eligible for retrofit.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RetrofitPotential {
     ///ID for individual component.
     pub id: i64,
@@ -5279,6 +5314,7 @@ pub struct RetrofitPotential {
 }
 ///Supplemental attribute defining which existing generators mapped to a supply technology are eligible for retirement, optionally with the year each was built and the year each is already scheduled to retire.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RetirementPotential {
     ///ID for individual component.
     pub id: i64,
@@ -5314,6 +5350,7 @@ Its output is equal to its `max_active_power` time series by default. Example us
 
 Renewable generators do not have a `max_active_power` parameter, which is instead calculated when calling `get_max_active_power()`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RenewableNonDispatch {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -5345,6 +5382,7 @@ pub struct RenewableNonDispatch {
 }
 ///Parameters of a renewable energy generator/converter model, this model corresponds to REGCA1 in PSSE, but to be interfaced using a Voltage Source instead of a Current Source
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RenewableEnergyVoltageConverterTypeA {
     ///Converter time constant. Units: s.
     #[serde(rename = "T_g")]
@@ -5392,6 +5430,7 @@ pub struct RenewableEnergyVoltageConverterTypeA {
 }
 ///Parameters of a renewable energy generator/converter model, this model corresponds to REGCA1 in PSSE.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RenewableEnergyConverterTypeA {
     ///Converter time constant. Units: s.
     #[serde(rename = "T_g")]
@@ -5455,6 +5494,7 @@ These generators can also participate in reserves markets, including upwards res
 
 Renewable generators do not have a `max_active_power` parameter, which is instead calculated when calling `get_max_active_power()`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RenewableDispatch {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -5982,6 +6022,7 @@ impl<'de> serde::Deserialize<'de> for RenewableDispatchOperationCost {
 }
 ///Parameters of Reactive Power Controller including REPCA1 and REECB1.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ReactiveRenewableControllerAB {
     ///ACBus identification number for voltage control. `0` identifies the local bus connected to this component.
     pub bus_control: i64,
@@ -6061,6 +6102,7 @@ pub struct ReactiveRenewableControllerAB {
     pub v_ref: f64,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RECurrentControlB {
     #[serde(rename = "Q_Flag")]
     pub q_flag: bool,
@@ -6088,6 +6130,7 @@ pub struct RECurrentControlB {
 }
 ///A pair of deadband thresholds `(dbd1, dbd2)` on a voltage or reactive-power error signal, inside which the controller does not act.
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct DbdPnts {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dbd1: Option<f64>,
@@ -6096,6 +6139,7 @@ pub struct DbdPnts {
 }
 ///A probabilistic forecast: per-percentile, per-window horizon arrays. Adds a percentile axis in front of the deterministic layout.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct Probabilistic {
     ///Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.
     pub association_id: i64,
@@ -6181,6 +6225,7 @@ impl AsRef<str> for ProbabilisticTimeSeriesType {
 
 This load consumes a set amount of power (set by `active_power` for a power flow simulation or a `max_active_power` time series for an operational simulation). For loads that can be compensated for load interruptions through demand response programs, see `InterruptiblePowerLoad`. For voltage-dependent loads used in dynamics modeling, see `StandardLoad`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PowerLoad {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -6213,6 +6258,7 @@ pub struct PowerLoad {
 }
 ///A priced point-to-point spread bid (e.g. an up-to-congestion or PTP obligation bid): a willingness-to-pay curve on the price spread between two locations. Clears as a withdrawal at the source terminal and an injection at the sink terminal.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PointToPointBid {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -6433,6 +6479,7 @@ impl<'de> serde::Deserialize<'de> for PointToPointBidSpreadBid {
 }
 ///Hydro Turbine-Governor with PID controller
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PIDGOV {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -6484,6 +6531,7 @@ pub struct PIDGOV {
 }
 ///A reserve product provided by devices already synchronized with the system. The procurement requirement is static unless a `requirement` time series is attached, in which case `requirement` is the scaling factor. Attach an Operating Reserve Demand Curve through `variable` to price the requirement rather than enforce it; omit `variable` when the reserve has no demand curve.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct OnlineReserve {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -6514,6 +6562,7 @@ pub struct OnlineReserve {
 }
 ///A non-spinning reserve product from devices not currently synchronized with the system but able to come online quickly after an unexpected contingency. Upward only, so unlike `OnlineReserve` there is no reserve direction. The procurement requirement is static unless a `requirement` time series is attached, in which case `requirement` is the scaling factor.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct OfflineReserve {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -6543,6 +6592,7 @@ pub struct OfflineReserve {
 }
 ///An irregular static time series, sampled at explicit timestamps rather than on a grid. Deliberately carries neither `initial_timestamp` nor `resolution`: an irregular series has no fixed cadence and its key holds no timestamp. The timestamp vector itself lives in the store rather than here, content-addressed so that many irregular series sharing one time axis store it once; `timestamps_uri` names which axis this series sits on, so a document plus the store's arrays describe the series completely.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct NonSequentialTimeSeries {
     ///Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.
     pub association_id: i64,
@@ -6618,6 +6668,7 @@ impl AsRef<str> for NonSequentialTimeSeriesTimeSeriesType {
 }
 ///A nodal representation of candidate HVDC transmission lines between two regions, added in discrete units of `unit_size` and characterized by capacity limits, a capital cost curve, and a loss model expressed as a fraction of installed nameplate capacity.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct NodalHVDCTransportTechnology {
     ///ID for individual component.
     pub id: i64,
@@ -6644,6 +6695,7 @@ pub struct NodalHVDCTransportTechnology {
 }
 ///Nodal representation of candidate AC transmission lines between two regions. Alongside capacity limits and a capital cost curve it carries the electrical characteristics of the line — resistance, series reactance, and voltage rating — and is added in discrete units of `unit_size`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct NodalACTransportTechnology {
     ///ID for individual component.
     pub id: i64,
@@ -6679,6 +6731,7 @@ pub struct NodalACTransportTechnology {
 
 This load models the aggregate real and reactive power consumed by induction motors, along with the motor technology parameters that characterize their electrical behavior. For a simple constant-power load with no motor characteristics, see `PowerLoad`. For voltage-dependent ZIP loads used in dynamics modeling, see `StandardLoad`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct MotorLoad {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -6752,6 +6805,7 @@ pub struct MinMaxByKey {
 }
 ///Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct LossCurve {
     #[serde(default = "defaults::LossCurve_power_units")]
     pub power_units: UnitSystem,
@@ -6760,6 +6814,7 @@ pub struct LossCurve {
 }
 ///A load zone for electricity price analysis. The load zone can be specified when defining each `ACBus` or `DCBus` in the zone.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct LoadZone {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -6775,6 +6830,7 @@ pub struct LoadZone {
 }
 ///An AC transmission line.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct Line {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -6815,6 +6871,7 @@ pub struct Line {
 }
 ///A pair of values, one at the `from` end and one at the `to` end of a directed edge.
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct FromTo {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub from: Option<f64>,
@@ -6827,6 +6884,7 @@ Like `StandardLoad`, it breaks the ZIP into three pieces: Z (constant impedance)
 
 For a non-interruptible ZIP load, see `StandardLoad`. For an interruptible constant-power load, see `InterruptiblePowerLoad`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct InterruptibleStandardLoad {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -7357,6 +7415,7 @@ impl<'de> serde::Deserialize<'de> for InterruptibleStandardLoadOperationCost {
 
 These loads are most commonly used for operational optimizations and can be used to model, for example, large commercial and industrial customers enrolled in demand response programs. This load has a target demand profile (set by a `max_active_power` time series for an operational simulation) that can be reduced to satisfy other system needs. For simpler loads without an operating cost for demand response, see `PowerLoad`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct InterruptiblePowerLoad {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -7391,6 +7450,7 @@ pub struct InterruptiblePowerLoad {
 }
 ///Cost representation for controllable load units
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct LoadCost {
     #[serde(default = "defaults::LoadCost_cost_type")]
     pub cost_type: LoadCostCostType,
@@ -7889,6 +7949,7 @@ impl<'de> serde::Deserialize<'de> for InterruptiblePowerLoadOperationCost {
 }
 ///Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus. Voltage and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them. `rated_dc_voltage` and `rated_ac_voltage` record the voltage bases, so a consumer can convert the voltage fields to per unit.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct InterconnectingConverter {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -8039,6 +8100,7 @@ impl AsRef<str> for VSCACControlModes {
 }
 ///Cost representation for static (non-time-varying) imports and exports with neighboring areas, together with the ancillary services offered alongside them. The offer curves are piecewise incremental cost curves with an implied zero cost at zero power, and a weekly energy limit bounds each direction. The time-varying counterpart is `ImportExportTimeSeriesCost`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ImportExportCost {
     #[serde(default = "defaults::ImportExportCost_cost_type")]
     pub cost_type: ImportExportCostCostType,
@@ -8076,6 +8138,7 @@ impl AsRef<str> for ImportExportCostCostType {
 }
 ///Supplemental attribute carrying one row of an impedance correction table, linked to a transformer. Exactly one correction curve is present, selected by `transformer_control_mode`: `tap_ratio_correction_curve` spans off-nominal turns ratio and `phase_angle_correction_curve` spans phase-shift angle. `transformer_winding` names the winding the row applies to.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ImpedanceCorrectionData {
     pub id: i64,
     pub table_number: i64,
@@ -8146,6 +8209,7 @@ impl AsRef<str> for ImpedanceCorrectionDataTransformerControlMode {
 }
 ///IEEE Type 1 Speed-Governing Model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct IEEETurbineGov1 {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -8210,6 +8274,7 @@ pub struct IEEETurbineGov1 {
 }
 ///1968 IEEE type 1 excitation system model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct IEEET1 {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -8252,6 +8317,7 @@ pub struct IEEET1 {
 }
 ///Hydro turbine-governor
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct HydroTurbineGov {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -8291,6 +8357,7 @@ pub struct HydroTurbineGov {
 }
 ///A hydropower generator that must have a `HydroReservoir` attached, suitable for modeling independent turbines and reservoirs.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct HydroTurbine {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -9100,6 +9167,7 @@ impl<'de> serde::Deserialize<'de> for HydroStorageGenerationCost {
 }
 ///A hydropower reservoir feeding, or fed by, the turbines attached to it. Storage level, inflow, outflow, and spillage are recorded in the basis named by `level_data_type` — volume, head, or energy — and the upstream and downstream associations set the reservoir's place in a cascade.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct HydroReservoir {
     pub id: i64,
     pub name: String,
@@ -9489,6 +9557,7 @@ impl AsRef<str> for HydroReservoirLevelDataType {
 }
 ///Cost representation for hydro reservoir
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct HydroReservoirCost {
     #[serde(default = "defaults::HydroReservoirCost_cost_type")]
     pub cost_type: HydroReservoirCostCostType,
@@ -9524,6 +9593,7 @@ impl AsRef<str> for HydroReservoirCostCostType {
 }
 ///A hydropower pumped turbine that needs to have two `HydroReservoir`s attached, suitable for modeling independent pumped hydro with reservoirs.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct HydroPumpTurbine {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -9597,6 +9667,7 @@ pub struct HydroPumpTurbine {
 }
 ///A pair of values, one for the turbine (generating) mode and one for the pump (charging) mode of a pumped hydro unit.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TurbinePump {
     pub turbine: f64,
     pub pump: f64,
@@ -10159,6 +10230,7 @@ impl AsRef<str> for CommitmentModes {
 
 For hydro generators with an upper reservoir, see `HydroReservoir`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct HydroDispatch {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -10690,6 +10762,7 @@ impl<'de> serde::Deserialize<'de> for HydroDispatchOperationCost {
 }
 ///A hybrid system co-locating a thermal unit, electric load, storage, and/or renewable unit behind a single grid interconnection.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct HybridSystem {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -10796,6 +10869,7 @@ impl AsRef<str> for OperationalStates {
 }
 ///A reserve product met by a group of individual reserves. The group requirement is additional to each member's own requirement, and a device contributing to a member reserve also counts toward the group. Membership is carried by `ServiceAssociation` rows, not by a field here.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct GroupReserve {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -10841,6 +10915,7 @@ impl AsRef<str> for ReserveDirection {
 }
 ///Supplemental attribute carrying geographic information about a component as a GeoJSON object. An empty object is permitted and means no geographic information is recorded.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct GeographicInfo {
     pub id: i64,
     pub geo_json: GeographicInfoGeoJson,
@@ -11209,6 +11284,7 @@ impl<'de> serde::Deserialize<'de> for GenericOperationCost {
 }
 ///Cost representation for thermal generation units
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ThermalGenerationCost {
     #[serde(default = "defaults::ThermalGenerationCost_cost_type")]
     pub cost_type: ThermalGenerationCostCostType,
@@ -11252,6 +11328,7 @@ impl AsRef<str> for ThermalGenerationCostCostType {
 }
 ///Cost representation for renewable generation units
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RenewableGenerationCost {
     #[serde(default = "defaults::RenewableGenerationCost_cost_type")]
     pub cost_type: RenewableGenerationCostCostType,
@@ -11286,6 +11363,7 @@ impl AsRef<str> for RenewableGenerationCostCostType {
 }
 ///Cost representation for hydro gen units
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct HydroGenerationCost {
     #[serde(default = "defaults::HydroGenerationCost_cost_type")]
     pub cost_type: HydroGenerationCostCostType,
@@ -11318,6 +11396,7 @@ impl AsRef<str> for HydroGenerationCostCostType {
 }
 ///A generic branch defined by a series impedance on an `Arc` between two buses.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct GenericArcImpedance {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -11372,6 +11451,7 @@ impl AsRef<str> for ImpedanceUnitBasis {
 }
 ///GE General Governor/Turbine Model. The GeneralGovModel (GGOV1) model is a general purpose governor model used for a variety of prime movers controlled by proportional-integral-derivative (PID) governors including gas turbines
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct GeneralGovModel {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -11472,6 +11552,7 @@ pub struct GeneralGovModel {
 
 Most often used in dynamics or AC power flow studies as a source of reactive power.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct FixedAdmittance {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -11524,6 +11605,7 @@ impl AsRef<str> for ShuntAdmittanceUnitBasis {
 }
 ///A complex number, given as its `real` and `imag` parts.
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ComplexNumber {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub real: Option<f64>,
@@ -11534,6 +11616,7 @@ pub struct ComplexNumber {
 
 Most often used in AC power flow studies as a control of voltage and, active and reactive power.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct FACTSControlDevice {
     ///Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.
     pub name: String,
@@ -11661,6 +11744,7 @@ impl AsRef<str> for FACTSControlDeviceControlMode {
 
 An `ExponentialLoad` models active power as P = P0 * V^α and reactive power as Q = Q0 * V^β, where the exponents α and β select govern the voltage dependency. For an alternative three-part formulation of the ZIP model, see `StandardLoad`. For a simpler load model with no voltage dependency, see `PowerLoad`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ExponentialLoad {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -11729,6 +11813,7 @@ impl AsRef<str> for LoadConformity {
 
 This is suitable for modeling storage charging and discharging with average efficiency losses, ignoring the physical dynamics of the storage unit. A variety of energy storage types and chemistries can be modeled with this approach. For pumped hydro storage, alternatively see `HydroPumpTurbine` and `HydroReservoir`.*/
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct EnergyReservoirStorage {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -11790,6 +11875,7 @@ pub struct EnergyReservoirStorage {
 }
 ///A pair of values, one for the upward (`up`) and one for the downward (`down`) direction of a quantity.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct UpDown {
     pub down: f64,
     pub up: f64,
@@ -11850,6 +11936,7 @@ impl AsRef<str> for StorageTech {
 }
 ///Cost representation for storage units
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct StorageCost {
     #[serde(default = "defaults::StorageCost_cost_type")]
     pub cost_type: StorageCostCostType,
@@ -11899,6 +11986,7 @@ impl AsRef<str> for StorageCostCostType {
 }
 ///A pair of values, one for the charging (`charge`) and one for the discharging (`discharge`) direction of a quantity.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ChargeDischarge {
     pub charge: f64,
     pub discharge: f64,
@@ -11995,6 +12083,7 @@ impl AsRef<str> for PrimeMovers {
 }
 ///Cost representation for time-varying market bids of energy and ancillary services. The static counterpart is MarketBidCost.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct MarketBidTimeSeriesCost {
     #[serde(default = "defaults::MarketBidTimeSeriesCost_cost_type")]
     pub cost_type: MarketBidTimeSeriesCostCostType,
@@ -12042,6 +12131,7 @@ impl AsRef<str> for MarketBidTimeSeriesCostCostType {
 }
 ///Cost representation for static (non-time-varying) market bids of energy and ancillary services.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct MarketBidCost {
     #[serde(default = "defaults::MarketBidCost_cost_type")]
     pub cost_type: MarketBidCostCostType,
@@ -12067,6 +12157,7 @@ pub struct MarketBidCost {
 }
 ///A triple of values, one for each stage of a thermal unit's start-up: `hot`, `warm`, and `cold`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct StartUpStages {
     #[serde(default = "defaults::StartUpStages_startup_stages_type")]
     pub startup_stages_type: StartUpStagesStartupStagesType,
@@ -12170,6 +12261,7 @@ impl TryFrom<i64> for CurveMultiStep {
 }
 ///A pair of values, one for the inbound (`in`) and one for the outbound (`out`) direction of a quantity.
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct InOut {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r#in: Option<f64>,
@@ -12178,6 +12270,7 @@ pub struct InOut {
 }
 ///Cost representation for time-varying imports and exports with neighboring areas. The static counterpart is ImportExportCost.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ImportExportTimeSeriesCost {
     #[serde(default = "defaults::ImportExportTimeSeriesCost_cost_type")]
     pub cost_type: ImportExportTimeSeriesCostCostType,
@@ -12712,6 +12805,7 @@ impl<'de> serde::Deserialize<'de> for EnergyReservoirStorageOperationCost {
 }
 ///Supplemental attribute describing the emission of a single pollutant from a host component. Combines pollutant identity (CO2, NOx, etc.) with an emission rate expressed as a ValueCurve (supporting constant, linear, or piecewise relationships between fuel consumption / power output and emissions). One EmissionsData instance can be attached to one or many components.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct EmissionsData {
     pub id: i64,
     ///Identifier for this emissions attribute
@@ -12884,6 +12978,7 @@ impl AsRef<str> for EmissionBasis {
 }
 ///IEEE Type ST1 Excitation System (PTI version)
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct EXST1 {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -12921,6 +13016,7 @@ pub struct EXST1 {
 }
 ///Generic Proportional/Integral Excitation System
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct EXPIC1 {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -12986,6 +13082,7 @@ pub struct EXPIC1 {
 }
 ///Modified AC2. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC2A Excitacion System. The alternator main exciter is used, feeding its output via non-controlled rectifiers. The Type AC2C model is similar to that of Type AC1C except for the inclusion of exciter time constant compensation and exciter field current limiting elements. EXAC2 in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct EXAC2 {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -13052,6 +13149,7 @@ pub struct EXAC2 {
 }
 ///Modified ESAC1A. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A Excitacion System. EXAC1A in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct EXAC1A {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -13106,6 +13204,7 @@ pub struct EXAC1A {
 }
 ///Modified ESAC1A. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A. EXAC1 in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct EXAC1 {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -13158,6 +13257,7 @@ pub struct EXAC1 {
 }
 ///IEEE Excitation System for Voltage Security Assesment
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct EX4VSA {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -13199,6 +13299,7 @@ pub struct EX4VSA {
 }
 ///In these excitation systems, voltage (and also current in compounded systems) is transformed to an appropriate level. Rectifiers, either controlled or non-controlled, provide the necessary direct current for the generator field. Parameters of IEEE Std 421.5 Type ST4B Excitacion System. ESST4B in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ESST4B {
     ///Regulator input filter time constant
     #[serde(rename = "Tr")]
@@ -13250,6 +13351,7 @@ pub struct ESST4B {
 }
 ///This excitation system supplies power through a transformer from the generator terminals and its regulated by a controlled rectifier (via thyristors). Parameters of IEEE Std 421.5 Type ST1A Excitacion System. ESST1A in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ESST1A {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -13309,6 +13411,7 @@ pub struct ESST1A {
 }
 ///Used to represent field-controlled dc commutator exciters with continuously acting voltage regulators having power supplies derived from the generator or auxiliaries bus. Parameters of IEEE Std 421.5 Type DC2A Excitacion System. This model corresponds to ESDC2A in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ESDC2A {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -13357,6 +13460,7 @@ pub struct ESDC2A {
 }
 ///Self-excited shunt fields with the voltage regulator operating in a mode commonly termed buck-boost. Parameters of IEEE Std 421.5 Type DC1A Excitacion System. This model corresponds to ESDC1A in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ESDC1A {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -13405,6 +13509,7 @@ pub struct ESDC1A {
 }
 ///Excitation System AC8B. Used to represent the Basler Digital Excitation Control System (DECS) with PID controller in PSSE
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ESAC8B {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -13451,6 +13556,7 @@ pub struct ESAC8B {
 }
 ///This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC6A Excitacion System. ESAC6A in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ESAC6A {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -13517,6 +13623,7 @@ pub struct ESAC6A {
 }
 ///This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A Excitacion System. This model corresponds to ESAC1A in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ESAC1A {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -13571,6 +13678,7 @@ pub struct ESAC1A {
 }
 ///Used to represent switches and breakers connecting AC Buses.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct DiscreteControlledACBranch {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -13607,6 +13715,7 @@ pub struct DiscreteControlledACBranch {
 }
 ///Operator-set flow limits on a directed branch: a minimum and a maximum flow in each direction, applied in addition to the branch's thermal rating.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct OperationalFlowLimit {
     ///Constraint: minimum=0
     pub from_to_min: f64,
@@ -13703,6 +13812,7 @@ impl AsRef<str> for DiscreteControlledACBranchBranchStatus {
 }
 ///A synthetic deterministic forecast derived from a SingleTimeSeries by `transform_single_time_series`. Field-identical to Deterministic, and it reads back as one; it stays a distinct type because the catalog records which rows are synthetic, and a request for Deterministic matches both while a request for this type narrows to the synthetic ones alone.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct DeterministicSingleTimeSeries {
     ///Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.
     pub association_id: i64,
@@ -13783,6 +13893,7 @@ impl AsRef<str> for DeterministicSingleTimeSeriesTimeSeriesType {
 }
 ///A deterministic forecast: one horizon-length array per window, windows stepping by `interval`. One of a closed set of six canonical time series types owned by the data layer. This schema records the association and its metadata; the dense values live in the store named by `uri`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct Deterministic {
     ///Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.
     pub association_id: i64,
@@ -13943,6 +14054,7 @@ impl AsRef<str> for DeterministicTimeSeriesType {
 }
 ///Demand-side technology such as an electric vehicle fleet or a hydrogen electrolyzer. Its flexibility is described by how far demand may be delayed or advanced, how much of it may be curtailed, and the cost and energy losses of doing either.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct DemandSideTechnology {
     ///ID for individual component.
     pub id: i64,
@@ -13985,6 +14097,7 @@ pub struct DemandSideTechnology {
 }
 ///Demand requirements for a region. New demand enters at a stated peak in its construction year and scales forward by a growth rate; `value_of_lost_load` and `unserved_demand_curve` price whatever portion goes unserved.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct DemandRequirement {
     ///ID for individual component.
     pub id: i64,
@@ -14018,6 +14131,7 @@ pub struct DemandRequirement {
 }
 ///Records data provenance for a component's field values: which organization or dataset the data came from, the URL it was retrieved from, and when it was retrieved. Mirrors the `DataSource` supplemental attribute from the upstream data layer, with two deliberate divergences: `organization` is optional here although it is required upstream, and `extra` is narrowed from an any-valued map to a string-valued one. Linked to the entity it describes through Core/Associations/SupplementalAttributeAssociation.json with attribute_type: "DataSource".
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct DataSource {
     pub id: i64,
     ///Publishing organization, e.g. 'U.S. Energy Information Administration'.
@@ -14071,6 +14185,7 @@ pub struct DataSourceExtra {
 }
 ///A DC bus.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct DCBus {
     ///ID of the area containing the DC bus.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -14097,6 +14212,7 @@ pub struct DCBus {
 }
 ///Losses of a device as a function of the current through it (a converter's DC current), together with the basis the curve is expressed in. `power_units` governs both axes: the y values are power and the x values current, each per-unit on the component's base (current's base being base power over base voltage) or natural. Units: x-axis per power_units — NATURAL_UNITS: kA, COMPONENT_BASE: pu ; y-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct CurrentLossCurve {
     #[serde(default = "defaults::CurrentLossCurve_power_units")]
     pub power_units: UnitSystem,
@@ -14280,6 +14396,7 @@ impl<'de> serde::Deserialize<'de> for LossValueCurve {
 }
 ///Attribute to represent combined cycle generation when each unit represents a specific configuration and aggregate heat rate. Operation exclusion groups (only units in the same group can operate simultaneously) are recorded as PlantAssociation rows with role='exclusion'.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct CombinedCycleFractional {
     pub id: i64,
     ///Name of the combined cycle fractional plant
@@ -14288,6 +14405,7 @@ pub struct CombinedCycleFractional {
 }
 ///Attribute to represent combined cycle generation by block configuration that shares heat recovery conversions. CT and CA unit assignments to HRSGs are recorded as CombinedCycleAssociation rows.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct CombinedCycleBlock {
     pub id: i64,
     ///Name of the combined cycle block
@@ -14335,6 +14453,7 @@ impl AsRef<str> for CombinedCycleConfiguration {
 }
 ///Association between a CombinedCycleBlock plant and a CT or CA unit, identifying which HRSG the unit feeds into or receives from. Supports n-to-m relationships: a single CT or CA can participate in multiple HRSGs by appearing in multiple rows.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct CombinedCycleAssociation {
     ///ID of the parent CombinedCycleBlock supplemental attribute
     pub plant_id: i64,
@@ -14374,6 +14493,7 @@ impl AsRef<str> for CombinedCycleAssociationRole {
 }
 ///Supply technology co-located with storage behind a shared grid connection. The generation and storage portions are referenced by id (`supply_technology` and `storage_technology`); the inverter that couples them to the grid carries its own capacity limits, capital and operating costs, and efficiency.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ColocatedSupplyStorageTechnology {
     ///ID for individual component.
     pub id: i64,
@@ -14568,6 +14688,7 @@ impl<'de> serde::Deserialize<'de> for ProductionVariableCostCurve {
 }
 ///Variable operation cost of a device expressed in fuel consumed, in the fuel quantity `fuel_units` names, together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form, whose y axis is fuel per hour; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct FuelCurve {
     ///Fixed fuel cost in USD per one `fuel_units` of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.
     #[serde(
@@ -14645,6 +14766,7 @@ impl AsRef<str> for FuelCurveVariableCostType {
 }
 ///Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct CostCurve {
     #[serde(default = "defaults::CostCurve_power_units")]
     pub power_units: UnitSystem,
@@ -14679,6 +14801,7 @@ impl AsRef<str> for CostCurveVariableCostType {
 }
 ///A bilaterally negotiated trade reported into the settlement ledger. Settlement-only: it carries no power-balance impact and never clears against a market model. It exists for round-tripping submissions and offline settlement.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct BilateralTransaction {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -14808,6 +14931,7 @@ impl AsRef<str> for BilateralConfirmation {
 }
 ///Flow exchanged between Areas. This Interchange is agnostic to the lines connecting the areas. It does not substitute Interface which is the total flow across a group of lines.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct AreaInterchange {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -14828,6 +14952,7 @@ pub struct AreaInterchange {
 }
 ///A pair of values for a directed edge, one for each orientation: `from_to` and `to_from`. The two are carried separately because the quantity need not be equal in the two directions.
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct FromToToFrom {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub from_to: Option<f64>,
@@ -14836,6 +14961,7 @@ pub struct FromToToFrom {
 }
 ///A collection of buses for control purposes. The `Area` can be specified when defining each `ACBus` or `DCBus` in the area.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct Area {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -14894,6 +15020,7 @@ impl AsRef<str> for UnitSystem {
 }
 ///An aggregated representation of a transmission interchange between two regions. Capacity is added in discrete units of `unit_size`, priced by a capital cost curve, and derated by a proportional line loss.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct AggregateTransportTechnology {
     ///ID for individual component.
     pub id: i64,
@@ -14921,6 +15048,7 @@ pub struct AggregateTransportTechnology {
 }
 ///Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, and the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TechnologyFinancialData {
     ///Period over which capital costs are recovered for net present value calculations. Units: yr.
     pub capital_recovery_period: i64,
@@ -14937,6 +15065,7 @@ pub struct TechnologyFinancialData {
 }
 ///Investment cost for candidate generation and transmission technologies which includes overnight capital costs and last-mile interconnection costs.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct CapitalCost {
     pub capital_cost: ValueCurve,
     #[serde(default = "defaults::CapitalCost_interconnection_cost")]
@@ -15823,6 +15952,7 @@ impl<'de> serde::Deserialize<'de> for ValueCurve {
 }
 ///A time-series-backed input-output curve. The static counterpart is InputOutputCurve.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TimeSeriesInputOutputCurve {
     #[serde(default = "defaults::TimeSeriesInputOutputCurve_curve_type")]
     pub curve_type: TimeSeriesInputOutputCurveCurveType,
@@ -15860,6 +15990,7 @@ impl AsRef<str> for TimeSeriesInputOutputCurveCurveType {
 }
 ///A time-series-backed incremental curve. The static counterpart is IncrementalCurve.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TimeSeriesIncrementalCurve {
     #[serde(default = "defaults::TimeSeriesIncrementalCurve_curve_type")]
     pub curve_type: TimeSeriesIncrementalCurveCurveType,
@@ -15904,6 +16035,7 @@ impl AsRef<str> for TimeSeriesIncrementalCurveCurveType {
 }
 ///A time-series-backed average rate curve. The static counterpart is AverageRateCurve.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TimeSeriesAverageRateCurve {
     #[serde(default = "defaults::TimeSeriesAverageRateCurve_curve_type")]
     pub curve_type: TimeSeriesAverageRateCurveCurveType,
@@ -17441,6 +17573,7 @@ impl<'de> serde::Deserialize<'de> for FunctionData {
 }
 ///Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TimeSeriesQuadraticFunctionData {
     #[serde(default = "defaults::TimeSeriesQuadraticFunctionData_function_type")]
     pub function_type: TimeSeriesQuadraticFunctionDataFunctionType,
@@ -17472,6 +17605,7 @@ impl AsRef<str> for TimeSeriesQuadraticFunctionDataFunctionType {
 }
 ///Time-series-backed variant of `PiecewiseStepData`. In place of inline coordinate vectors it carries `association_id`, referencing a stored series that supplies them at each step; use it when the segments change over time.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TimeSeriesPiecewiseStepData {
     #[serde(default = "defaults::TimeSeriesPiecewiseStepData_function_type")]
     pub function_type: TimeSeriesPiecewiseStepDataFunctionType,
@@ -17503,6 +17637,7 @@ impl AsRef<str> for TimeSeriesPiecewiseStepDataFunctionType {
 }
 ///Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TimeSeriesPiecewiseLinearData {
     #[serde(default = "defaults::TimeSeriesPiecewiseLinearData_function_type")]
     pub function_type: TimeSeriesPiecewiseLinearDataFunctionType,
@@ -17534,6 +17669,7 @@ impl AsRef<str> for TimeSeriesPiecewiseLinearDataFunctionType {
 }
 ///Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TimeSeriesLinearFunctionData {
     #[serde(default = "defaults::TimeSeriesLinearFunctionData_function_type")]
     pub function_type: TimeSeriesLinearFunctionDataFunctionType,
@@ -17565,6 +17701,7 @@ impl AsRef<str> for TimeSeriesLinearFunctionDataFunctionType {
 }
 ///A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct InputOutputCurve {
     #[serde(default = "defaults::InputOutputCurve_curve_type")]
     pub curve_type: InputOutputCurveCurveType,
@@ -17575,6 +17712,7 @@ pub struct InputOutputCurve {
 }
 ///Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct QuadraticFunctionData {
     ///Units: the wrapped function's output unit.
     pub constant_term: f64,
@@ -17610,6 +17748,7 @@ impl AsRef<str> for QuadraticFunctionDataFunctionType {
 }
 ///Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PiecewiseLinearData {
     #[serde(default = "defaults::PiecewiseLinearData_function_type")]
     pub function_type: PiecewiseLinearDataFunctionType,
@@ -17617,6 +17756,7 @@ pub struct PiecewiseLinearData {
 }
 ///A single point, given as its `x` and `y` coordinates.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TwoDimensionalFunctionPoint {
     ///Units: the wrapped function's input unit.
     pub x: f64,
@@ -17972,6 +18112,7 @@ impl AsRef<str> for InputOutputCurveCurveType {
 }
 ///A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct IncrementalCurve {
     #[serde(default = "defaults::IncrementalCurve_curve_type")]
     pub curve_type: IncrementalCurveCurveType,
@@ -18183,6 +18324,7 @@ impl AsRef<str> for IncrementalCurveCurveType {
 }
 ///A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct AverageRateCurve {
     #[serde(default = "defaults::AverageRateCurve_curve_type")]
     pub curve_type: AverageRateCurveCurveType,
@@ -18196,6 +18338,7 @@ pub struct AverageRateCurve {
 }
 ///Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PiecewiseStepData {
     #[serde(default = "defaults::PiecewiseStepData_function_type")]
     pub function_type: PiecewiseStepDataFunctionType,
@@ -18227,6 +18370,7 @@ impl AsRef<str> for PiecewiseStepDataFunctionType {
 }
 ///Data for a linear function `f(x) = proportional_term * x + constant_term`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct LinearFunctionData {
     ///Units: the wrapped function's output unit.
     pub constant_term: f64,
@@ -18458,6 +18602,7 @@ impl AsRef<str> for AverageRateCurveCurveType {
 }
 ///Parameters of Active Power Controller including REPCA1 and REECB1.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ActiveRenewableControllerAB {
     ///ACBus identification number for voltage control. `0` identifies the local bus connected to this component.
     pub bus_control: i64,
@@ -18508,6 +18653,7 @@ pub struct ActiveRenewableControllerAB {
 }
 ///A pair of deadband thresholds `(fdbd1, fdbd2)` on a frequency error signal, inside which the controller does not act.
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct FdbdPnts {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fdbd1: Option<f64>,
@@ -18516,6 +18662,7 @@ pub struct FdbdPnts {
 }
 ///Parameters of an Automatic Voltage Regulator Type II - Typical static exciter model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct AVRTypeII {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -18554,6 +18701,7 @@ pub struct AVRTypeII {
 }
 ///Parameters of an Automatic Voltage Regulator Type I - Resembles IEEE Type DC1
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct AVRTypeI {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -18592,6 +18740,7 @@ pub struct AVRTypeI {
 }
 ///An AC bus.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ACBus {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -18623,6 +18772,7 @@ pub struct ACBus {
 }
 ///A pair of values bounding a quantity from below (`min`) and from above (`max`).
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct MinMax {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max: Option<f64>,
@@ -18667,6 +18817,7 @@ impl AsRef<str> for ACBusType {
 }
 ///Automatic generation control (AGC) for the system or a certain `Area` within the system. This model uses a proportional-integral-derivative (PID) control to simulate a "smooth" response of the AGC to the area control error (ACE).
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct AGC {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -18696,6 +18847,7 @@ pub struct AGC {
 }
 ///Parameters of a AVR that returns a fixed voltage to the rotor winding
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct AVRFixed {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -18708,6 +18860,7 @@ pub struct AVRFixed {
 }
 ///Parameters of a simple proportional AVR in the derivative of EMF i.e. an integrator controller on EMF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct AVRSimple {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -18719,6 +18872,7 @@ pub struct AVRSimple {
     pub v_ref: f64,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ActivePowerDroop {
     #[serde(rename = "Rp")]
     pub rp: f64,
@@ -18727,6 +18881,7 @@ pub struct ActivePowerDroop {
     pub p_ref: f64,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ActivePowerPI {
     #[serde(rename = "Kp_p")]
     pub kp_p: f64,
@@ -18737,6 +18892,7 @@ pub struct ActivePowerPI {
     pub p_ref: f64,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ActiveVirtualOscillator {
     pub k1: f64,
     pub psi: f64,
@@ -18745,6 +18901,7 @@ pub struct ActiveVirtualOscillator {
 }
 ///Parameters of 6-states synchronous machine: Anderson-Fouad model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct AndersonFouadMachine {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -18784,6 +18941,7 @@ pub struct AndersonFouadMachine {
 }
 ///A topological directed edge connecting two buses. Arcs are used to define the `from_id` and `to_id` endpoints when defining a line or transformer.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct Arc {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -18794,6 +18952,7 @@ pub struct Arc {
 }
 ///Parameters of an average converter model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct AverageConverter {
     ///Rated voltage (V)
     pub rated_voltage: f64,
@@ -18802,6 +18961,7 @@ pub struct AverageConverter {
 }
 ///Parameters of a Classic Machine: GENCLS in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct BaseMachine {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -18816,6 +18976,7 @@ pub struct BaseMachine {
 }
 ///Policy requirement enforcing a minimum capacity reserve margin in the target year, such that `(total_capacity - peak_demand) / peak_demand >= capacity_reserve_fraction`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct CapacityReserveMargin {
     ///ID for individual component.
     pub id: i64,
@@ -18832,6 +18993,7 @@ pub struct CapacityReserveMargin {
 }
 ///Policy requirement limiting the amount of carbon produced in the target year. The limit can be given either as a total mass of CO2 or as the carbon intensity of the portfolio, in mass of CO2 per MWh of electricity.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct CarbonCaps {
     ///ID for individual component.
     pub id: i64,
@@ -18851,6 +19013,7 @@ pub struct CarbonCaps {
 }
 ///Policy requirement defining an additional cost penalty per ton of CO2 produced in the eligible regions during the target year.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct CarbonTax {
     ///ID for individual component.
     pub id: i64,
@@ -18866,6 +19029,7 @@ pub struct CarbonTax {
     pub tax_dollars_per_ton: f64,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct CurrentModeControl {
     pub kpc: f64,
     pub kic: f64,
@@ -18873,6 +19037,7 @@ pub struct CurrentModeControl {
 }
 ///Parameters Woodward Diesel Governor Model. DEGOV in PowerWorld
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct DEGOV {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -18906,6 +19071,7 @@ pub struct DEGOV {
 }
 ///Parameters Woodward Diesel Governor Model. DEGOV1 in PSSE
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct DEGOV1 {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -18952,6 +19118,7 @@ pub struct DEGOV1 {
 }
 ///Policy requirement that the total generation of the eligible technologies be at least a pre-determined fraction of the total annual demand across the eligible zones in the target year.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct EnergyShareRequirements {
     ///ID for individual component.
     pub id: i64,
@@ -18968,6 +19135,7 @@ pub struct EnergyShareRequirements {
 }
 ///Supplemental attribute mapping a technology in the portfolio to the existing system — for example, the list of existing generators that correspond to one supply technology.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ExistingDevices {
     ///ID for individual component.
     pub id: i64,
@@ -18977,6 +19145,7 @@ pub struct ExistingDevices {
 }
 ///Parameters of 5 mass-spring shaft model. It contains a High-Pressure (HP) steam turbine, Intermediate-Pressure (IP) steam turbine, Low-Pressure (LP) steam turbine, the Rotor and an Exciter (EX) mover
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct FiveMassShaft {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19037,12 +19206,14 @@ pub struct FiveMassShaft {
 }
 ///Parameters of a Fixed DC Source that returns a fixed DC voltage
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct FixedDCSource {
     ///Voltage (V)
     pub voltage: f64,
 }
 ///Supplemental attribute recording a component's forced outage status directly, rather than as a probability. `outage_status` is 1 when the component is outaged and 0 when it is available, and it can be backed by a time series drawn from a stochastic simulation or from historical records.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct FixedForcedOutage {
     pub id: i64,
     pub outage_status: f64,
@@ -19060,6 +19231,7 @@ pub struct FixedForcedOutage {
 }
 ///Parameters of a Fixed Frequency Estimator (i.e. no PLL)
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct FixedFrequency {
     ///Reference frequency
     #[serde(default = "defaults::FixedFrequency_frequency")]
@@ -19067,6 +19239,7 @@ pub struct FixedFrequency {
 }
 ///Parameter of a full order flux stator-rotor model without zero sequence flux in the stator. The derivative of stator fluxes (ψd and ψq) is NOT neglected. Only one q-axis damping circuit is considered. All parameters are in machine per unit. Refer to Chapter 3 of Power System Stability and Control by P. Kundur or Chapter 11 of Power System Dynamics: Stability and Control, by J. Machowski, J. Bialek and J. Bumby, for more details. Note that the models are somewhat different (but equivalent) due to the different Park Transformation used in both books
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct FullMachine {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19109,6 +19282,7 @@ pub struct FullMachine {
 }
 ///Parameters of Gas Turbine-Governor. GAST in PSSE and GAST_PTI in PowerWorld
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct GasTG {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19143,6 +19317,7 @@ pub struct GasTG {
 }
 ///Supplemental attribute describing forced outages whose transitions follow geometric distributions, parameterized by the probability of entering an outage and the mean time to recovery. Both the outage and recovery probabilities can be backed by time series.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct GeometricDistributionForcedOutage {
     pub id: i64,
     ///Mean time elapsed between a failure and the return to service, in minutes. Units: min.
@@ -19165,6 +19340,7 @@ pub struct GeometricDistributionForcedOutage {
 }
 ///Policy requirement that the qualified demand-side technologies have their demand met by an equal amount of generation from qualified supply in every hour, such that `sum(P)_qualified_supply >= sum(D)_qualified_demand`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct HourlyMatching {
     ///ID for individual component.
     pub id: i64,
@@ -19175,6 +19351,7 @@ pub struct HourlyMatching {
 }
 ///Parameters of Hybrid Current Controller Limiter. Regulates the magnitude of the inverter output current, but with a closed loop feedback regulated by a virtual impedance which provides ant-windup. Described in: Novel Hybrid Current Limiter for Grid-Forming Inverter Control During Unbalanced Faults by Baeckland and Seo, 2023
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct HybridOutputCurrentLimiter {
     ///Maximum limit on current controller input current
     #[serde(rename = "I_max")]
@@ -19186,6 +19363,7 @@ pub struct HybridOutputCurrentLimiter {
 }
 ///Attribute to represent hydro power plants. Shared penstocks between units are recorded as PlantAssociation rows with role='penstock'.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct HydroPowerPlant {
     pub id: i64,
     ///Name of the hydro power plant
@@ -19193,6 +19371,7 @@ pub struct HydroPowerPlant {
 }
 ///IEEE stabilizing model PSS
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct IEEEST {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19252,6 +19431,7 @@ pub struct IEEEST {
 }
 ///Parameters of Instantaneous (Square) Current Controller Limiter. Regulates inverter output current on the d and q axis separately
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct InstantaneousOutputCurrentLimiter {
     ///Maximum limit on d-axis current controller input current
     #[serde(rename = "Id_max")]
@@ -19262,6 +19442,7 @@ pub struct InstantaneousOutputCurrentLimiter {
 }
 ///Parameters of a Phase-Locked Loop (PLL) based on 'Operation of a phase locked loop system under distorted utility conditions' by Vikram Kaura, and Vladimir Blasko
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct KauraPLL {
     ///PLL low-pass filter frequency
     pub omega_lp: f64,
@@ -19272,6 +19453,7 @@ pub struct KauraPLL {
 }
 ///Parameters of a LCL filter outside the converter
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct LCFilter {
     ///Filter inductance
     pub lf: f64,
@@ -19282,6 +19464,7 @@ pub struct LCFilter {
 }
 ///Parameters of a LCL filter outside the converter, the states are in the grid's reference frame
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct LCLFilter {
     ///Series inductance of converter filter
     pub lf: f64,
@@ -19296,6 +19479,7 @@ pub struct LCLFilter {
 }
 ///Parameters of Magnitude (Circular) Current Controller Limiter. Regulates only the magnitude of the inverter output current
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct MagnitudeOutputCurrentLimiter {
     ///Maximum limit on current controller input current
     #[serde(rename = "I_max")]
@@ -19303,6 +19487,7 @@ pub struct MagnitudeOutputCurrentLimiter {
 }
 ///Parameters of 6-states synchronous machine: Marconato model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct MarconatoMachine {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19345,6 +19530,7 @@ pub struct MarconatoMachine {
 }
 ///Policy requirement that the total capacity of all eligible technologies in the target year be less than the specified limit in MW.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct MaximumCapacityRequirements {
     ///ID for individual component.
     pub id: i64,
@@ -19361,6 +19547,7 @@ pub struct MaximumCapacityRequirements {
 }
 ///Policy requirement that the total capacity of all eligible technologies in the target year be greater than or equal to the specified minimum in MW.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct MinimumCapacityRequirements {
     ///ID for individual component.
     pub id: i64,
@@ -19377,6 +19564,7 @@ pub struct MinimumCapacityRequirements {
 }
 ///Parameters of 4-states synchronous machine: Simplified Marconato model The derivative of stator fluxes (ψd and ψq) is neglected and ωψd = ψd and ωψq = ψq is assumed (i.e. ω=1.0). This is standard when transmission network dynamics is neglected
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct OneDOneQMachine {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19404,6 +19592,7 @@ pub struct OneDOneQMachine {
 }
 ///IEEE dual-input stabilizer model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PSS2A {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19473,6 +19662,7 @@ pub struct PSS2A {
 }
 ///IEEE 421.5 2005 PSS2B IEEE Dual-Input Stabilizer Model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PSS2B {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19556,6 +19746,7 @@ pub struct PSS2B {
 }
 ///IEEE 421.5 2016 PSS2C IEEE Dual-Input Stabilizer Model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PSS2C {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19658,6 +19849,7 @@ pub struct PSS2C {
 }
 ///Parameters of a PSS that returns a fixed voltage to add to the reference for the AVR
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PSSFixed {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19667,6 +19859,7 @@ pub struct PSSFixed {
 }
 ///Parameters of a PSS that returns a proportional droop voltage to add to the reference for the AVR
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PSSSimple {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19679,6 +19872,7 @@ pub struct PSSSimple {
 }
 ///Supplemental attribute describing outages that are scheduled in advance, naming the time series that carries the schedule.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PlannedOutage {
     pub id: i64,
     pub outage_schedule: String,
@@ -19696,6 +19890,7 @@ pub struct PlannedOutage {
 }
 ///Association between a power plant supplemental attribute and a generating unit, identifying the group the unit belongs to within the plant. Covers 1-to-n cases: ThermalPowerPlant shafts, HydroPowerPlant penstocks, RenewablePowerPlant PCCs, and CombinedCycleFractional exclusion groups. The semantics of group_index are determined by the parent plant's type.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PlantAssociation {
     ///ID of the parent plant supplemental attribute
     pub plant_id: i64,
@@ -19706,6 +19901,7 @@ pub struct PlantAssociation {
 }
 ///Financial data for the portfolio as a whole: the base economic year that all costs are converted to a net present value in, and the discount, inflation, and interest rates used in that conversion.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PortfolioFinancialData {
     ///ID for individual component.
     pub id: i64,
@@ -19723,6 +19919,7 @@ pub struct PortfolioFinancialData {
 }
 ///Parameters of Priority-Based Current Controller Limiter. Regulates the magnitude of the inverter output current and prioritizes a specific angle for the resultant current signal
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct PriorityOutputCurrentLimiter {
     ///Maximum limit on current controller input current
     #[serde(rename = "I_max")]
@@ -19733,6 +19930,7 @@ pub struct PriorityOutputCurrentLimiter {
 }
 ///Parameters of RL series filter in algebraic representation
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RLFilter {
     ///Series resistance in p.u. of converter filter to the grid
     pub rf: f64,
@@ -19740,6 +19938,7 @@ pub struct RLFilter {
     pub lf: f64,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ReactivePowerDroop {
     pub kq: f64,
     pub omegaf: f64,
@@ -19747,6 +19946,7 @@ pub struct ReactivePowerDroop {
     pub v_ref: f64,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ReactivePowerPI {
     #[serde(rename = "Kp_q")]
     pub kp_q: f64,
@@ -19760,6 +19960,7 @@ pub struct ReactivePowerPI {
 }
 ///Supplemental attribute grouping the setpoint voltage regulating devices that hold the voltage at one bus, so the reactive power required there can be split between them. The members' shares are their VoltageControlAssociation weights, each divided by the sum over the members in service (PSS/E RMPCT). The regulated bus is not stored: every member already resolves to the same bus. A bus regulated by two or more setpoint devices has exactly one sharing group containing all of them; a lone device has none.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ReactivePowerSharing {
     ///Unique integer identifier for this supplemental attribute.
     pub id: i64,
@@ -19767,6 +19968,7 @@ pub struct ReactivePowerSharing {
     pub name: String,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ReactiveVirtualOscillator {
     pub k2: f64,
     #[serde(
@@ -19782,6 +19984,7 @@ pub struct ReactiveVirtualOscillator {
 }
 ///Parameters of a Phase-Locked Loop (PLL) based on 'Reduced-order Structure-preserving Model for Parallel-connected Three-phase Grid-tied Inverters'
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ReducedOrderPLL {
     ///PLL low-pass filter frequency
     pub omega_lp: f64,
@@ -19792,6 +19995,7 @@ pub struct ReducedOrderPLL {
 }
 ///Attribute to represent renewable power plants. Point of common coupling (PCC) connections between units are recorded as PlantAssociation rows with role='pcc'.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RenewablePowerPlant {
     pub id: i64,
     ///Name of the renewable power plant
@@ -19799,6 +20003,7 @@ pub struct RenewablePowerPlant {
 }
 ///Links a policy requirement to one member subject to it. One record per (requirement, member) pair: the many-to-many relation between a requirement and the components it constrains is normalized here rather than carried as a list on either side, so each membership is an individually addressable row. The type of either side is resolved through the entity registry rather than duplicated here, matching the shape of SupplementalAttributeAssociation. `requirement_id` names the policy requirement (a CapacityReserveMargin, CarbonCap, EnergyShareRequirement, ...); `entity_id` names the member the requirement applies to, so no member-type discriminator is needed.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RequirementAssociation {
     ///ID of the policy requirement the membership belongs to.
     pub requirement_id: i64,
@@ -19834,6 +20039,7 @@ impl AsRef<str> for ReservoirLocation {
 }
 ///4-states round-rotor synchronous machine with exponential saturation: IEEE Std 1110 §5.3.2 (Model 2.2). GENROE model in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RoundRotorExponential {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19845,6 +20051,7 @@ pub struct RoundRotorExponential {
 }
 ///Parameters of 4-states round-rotor synchronous machine with quadratic/exponential saturation: IEEE Std 1110 5.3.2 (Model 2.2). GENROU or GENROE model in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RoundRotorMachine {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19888,6 +20095,7 @@ pub struct RoundRotorMachine {
 }
 ///4-states round-rotor synchronous machine with quadratic saturation: IEEE Std 1110 §5.3.2 (Model 2.2). GENROU model in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RoundRotorQuadratic {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19899,6 +20107,7 @@ pub struct RoundRotorQuadratic {
 }
 ///Speed-sensitive stabilizing model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct STAB1 {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19926,6 +20135,7 @@ pub struct STAB1 {
 }
 ///3-states salient-pole synchronous machine with exponential saturation: IEEE Std 1110 §5.3.2 (Model 2.1). GENSAE in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SalientPoleExponential {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19937,6 +20147,7 @@ pub struct SalientPoleExponential {
 }
 ///Parameters of 3-states salient-pole synchronous machine with quadratic/exponential saturation: IEEE Std 1110 §5.3.1 (Model 2.1). GENSAL or GENSAE model in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SalientPoleMachine {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19974,6 +20185,7 @@ pub struct SalientPoleMachine {
 }
 ///3-states salient-pole synchronous machine with quadratic saturation: IEEE Std 1110 §5.3.2 (Model 2.1). GENSAL in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SalientPoleQuadratic {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -19985,6 +20197,7 @@ pub struct SalientPoleQuadratic {
 }
 ///Parameters of Saturation Current Controller Limiter. Regulates the magnitude of the inverter output current, and applies a closed loop feedback regulated by a static gain which provides ant-windup
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SaturationOutputCurrentLimiter {
     ///Maximum limit on current controller input current
     #[serde(rename = "I_max")]
@@ -19994,6 +20207,7 @@ pub struct SaturationOutputCurrentLimiter {
 }
 ///Parameters of synchronous machine: Sauer Pai model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SauerPaiMachine {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -20036,6 +20250,7 @@ pub struct SauerPaiMachine {
 }
 ///Links a service to one component that contributes to it. One record per (service, member) pair: the many-to-many reserve-participation relation is normalized here rather than carried as a list on either side, so each membership is an individually addressable row. The type of either side is resolved through the entity registry rather than duplicated here, matching the shape of PlantAssociation and SupplementalAttributeAssociation. `entity_id` may name a Device (the reserve case), a Branch (TransmissionInterface), or another Service (GroupReserve), so no member-type discriminator is needed. The data model library stores the same relation on the device side as `Device.services`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ServiceAssociation {
     ///ID of the service the membership belongs to.
     pub service_id: i64,
@@ -20044,6 +20259,7 @@ pub struct ServiceAssociation {
 }
 ///Parameters of 4-states simplified Anderson-Fouad (SimpleAFMachine) model. The derivative of stator fluxes (ψd and ψq) is neglected and ωψd = ψd and ωψq = ψq is assumed (i.e. ω=1.0). This is standard when transmission network dynamics is neglected. If transmission dynamics is considered use the full order Anderson Fouad model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SimpleAFMachine {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -20083,6 +20299,7 @@ pub struct SimpleAFMachine {
 }
 ///Parameter of a full order flux stator-rotor model without zero sequence flux in the stator. The derivative of stator fluxes (ψd and ψq) is neglected. This is standard when transmission network dynamics is neglected. Only one q-axis damping circuit is considered. All per unit are in machine per unit. Refer to Chapter 3 of Power System Stability and Control by P. Kundur or Chapter 11 of Power System Dynamics: Stability and Control, by J. Machowski, J. Bialek and J. Bumby, for more details. Note that the models are somewhat different (but equivalent) due to the different Park Transformation used in both books
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SimpleFullMachine {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -20125,6 +20342,7 @@ pub struct SimpleFullMachine {
 }
 ///Parameters of 4-states synchronous machine: Simplified Marconato model The derivative of stator fluxes (ψd and ψq) is neglected and ωψd = ψd and ωψq = ψq is assumed (i.e. ω=1.0). This is standard when transmission network dynamics is neglected
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SimpleMarconatoMachine {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -20167,6 +20385,7 @@ pub struct SimpleMarconatoMachine {
 }
 ///Parameters of single mass shaft model. Typically represents the rotor mass
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SingleMass {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -20179,6 +20398,7 @@ pub struct SingleMass {
 }
 ///Supplemental attribute representing a substation that groups node buses and switching devices of a full-topology (node-breaker) network model. Attach the attribute to every member component. Geospatial data is not stored here; attach a GeographicInfo attribute to the member components instead.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct Substation {
     pub id: i64,
     ///Name of the substation
@@ -20191,6 +20411,7 @@ pub struct Substation {
 }
 ///Links a supplemental attribute to the component it describes — the JSON form of a row in the store's `supplemental_attribute_associations` catalog table, field-for-field. `component_type` and `attribute_type` are denormalized labels carried for filtering and reporting, not identity: identity is the `(component_id, attribute_id)` pair. Lives in Core because either side may be a Core or an Operations type. Unlike `components`, `supplemental_attributes` is a flat, untyped array, so `attribute_type` is this record's only per-row type discriminator.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct SupplementalAttributeAssociation {
     ///ID of the component the attribute describes.
     pub component_id: i64,
@@ -20203,6 +20424,7 @@ pub struct SupplementalAttributeAssociation {
 }
 ///Parameters of a fixed Turbine Governor that returns a fixed mechanical torque given by the product of P_ref*efficiency
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TGFixed {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -20214,6 +20436,7 @@ pub struct TGFixed {
 }
 ///Parameters of a Simple one-state Turbine Governor
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TGSimple {
     ///Unique integer identifier for this component
     pub id: i64,
@@ -20228,6 +20451,7 @@ pub struct TGSimple {
 }
 ///Attribute to represent ThermalGen power plants with synchronous generation. Shared shafts between units are recorded as PlantAssociation rows with role='shaft'.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ThermalPowerPlant {
     pub id: i64,
     ///Name of the power plant
@@ -20235,6 +20459,7 @@ pub struct ThermalPowerPlant {
 }
 ///A market trading hub: a named set of member buses at which hub-settled bids are priced. Membership is carried as TradingHubAssociation rows rather than a list on this record, matching the service-membership convention.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TradingHub {
     ///Unique integer identifier for this component.
     pub id: i64,
@@ -20243,6 +20468,7 @@ pub struct TradingHub {
 }
 ///Links a trading hub to one associated entity. One record per (hub, member) pair. `entity_id` may name a bus (hub membership) or a market transaction settling at the hub, resolved through the entity registry, so no member-type discriminator is needed — the same shape as ServiceAssociation.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct TradingHubAssociation {
     ///ID of the trading hub the association belongs to.
     pub trading_hub_id: i64,
@@ -20250,6 +20476,7 @@ pub struct TradingHubAssociation {
     pub entity_id: i64,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct VirtualInertia {
     #[serde(rename = "Ta")]
     pub ta: f64,
@@ -20259,6 +20486,7 @@ pub struct VirtualInertia {
     pub p_ref: f64,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct VoltageModeControl {
     pub kpv: f64,
     pub kiv: f64,
@@ -20273,6 +20501,7 @@ pub struct VoltageModeControl {
 }
 ///Parameters for the DC-side with a Battery Energy Storage System from 'Grid-Coupled Dynamic Response of Battery-Driven Voltage Source Converters'
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct ZeroOrderBESS {
     ///Rated voltage (V)
     pub rated_voltage: f64,

@@ -137,7 +137,8 @@ fn optional_ref_to_a_defaulted_type_gets_no_default() {
             "curve_type": "INPUT_OUTPUT",
             "function_data": {"function_type": "LINEAR", "constant_term": 0, "proportional_term": 0}
         },
-        "power_units": "NATURAL_UNITS"
+        "power_units": "NATURAL_UNITS",
+        "fuel_units": "MMBTU"
     }))
     .unwrap_or_else(|e| panic!("{e}"));
     let out = written(&curve);

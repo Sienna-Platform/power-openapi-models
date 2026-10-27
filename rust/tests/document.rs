@@ -178,3 +178,22 @@ fn write_then_read_via_files() {
     assert_eq!(read_document(&path).unwrap(), doc);
     std::fs::remove_dir_all(&dir).unwrap();
 }
+
+#[test]
+fn a_row_with_an_unknown_field_fails_to_decode() {
+    let mut row = json!({
+        "association_id": 1, "owner_id": 7, "owner_type": "ThermalStandard",
+        "owner_category": "Component", "time_series_type": "SingleTimeSeries",
+        "name": "max_active_power", "features": {},
+        "uri": "6044a282e6ea37af7982ca551b8d5dca932fe4fb696bf9cfa14e7316e2693286",
+        "element_type": "f64", "element_shape": [],
+        "initial_timestamp": "2030-01-01T00:00:00Z", "resolution": "PT1H", "length": 24
+    });
+    serde_json::from_value::<power_openapi_models::generated::TimeSeriesAssociation>(row.clone())
+        .unwrap();
+    row["owner_typ"] = json!("Typo");
+    let error =
+        serde_json::from_value::<power_openapi_models::generated::TimeSeriesAssociation>(row)
+            .unwrap_err();
+    assert!(error.to_string().contains("owner_typ"), "{error}");
+}
