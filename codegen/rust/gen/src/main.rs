@@ -9,7 +9,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::{env, fs, path::Path, process};
 
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote};
+use quote::{format_ident, quote, ToTokens};
 use serde_json::Value;
 use syn::punctuated::Punctuated;
 use syn::{Fields, GenericArgument, Item, Meta, PathArguments, Token, Type};
@@ -41,6 +41,7 @@ fn main() {
     let defaults = apply_schema_defaults(&mut file, &schemas);
     integer_enums(&mut file, &schemas);
     derive_partial_eq(&mut file);
+    deny_unknown_fields(&mut file);
     lenient_timestamps(&mut file);
     order_fields_like_schema(&mut file, &schemas);
     let idents = rust_idents(&file, &schemas);
@@ -358,6 +359,30 @@ fn derive_partial_eq(file: &mut syn::File) {
         }
         paths.push(syn::parse_quote!(PartialEq));
         *derive = syn::parse_quote!(#[derive(#paths)]);
+    }
+}
+
+/// DEFECT: openapi-to-rust lets serde ignore a property the schema does not know,
+/// so a misspelled field reads without error and is dropped. The strict bundles
+/// close every object that has no explicit `additionalProperties`, and the
+/// document types already deny unknown fields; the rows and components inside
+/// them must too. A struct with a `flatten` field is skipped: its schema allows
+/// extra keys, and serde cannot combine the two attributes.
+fn deny_unknown_fields(file: &mut syn::File) {
+    let mentions = |attr: &syn::Attribute, path: &str, word: &str| {
+        attr.path().is_ident(path) && attr.to_token_stream().to_string().contains(word)
+    };
+    for item in &mut file.items {
+        let Item::Struct(s) = item else { continue };
+        let Fields::Named(fields) = &s.fields else { continue };
+        let flattens = fields
+            .named
+            .iter()
+            .any(|f| f.attrs.iter().any(|a| mentions(a, "serde", "flatten")));
+        let deserializes = s.attrs.iter().any(|a| mentions(a, "derive", "Deserialize"));
+        if deserializes && !flattens {
+            s.attrs.push(syn::parse_quote!(#[serde(deny_unknown_fields)]));
+        }
     }
 }
 
