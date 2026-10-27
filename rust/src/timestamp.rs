@@ -1,28 +1,38 @@
-//! Hand-written (NOT generated): how `format: date-time` fields are read and
-//! written.
+//! Hand-written (NOT generated): the type of every `format: date-time` field.
 //!
 //! The schemas say RFC 3339, which requires an offset, and `chrono` alone rejects
 //! `2024-01-01T00:00:00`. Real producers write timestamps without an offset, so all
-//! three packages (Python, TypeScript, Rust) accept one and read it as UTC. An
-//! offset, when present, is honoured and the value is normalized to UTC. Anything
-//! else -- a date with no time, or text that is not a timestamp -- is rejected.
-//! Values are always written with an explicit offset (`Z`).
+//! three packages (Python, TypeScript, Rust) accept one. A timestamp is kept as
+//! written: no offset gives [`Timestamp::Zoneless`], and an offset gives
+//! [`Timestamp::Offset`] with that offset. The crate does not assume a zone; a
+//! series' `time_reference` says how to read its timestamps. Anything else -- a date
+//! with no time, or text that is not a timestamp -- is rejected.
 //!
-//! `codegen/rust/gen` (`lenient_timestamps`) attaches these functions to the
-//! generated fields with `#[serde(with = ...)]`.
+//! `codegen/rust/gen` (`lenient_timestamps`) gives the generated fields this type.
 
-use chrono::{DateTime, NaiveDateTime, Utc};
+use std::fmt;
+
+use chrono::{DateTime, FixedOffset, NaiveDateTime, SecondsFormat};
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
-/// Parses an RFC 3339 timestamp, or the same without an offset, read as UTC.
-pub fn parse(text: &str) -> Result<DateTime<Utc>, String> {
+/// A timestamp as written: an instant with its offset, or a wall clock.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Timestamp {
+    /// Written with `Z` or a UTC offset. Keeps that offset.
+    Offset(DateTime<FixedOffset>),
+    /// Written with no offset. A wall clock, which names no instant.
+    Zoneless(NaiveDateTime),
+}
+
+/// Parses an RFC 3339 timestamp, or the same without an offset.
+pub fn parse(text: &str) -> Result<Timestamp, String> {
     if let Ok(with_offset) = DateTime::parse_from_rfc3339(text) {
-        return Ok(with_offset.with_timezone(&Utc));
+        return Ok(Timestamp::Offset(with_offset));
     }
     let has_time = matches!(text.as_bytes().get(10), Some(b'T' | b't'));
     if has_time {
         if let Ok(naive) = text.parse::<NaiveDateTime>() {
-            return Ok(naive.and_utc());
+            return Ok(Timestamp::Zoneless(naive));
         }
     }
     Err(format!(
@@ -30,45 +40,25 @@ pub fn parse(text: &str) -> Result<DateTime<Utc>, String> {
     ))
 }
 
-struct Wire(DateTime<Utc>);
+/// The wire form: an offset (`Z` for UTC) only when one was written.
+impl fmt::Display for Timestamp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Timestamp::Offset(at) => f.write_str(&at.to_rfc3339_opts(SecondsFormat::AutoSi, true)),
+            Timestamp::Zoneless(clock) => write!(f, "{}", clock.format("%Y-%m-%dT%H:%M:%S%.f")),
+        }
+    }
+}
 
-impl<'de> Deserialize<'de> for Wire {
+impl Serialize for Timestamp {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.collect_str(self)
+    }
+}
+
+impl<'de> Deserialize<'de> for Timestamp {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let text = String::deserialize(deserializer)?;
-        parse(&text).map(Wire).map_err(de::Error::custom)
+        parse(&text).map_err(de::Error::custom)
     }
-}
-
-pub fn deserialize<'de, D: Deserializer<'de>>(deserializer: D) -> Result<DateTime<Utc>, D::Error> {
-    Wire::deserialize(deserializer).map(|wire| wire.0)
-}
-
-pub fn serialize<S: Serializer>(value: &DateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error> {
-    value.serialize(serializer)
-}
-
-/// For `Option<DateTime<Utc>>` fields.
-pub mod option {
-    use super::*;
-
-    pub fn deserialize<'de, D: Deserializer<'de>>(
-        deserializer: D,
-    ) -> Result<Option<DateTime<Utc>>, D::Error> {
-        Option::<Wire>::deserialize(deserializer).map(|wire| wire.map(|w| w.0))
-    }
-
-    pub fn serialize<S: Serializer>(
-        value: &Option<DateTime<Utc>>,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error> {
-        value.serialize(serializer)
-    }
-}
-
-/// For `Option<Option<DateTime<Utc>>>` fields: absent is `None`, an explicit
-/// `null` is `Some(None)`. Mirrors the generated `tri_state_serde`.
-pub fn deserialize_tri_state<'de, D: Deserializer<'de>>(
-    deserializer: D,
-) -> Result<Option<Option<DateTime<Utc>>>, D::Error> {
-    Option::<Wire>::deserialize(deserializer).map(|wire| Some(wire.map(|w| w.0)))
 }

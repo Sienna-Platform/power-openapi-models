@@ -1,4 +1,4 @@
-"""`format: date-time` fields accept a timestamp with no offset, read as UTC.
+"""`format: date-time` fields accept a timestamp with or without an offset, kept as written.
 
 Behaviour shared with the TypeScript and Rust packages; see
 `power_openapi_models/timestamps.py` for why.
@@ -31,10 +31,10 @@ def _series(timestamp):
     }
 
 
-def test_naive_timestamp_is_read_as_utc():
+def test_naive_timestamp_stays_naive():
     parsed = SingleTimeSeries.model_validate(_series("2024-01-01T00:00:00"))
-    assert parsed.initial_timestamp == datetime(2024, 1, 1, tzinfo=timezone.utc)
-    assert parsed.initial_timestamp.utcoffset() == timedelta(0)
+    assert parsed.initial_timestamp == datetime(2024, 1, 1)
+    assert parsed.initial_timestamp.tzinfo is None
 
 
 def test_naive_fractional_seconds():
@@ -50,9 +50,9 @@ def test_z_and_offsets_are_kept():
     assert plus.initial_timestamp == datetime(2024, 1, 1, tzinfo=timezone.utc)
 
 
-def test_naive_datetime_object_is_read_as_utc():
+def test_naive_datetime_object_stays_naive():
     parsed = SingleTimeSeries.model_validate(_series(datetime(2024, 1, 1)))
-    assert parsed.initial_timestamp.tzinfo is timezone.utc
+    assert parsed.initial_timestamp.tzinfo is None
 
 
 @pytest.mark.parametrize("bad", ["2024-01-01", "not a timestamp", "", "2024-13-01T00:00:00"])
@@ -61,9 +61,13 @@ def test_non_timestamps_are_still_rejected(bad):
         SingleTimeSeries.model_validate(_series(bad))
 
 
-def test_written_timestamp_always_carries_an_offset():
-    dumped = SingleTimeSeries.model_validate(_series("2024-01-01T00:00:00")).model_dump(mode="json")
-    assert dumped["initial_timestamp"] == "2024-01-01T00:00:00Z"
+@pytest.mark.parametrize(
+    "written",
+    ["2024-01-01T00:00:00", "2024-01-01T00:00:00Z", "2024-01-01T02:00:00+02:00"],
+)
+def test_round_trip_keeps_the_spelling(written):
+    dumped = SingleTimeSeries.model_validate(_series(written)).model_dump(mode="json")
+    assert dumped["initial_timestamp"] == written
 
 
 def test_nullable_timestamp_field():
@@ -71,5 +75,5 @@ def test_nullable_timestamp_field():
     fields = DataSource.model_fields
     assert "retrieved_at" in fields and "published_at" in fields
     naive = DataSource.model_validate({**base, "published_at": "2024-02-01T00:00:00"})
-    assert naive.published_at.tzinfo is timezone.utc
+    assert naive.published_at.tzinfo is None
     assert DataSource.model_validate({**base, "published_at": None}).published_at is None

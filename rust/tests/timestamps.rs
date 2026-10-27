@@ -1,9 +1,9 @@
-//! `format: date-time` fields accept a timestamp with no offset, read as UTC, as
-//! the Python and TypeScript packages do. See `src/timestamp.rs`.
+//! `format: date-time` fields accept a timestamp with or without an offset and keep
+//! it as written, as the Python and TypeScript packages do. See `src/timestamp.rs`.
 
-use chrono::{TimeZone, Utc};
+use chrono::{FixedOffset, NaiveDate, TimeZone};
 use power_openapi_models::generated::{DataSource, SingleTimeSeries};
-use power_openapi_models::timestamp;
+use power_openapi_models::timestamp::{self, Timestamp};
 use serde_json::{json, Value};
 
 fn series(timestamp: &str) -> Value {
@@ -16,29 +16,49 @@ fn series(timestamp: &str) -> Value {
     })
 }
 
-fn initial(timestamp: &str) -> Result<chrono::DateTime<Utc>, serde_json::Error> {
+fn initial(timestamp: &str) -> Result<Timestamp, serde_json::Error> {
     serde_json::from_value::<SingleTimeSeries>(series(timestamp)).map(|s| s.initial_timestamp)
 }
 
+fn midnight() -> chrono::NaiveDateTime {
+    NaiveDate::from_ymd_opt(2024, 1, 1)
+        .unwrap()
+        .and_hms_opt(0, 0, 0)
+        .unwrap()
+}
+
 #[test]
-fn naive_timestamp_is_read_as_utc() {
+fn naive_timestamp_stays_zoneless() {
     assert_eq!(
         initial("2024-01-01T00:00:00").unwrap(),
-        Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap()
+        Timestamp::Zoneless(midnight())
     );
 }
 
 #[test]
 fn naive_fractional_seconds() {
-    let ts = initial("2024-01-01T00:00:00.250").unwrap();
-    assert_eq!(ts.timestamp_subsec_millis(), 250);
+    let Timestamp::Zoneless(clock) = initial("2024-01-01T00:00:00.250").unwrap() else {
+        panic!("expected a zoneless timestamp");
+    };
+    assert_eq!(clock.and_utc().timestamp_subsec_millis(), 250);
 }
 
 #[test]
-fn z_and_offsets_are_honoured_and_normalized_to_utc() {
-    let midnight = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
-    assert_eq!(initial("2024-01-01T00:00:00Z").unwrap(), midnight);
-    assert_eq!(initial("2024-01-01T02:00:00+02:00").unwrap(), midnight);
+fn z_and_offsets_are_kept() {
+    let Timestamp::Offset(z) = initial("2024-01-01T00:00:00Z").unwrap() else {
+        panic!("expected an offset");
+    };
+    assert_eq!(z.offset().local_minus_utc(), 0);
+    let Timestamp::Offset(plus) = initial("2024-01-01T02:00:00+02:00").unwrap() else {
+        panic!("expected an offset");
+    };
+    assert_eq!(plus.offset().local_minus_utc(), 2 * 3600);
+    assert_eq!(
+        plus,
+        FixedOffset::east_opt(0)
+            .unwrap()
+            .from_utc_datetime(&midnight())
+    );
 }
 
 #[test]
@@ -59,12 +79,20 @@ fn non_timestamps_are_still_rejected() {
 }
 
 #[test]
-fn written_timestamp_always_carries_an_offset() {
-    let parsed: SingleTimeSeries = serde_json::from_value(series("2024-01-01T00:00:00")).unwrap();
-    assert_eq!(
-        serde_json::to_value(&parsed).unwrap()["initial_timestamp"],
-        "2024-01-01T00:00:00Z"
-    );
+fn round_trip_keeps_the_spelling() {
+    for written in [
+        "2024-01-01T00:00:00",
+        "2024-01-01T00:00:00.250",
+        "2024-01-01T00:00:00Z",
+        "2024-01-01T02:00:00+02:00",
+        "2024-01-01T00:00:00-07:00",
+    ] {
+        let parsed: SingleTimeSeries = serde_json::from_value(series(written)).unwrap();
+        assert_eq!(
+            serde_json::to_value(&parsed).unwrap()["initial_timestamp"],
+            written
+        );
+    }
 }
 
 #[test]
@@ -78,7 +106,12 @@ fn nullable_field_is_tri_state() {
     let set = with(json!("2024-02-01T00:00:00"));
     assert_eq!(
         set.published_at,
-        Some(Some(Utc.with_ymd_and_hms(2024, 2, 1, 0, 0, 0).unwrap()))
+        Some(Some(Timestamp::Zoneless(
+            NaiveDate::from_ymd_opt(2024, 2, 1)
+                .unwrap()
+                .and_hms_opt(0, 0, 0)
+                .unwrap()
+        )))
     );
     assert_eq!(with(json!(null)).published_at, Some(None));
     let absent: DataSource = serde_json::from_value(base).unwrap();

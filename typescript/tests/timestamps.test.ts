@@ -4,7 +4,7 @@ import { DataSource } from "../src/infrastructure_core/models";
 import { SingleTimeSeries } from "../src/timeseries/models";
 
 // `format: date-time` fields accept a timestamp with no offset, as the Python and
-// Rust packages do (both read it as UTC). zod only validates, so the string is
+// Rust packages do (both keep it as written). zod only validates, so the string is
 // returned as written. See codegen/typescript/postprocess.ts (fixNaiveTimestamps).
 
 const series = (initial_timestamp: string) => ({

@@ -4,7 +4,7 @@
 from __future__ import annotations
 from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field, RootModel
-from power_openapi_models.timestamps import UtcDatetime
+from power_openapi_models.timestamps import Timestamp
 from typing import Any, Literal
 
 
@@ -171,7 +171,7 @@ class DataSource(BaseModel):
     organization: str | None = Field(
         None, description="Publishing organization, e.g. 'U.S. Energy Information Administration'."
     )
-    retrieved_at: UtcDatetime = Field(..., description="When the data was obtained.")
+    retrieved_at: Timestamp = Field(..., description="When the data was obtained.")
     dataset: str | None = Field(
         None,
         description="Dataset identifier within the publishing organization, e.g. 'EIA-860 2023, Schedule 3'.",
@@ -182,7 +182,7 @@ class DataSource(BaseModel):
         None,
         description="License of the source data, if known: an SPDX identifier such as 'CC-BY-4.0', or a license name or URL.",
     )
-    published_at: UtcDatetime | None = Field(
+    published_at: Timestamp | None = Field(
         None, description="When the source published the data; null if unknown."
     )
     confidence: str | None = Field(None, description="Confidence qualifier, e.g. 'high', 'medium'.")

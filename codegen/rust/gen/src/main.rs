@@ -252,92 +252,29 @@ fn integer_enums(file: &mut syn::File, schemas: &Schemas) {
 }
 
 /// DEFECT: a `format: date-time` field is `chrono::DateTime<Utc>`, which rejects a
-/// timestamp with no offset. Real producers write `2024-01-01T00:00:00`, and the
-/// Python and TypeScript packages accept it too (read as UTC), so every such field
-/// is routed through the hand-written `crate::timestamp`. Fails loudly on a
-/// `DateTime` in a shape this does not handle rather than leaving one field
-/// stricter than the rest.
+/// timestamp with no offset and turns every offset into UTC. Real producers write
+/// `2024-01-01T00:00:00`, and a series' `time_reference` says how to read it, so
+/// every such field becomes the hand-written `crate::timestamp::Timestamp`, which
+/// keeps the timestamp as written, as the Python and TypeScript packages do.
+/// `Timestamp` has its own serde impls, so `Option` and tri-state fields need no
+/// extra attribute. Fails loudly if a `DateTime` survives.
 fn lenient_timestamps(file: &mut syn::File) {
     let datetime = "chrono :: DateTime < chrono :: Utc >";
-    let text = |ty: &Type| quote!(#ty).to_string();
-    let mut handled = 0;
     for item in &mut file.items {
         let Item::Struct(item_struct) = item else { continue };
         let Fields::Named(fields) = &mut item_struct.fields else { continue };
         for field in &mut fields.named {
-            let ty = text(&field.ty);
-            if !ty.contains("DateTime") {
-                continue;
-            }
-            let name = format!("{}.{}", item_struct.ident, field.ident.as_ref().unwrap());
-            if ty == datetime {
-                field.attrs.push(syn::parse_quote!(#[serde(with = "crate::timestamp")]));
-            } else if ty == format!("Option < {datetime} >") {
-                field.attrs.push(syn::parse_quote!(#[serde(with = "crate::timestamp::option")]));
-                if serde_default(&field.attrs).is_none() {
-                    field.attrs.push(syn::parse_quote!(#[serde(default)]));
-                }
-            } else if ty == format!("Option < Option < {datetime} > >") {
-                retarget_deserialize_with(&mut field.attrs, "crate::timestamp::deserialize_tri_state")
-                    .unwrap_or_else(|| die(format!("{name}: tri-state field without deserialize_with")));
-            } else {
-                die(format!("{name}: unhandled date-time shape `{ty}`"));
-            }
-            handled += 1;
-        }
-    }
-    let total = quote!(#file).to_string().matches(datetime).count();
-    if total != handled {
-        die(format!(
-            "{total} date-time type(s) in the output but {handled} were routed through timestamp"
-        ));
-    }
-}
-
-/// The value of a field's serde `default`, or `Some("")` for a bare one.
-fn serde_default(attrs: &[syn::Attribute]) -> Option<String> {
-    for attr in attrs.iter().filter(|a| a.path().is_ident("serde")) {
-        let Meta::List(list) = &attr.meta else { continue };
-        let metas = list
-            .parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
-            .expect("parse serde attr");
-        for meta in metas {
-            match &meta {
-                Meta::Path(p) if p.is_ident("default") => return Some(String::new()),
-                Meta::NameValue(nv) if nv.path.is_ident("default") => return Some("set".into()),
-                _ => {}
+            let ty = &field.ty;
+            let text = quote!(#ty).to_string();
+            if text.contains(datetime) {
+                field.ty = syn::parse_str(&text.replace(datetime, "crate :: timestamp :: Timestamp"))
+                    .expect("retyped date-time field");
             }
         }
     }
-    None
-}
-
-/// Rewrites the field's serde `deserialize_with` path; `None` if it had none.
-fn retarget_deserialize_with(attrs: &mut [syn::Attribute], path: &str) -> Option<()> {
-    for attr in attrs.iter_mut().filter(|a| a.path().is_ident("serde")) {
-        let Meta::List(list) = &attr.meta else { continue };
-        let metas: Vec<Meta> = list
-            .parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
-            .expect("parse serde attr")
-            .into_iter()
-            .collect();
-        if !metas.iter().any(|m| m.path().is_ident("deserialize_with")) {
-            continue;
-        }
-        let rewritten: Vec<Meta> = metas
-            .into_iter()
-            .map(|m| {
-                if m.path().is_ident("deserialize_with") {
-                    syn::parse_quote!(deserialize_with = #path)
-                } else {
-                    m
-                }
-            })
-            .collect();
-        *attr = syn::parse_quote!(#[serde(#(#rewritten),*)]);
-        return Some(());
+    if quote!(#file).to_string().contains("chrono :: DateTime") {
+        die("a date-time type outside a struct field was not routed through timestamp".into());
     }
-    None
 }
 
 /// DEFECT: openapi-to-rust derives `PartialEq` on enums but not on structs, so

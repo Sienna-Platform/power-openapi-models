@@ -4,7 +4,7 @@
 from __future__ import annotations
 from power_openapi_models.core.models import UnitSystem
 from pydantic import BaseModel, ConfigDict, Field, RootModel, conint
-from power_openapi_models.timestamps import UtcDatetime
+from power_openapi_models.timestamps import Timestamp
 from enum import Enum
 from typing import Literal
 
@@ -229,7 +229,7 @@ class Deterministic(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: UtcDatetime = Field(..., description="Start of the first forecast window.")
+    initial_timestamp: Timestamp = Field(..., description="Start of the first forecast window.")
     resolution: Period = Field(
         ...,
         description="Cadence within a forecast window. Always present for a forecast, and part of the series' identity.",
@@ -327,7 +327,7 @@ class DeterministicSingleTimeSeries(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: UtcDatetime = Field(..., description="Start of the first forecast window.")
+    initial_timestamp: Timestamp = Field(..., description="Start of the first forecast window.")
     resolution: Period = Field(
         ...,
         description="Cadence within a forecast window. Always present for a forecast, and part of the series' identity.",
@@ -425,7 +425,7 @@ class Probabilistic(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: UtcDatetime = Field(..., description="Start of the first forecast window.")
+    initial_timestamp: Timestamp = Field(..., description="Start of the first forecast window.")
     resolution: Period = Field(
         ...,
         description="Cadence within a forecast window. Always present for a forecast, and part of the series' identity.",
@@ -528,7 +528,7 @@ class Scenarios(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: UtcDatetime = Field(..., description="Start of the first forecast window.")
+    initial_timestamp: Timestamp = Field(..., description="Start of the first forecast window.")
     resolution: Period = Field(
         ...,
         description="Cadence within a forecast window. Always present for a forecast, and part of the series' identity.",
@@ -630,7 +630,7 @@ class SingleTimeSeries(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: UtcDatetime = Field(
+    initial_timestamp: Timestamp = Field(
         ...,
         description="First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. An RFC3339 string with at most 3 fractional-second digits: the store's floor is one millisecond, matching Julia's millisecond-precision DateTime.",
     )

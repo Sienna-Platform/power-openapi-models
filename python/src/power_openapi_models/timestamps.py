@@ -4,17 +4,19 @@
 The schemas say RFC 3339, which requires an offset, and datamodel-codegen emits
 `AwareDatetime` for it, so `2024-01-01T00:00:00` was rejected. Real producers write
 timestamps without an offset, so all three packages (Python, TypeScript, Rust) accept
-one and read it as UTC. An offset, when present, is kept. Anything else -- a date
-with no time, or text that is not a timestamp -- is still rejected.
+one. A timestamp is kept as written: no offset gives a naive `datetime` (a wall
+clock), and an offset gives an aware `datetime` with that offset. The SDK does not
+assume a zone. A series' `time_reference` says how to read its timestamps. Anything
+else -- a date with no time, or text that is not a timestamp -- is still rejected.
 
-The generated modules import `UtcDatetime` from here; `codegen/python/postprocess.py`
+The generated modules import `Timestamp` from here; `codegen/python/postprocess.py`
 (`fix_naive_timestamps`) does the swap.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Annotated, Any
 
-from pydantic import AfterValidator, BeforeValidator
+from pydantic import BeforeValidator
 
 
 def _require_time_part(value: Any) -> Any:
@@ -25,15 +27,5 @@ def _require_time_part(value: Any) -> Any:
     return value
 
 
-def _assume_utc(value: datetime) -> datetime:
-    if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
-    return value
-
-
-UtcDatetime = Annotated[
-    datetime,
-    BeforeValidator(_require_time_part),
-    AfterValidator(_assume_utc),
-]
-"""A timestamp with or without an offset; a missing offset means UTC."""
+Timestamp = Annotated[datetime, BeforeValidator(_require_time_part)]
+"""A timestamp with or without an offset, kept as written."""

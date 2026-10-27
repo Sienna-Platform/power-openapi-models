@@ -81,15 +81,19 @@ wrong-by-a-factor-of-100 bugs across the ecosystem.
 ### Timestamps may omit the offset
 
 The schema says RFC 3339, which requires an offset, but producers write
-`2024-01-01T00:00:00`, so all three packages accept it and read it as UTC. An offset is
-kept; a bare date or text that is not a timestamp is rejected. Fields are typed
-`power_openapi_models.timestamps.UtcDatetime`, so they always hold an aware `datetime`.
+`2024-01-01T00:00:00`, so all three packages accept it. A timestamp is kept as written:
+no offset gives a naive `datetime` (a wall clock), and an offset gives an aware
+`datetime` with that offset. The package does not assume UTC. A series' `time_reference`
+says how to read its timestamps. A bare date or text that is not a timestamp is rejected.
+Fields are typed `power_openapi_models.timestamps.Timestamp`.
 
 ```python
 from power_openapi_models.infrastructure_core.models import DataSource
 
 source = DataSource(id=1, fields=[], retrieved_at="2024-01-01T00:00:00")
-assert source.retrieved_at.utcoffset().total_seconds() == 0
+assert source.retrieved_at.tzinfo is None
+source = DataSource(id=1, fields=[], retrieved_at="2024-01-01T00:00:00-07:00")
+assert source.retrieved_at.utcoffset().total_seconds() == -7 * 3600
 ```
 
 ### Discriminated unions carry a `.root`

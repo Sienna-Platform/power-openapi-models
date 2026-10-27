@@ -21,8 +21,8 @@ Fixes belong in one of two upstream places:
 
 `python/src/power_openapi_models/timestamps.py` and `rust/src/timestamp.rs` are
 hand-written too: they are the timestamp type the generated `date-time` fields use,
-which accept an offset-less timestamp as UTC (see CHANGELOG.md, "Changed from the
-schema"). Each language's postprocess wires its generated fields to them.
+which accept a timestamp with or without an offset and keep it as written (see
+CHANGELOG.md, 0.3.1). Each language's postprocess wires its generated fields to them.
 
 A `<Base><N>` class whose `<Base>` also exists is a generator alias leak; the
 cure is naming the inline object or enum as a `$defs` entry in the SiennaSchemas

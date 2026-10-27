@@ -204,14 +204,18 @@ exceptions are the string-keyed maps below, whose schemas allow any key.
 accepts `0` and `1`, nothing else).
 
 **Timestamps may omit the offset.** The schema says RFC 3339, which requires one, but
-producers write `2024-01-01T00:00:00`, so all three packages accept it and read it
-as UTC. An offset is honoured and the value normalized to UTC; a bare date or text
-that is not a timestamp is rejected. Values are always written with a `Z`.
+producers write `2024-01-01T00:00:00`, so all three packages accept it. A
+`format: date-time` field is a `timestamp::Timestamp`, which keeps the timestamp as
+written: `Zoneless` for no offset (a wall clock), and `Offset` with the offset that was
+written. The crate does not assume UTC. A series' `time_reference` says how to read its
+timestamps. A bare date or text that is not a timestamp is rejected. A value is written
+back in the same form.
 
 ```rust
-use power_openapi_models::timestamp::parse;
+use power_openapi_models::timestamp::{parse, Timestamp};
 
-assert_eq!(parse("2024-01-01T00:00:00")?, parse("2024-01-01T02:00:00+02:00")?);
+assert!(matches!(parse("2024-01-01T00:00:00")?, Timestamp::Zoneless(_)));
+assert_eq!(parse("2024-01-01T02:00:00+02:00")?.to_string(), "2024-01-01T02:00:00+02:00");
 assert!(parse("2024-01-01").is_err());
 # Ok::<(), String>(())
 ```

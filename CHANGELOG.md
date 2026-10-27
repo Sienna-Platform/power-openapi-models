@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-10-27
+
+Generated from SiennaSchemas v0.3.0, as 0.3.0 was. This release changes only how
+the packages read and write `format: date-time` fields.
+
+### Changed — all three packages
+
+- **A timestamp is kept as written. No package assumes UTC.** Before, Python and Rust
+  read a timestamp with no offset as UTC and converted every offset to UTC. That
+  contradicted `time_reference`, whose schema says that an absent value is not a claim
+  of UTC, and whose `zoneless` value names no instant. Now a timestamp with no offset
+  stays a wall clock, and an offset stays the offset that was written. A value is
+  written back in the same form. A bare date or text that is not a timestamp is still
+  rejected.
+- **Python:** the field type is `power_openapi_models.timestamps.Timestamp`. It
+  replaces `UtcDatetime`. A timestamp with no offset gives a naive `datetime`, not a
+  UTC `datetime`. Code that compares it with an aware `datetime` must read
+  `time_reference` first.
+- **Rust:** the field type is `timestamp::Timestamp`, an enum with
+  `Offset(DateTime<FixedOffset>)` and `Zoneless(NaiveDateTime)`. It replaces
+  `chrono::DateTime<Utc>`. `timestamp::parse` returns it. `Timestamp` has its own serde
+  impls, so `timestamp::option` and `timestamp::deserialize_tri_state` are removed.
+  This changes the Rust API in a patch release. The only consumer, infrastore, has no
+  release yet and pins 0.3.1.
+- **TypeScript:** no change in behavior. zod already returned the string as written.
+
 ## [0.3.0] — 2026-10-26
 
 Generated from SiennaSchemas v0.3.0. Schema 0.3.0 starts a new compatibility

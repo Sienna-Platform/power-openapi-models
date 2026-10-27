@@ -491,10 +491,10 @@ function fixEmptyArrayDefaults(content: string, fixes: number): [string, number]
  *
  * orval renders `format: date-time` as `zod.iso.datetime({"offset":true})`, which
  * takes `Z` or an offset but rejects `2024-01-01T00:00:00`. Real producers write
- * that form, and the Python and Rust packages accept it too (read as UTC), so
- * `local: true` is added. The schemas' RFC 3339 wording is unchanged; this is a
- * deliberate, recorded leniency (see CHANGELOG.md). Unlike Python and Rust, zod
- * only validates: the string is passed through as written.
+ * that form, and the Python and Rust packages accept it too (kept as written, with
+ * no zone assumed), so `local: true` is added. The schemas' RFC 3339 wording is
+ * unchanged; this is a deliberate, recorded leniency (see CHANGELOG.md). zod only
+ * validates: the string is passed through as written.
  *
  * Fails loudly if a `datetime(...)` call is not the shape this recognizes, rather
  * than leaving one field stricter than the rest. Runs before prettier, so it

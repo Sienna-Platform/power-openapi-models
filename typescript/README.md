@@ -84,8 +84,9 @@ system: each component blob is self-describing.
 
 The schema says RFC 3339, which requires an offset, but producers write
 `2024-01-01T00:00:00`, so all three packages accept it. An offset is accepted too; a
-bare date or text that is not a timestamp is rejected. Python and Rust read a missing
-offset as UTC. zod only validates, so here the string is returned exactly as written.
+bare date or text that is not a timestamp is rejected. No package assumes UTC: Python
+and Rust keep a timestamp as written, and zod only validates, so here the string is
+returned exactly as written. A series' `time_reference` says how to read its timestamps.
 
 ### Discriminated unions parse to the variant directly
 
