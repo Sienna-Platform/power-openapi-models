@@ -10,6 +10,9 @@ pub mod operations;
 pub mod schema_version;
 pub mod timeseries;
 pub mod timestamp;
+pub mod units;
+#[cfg(feature = "validate")]
+pub mod validate;
 
 /// This crate's version.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

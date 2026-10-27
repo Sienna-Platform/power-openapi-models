@@ -231,6 +231,8 @@ jobs:
         working-directory: rust
         env:
           SIENNA_SCHEMAS_DIR: ${{ github.workspace }}/SiennaSchemas
+      - run: cargo test --features validate
+        working-directory: rust
       - run: cargo publish --dry-run
         working-directory: rust
 
