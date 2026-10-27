@@ -7367,7 +7367,7 @@ pub static CONVERSION_FACTORS: &[(&str, &str, f64)] = &[
     ("EmissionRate", "t/MWh", 1f64),
     ("Fraction", "1", 1f64),
     ("FractionPerTime", "1/min", 1f64),
-    ("Frequency", "Hz", 60f64),
+    ("Frequency", "Hz", 1f64),
     ("HeadRate", "m/s", 1f64),
     ("HeatRate", "MMBtu/MWh", 1f64),
     ("Impedance", "ohm", 1f64),

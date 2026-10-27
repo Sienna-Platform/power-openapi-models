@@ -39,6 +39,9 @@ lists every schema change.
   sibling field that selects a unit or holds a `pu` base, and the unit
   conversion factors. The generator writes it from the SiennaSchemas `x-unit`
   annotations and `Core/units.json`, by the same rules as the Julia `units.jl`.
+  One difference: a quantity's default unit has the factor 1.0. `units.json`
+  stores the nominal frequency (60.0) as the `to_default` of `Frequency`/`Hz`,
+  and the Julia table repeats it as a factor.
 
 ### Changed — Rust
 
