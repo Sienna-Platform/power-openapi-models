@@ -36,11 +36,14 @@ from power_openapi_models.core.models import (
     UnitSystem,
     UpDown,
 )
-from pydantic import BaseModel, Field, PositiveFloat, confloat
+from pydantic import BaseModel, ConfigDict, Field, PositiveFloat, confloat
 from enum import Enum
 
 
 class AGC(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -60,6 +63,9 @@ class AGC(BaseModel):
 
 
 class AreaInterchange(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -115,6 +121,9 @@ class Role(Enum):
 
 
 class CombinedCycleAssociation(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     plant_id: int = Field(
         ..., description="ID of the parent CombinedCycleBlock supplemental attribute"
     )
@@ -137,6 +146,9 @@ class CombinedCycleConfiguration(Enum):
 
 
 class CombinedCycleFractional(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     name: str = Field(..., description="Name of the combined cycle fractional plant")
     configuration: CombinedCycleConfiguration
@@ -159,6 +171,9 @@ class NormalBranchStatus(Enum):
 
 
 class DiscreteControlledACBranch(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -211,6 +226,9 @@ class DiscreteControlledACBranch(BaseModel):
 
 
 class EnergyReservoirStorage(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -334,6 +352,9 @@ class VoltageUnitBasis(Enum):
 
 
 class FixedAdmittance(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -362,6 +383,9 @@ class FixedAdmittance(BaseModel):
 
 
 class FixedForcedOutage(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     outage_status: float
     monitored_components: list[int] | None = Field(
@@ -381,6 +405,9 @@ class ReserveDirection(Enum):
 
 
 class GenericArcImpedance(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -426,6 +453,9 @@ class GenericArcImpedance(BaseModel):
 
 
 class GeometricDistributionForcedOutage(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     mean_time_to_recovery: float | None = Field(
         0.0,
@@ -453,6 +483,9 @@ class OperationalStates(Enum):
 
 
 class HydroDispatch(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -520,6 +553,9 @@ class HydroDispatch(BaseModel):
 
 
 class HydroPowerPlant(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     name: str = Field(..., description="Name of the hydro power plant")
 
@@ -546,6 +582,9 @@ class LevelDataType(Enum):
 
 
 class HydroReservoir(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     name: str
     available: bool
@@ -604,6 +643,9 @@ class TurbineType(Enum):
 
 
 class HydroTurbine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -702,6 +744,9 @@ class TransformerControlMode(Enum):
 
 
 class ImpedanceCorrectionData(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     table_number: int
     tap_ratio_correction_curve: PiecewiseLinearData | None = Field(
@@ -728,6 +773,9 @@ class VSCACControlModes(Enum):
 
 
 class InterruptiblePowerLoad(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -778,6 +826,9 @@ class InterruptiblePowerLoad(BaseModel):
 
 
 class InterruptibleStandardLoad(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -860,6 +911,9 @@ class InterruptibleStandardLoad(BaseModel):
 
 
 class Line(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -932,6 +986,9 @@ class MotorTechnology(Enum):
 
 
 class MotorLoad(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -976,6 +1033,9 @@ class MotorLoad(BaseModel):
 
 
 class OfflineReserve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1012,6 +1072,9 @@ class OfflineReserve(BaseModel):
 
 
 class OnlineReserve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1051,6 +1114,9 @@ class OnlineReserve(BaseModel):
 
 
 class PlannedOutage(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     outage_schedule: str
     monitored_components: list[int] | None = Field(
@@ -1064,6 +1130,9 @@ class PlannedOutage(BaseModel):
 
 
 class PlantAssociation(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     plant_id: int = Field(..., description="ID of the parent plant supplemental attribute")
     entity_id: int = Field(
         ..., description="ID of the generating unit (entity) participating in the plant"
@@ -1075,11 +1144,17 @@ class PlantAssociation(BaseModel):
 
 
 class ReactivePowerSharing(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this supplemental attribute.")
     name: str = Field(..., description="Name of the sharing group.")
 
 
 class PointToPointBid(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1113,6 +1188,9 @@ class PointToPointBid(BaseModel):
 
 
 class PowerLoad(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1156,6 +1234,9 @@ class PowerLoad(BaseModel):
 
 
 class RenewableDispatch(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1210,6 +1291,9 @@ class RenewableDispatch(BaseModel):
 
 
 class RenewableNonDispatch(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1252,11 +1336,17 @@ class RenewableNonDispatch(BaseModel):
 
 
 class RenewablePowerPlant(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     name: str = Field(..., description="Name of the renewable power plant")
 
 
 class ServiceAssociation(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     service_id: int = Field(..., description="ID of the service the membership belongs to.")
     entity_id: int = Field(
         ..., description="ID of the contributing member: a Device, a Branch, or another Service."
@@ -1264,6 +1354,9 @@ class ServiceAssociation(BaseModel):
 
 
 class ShiftablePowerLoad(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1317,6 +1410,9 @@ class ShiftablePowerLoad(BaseModel):
 
 
 class Source(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1418,6 +1514,9 @@ class Source(BaseModel):
 
 
 class StandardLoad(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1493,6 +1592,9 @@ class StandardLoad(BaseModel):
 
 
 class Substation(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     name: str = Field(..., description="Name of the substation")
     number: int = Field(..., description="Substation number in the source power flow data")
@@ -1513,6 +1615,9 @@ class SwitchedAdmittanceControlMode(Enum):
 
 
 class SynchronousCondenser(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1552,6 +1657,9 @@ class SynchronousCondenser(BaseModel):
 
 
 class TModelHVDCLine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1585,6 +1693,9 @@ class TModelHVDCLine(BaseModel):
 
 
 class ThermalMultiStart(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1668,11 +1779,17 @@ class ThermalMultiStart(BaseModel):
 
 
 class ThermalPowerPlant(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     name: str = Field(..., description="Name of the power plant")
 
 
 class ThermalStandard(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1753,11 +1870,17 @@ class ThreeWindingTransformerShuntLocation(Enum):
 
 
 class TradingHub(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(..., description="Name of the hub.")
 
 
 class TradingHubAssociation(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     trading_hub_id: int = Field(
         ..., description="ID of the trading hub the association belongs to."
     )
@@ -1782,6 +1905,9 @@ class TransformerControlObjective(Enum):
 
 
 class TransmissionInterface(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1813,6 +1939,9 @@ class TransmissionInterface(BaseModel):
 
 
 class TwoTerminalGenericHVDCLine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -1872,6 +2001,9 @@ class LCCControlMode(Enum):
 
 
 class TwoTerminalVSCLine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -2065,6 +2197,9 @@ class TwoWindingTransformerShuntLocation(Enum):
 
 
 class VirtualParticipant(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -2096,6 +2231,9 @@ class VoltageControlTerminal(Enum):
 
 
 class VoltageDroopControl(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this supplemental attribute.")
     name: str = Field(..., description="Name of the voltage droop controller.")
     available: bool | None = Field(
@@ -2129,6 +2267,9 @@ class VoltageDroopControl(BaseModel):
 
 
 class BilateralTransaction(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -2165,6 +2306,9 @@ class BilateralTransaction(BaseModel):
 
 
 class CombinedCycleBlock(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     name: str = Field(..., description="Name of the combined cycle block")
     configuration: CombinedCycleConfiguration
@@ -2174,6 +2318,9 @@ class CombinedCycleBlock(BaseModel):
 
 
 class ExponentialLoad(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -2225,6 +2372,9 @@ class ExponentialLoad(BaseModel):
 
 
 class FACTSControlDevice(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     name: str = Field(
         ...,
         description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
@@ -2280,6 +2430,9 @@ class FACTSControlDevice(BaseModel):
 
 
 class GroupReserve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -2300,6 +2453,9 @@ class GroupReserve(BaseModel):
 
 
 class HybridSystem(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -2374,6 +2530,9 @@ class HybridSystem(BaseModel):
 
 
 class HydroPumpTurbine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -2483,6 +2642,9 @@ class HydroPumpTurbine(BaseModel):
 
 
 class InterconnectingConverter(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -2570,6 +2732,9 @@ class InterconnectingConverter(BaseModel):
 
 
 class SwitchedAdmittance(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -2622,6 +2787,9 @@ class SwitchedAdmittance(BaseModel):
 
 
 class ThreeWindingTransformer(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -2695,6 +2863,9 @@ class ThreeWindingTransformer(BaseModel):
 
 
 class TransformerCircuit(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     available: bool = Field(
         ..., description="Indicator of whether this circuit is connected and online."
@@ -2793,6 +2964,9 @@ class TransformerCircuit(BaseModel):
 
 
 class TwoTerminalLCCLine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -2960,6 +3134,9 @@ class TwoTerminalLCCLine(BaseModel):
 
 
 class TwoWindingTransformer(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component.")
     name: str = Field(
         ...,
@@ -2983,6 +3160,9 @@ class TwoWindingTransformer(BaseModel):
 
 
 class VoltageControlAssociation(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     control_id: int = Field(
         ...,
         description="ID of the VoltageDroopControl or ReactivePowerSharing attribute the member belongs to.",

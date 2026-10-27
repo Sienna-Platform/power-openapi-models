@@ -8,7 +8,7 @@
 import * as zod from "zod";
 
 export const AverageConverter = zod
-  .object({
+  .strictObject({
     rated_voltage: zod.number().describe("Rated voltage (V)"),
     rated_current: zod.number().describe("Rated current (A)"),
   })
@@ -21,7 +21,7 @@ const renewableEnergyConverterTypeAQRefDefault = 1;
 const renewableEnergyConverterTypeARSourceDefault = 0;
 const renewableEnergyConverterTypeAXSourceDefault = 100000;
 export const RenewableEnergyConverterTypeA = zod
-  .object({
+  .strictObject({
     T_g: zod.number().describe("Converter time constant. Units: s."),
     Rrpwr: zod
       .number()
@@ -33,7 +33,7 @@ export const RenewableEnergyConverterTypeA = zod
       .number()
       .describe("Voltage limit for high voltage reactive current management."),
     Lv_pnts: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -56,7 +56,7 @@ export const RenewableEnergyConverterTypeA = zod
         "Overvoltage compensation gain used in the high voltage reactive current management.",
       ),
     Iqr_lims: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -95,7 +95,7 @@ export type RenewableEnergyConverterTypeAOutput = zod.output<
 
 const renewableEnergyVoltageConverterTypeAQRefDefault = 1;
 export const RenewableEnergyVoltageConverterTypeA = zod
-  .object({
+  .strictObject({
     T_g: zod.number().describe("Converter time constant. Units: s."),
     Rrpwr: zod
       .number()
@@ -107,7 +107,7 @@ export const RenewableEnergyVoltageConverterTypeA = zod
       .number()
       .describe("Voltage limit for high voltage reactive current management."),
     Lv_pnts: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -130,7 +130,7 @@ export const RenewableEnergyVoltageConverterTypeA = zod
         "Overvoltage compensation gain used in the high voltage reactive current management.",
       ),
     Iqr_lims: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -160,7 +160,7 @@ export type RenewableEnergyVoltageConverterTypeAOutput = zod.output<
 >;
 
 export const FixedDCSource = zod
-  .object({
+  .strictObject({
     voltage: zod.number().describe("Voltage (V)"),
   })
   .describe("Parameters of a Fixed DC Source that returns a fixed DC voltage");
@@ -170,7 +170,7 @@ export type FixedDCSourceOutput = zod.output<typeof FixedDCSource>;
 
 const zeroOrderBESSVdcRefDefault = 1.1;
 export const ZeroOrderBESS = zod
-  .object({
+  .strictObject({
     rated_voltage: zod.number().describe("Rated voltage (V)"),
     rated_current: zod.number().describe("Rated current (A)"),
     battery_voltage: zod.number().describe("Battery voltage"),
@@ -195,7 +195,7 @@ export type ZeroOrderBESS = zod.input<typeof ZeroOrderBESS>;
 export type ZeroOrderBESSOutput = zod.output<typeof ZeroOrderBESS>;
 
 export const LCFilter = zod
-  .object({
+  .strictObject({
     lf: zod.number().describe("Filter inductance"),
     rf: zod.number().describe("Filter resistance"),
     cf: zod.number().describe("Filter capacitance"),
@@ -206,7 +206,7 @@ export type LCFilter = zod.input<typeof LCFilter>;
 export type LCFilterOutput = zod.output<typeof LCFilter>;
 
 export const LCLFilter = zod
-  .object({
+  .strictObject({
     lf: zod.number().describe("Series inductance of converter filter"),
     rf: zod.number().describe("Series resistance of converter filter"),
     cf: zod.number().describe("Shunt capacitance of converter filter"),
@@ -225,7 +225,7 @@ export type LCLFilter = zod.input<typeof LCLFilter>;
 export type LCLFilterOutput = zod.output<typeof LCLFilter>;
 
 export const RLFilter = zod
-  .object({
+  .strictObject({
     rf: zod
       .number()
       .describe("Series resistance in p.u. of converter filter to the grid"),
@@ -240,7 +240,7 @@ export type RLFilterOutput = zod.output<typeof RLFilter>;
 
 const fixedFrequencyFrequencyDefault = 1;
 export const FixedFrequency = zod
-  .object({
+  .strictObject({
     frequency: zod
       .number()
       .default(fixedFrequencyFrequencyDefault)
@@ -252,7 +252,7 @@ export type FixedFrequency = zod.input<typeof FixedFrequency>;
 export type FixedFrequencyOutput = zod.output<typeof FixedFrequency>;
 
 export const KauraPLL = zod
-  .object({
+  .strictObject({
     omega_lp: zod.number().describe("PLL low-pass filter frequency"),
     kp_pll: zod.number().describe("PLL proportional gain"),
     ki_pll: zod.number().describe("PLL integral gain"),
@@ -265,7 +265,7 @@ export type KauraPLL = zod.input<typeof KauraPLL>;
 export type KauraPLLOutput = zod.output<typeof KauraPLL>;
 
 export const ReducedOrderPLL = zod
-  .object({
+  .strictObject({
     omega_lp: zod.number().describe("PLL low-pass filter frequency"),
     kp_pll: zod.number().describe("PLL proportional gain"),
     ki_pll: zod.number().describe("PLL integral gain"),
@@ -277,7 +277,7 @@ export const ReducedOrderPLL = zod
 export type ReducedOrderPLL = zod.input<typeof ReducedOrderPLL>;
 export type ReducedOrderPLLOutput = zod.output<typeof ReducedOrderPLL>;
 
-export const CurrentModeControl = zod.object({
+export const CurrentModeControl = zod.strictObject({
   kpc: zod.number(),
   kic: zod.number(),
   kffv: zod.number(),
@@ -286,11 +286,11 @@ export const CurrentModeControl = zod.object({
 export type CurrentModeControl = zod.input<typeof CurrentModeControl>;
 export type CurrentModeControlOutput = zod.output<typeof CurrentModeControl>;
 
-export const RECurrentControlB = zod.object({
+export const RECurrentControlB = zod.strictObject({
   Q_Flag: zod.boolean(),
   PQ_Flag: zod.boolean(),
   Vdip_lim: zod
-    .object({
+    .strictObject({
       max: zod.number().optional(),
       min: zod.number().optional(),
     })
@@ -299,7 +299,7 @@ export const RECurrentControlB = zod.object({
     ),
   T_rv: zod.number(),
   dbd_pnts: zod
-    .object({
+    .strictObject({
       dbd1: zod.number().optional(),
       dbd2: zod.number().optional(),
     })
@@ -308,7 +308,7 @@ export const RECurrentControlB = zod.object({
     ),
   K_qv: zod.number(),
   Iqinj_lim: zod
-    .object({
+    .strictObject({
       max: zod.number().optional(),
       min: zod.number().optional(),
     })
@@ -325,7 +325,7 @@ export const RECurrentControlB = zod.object({
 export type RECurrentControlB = zod.input<typeof RECurrentControlB>;
 export type RECurrentControlBOutput = zod.output<typeof RECurrentControlB>;
 
-export const VoltageModeControl = zod.object({
+export const VoltageModeControl = zod.strictObject({
   kpv: zod.number(),
   kiv: zod.number(),
   kffv: zod.number(),
@@ -342,7 +342,7 @@ export type VoltageModeControl = zod.input<typeof VoltageModeControl>;
 export type VoltageModeControlOutput = zod.output<typeof VoltageModeControl>;
 
 const activePowerDroopPRefDefault = 1;
-export const ActivePowerDroop = zod.object({
+export const ActivePowerDroop = zod.strictObject({
   Rp: zod.number(),
   omegaz: zod.number(),
   P_ref: zod.number().default(activePowerDroopPRefDefault),
@@ -352,7 +352,7 @@ export type ActivePowerDroop = zod.input<typeof ActivePowerDroop>;
 export type ActivePowerDroopOutput = zod.output<typeof ActivePowerDroop>;
 
 const activePowerPIPRefDefault = 1;
-export const ActivePowerPI = zod.object({
+export const ActivePowerPI = zod.strictObject({
   Kp_p: zod.number(),
   Ki_p: zod.number(),
   omegaz: zod.number(),
@@ -364,7 +364,7 @@ export type ActivePowerPIOutput = zod.output<typeof ActivePowerPI>;
 
 const activeRenewableControllerABPRefDefault = 1;
 export const ActiveRenewableControllerAB = zod
-  .object({
+  .strictObject({
     bus_control: zod
       .int()
       .describe(
@@ -394,7 +394,7 @@ export const ActiveRenewableControllerAB = zod
       .number()
       .describe("Real power measurement filter time constant. Units: s."),
     fdbd_pnts: zod
-      .object({
+      .strictObject({
         fdbd1: zod.number().optional(),
         fdbd2: zod.number().optional(),
       })
@@ -402,7 +402,7 @@ export const ActiveRenewableControllerAB = zod
         "A pair of deadband thresholds `(fdbd1, fdbd2)` on a frequency error signal, inside which the controller does not act.",
       ),
     fe_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -410,7 +410,7 @@ export const ActiveRenewableControllerAB = zod
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     P_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -421,7 +421,7 @@ export const ActiveRenewableControllerAB = zod
     D_dn: zod.number().describe("Droop for over-frequency conditions."),
     D_up: zod.number().describe("Droop for under-frequency conditions."),
     dP_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -429,7 +429,7 @@ export const ActiveRenewableControllerAB = zod
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     P_lim_inner: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -457,7 +457,7 @@ export type ActiveRenewableControllerABOutput = zod.output<
 >;
 
 const activeVirtualOscillatorPRefDefault = 1;
-export const ActiveVirtualOscillator = zod.object({
+export const ActiveVirtualOscillator = zod.strictObject({
   k1: zod.number(),
   psi: zod.number(),
   P_ref: zod.number().default(activeVirtualOscillatorPRefDefault),
@@ -469,7 +469,7 @@ export type ActiveVirtualOscillatorOutput = zod.output<
 >;
 
 const reactivePowerDroopVRefDefault = 1;
-export const ReactivePowerDroop = zod.object({
+export const ReactivePowerDroop = zod.strictObject({
   kq: zod.number(),
   omegaf: zod.number(),
   V_ref: zod.number().default(reactivePowerDroopVRefDefault),
@@ -480,7 +480,7 @@ export type ReactivePowerDroopOutput = zod.output<typeof ReactivePowerDroop>;
 
 const reactivePowerPIVRefDefault = 1;
 const reactivePowerPIQRefDefault = 1;
-export const ReactivePowerPI = zod.object({
+export const ReactivePowerPI = zod.strictObject({
   Kp_q: zod.number(),
   Ki_q: zod.number(),
   omegaf: zod.number(),
@@ -494,7 +494,7 @@ export type ReactivePowerPIOutput = zod.output<typeof ReactivePowerPI>;
 const reactiveRenewableControllerABQRefDefault = 1;
 const reactiveRenewableControllerABVRefDefault = 1;
 export const ReactiveRenewableControllerAB = zod
-  .object({
+  .strictObject({
     bus_control: zod
       .int()
       .describe(
@@ -553,7 +553,7 @@ export const ReactiveRenewableControllerAB = zod
       .number()
       .describe("Reactive current compensation gain (used when VC_Flag = 0)."),
     e_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -561,7 +561,7 @@ export const ReactiveRenewableControllerAB = zod
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     dbd_pnts: zod
-      .object({
+      .strictObject({
         dbd1: zod.number().optional(),
         dbd2: zod.number().optional(),
       })
@@ -569,7 +569,7 @@ export const ReactiveRenewableControllerAB = zod
         "A pair of deadband thresholds `(dbd1, dbd2)` on a voltage or reactive-power error signal, inside which the controller does not act.",
       ),
     Q_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -582,7 +582,7 @@ export const ReactiveRenewableControllerAB = zod
         "Active power lag time constant in REECB. Used only when PF_Flag = 1. Units: s.",
       ),
     Q_lim_inner: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -590,7 +590,7 @@ export const ReactiveRenewableControllerAB = zod
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     V_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -629,7 +629,7 @@ export type ReactiveRenewableControllerABOutput = zod.output<
 
 const reactiveVirtualOscillatorVRefDefault = 1;
 const reactiveVirtualOscillatorQRefDefault = 1;
-export const ReactiveVirtualOscillator = zod.object({
+export const ReactiveVirtualOscillator = zod.strictObject({
   k2: zod.number(),
   V_ref: zod.number().default(reactiveVirtualOscillatorVRefDefault),
   Q_ref: zod.number().default(reactiveVirtualOscillatorQRefDefault),
@@ -643,7 +643,7 @@ export type ReactiveVirtualOscillatorOutput = zod.output<
 >;
 
 const virtualInertiaPRefDefault = 1;
-export const VirtualInertia = zod.object({
+export const VirtualInertia = zod.strictObject({
   Ta: zod.number(),
   kd: zod.number(),
   komega: zod.number(),
@@ -654,7 +654,7 @@ export type VirtualInertia = zod.input<typeof VirtualInertia>;
 export type VirtualInertiaOutput = zod.output<typeof VirtualInertia>;
 
 export const HybridOutputCurrentLimiter = zod
-  .object({
+  .strictObject({
     I_max: zod
       .number()
       .describe("Maximum limit on current controller input current"),
@@ -673,7 +673,7 @@ export type HybridOutputCurrentLimiterOutput = zod.output<
 >;
 
 export const InstantaneousOutputCurrentLimiter = zod
-  .object({
+  .strictObject({
     Id_max: zod
       .number()
       .describe("Maximum limit on d-axis current controller input current"),
@@ -693,7 +693,7 @@ export type InstantaneousOutputCurrentLimiterOutput = zod.output<
 >;
 
 export const MagnitudeOutputCurrentLimiter = zod
-  .object({
+  .strictObject({
     I_max: zod
       .number()
       .describe("Maximum limit on current controller input current"),
@@ -710,7 +710,7 @@ export type MagnitudeOutputCurrentLimiterOutput = zod.output<
 >;
 
 export const PriorityOutputCurrentLimiter = zod
-  .object({
+  .strictObject({
     I_max: zod
       .number()
       .describe("Maximum limit on current controller input current"),
@@ -732,7 +732,7 @@ export type PriorityOutputCurrentLimiterOutput = zod.output<
 >;
 
 export const SaturationOutputCurrentLimiter = zod
-  .object({
+  .strictObject({
     I_max: zod
       .number()
       .describe("Maximum limit on current controller input current"),
@@ -751,7 +751,7 @@ export type SaturationOutputCurrentLimiterOutput = zod.output<
 
 const aVRFixedVRefDefault = 1;
 export const AVRFixed = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Vf: zod
       .number()
@@ -770,7 +770,7 @@ export type AVRFixedOutput = zod.output<typeof AVRFixed>;
 
 const aVRSimpleVRefDefault = 1;
 export const AVRSimple = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Kv: zod.number().describe("Proportional Gain"),
     V_ref: zod
@@ -787,7 +787,7 @@ export type AVRSimpleOutput = zod.output<typeof AVRSimple>;
 
 const aVRTypeIVRefDefault = 1;
 export const AVRTypeI = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Ka: zod.number().describe("Amplifier gain"),
     Ke: zod.number().describe("Field circuit integral deviation"),
@@ -797,7 +797,7 @@ export const AVRTypeI = zod
     Tf: zod.number().describe("Stabilizer time constant"),
     Tr: zod.number().describe("Voltage measurement time constant"),
     Va_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -820,7 +820,7 @@ export type AVRTypeIOutput = zod.output<typeof AVRTypeI>;
 
 const aVRTypeIIVRefDefault = 1;
 export const AVRTypeII = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     K0: zod.number().describe("Regulator gain"),
     T1: zod.number().describe("First pole in s"),
@@ -830,7 +830,7 @@ export const AVRTypeII = zod
     Te: zod.number().describe("Field circuit time constant"),
     Tr: zod.number().describe("Voltage measurement time constant"),
     Va_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -859,7 +859,7 @@ export const eSAC1ASeMax = 2;
 
 const eSAC1AVRefDefault = 1;
 export const ESAC1A = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Tr: zod.number().describe("Regulator input filter time constant"),
     Tb: zod.number().describe("Regulator denominator (lag) time constant"),
@@ -867,7 +867,7 @@ export const ESAC1A = zod
     Ka: zod.number().describe("Regulator output gain"),
     Ta: zod.number().describe("Regulator output time constant"),
     Va_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -901,7 +901,7 @@ export const ESAC1A = zod
       .max(eSAC1ASeMax)
       .describe("Exciter saturation factor at exciter output voltage"),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -928,7 +928,7 @@ export const eSAC6ASeMax = 2;
 
 const eSAC6AVRefDefault = 1;
 export const ESAC6A = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Tr: zod.number().describe("Regulator input filter time constant"),
     Ka: zod.number().describe("Regulator output gain"),
@@ -937,7 +937,7 @@ export const ESAC6A = zod
     Tb: zod.number().describe("Regulator denominator (lag) time constant"),
     Tc: zod.number().describe("Regulator numerator (lead) time constant"),
     Va_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -945,7 +945,7 @@ export const ESAC6A = zod
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1007,7 +1007,7 @@ export const eSAC8BSeMax = 2;
 
 const eSAC8BVRefDefault = 1;
 export const ESAC8B = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Tr: zod.number().describe("Regulator input filter time constant"),
     Kp: zod.number().describe("Regulator proportional PID gain"),
@@ -1017,7 +1017,7 @@ export const ESAC8B = zod
     Ka: zod.number().describe("Regulator output gain"),
     Ta: zod.number().describe("Regulator output lag time constant"),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1056,7 +1056,7 @@ export const eSDC1ASeMax = 2;
 
 const eSDC1AVRefDefault = 1;
 export const ESDC1A = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Tr: zod.number().describe("Voltage measurement time constant"),
     Ka: zod.number().describe("Amplifier gain"),
@@ -1064,7 +1064,7 @@ export const ESDC1A = zod
     Tb: zod.number().describe("Regulator input time constant"),
     Tc: zod.number().describe("Regulator input time constant"),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1112,7 +1112,7 @@ export const eSDC2ASeMax = 2;
 
 const eSDC2AVRefDefault = 1;
 export const ESDC2A = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Tr: zod.number().describe("Voltage measurement time constant"),
     Ka: zod.number().describe("Amplifier gain"),
@@ -1120,7 +1120,7 @@ export const ESDC2A = zod
     Tb: zod.number().describe("Regulator input time constant"),
     Tc: zod.number().describe("Regulator input time constant"),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1165,7 +1165,7 @@ export const eSST1AViLimMax = 2;
 
 const eSST1AVRefDefault = 1;
 export const ESST1A = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     UEL_flags: zod
       .int()
@@ -1192,7 +1192,7 @@ export const ESST1A = zod
     Ka: zod.number().describe("Voltage regulator gain"),
     Ta: zod.number().describe("Voltage regulator time constant"),
     Va_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1200,7 +1200,7 @@ export const ESST1A = zod
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1230,13 +1230,13 @@ export type ESST1AOutput = zod.output<typeof ESST1A>;
 
 const eSST4BVRefDefault = 1;
 export const ESST4B = zod
-  .object({
+  .strictObject({
     Tr: zod.number().describe("Regulator input filter time constant"),
     id: zod.int().describe("Unique integer identifier for this component"),
     K_pr: zod.number().describe("Regulator proportional gain"),
     K_ir: zod.number().describe("Regulator integral gain"),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1247,7 +1247,7 @@ export const ESST4B = zod
     K_pm: zod.number().describe("Voltage regulator proportional gain output"),
     K_im: zod.number().describe("Voltage regulator integral gain output"),
     Vm_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1281,7 +1281,7 @@ export type ESST4BOutput = zod.output<typeof ESST4B>;
 
 const eX4VSAVRefDefault = 1;
 export const EX4VSA = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Iflim: zod.number().describe("OEL field current limit"),
     d: zod.number().describe("OEL parameter d"),
@@ -1290,7 +1290,7 @@ export const EX4VSA = zod
     K1: zod.number().describe("OEL delay time constant"),
     K2: zod.number().describe("OEL parameter K2"),
     Oel_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1302,7 +1302,7 @@ export const EX4VSA = zod
     Tb: zod.number().describe("Denominator lead-lag (lag) time constant"),
     Te: zod.number().describe("Exciter time constant"),
     E_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1327,7 +1327,7 @@ export const eXAC1SeMax = 2;
 
 const eXAC1VRefDefault = 1;
 export const EXAC1 = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Tr: zod.number().describe("Regulator input filter time constant"),
     Tb: zod.number().describe("Regulator denominator (lag) time constant"),
@@ -1335,7 +1335,7 @@ export const EXAC1 = zod
     Ka: zod.number().describe("Regulator output gain"),
     Ta: zod.number().describe("Regulator output time constant"),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1388,7 +1388,7 @@ export const eXAC1ASeMax = 2;
 
 const eXAC1AVRefDefault = 1;
 export const EXAC1A = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Tr: zod.number().describe("Regulator input filter time constant"),
     Tb: zod.number().describe("Regulator denominator (lag) time constant"),
@@ -1396,7 +1396,7 @@ export const EXAC1A = zod
     Ka: zod.number().describe("Regulator output gain"),
     Ta: zod.number().describe("Regulator output time constant"),
     Va_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1430,7 +1430,7 @@ export const EXAC1A = zod
       .max(eXAC1ASeMax)
       .describe("Exciter saturation factor at exciter output voltage"),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1457,7 +1457,7 @@ export const eXAC2SeMax = 2;
 
 const eXAC2VRefDefault = 1;
 export const EXAC2 = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Tr: zod.number().describe("Regulator input filter time constant"),
     Tb: zod.number().describe("Regulator denominator (lag) time constant"),
@@ -1465,7 +1465,7 @@ export const EXAC2 = zod
     Ka: zod.number().describe("Regulator output gain"),
     Ta: zod.number().describe("Regulator output time constant"),
     Va_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1474,7 +1474,7 @@ export const EXAC2 = zod
       ),
     Kb: zod.number().describe("Second stage regulator gain"),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1530,13 +1530,13 @@ export const eXPIC1SeMax = 2;
 
 const eXPIC1VRefDefault = 1;
 export const EXPIC1 = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Tr: zod.number().describe("Regulator input filter time constant"),
     Ka: zod.number().describe("Voltage regulator gain"),
     Ta: zod.number().describe("Voltage regulator time constant"),
     Va_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1547,7 +1547,7 @@ export const EXPIC1 = zod
     Ta_3: zod.number().describe("Voltage regulator time constant"),
     Ta_4: zod.number().describe("Voltage regulator time constant"),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1560,7 +1560,7 @@ export const EXPIC1 = zod
     Tf_1: zod.number().describe("Rate feedback time constant"),
     Tf_2: zod.number().describe("Rate feedback time constant"),
     Efd_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1594,11 +1594,11 @@ export type EXPIC1Output = zod.output<typeof EXPIC1>;
 
 const eXST1VRefDefault = 1;
 export const EXST1 = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Tr: zod.number().describe("Voltage measurement time constant"),
     Vi_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1610,7 +1610,7 @@ export const EXST1 = zod
     Ka: zod.number().describe("Amplifier gain"),
     Ta: zod.number().describe("Amplifier time constant"),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1640,13 +1640,13 @@ export const iEEET1SeMax = 2;
 
 const iEEET1VRefDefault = 1;
 export const IEEET1 = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Tr: zod.number().describe("Voltage measurement time constant"),
     Ka: zod.number().describe("Amplifier gain"),
     Ta: zod.number().describe("Amplifier time constant"),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1686,14 +1686,14 @@ export type IEEET1Output = zod.output<typeof IEEET1>;
 
 const sCRXVRefDefault = 1;
 export const SCRX = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Ta_Tb: zod.number().describe("Lead input constant ratio"),
     Tb: zod.number().describe("Lag input constant"),
     K: zod.number().describe("Regulator gain"),
     Te: zod.number().describe("Regulator time constant"),
     Efd_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1720,14 +1720,14 @@ export type SCRXOutput = zod.output<typeof SCRX>;
 
 const sEXSVRefDefault = 1;
 export const SEXS = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Ta_Tb: zod.number().describe("Ratio of lead and lag time constants"),
     Tb: zod.number().describe("Lag time constant. Units: s."),
     K: zod.number().describe("Gain"),
     Te: zod.number().describe("Field circuit time constant. Units: s."),
     V_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1746,7 +1746,7 @@ export type SEXSOutput = zod.output<typeof SEXS>;
 
 const sT6BVRefDefault = 1;
 export const ST6B = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     OEL_Flag: zod
       .int()
@@ -1759,7 +1759,7 @@ export const ST6B = zod
       .number()
       .describe("Voltage regulator derivative channel time constant"),
     Va_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1776,7 +1776,7 @@ export const ST6B = zod
     K_lr: zod.number().describe("Exciter output current limiter gain"),
     I_lr: zod.number().describe("Exciter current limiter reference"),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1806,7 +1806,7 @@ export type ST6BOutput = zod.output<typeof ST6B>;
 const sT8CVRefDefault = 1;
 const sT8CIfdRefDefault = 1;
 export const ST8C = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     OEL_Flag: zod
       .int()
@@ -1832,7 +1832,7 @@ export const ST8C = zod
     K_pr: zod.number().describe("Regulator proportional gain"),
     K_ir: zod.number().describe("Regulator integral gain"),
     Vpi_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1842,7 +1842,7 @@ export const ST8C = zod
     K_pa: zod.number().describe("Field current regulator proportional gain"),
     K_ia: zod.number().describe("Field current regulator integral gain"),
     Va_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1854,7 +1854,7 @@ export const ST8C = zod
       .number()
       .describe("Controlled rectifier bridge equivalent time constant"),
     Vr_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -1897,7 +1897,7 @@ export type ST8C = zod.input<typeof ST8C>;
 export type ST8COutput = zod.output<typeof ST8C>;
 
 export const AndersonFouadMachine = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Resistance after EMF"),
     Xd: zod.number().describe("Reactance after EMF in d-axis"),
@@ -1927,7 +1927,7 @@ export type AndersonFouadMachineOutput = zod.output<
 >;
 
 export const BaseMachine = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Resistance after EMF"),
     Xd_p: zod.number().describe("Reactance after EMF"),
@@ -1939,7 +1939,7 @@ export type BaseMachine = zod.input<typeof BaseMachine>;
 export type BaseMachineOutput = zod.output<typeof BaseMachine>;
 
 export const FullMachine = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Resistance after EMF"),
     R_f: zod.number().describe("Field rotor winding resistance"),
@@ -1994,7 +1994,7 @@ export type FullMachine = zod.input<typeof FullMachine>;
 export type FullMachineOutput = zod.output<typeof FullMachine>;
 
 export const MarconatoMachine = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Resistance after EMF"),
     Xd: zod.number().describe("Reactance after EMF in d-axis"),
@@ -2021,7 +2021,7 @@ export type MarconatoMachine = zod.input<typeof MarconatoMachine>;
 export type MarconatoMachineOutput = zod.output<typeof MarconatoMachine>;
 
 export const OneDOneQMachine = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Resistance after EMF"),
     Xd: zod.number().describe("Reactance after EMF in d-axis"),
@@ -2042,7 +2042,7 @@ export const roundRotorExponentialSaturationCoeffsMin = 2;
 export const roundRotorExponentialSaturationCoeffsMax = 2;
 
 export const RoundRotorExponential = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     base_machine: zod.int().describe("Round Rotor machine parameters"),
     saturation_coeffs: zod
@@ -2066,7 +2066,7 @@ export const roundRotorMachineSeMin = 2;
 export const roundRotorMachineSeMax = 2;
 
 export const RoundRotorMachine = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Armature resistance"),
     Td0_p: zod
@@ -2110,7 +2110,7 @@ export const roundRotorQuadraticSaturationCoeffsMin = 2;
 export const roundRotorQuadraticSaturationCoeffsMax = 2;
 
 export const RoundRotorQuadratic = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     base_machine: zod.int().describe("Round Rotor machine parameters"),
     saturation_coeffs: zod
@@ -2132,7 +2132,7 @@ export const salientPoleExponentialSaturationCoeffsMin = 2;
 export const salientPoleExponentialSaturationCoeffsMax = 2;
 
 export const SalientPoleExponential = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     base_machine: zod.int().describe("Salient pole machine parameters"),
     saturation_coeffs: zod
@@ -2156,7 +2156,7 @@ export const salientPoleMachineSeMin = 2;
 export const salientPoleMachineSeMax = 2;
 
 export const SalientPoleMachine = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Armature resistance"),
     Td0_p: zod
@@ -2194,7 +2194,7 @@ export const salientPoleQuadraticSaturationCoeffsMin = 2;
 export const salientPoleQuadraticSaturationCoeffsMax = 2;
 
 export const SalientPoleQuadratic = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     base_machine: zod.int().describe("Salient pole machine parameters"),
     saturation_coeffs: zod
@@ -2215,7 +2215,7 @@ export type SalientPoleQuadraticOutput = zod.output<
 >;
 
 export const SauerPaiMachine = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Resistance after EMF"),
     Xd: zod.number().describe("Reactance after EMF in d-axis"),
@@ -2244,7 +2244,7 @@ export type SauerPaiMachine = zod.input<typeof SauerPaiMachine>;
 export type SauerPaiMachineOutput = zod.output<typeof SauerPaiMachine>;
 
 export const SimpleAFMachine = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Resistance after EMF"),
     Xd: zod.number().describe("Reactance after EMF in d-axis"),
@@ -2274,7 +2274,7 @@ export type SimpleAFMachine = zod.input<typeof SimpleAFMachine>;
 export type SimpleAFMachineOutput = zod.output<typeof SimpleAFMachine>;
 
 export const SimpleFullMachine = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Resistance after EMF"),
     R_f: zod.number().describe("Field motor winding resistance"),
@@ -2329,7 +2329,7 @@ export type SimpleFullMachine = zod.input<typeof SimpleFullMachine>;
 export type SimpleFullMachineOutput = zod.output<typeof SimpleFullMachine>;
 
 export const SimpleMarconatoMachine = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Resistance after EMF"),
     Xd: zod.number().describe("Reactance after EMF in d-axis"),
@@ -2361,7 +2361,7 @@ export const iEEESTLsLimMin = 2;
 export const iEEESTLsLimMax = 2;
 
 export const IEEEST = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     input_code: zod.int().describe("Code input for stabilizer"),
     remote_bus_control: zod
@@ -2399,7 +2399,7 @@ export const pSS2AVstLimMin = 2;
 export const pSS2AVstLimMax = 2;
 
 export const PSS2A = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     input_code_1: zod.int().describe("First input code for stabilizer"),
     remote_bus_control_1: zod
@@ -2463,7 +2463,7 @@ export const pSS2BVstLimMin = 2;
 export const pSS2BVstLimMax = 2;
 
 export const PSS2B = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     input_code_1: zod.int().describe("First input code for stabilizer"),
     remote_bus_control_1: zod
@@ -2543,7 +2543,7 @@ export const pSS2CPSSHysteresisParamMax = 2;
 
 const pSS2CHysteresisBinaryLogicDefault = 1;
 export const PSS2C = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     input_code_1: zod.int().describe("First input code for stabilizer"),
     remote_bus_control_1: zod
@@ -2623,7 +2623,7 @@ export type PSS2C = zod.input<typeof PSS2C>;
 export type PSS2COutput = zod.output<typeof PSS2C>;
 
 export const PSSFixed = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     V_pss: zod.number().describe("Fixed voltage stabilization signal"),
   })
@@ -2635,7 +2635,7 @@ export type PSSFixed = zod.input<typeof PSSFixed>;
 export type PSSFixedOutput = zod.output<typeof PSSFixed>;
 
 export const PSSSimple = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     K_omega: zod.number().describe("Proportional gain for frequency"),
     K_p: zod.number().describe("Proportional gain for active power"),
@@ -2648,7 +2648,7 @@ export type PSSSimple = zod.input<typeof PSSSimple>;
 export type PSSSimpleOutput = zod.output<typeof PSSSimple>;
 
 export const STAB1 = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     KT: zod.number().describe("K/T for washout filter"),
     T: zod.number().describe("Time constant for washout filter"),
@@ -2664,7 +2664,7 @@ export type STAB1 = zod.input<typeof STAB1>;
 export type STAB1Output = zod.output<typeof STAB1>;
 
 export const FiveMassShaft = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     H: zod.number().describe("Rotor inertia constant in MWs/MVA"),
     H_hp: zod
@@ -2703,7 +2703,7 @@ export type FiveMassShaft = zod.input<typeof FiveMassShaft>;
 export type FiveMassShaftOutput = zod.output<typeof FiveMassShaft>;
 
 export const SingleMass = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     H: zod.number().describe("Rotor inertia constant in MWs/MVA"),
     D: zod.number().describe("Rotor natural damping"),
@@ -2717,7 +2717,7 @@ export type SingleMassOutput = zod.output<typeof SingleMass>;
 
 const dEGOVPRefDefault = 1;
 export const DEGOV = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     T1: zod.number().describe("Governor mechanism time constant"),
     T2: zod.number().describe("Turbine power time constant"),
@@ -2742,7 +2742,7 @@ export const dEGOV1TLimMax = 2;
 
 const dEGOV1PRefDefault = 1;
 export const DEGOV1 = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     droop_flag: zod
       .int()
@@ -2780,7 +2780,7 @@ export const gasTGVLimMax = 2;
 
 const gasTGPRefDefault = 1;
 export const GasTG = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Speed droop parameter"),
     T1: zod.number().describe("Governor time constant"),
@@ -2814,14 +2814,14 @@ export type GasTGOutput = zod.output<typeof GasTG>;
 
 const generalGovModelPRefDefault = 1;
 export const GeneralGovModel = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Rselect: zod.int().describe("Feedback signal for governor droop"),
     fuel_flag: zod.int().describe("Flag switch for fuel source characteristic"),
     R: zod.number().optional().describe("Speed droop parameter"),
     Tpelec: zod.number().describe("Electrical power transducer time constant"),
     speed_error_signal: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -2833,7 +2833,7 @@ export const GeneralGovModel = zod
     Kd_gov: zod.number().describe("Governor derivative gain"),
     Td_gov: zod.number().describe("Governor derivative time constant"),
     valve_position_limits: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -2868,7 +2868,7 @@ export const GeneralGovModel = zod
     Tsa: zod.number().describe("Temperature detection lead time constant"),
     Tsb: zod.number().describe("Temperature detection lag time constant"),
     R_lim: zod
-      .object({
+      .strictObject({
         down: zod.number(),
         up: zod.number(),
       })
@@ -2889,7 +2889,7 @@ export type GeneralGovModelOutput = zod.output<typeof GeneralGovModel>;
 
 const hydroTurbineGovPRefDefault = 1;
 export const HydroTurbineGov = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Permanent droop parameter"),
     r: zod.number().describe("Temporary droop"),
@@ -2898,7 +2898,7 @@ export const HydroTurbineGov = zod
     Tg: zod.number().describe("Servo time constant"),
     VELM: zod.number().describe("Gate velocity limit"),
     gate_position_limits: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -2921,7 +2921,7 @@ export type HydroTurbineGovOutput = zod.output<typeof HydroTurbineGov>;
 
 const iEEETurbineGov1PRefDefault = 1;
 export const IEEETurbineGov1 = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     K: zod.int().describe("Governor gain"),
     T1: zod.int().describe("Input filter lag"),
@@ -2930,7 +2930,7 @@ export const IEEETurbineGov1 = zod
     U0: zod.number().describe("Maximum valve opening rate"),
     U_c: zod.number().describe("Maximum valve closing rate"),
     valve_position_limits: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -2979,7 +2979,7 @@ export const pIDGOVPowerGateOpeningsMax = 3;
 
 const pIDGOVPRefDefault = 1;
 export const PIDGOV = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     feedback_flag: zod
       .int()
@@ -3005,7 +3005,7 @@ export const PIDGOV = zod
       .max(pIDGOVPowerGateOpeningsMax)
       .describe("Power at gate_openings"),
     G_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -3015,7 +3015,7 @@ export const PIDGOV = zod
     A_tw: zod.number().describe("Factor multiplying Tw"),
     Tw: zod.number().describe("Water inertia time constant"),
     V_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -3033,12 +3033,12 @@ export type PIDGOV = zod.input<typeof PIDGOV>;
 export type PIDGOVOutput = zod.output<typeof PIDGOV>;
 
 export const SteamTurbineGov1 = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Droop parameter"),
     T1: zod.number().describe("Governor time constant. Units: s."),
     valve_position_limits: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -3064,7 +3064,7 @@ export type SteamTurbineGov1Output = zod.output<typeof SteamTurbineGov1>;
 
 const tGFixedPRefDefault = 1;
 export const TGFixed = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     efficiency: zod
       .number()
@@ -3083,7 +3083,7 @@ export type TGFixedOutput = zod.output<typeof TGFixed>;
 
 const tGSimplePRefDefault = 1;
 export const TGSimple = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     d_t: zod.number().describe("Inverse droop parameter"),
     Tm: zod.number().describe("Turbine governor low-pass time constant"),
@@ -3098,7 +3098,7 @@ export type TGSimple = zod.input<typeof TGSimple>;
 export type TGSimpleOutput = zod.output<typeof TGSimple>;
 
 export const TGTypeI = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Droop parameter"),
     Ts: zod.number().describe("Governor time constant"),
@@ -3107,7 +3107,7 @@ export const TGTypeI = zod
     T4: zod.number().describe("Power fraction time constant"),
     T5: zod.number().describe("Reheat time constant"),
     valve_position_limits: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -3122,13 +3122,13 @@ export type TGTypeI = zod.input<typeof TGTypeI>;
 export type TGTypeIOutput = zod.output<typeof TGTypeI>;
 
 export const TGTypeII = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     R: zod.number().describe("Droop parameter"),
     T1: zod.number().describe("Transient gain time constant"),
     T2: zod.number().describe("Power fraction time constant"),
     tau_limits: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -3150,7 +3150,7 @@ export const wPIDHYPowerGateOpeningsMax = 3;
 
 const wPIDHYPRefDefault = 1;
 export const WPIDHY = zod
-  .object({
+  .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     T_reg: zod.number().describe("Input time constant of the governor"),
     reg: zod.number().describe("Input governor gain"),
@@ -3162,7 +3162,7 @@ export const WPIDHY = zod
       .describe("Governor derivative/high-frequency time constant"),
     Tb: zod.number().describe("Gate-servo time constant"),
     V_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -3170,7 +3170,7 @@ export const WPIDHY = zod
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     G_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })
@@ -3179,7 +3179,7 @@ export const WPIDHY = zod
       ),
     Tw: zod.number().describe("Water inertia time constant"),
     P_lim: zod
-      .object({
+      .strictObject({
         max: zod.number().optional(),
         min: zod.number().optional(),
       })

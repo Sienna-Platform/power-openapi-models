@@ -22,6 +22,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   misspelled field read without error. The strict bundles and the two document
   types already rejected such a property.
 
+### Changed — Python and TypeScript
+
+- Every generated model rejects an unknown property, as the Rust types do: the
+  Python models set `extra="forbid"` (`datamodel-codegen --extra-fields forbid`),
+  and the zod objects are `zod.strictObject`. Before, a misspelled field parsed
+  without error and its value was lost. Map schemas (`RootModel` in Python,
+  `zod.record` in TypeScript) stay open.
+
+### Changed — repository
+
+- `check_cross_language.py` compares whether each type rejects an unknown
+  property, so the Python↔TypeScript and Python↔Rust gates fail when one
+  language drops a property that another rejects.
+
 ## [0.1.0] — Unreleased
 
 First release. Three packages, one version, one tag, one schema pin.

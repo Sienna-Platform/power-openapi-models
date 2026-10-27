@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 from power_openapi_models.core.models import UnitSystem
-from pydantic import BaseModel, Field, RootModel, conint
+from pydantic import BaseModel, ConfigDict, Field, RootModel, conint
 from power_openapi_models.timestamps import UtcDatetime
 from enum import Enum
 from typing import Literal
@@ -59,6 +59,9 @@ class TimeSeriesFeatures(RootModel[dict[str, TimeSeriesFeatureValue]]):
 
 
 class NonSequentialTimeSeries(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     association_id: int = Field(
         ...,
         description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
@@ -142,6 +145,9 @@ class NonSequentialTimeSeries(BaseModel):
 
 
 class Deterministic(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     association_id: int = Field(
         ...,
         description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
@@ -234,6 +240,9 @@ class Deterministic(BaseModel):
 
 
 class DeterministicSingleTimeSeries(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     association_id: int = Field(
         ...,
         description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
@@ -326,6 +335,9 @@ class DeterministicSingleTimeSeries(BaseModel):
 
 
 class Probabilistic(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     association_id: int = Field(
         ...,
         description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
@@ -423,6 +435,9 @@ class Probabilistic(BaseModel):
 
 
 class Scenarios(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     association_id: int = Field(
         ...,
         description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",
@@ -519,6 +534,9 @@ class Scenarios(BaseModel):
 
 
 class SingleTimeSeries(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     association_id: int = Field(
         ...,
         description="Surrogate id of this association, minted by the store that holds it. Assigned once when the association is created and never changed: renaming the series or reassigning its owner leaves it alone, so a consumer may persist it as a durable reference. Ids are never reused, and they are store-local — resolve one against the same store the document was exported from, not against an independently built store. Assigned by the store, never by a document author.",

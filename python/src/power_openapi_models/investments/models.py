@@ -18,10 +18,13 @@ from power_openapi_models.core.models import (
     UpDown,
     ValueCurve,
 )
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TechnologyFinancialData(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     capital_recovery_period: int = Field(
         ...,
         description="Period over which capital costs are recovered for net present value calculations. Units: yr.",
@@ -40,6 +43,9 @@ class TechnologyFinancialData(BaseModel):
 
 
 class CapacityReserveMargin(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool = Field(
@@ -54,6 +60,9 @@ class CapacityReserveMargin(BaseModel):
 
 
 class CarbonCaps(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool = Field(
@@ -70,6 +79,9 @@ class CarbonCaps(BaseModel):
 
 
 class CarbonTax(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool = Field(
@@ -84,6 +96,9 @@ class CarbonTax(BaseModel):
 
 
 class ColocatedSupplyStorageTechnology(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool | None = Field(
@@ -127,6 +142,9 @@ class ColocatedSupplyStorageTechnology(BaseModel):
 
 
 class DemandRequirement(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool | None = Field(
@@ -165,6 +183,9 @@ class DemandRequirement(BaseModel):
 
 
 class DemandSideTechnology(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool = Field(
@@ -215,6 +236,9 @@ class DemandSideTechnology(BaseModel):
 
 
 class EnergyShareRequirements(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool = Field(
@@ -229,6 +253,9 @@ class EnergyShareRequirements(BaseModel):
 
 
 class ExistingDevices(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     existing_devices: list[str] | None = Field(
         None,
@@ -237,6 +264,9 @@ class ExistingDevices(BaseModel):
 
 
 class HourlyMatching(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool = Field(
@@ -246,6 +276,9 @@ class HourlyMatching(BaseModel):
 
 
 class MaximumCapacityRequirements(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool = Field(
@@ -259,6 +292,9 @@ class MaximumCapacityRequirements(BaseModel):
 
 
 class MinimumCapacityRequirements(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool = Field(
@@ -272,6 +308,9 @@ class MinimumCapacityRequirements(BaseModel):
 
 
 class NodalACTransportTechnology(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool = Field(
@@ -305,6 +344,9 @@ class NodalACTransportTechnology(BaseModel):
 
 
 class NodalHVDCTransportTechnology(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool = Field(
@@ -337,6 +379,9 @@ class NodalHVDCTransportTechnology(BaseModel):
 
 
 class PortfolioFinancialData(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     discount_rate: float = Field(
         0.0, description="Discount rate for financial calculations. Units: 1."
@@ -352,6 +397,9 @@ class PortfolioFinancialData(BaseModel):
 
 
 class RequirementAssociation(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     requirement_id: int = Field(
         ..., description="ID of the policy requirement the membership belongs to."
     )
@@ -359,6 +407,9 @@ class RequirementAssociation(BaseModel):
 
 
 class RetirementPotential(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     eligible_generators: list[str] = Field(
         ...,
@@ -378,6 +429,9 @@ class RetirementPotential(BaseModel):
 
 
 class RetrofitPotential(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     eligible_generators: list[str] = Field(
         ...,
@@ -392,6 +446,9 @@ class RetrofitPotential(BaseModel):
 
 
 class StorageTechnology(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool = Field(
@@ -461,6 +518,9 @@ class StorageTechnology(BaseModel):
 
 
 class SupplyTechnology(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool | None = Field(
@@ -527,6 +587,9 @@ class SupplyTechnology(BaseModel):
 
 
 class AggregateTransportTechnology(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="ID for individual component.")
     name: str = Field(..., description="Name of the component.")
     available: bool = Field(
