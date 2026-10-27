@@ -416,7 +416,7 @@ pub struct TwoTerminalVSCLine {
     ///Series conductance of the DC line. Units: S.
     #[serde(default = "defaults::TwoTerminalVSCLine_g")]
     pub g: f64,
-    ///DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: A.
+    ///DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: kA.
     #[serde(default = "defaults::TwoTerminalVSCLine_dc_current")]
     pub dc_current: f64,
     ///Initial condition of reactive power flowing into the from-bus. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
@@ -460,7 +460,7 @@ pub struct TwoTerminalVSCLine {
     pub rated_ac_voltage_from: f64,
     #[serde(default = "defaults::TwoTerminalVSCLine_converter_loss_from")]
     pub converter_loss_from: LossCurve,
-    ///Maximum stable dc current limits. Units: A.
+    ///Maximum stable dc current limits. 9999 means no limit. Units: kA.
     #[serde(default = "defaults::TwoTerminalVSCLine_max_dc_current_from")]
     pub max_dc_current_from: f64,
     ///Converter rating in the `from` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
@@ -517,7 +517,7 @@ pub struct TwoTerminalVSCLine {
     pub rated_ac_voltage_to: f64,
     #[serde(default = "defaults::TwoTerminalVSCLine_converter_loss_to")]
     pub converter_loss_to: LossCurve,
-    ///Maximum stable dc current limits. Units: A.
+    ///Maximum stable dc current limits. 9999 means no limit. Units: kA.
     #[serde(default = "defaults::TwoTerminalVSCLine_max_dc_current_to")]
     pub max_dc_current_to: f64,
     ///Converter rating in the `to` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
@@ -578,7 +578,7 @@ pub struct TwoTerminalLCCLine {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub power_transfer_setpoint: Option<Option<f64>>,
-    ///Scheduled current transfer, used when `control_mode` is `CURRENT`; `null` otherwise. Units: A.
+    ///Scheduled current transfer, used when `control_mode` is `CURRENT`; `null` otherwise. Units: kA.
     #[serde(
         skip_serializing_if = "Option::is_none",
         default,
@@ -670,7 +670,7 @@ pub struct TwoTerminalLCCLine {
     pub base_power: f64,
     pub power_units: UnitSystem,
 }
-///Control mode of an LCC-HVDC line (PSS/E MDC). BLOCKED: the line is blocked and holds no schedule. POWER: the line holds a power schedule (power_transfer_setpoint, MW). CURRENT: the line holds a current schedule (current_transfer_setpoint, A).
+///Control mode of an LCC-HVDC line (PSS/E MDC). BLOCKED: the line is blocked and holds no schedule. POWER: the line holds a power schedule (power_transfer_setpoint, MW). CURRENT: the line holds a current schedule (current_transfer_setpoint, kA).
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum LCCControlMode {
     #[default]
@@ -2937,7 +2937,7 @@ pub struct TModelHVDCLine {
     pub active_power_flow: f64,
     ///An `Arc` defining this line `from` a bus `to` another bus.
     pub arc: i64,
-    ///Base current of the line as recorded by the source data. No field of this component is per-unit on it. Units: A.
+    ///Base current of the line as recorded by the source data. No field of this component is per-unit on it. Units: kA.
     pub base_current: f64,
     ///Total series resistance, split equally on both sides of the shunt capacitance. Units: ohm.
     pub r: f64,
@@ -4379,6 +4379,8 @@ pub struct SingleTimeSeries {
     pub unit_system: Option<UnitSystem>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
+    #[serde(default = "defaults::SingleTimeSeries_interval_alignment")]
+    pub interval_alignment: IntervalAlignment,
     ///The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component_field: Option<String>,
@@ -4920,6 +4922,81 @@ impl<'de> serde::Deserialize<'de> for ShiftablePowerLoadOperationCost {
         }
     }
 }
+///A series compensator on an `Arc`: a series capacitor or reactor, or a thyristor-controlled or static synchronous series compensator, with one series reactance. Devices that also inject at a bus, such as a UPFC, are not covered.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct SeriesCompensator {
+    ///Unique integer identifier for this component.
+    pub id: i64,
+    ///Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.
+    pub name: String,
+    ///Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.
+    pub available: bool,
+    ///Initial condition of active power flow through the compensator. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
+    pub active_power_flow: f64,
+    ///Initial condition of reactive power flow through the compensator. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
+    pub reactive_power_flow: f64,
+    ///An `Arc` defining this line `from` a bus `to` another bus.
+    pub arc: i64,
+    ///Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    pub r: f64,
+    ///Series reactance; negative for a capacitor. Under `DISPATCHABLE` and `ACTIVE_POWER_FLOW`, the present value. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    pub x: f64,
+    ///Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    pub rating: f64,
+    #[serde(default = "defaults::SeriesCompensator_control_mode")]
+    pub control_mode: SeriesCompensatorControlMode,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactance_limits: Option<MinMax>,
+    ///Active power flow, from the `from` bus to the `to` bus, the compensator holds. Required when `control_mode` is `ACTIVE_POWER_FLOW`. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub active_power_flow_setpoint: Option<f64>,
+    ///Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rating_b: Option<f64>,
+    ///Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rating_c: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operational_flow_limit: Option<OperationalFlowLimit>,
+    ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
+    pub base_power: f64,
+    pub power_units: UnitSystem,
+    #[serde(default = "defaults::SeriesCompensator_parameter_units")]
+    pub parameter_units: ImpedanceUnitBasis,
+}
+///Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
+pub enum SeriesCompensatorControlMode {
+    #[default]
+    #[serde(rename = "FIXED")]
+    Fixed,
+    #[serde(rename = "BYPASSED")]
+    Bypassed,
+    #[serde(rename = "DISPATCHABLE")]
+    Dispatchable,
+    #[serde(rename = "ACTIVE_POWER_FLOW")]
+    ActivePowerFlow,
+}
+impl SeriesCompensatorControlMode {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Fixed => "FIXED",
+            Self::Bypassed => "BYPASSED",
+            Self::Dispatchable => "DISPATCHABLE",
+            Self::ActivePowerFlow => "ACTIVE_POWER_FLOW",
+        }
+    }
+}
+impl ::std::fmt::Display for SeriesCompensatorControlMode {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+impl AsRef<str> for SeriesCompensatorControlMode {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
 ///A scenarios forecast: per-scenario, per-window horizon arrays. Adds a scenario axis in front of the deterministic layout.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct Scenarios {
@@ -4958,6 +5035,8 @@ pub struct Scenarios {
     pub unit_system: Option<UnitSystem>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
+    #[serde(default = "defaults::Scenarios_interval_alignment")]
+    pub interval_alignment: IntervalAlignment,
     ///The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component_field: Option<String>,
@@ -6053,6 +6132,8 @@ pub struct Probabilistic {
     pub unit_system: Option<UnitSystem>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
+    #[serde(default = "defaults::Probabilistic_interval_alignment")]
+    pub interval_alignment: IntervalAlignment,
     ///The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component_field: Option<String>,
@@ -6668,6 +6749,14 @@ pub struct MinMaxByKey {
     /// `additionalProperties` value schema.
     #[serde(flatten)]
     pub additional_properties: std::collections::BTreeMap<String, MinMax>,
+}
+///Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct LossCurve {
+    #[serde(default = "defaults::LossCurve_power_units")]
+    pub power_units: UnitSystem,
+    #[serde(default = "defaults::LossCurve_value_curve")]
+    pub value_curve: LossValueCurve,
 }
 ///A load zone for electricity price analysis. The load zone can be specified when defining each `ACBus` or `DCBus` in the zone.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -7798,7 +7887,7 @@ impl<'de> serde::Deserialize<'de> for InterruptiblePowerLoadOperationCost {
         }
     }
 }
-///Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus. Voltage and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them.
+///Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus. Voltage and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them. `rated_dc_voltage` and `rated_ac_voltage` record the voltage bases, so a consumer can convert the voltage fields to per unit.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct InterconnectingConverter {
     ///Unique integer identifier for this component.
@@ -7821,14 +7910,14 @@ pub struct InterconnectingConverter {
     pub power_units: UnitSystem,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reactive_power_limits: Option<MinMax>,
-    ///DC current on the converter. Units: A.
+    ///DC current on the converter. Units: kA.
     #[serde(default = "defaults::InterconnectingConverter_dc_current")]
     pub dc_current: f64,
-    ///Maximum stable dc current limits. Units: A.
+    ///Maximum stable dc current limits. 9999 means no limit. Units: kA.
     #[serde(default = "defaults::InterconnectingConverter_max_dc_current")]
     pub max_dc_current: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub loss_function: Option<LossCurve>,
+    pub loss_function: Option<CurrentLossCurve>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dc_control: Option<VSCDCControlModes>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -7847,6 +7936,9 @@ pub struct InterconnectingConverter {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub dc_voltage_setpoint: Option<Option<f64>>,
+    ///Rated DC voltage of the converter, the base for `dc_voltage_setpoint` and `voltage_limits`; 0.0 means unspecified. Units: kV.
+    #[serde(default = "defaults::InterconnectingConverter_rated_dc_voltage")]
+    pub rated_dc_voltage: f64,
     ///Power-factor setpoint of the converter, used when `ac_control` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.
     ///Constraint: minimum=-1, maximum=1
     #[serde(
@@ -7862,6 +7954,9 @@ pub struct InterconnectingConverter {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub ac_voltage_setpoint: Option<Option<f64>>,
+    ///Rated AC voltage at the converter's AC terminal, the base for `ac_voltage_setpoint`; 0.0 means unspecified. Units: kV.
+    #[serde(default = "defaults::InterconnectingConverter_rated_ac_voltage")]
+    pub rated_ac_voltage: f64,
     ///DC-voltage droop gain on the converter, used when `dc_control` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint - dc_voltage_droop * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.
     #[serde(default = "defaults::InterconnectingConverter_dc_voltage_droop")]
     pub dc_voltage_droop: f64,
@@ -7940,189 +8035,6 @@ impl ::std::fmt::Display for VSCACControlModes {
 impl AsRef<str> for VSCACControlModes {
     fn as_ref(&self) -> &str {
         self.as_str()
-    }
-}
-///Losses of a device as a function of the flow through it, together with the power basis the curve is expressed in. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
-pub struct LossCurve {
-    #[serde(default = "defaults::LossCurve_power_units")]
-    pub power_units: UnitSystem,
-    #[serde(default = "defaults::LossCurve_value_curve")]
-    pub value_curve: LossValueCurve,
-}
-///The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.
-#[derive(Debug, Clone, PartialEq)]
-pub enum LossValueCurve {
-    InputOutputCurve(InputOutputCurve),
-    IncrementalCurve(IncrementalCurve),
-}
-impl serde::Serialize for LossValueCurve {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match self {
-            Self::InputOutputCurve(payload) => {
-                let mut value = serde_json::to_value(payload).map_err(serde::ser::Error::custom)?;
-                let object = value.as_object_mut().ok_or_else(|| {
-                    serde::ser::Error::custom(concat!(
-                        "discriminated union variant `",
-                        stringify!(InputOutputCurve),
-                        "` did not serialize as an object",
-                    ))
-                })?;
-                match object.get("curve_type") {
-                    Some(serde_json::Value::String(tag))
-                        if matches!(tag.as_str(), "INPUT_OUTPUT") => {}
-                    Some(serde_json::Value::String(tag)) => {
-                        return Err(serde::ser::Error::custom(format!(
-                            "discriminator `{}` value `{tag}` is not valid for variant `{}`",
-                            "curve_type",
-                            stringify!(InputOutputCurve),
-                        )));
-                    }
-                    Some(_) => {
-                        return Err(serde::ser::Error::custom(concat!(
-                            "discriminator `",
-                            "curve_type",
-                            "` did not serialize as a string",
-                        )));
-                    }
-                    None => {
-                        object.insert(
-                            "curve_type".to_string(),
-                            serde_json::Value::String("INPUT_OUTPUT".to_string()),
-                        );
-                    }
-                }
-                value.serialize(serializer)
-            }
-            Self::IncrementalCurve(payload) => {
-                let mut value = serde_json::to_value(payload).map_err(serde::ser::Error::custom)?;
-                let object = value.as_object_mut().ok_or_else(|| {
-                    serde::ser::Error::custom(concat!(
-                        "discriminated union variant `",
-                        stringify!(IncrementalCurve),
-                        "` did not serialize as an object",
-                    ))
-                })?;
-                match object.get("curve_type") {
-                    Some(serde_json::Value::String(tag))
-                        if matches!(tag.as_str(), "INCREMENTAL") => {}
-                    Some(serde_json::Value::String(tag)) => {
-                        return Err(serde::ser::Error::custom(format!(
-                            "discriminator `{}` value `{tag}` is not valid for variant `{}`",
-                            "curve_type",
-                            stringify!(IncrementalCurve),
-                        )));
-                    }
-                    Some(_) => {
-                        return Err(serde::ser::Error::custom(concat!(
-                            "discriminator `",
-                            "curve_type",
-                            "` did not serialize as a string",
-                        )));
-                    }
-                    None => {
-                        object.insert(
-                            "curve_type".to_string(),
-                            serde_json::Value::String("INCREMENTAL".to_string()),
-                        );
-                    }
-                }
-                value.serialize(serializer)
-            }
-        }
-    }
-}
-impl<'de> serde::Deserialize<'de> for LossValueCurve {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = serde_json::Value::deserialize(deserializer)?;
-        let discriminator = match value.get("curve_type") {
-            Some(serde_json::Value::String(discriminator)) => Some(discriminator.as_str()),
-            Some(_) => {
-                return Err(serde::de::Error::custom(concat!(
-                    "non-string discriminator `",
-                    "curve_type",
-                    "`",
-                )));
-            }
-            None => None,
-        };
-        match discriminator {
-            Some(discriminator) => match discriminator {
-                "INPUT_OUTPUT" => {
-                    let primary_error =
-                        match serde_json::from_value::<InputOutputCurve>(value.clone()) {
-                            Ok(payload) => return Ok(Self::InputOutputCurve(payload)),
-                            Err(error) => error,
-                        };
-                    let mut structural_match: Option<(Self, &'static str)> = None;
-                    if let Ok(payload) = serde_json::from_value::<IncrementalCurve>(value.clone()) {
-                        if let Some((_, first_name)) = &structural_match {
-                            return Err(
-                                    serde::de::Error::custom(
-                                        format!(
-                                            "discriminator `{}` value `{}` did not fit its mapped branch and structurally matched both `{}` and `{}`",
-                                            "curve_type", "INPUT_OUTPUT", first_name,
-                                            stringify!(IncrementalCurve),
-                                        ),
-                                    ),
-                                );
-                        }
-                        structural_match = Some((
-                            Self::IncrementalCurve(payload),
-                            stringify!(IncrementalCurve),
-                        ));
-                    }
-                    match structural_match {
-                        Some((payload, _)) => Ok(payload),
-                        None => Err(serde::de::Error::custom(primary_error)),
-                    }
-                }
-                "INCREMENTAL" => {
-                    let primary_error =
-                        match serde_json::from_value::<IncrementalCurve>(value.clone()) {
-                            Ok(payload) => return Ok(Self::IncrementalCurve(payload)),
-                            Err(error) => error,
-                        };
-                    let mut structural_match: Option<(Self, &'static str)> = None;
-                    if let Ok(payload) = serde_json::from_value::<InputOutputCurve>(value.clone()) {
-                        if let Some((_, first_name)) = &structural_match {
-                            return Err(
-                                    serde::de::Error::custom(
-                                        format!(
-                                            "discriminator `{}` value `{}` did not fit its mapped branch and structurally matched both `{}` and `{}`",
-                                            "curve_type", "INCREMENTAL", first_name,
-                                            stringify!(InputOutputCurve),
-                                        ),
-                                    ),
-                                );
-                        }
-                        structural_match = Some((
-                            Self::InputOutputCurve(payload),
-                            stringify!(InputOutputCurve),
-                        ));
-                    }
-                    match structural_match {
-                        Some((payload, _)) => Ok(payload),
-                        None => Err(serde::de::Error::custom(primary_error)),
-                    }
-                }
-                other => Err(serde::de::Error::custom(format!(
-                    "unknown discriminator value `{other}` for `{}`",
-                    "curve_type",
-                ))),
-            },
-            None => Err(serde::de::Error::custom(concat!(
-                "missing string discriminator `",
-                "curve_type",
-                "`",
-            ))),
-        }
     }
 }
 ///Cost representation for static (non-time-varying) imports and exports with neighboring areas, together with the ancillary services offered alongside them. The offer curves are piecewise incremental cost curves with an implied zero cost at zero power, and a weekly energy limit bounds each direction. The time-varying counterpart is `ImportExportTimeSeriesCost`.
@@ -8418,7 +8330,7 @@ pub struct HydroTurbine {
     pub time_limits: Option<UpDown>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub outflow_limits: Option<MinMax>,
-    ///Turbine efficiency [0, 1.0].
+    ///Turbine efficiency [0, 1.0]. Units: 1.
     #[serde(default = "defaults::HydroTurbine_efficiency")]
     pub efficiency: f64,
     ///Type of the turbine.
@@ -13827,6 +13739,8 @@ pub struct DeterministicSingleTimeSeries {
     pub unit_system: Option<UnitSystem>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
+    #[serde(default = "defaults::DeterministicSingleTimeSeries_interval_alignment")]
+    pub interval_alignment: IntervalAlignment,
     ///The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component_field: Option<String>,
@@ -13905,6 +13819,8 @@ pub struct Deterministic {
     pub unit_system: Option<UnitSystem>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
+    #[serde(default = "defaults::Deterministic_interval_alignment")]
+    pub interval_alignment: IntervalAlignment,
     ///The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component_field: Option<String>,
@@ -13965,6 +13881,36 @@ impl ::std::fmt::Display for OwnerCategory {
     }
 }
 impl AsRef<str> for OwnerCategory {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+///Position of a timestamp in the period of length `resolution` that its value represents. At a one-hour resolution, the value at 01:00 covers 01:00 to 02:00 for `PERIOD_BEGINNING`, 00:30 to 01:30 for `PERIOD_MIDPOINT`, and 00:00 to 01:00 for `PERIOD_ENDING`. Descriptive: the store records it and does not realign a series.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
+pub enum IntervalAlignment {
+    #[default]
+    #[serde(rename = "PERIOD_BEGINNING")]
+    PeriodBeginning,
+    #[serde(rename = "PERIOD_MIDPOINT")]
+    PeriodMidpoint,
+    #[serde(rename = "PERIOD_ENDING")]
+    PeriodEnding,
+}
+impl IntervalAlignment {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::PeriodBeginning => "PERIOD_BEGINNING",
+            Self::PeriodMidpoint => "PERIOD_MIDPOINT",
+            Self::PeriodEnding => "PERIOD_ENDING",
+        }
+    }
+}
+impl ::std::fmt::Display for IntervalAlignment {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+impl AsRef<str> for IntervalAlignment {
     fn as_ref(&self) -> &str {
         self.as_str()
     }
@@ -14089,6 +14035,9 @@ pub struct DataSource {
     ///Data version or vintage, e.g. '2023 final'.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
+    ///License of the source data, if known: an SPDX identifier such as 'CC-BY-4.0', or a license name or URL.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub license: Option<String>,
     ///When the source published the data; null if unknown.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -14145,6 +14094,189 @@ pub struct DCBus {
     pub number: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub voltage_limits: Option<MinMax>,
+}
+///Losses of a device as a function of the current through it (a converter's DC current), together with the basis the curve is expressed in. `power_units` governs both axes: the y values are power and the x values current, each per-unit on the component's base (current's base being base power over base voltage) or natural. Units: x-axis per power_units — NATURAL_UNITS: kA, COMPONENT_BASE: pu ; y-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct CurrentLossCurve {
+    #[serde(default = "defaults::CurrentLossCurve_power_units")]
+    pub power_units: UnitSystem,
+    #[serde(default = "defaults::CurrentLossCurve_value_curve")]
+    pub value_curve: LossValueCurve,
+}
+///The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.
+#[derive(Debug, Clone, PartialEq)]
+pub enum LossValueCurve {
+    InputOutputCurve(InputOutputCurve),
+    IncrementalCurve(IncrementalCurve),
+}
+impl serde::Serialize for LossValueCurve {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            Self::InputOutputCurve(payload) => {
+                let mut value = serde_json::to_value(payload).map_err(serde::ser::Error::custom)?;
+                let object = value.as_object_mut().ok_or_else(|| {
+                    serde::ser::Error::custom(concat!(
+                        "discriminated union variant `",
+                        stringify!(InputOutputCurve),
+                        "` did not serialize as an object",
+                    ))
+                })?;
+                match object.get("curve_type") {
+                    Some(serde_json::Value::String(tag))
+                        if matches!(tag.as_str(), "INPUT_OUTPUT") => {}
+                    Some(serde_json::Value::String(tag)) => {
+                        return Err(serde::ser::Error::custom(format!(
+                            "discriminator `{}` value `{tag}` is not valid for variant `{}`",
+                            "curve_type",
+                            stringify!(InputOutputCurve),
+                        )));
+                    }
+                    Some(_) => {
+                        return Err(serde::ser::Error::custom(concat!(
+                            "discriminator `",
+                            "curve_type",
+                            "` did not serialize as a string",
+                        )));
+                    }
+                    None => {
+                        object.insert(
+                            "curve_type".to_string(),
+                            serde_json::Value::String("INPUT_OUTPUT".to_string()),
+                        );
+                    }
+                }
+                value.serialize(serializer)
+            }
+            Self::IncrementalCurve(payload) => {
+                let mut value = serde_json::to_value(payload).map_err(serde::ser::Error::custom)?;
+                let object = value.as_object_mut().ok_or_else(|| {
+                    serde::ser::Error::custom(concat!(
+                        "discriminated union variant `",
+                        stringify!(IncrementalCurve),
+                        "` did not serialize as an object",
+                    ))
+                })?;
+                match object.get("curve_type") {
+                    Some(serde_json::Value::String(tag))
+                        if matches!(tag.as_str(), "INCREMENTAL") => {}
+                    Some(serde_json::Value::String(tag)) => {
+                        return Err(serde::ser::Error::custom(format!(
+                            "discriminator `{}` value `{tag}` is not valid for variant `{}`",
+                            "curve_type",
+                            stringify!(IncrementalCurve),
+                        )));
+                    }
+                    Some(_) => {
+                        return Err(serde::ser::Error::custom(concat!(
+                            "discriminator `",
+                            "curve_type",
+                            "` did not serialize as a string",
+                        )));
+                    }
+                    None => {
+                        object.insert(
+                            "curve_type".to_string(),
+                            serde_json::Value::String("INCREMENTAL".to_string()),
+                        );
+                    }
+                }
+                value.serialize(serializer)
+            }
+        }
+    }
+}
+impl<'de> serde::Deserialize<'de> for LossValueCurve {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = serde_json::Value::deserialize(deserializer)?;
+        let discriminator = match value.get("curve_type") {
+            Some(serde_json::Value::String(discriminator)) => Some(discriminator.as_str()),
+            Some(_) => {
+                return Err(serde::de::Error::custom(concat!(
+                    "non-string discriminator `",
+                    "curve_type",
+                    "`",
+                )));
+            }
+            None => None,
+        };
+        match discriminator {
+            Some(discriminator) => match discriminator {
+                "INPUT_OUTPUT" => {
+                    let primary_error =
+                        match serde_json::from_value::<InputOutputCurve>(value.clone()) {
+                            Ok(payload) => return Ok(Self::InputOutputCurve(payload)),
+                            Err(error) => error,
+                        };
+                    let mut structural_match: Option<(Self, &'static str)> = None;
+                    if let Ok(payload) = serde_json::from_value::<IncrementalCurve>(value.clone()) {
+                        if let Some((_, first_name)) = &structural_match {
+                            return Err(
+                                    serde::de::Error::custom(
+                                        format!(
+                                            "discriminator `{}` value `{}` did not fit its mapped branch and structurally matched both `{}` and `{}`",
+                                            "curve_type", "INPUT_OUTPUT", first_name,
+                                            stringify!(IncrementalCurve),
+                                        ),
+                                    ),
+                                );
+                        }
+                        structural_match = Some((
+                            Self::IncrementalCurve(payload),
+                            stringify!(IncrementalCurve),
+                        ));
+                    }
+                    match structural_match {
+                        Some((payload, _)) => Ok(payload),
+                        None => Err(serde::de::Error::custom(primary_error)),
+                    }
+                }
+                "INCREMENTAL" => {
+                    let primary_error =
+                        match serde_json::from_value::<IncrementalCurve>(value.clone()) {
+                            Ok(payload) => return Ok(Self::IncrementalCurve(payload)),
+                            Err(error) => error,
+                        };
+                    let mut structural_match: Option<(Self, &'static str)> = None;
+                    if let Ok(payload) = serde_json::from_value::<InputOutputCurve>(value.clone()) {
+                        if let Some((_, first_name)) = &structural_match {
+                            return Err(
+                                    serde::de::Error::custom(
+                                        format!(
+                                            "discriminator `{}` value `{}` did not fit its mapped branch and structurally matched both `{}` and `{}`",
+                                            "curve_type", "INCREMENTAL", first_name,
+                                            stringify!(InputOutputCurve),
+                                        ),
+                                    ),
+                                );
+                        }
+                        structural_match = Some((
+                            Self::InputOutputCurve(payload),
+                            stringify!(InputOutputCurve),
+                        ));
+                    }
+                    match structural_match {
+                        Some((payload, _)) => Ok(payload),
+                        None => Err(serde::de::Error::custom(primary_error)),
+                    }
+                }
+                other => Err(serde::de::Error::custom(format!(
+                    "unknown discriminator value `{other}` for `{}`",
+                    "curve_type",
+                ))),
+            },
+            None => Err(serde::de::Error::custom(concat!(
+                "missing string discriminator `",
+                "curve_type",
+                "`",
+            ))),
+        }
+    }
 }
 ///Attribute to represent combined cycle generation when each unit represents a specific configuration and aggregate heat rate. Operation exclusion groups (only units in the same group can operate simultaneously) are recorded as PlantAssociation rows with role='exclusion'.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -14434,10 +14566,10 @@ impl<'de> serde::Deserialize<'de> for ProductionVariableCostCurve {
         }
     }
 }
-///Variable operation cost of a device expressed in fuel consumed — MBTU, liters, m^3 — together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.
+///Variable operation cost of a device expressed in fuel consumed, in the fuel quantity `fuel_units` names, together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form, whose y axis is fuel per hour; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct FuelCurve {
-    ///Fixed fuel cost per unit of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.
+    ///Fixed fuel cost in USD per one `fuel_units` of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.
     #[serde(
         skip_serializing_if = "Option::is_none",
         default,
@@ -14451,6 +14583,7 @@ pub struct FuelCurve {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub fuel_cost_time_series: Option<Option<i64>>,
+    pub fuel_units: FuelUnit,
     pub power_units: UnitSystem,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub startup_fuel_offtake: Option<InputOutputCurve>,
@@ -14459,6 +14592,33 @@ pub struct FuelCurve {
     pub variable_cost_type: FuelCurveVariableCostType,
     #[serde(default = "defaults::FuelCurve_vom_cost")]
     pub vom_cost: InputOutputCurve,
+}
+///Fuel quantity a `FuelCurve` is expressed in: `MMBTU` (million British thermal units) or `GJ` (gigajoules) of heat content.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
+pub enum FuelUnit {
+    #[default]
+    #[serde(rename = "MMBTU")]
+    Mmbtu,
+    #[serde(rename = "GJ")]
+    Gj,
+}
+impl FuelUnit {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Mmbtu => "MMBTU",
+            Self::Gj => "GJ",
+        }
+    }
+}
+impl ::std::fmt::Display for FuelUnit {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+impl AsRef<str> for FuelUnit {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum FuelCurveVariableCostType {
@@ -14690,6 +14850,17 @@ pub struct Area {
     ///Load-frequency damping parameter modeling how much the load in the area changes due to changes in frequency. Units: MW/Hz.
     #[serde(default = "defaults::Area_load_response")]
     pub load_response: f64,
+    ///Scheduled net active power interchange of the area (PSS/E PDES): the area's total export minus its total import that area interchange control holds. Positive means the area exports power. `null` when the area has no scheduled interchange; `0.0` is a valid schedule. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub scheduled_net_interchange: Option<Option<f64>>,
+    ///IDs of the loads that belong to this area but connect to a bus in another area (PSS/E off-area loads). When area interchange control includes these loads (PSS/E AREAIN=2), their demand counts in the net interchange of this area, not of the area of their bus.
+    ///Constraint: uniqueItems=true
+    #[serde(default = "defaults::Area_out_of_area_load_ids")]
+    pub out_of_area_load_ids: Vec<i64>,
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
@@ -17442,11 +17613,11 @@ impl AsRef<str> for QuadraticFunctionDataFunctionType {
 pub struct PiecewiseLinearData {
     #[serde(default = "defaults::PiecewiseLinearData_function_type")]
     pub function_type: PiecewiseLinearDataFunctionType,
-    pub points: Vec<XYCoords>,
+    pub points: Vec<TwoDimensionalFunctionPoint>,
 }
 ///A single point, given as its `x` and `y` coordinates.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
-pub struct XYCoords {
+pub struct TwoDimensionalFunctionPoint {
     ///Units: the wrapped function's input unit.
     pub x: f64,
     ///Units: the wrapped function's output unit.
@@ -18010,7 +18181,7 @@ impl AsRef<str> for IncrementalCurveCurveType {
         self.as_str()
     }
 }
-///A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.
+///A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct AverageRateCurve {
     #[serde(default = "defaults::AverageRateCurve_curve_type")]
@@ -20190,10 +20361,10 @@ pub mod defaults {
         0f64
     }
     pub fn TwoTerminalVSCLine_max_dc_current_from() -> f64 {
-        100000000f64
+        9999f64
     }
     pub fn TwoTerminalVSCLine_max_dc_current_to() -> f64 {
-        100000000f64
+        9999f64
     }
     pub fn TwoTerminalVSCLine_power_factor_weighting_fraction_from() -> f64 {
         1f64
@@ -20505,9 +20676,25 @@ pub mod defaults {
         ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":0.0}")
             .expect("schema default for Source.reactive_power_limits")
     }
+    pub fn SingleTimeSeries_interval_alignment() -> IntervalAlignment {
+        ::serde_json::from_str::<IntervalAlignment>("\"PERIOD_ENDING\"")
+            .expect("schema default for SingleTimeSeries.interval_alignment")
+    }
     pub fn SingleTimeSeries_time_series_type() -> SingleTimeSeriesTimeSeriesType {
         ::serde_json::from_str::<SingleTimeSeriesTimeSeriesType>("\"SingleTimeSeries\"")
             .expect("schema default for SingleTimeSeries.time_series_type")
+    }
+    pub fn SeriesCompensator_control_mode() -> SeriesCompensatorControlMode {
+        ::serde_json::from_str::<SeriesCompensatorControlMode>("\"FIXED\"")
+            .expect("schema default for SeriesCompensator.control_mode")
+    }
+    pub fn SeriesCompensator_parameter_units() -> ImpedanceUnitBasis {
+        ::serde_json::from_str::<ImpedanceUnitBasis>("\"COMPONENT_BASE\"")
+            .expect("schema default for SeriesCompensator.parameter_units")
+    }
+    pub fn Scenarios_interval_alignment() -> IntervalAlignment {
+        ::serde_json::from_str::<IntervalAlignment>("\"PERIOD_ENDING\"")
+            .expect("schema default for Scenarios.interval_alignment")
     }
     pub fn Scenarios_time_series_type() -> ScenariosTimeSeriesType {
         ::serde_json::from_str::<ScenariosTimeSeriesType>("\"Scenarios\"")
@@ -20548,6 +20735,10 @@ pub mod defaults {
     }
     pub fn ReactiveRenewableControllerAB_v_ref() -> f64 {
         1f64
+    }
+    pub fn Probabilistic_interval_alignment() -> IntervalAlignment {
+        ::serde_json::from_str::<IntervalAlignment>("\"PERIOD_ENDING\"")
+            .expect("schema default for Probabilistic.interval_alignment")
     }
     pub fn Probabilistic_time_series_type() -> ProbabilisticTimeSeriesType {
         ::serde_json::from_str::<ProbabilisticTimeSeriesType>("\"Probabilistic\"")
@@ -20611,6 +20802,18 @@ pub mod defaults {
     pub fn MotorLoad_motor_technology() -> MotorLoadMotorTechnology {
         ::serde_json::from_str::<MotorLoadMotorTechnology>("\"UNDETERMINED\"")
             .expect("schema default for MotorLoad.motor_technology")
+    }
+    pub fn LossCurve_power_units() -> UnitSystem {
+        ::serde_json::from_str::<UnitSystem>("\"NATURAL_UNITS\"")
+            .expect("schema default for LossCurve.power_units")
+    }
+    pub fn LossCurve_value_curve() -> LossValueCurve {
+        ::serde_json::from_str::<
+            LossValueCurve,
+        >(
+                "{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}",
+            )
+            .expect("schema default for LossCurve.value_curve")
     }
     pub fn Line_g() -> FromTo {
         ::serde_json::from_str::<FromTo>("{\"from\":0.0,\"to\":0.0}")
@@ -20678,26 +20881,20 @@ pub mod defaults {
         0f64
     }
     pub fn InterconnectingConverter_max_dc_current() -> f64 {
-        100000000f64
+        9999f64
     }
     pub fn InterconnectingConverter_power_factor_weighting_fraction() -> f64 {
         1f64
     }
+    pub fn InterconnectingConverter_rated_ac_voltage() -> f64 {
+        0f64
+    }
+    pub fn InterconnectingConverter_rated_dc_voltage() -> f64 {
+        0f64
+    }
     pub fn InterconnectingConverter_voltage_limits() -> MinMax {
         ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":999.9}")
             .expect("schema default for InterconnectingConverter.voltage_limits")
-    }
-    pub fn LossCurve_power_units() -> UnitSystem {
-        ::serde_json::from_str::<UnitSystem>("\"NATURAL_UNITS\"")
-            .expect("schema default for LossCurve.power_units")
-    }
-    pub fn LossCurve_value_curve() -> LossValueCurve {
-        ::serde_json::from_str::<
-            LossValueCurve,
-        >(
-                "{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}",
-            )
-            .expect("schema default for LossCurve.value_curve")
     }
     pub fn ImportExportCost_cost_type() -> ImportExportCostCostType {
         ::serde_json::from_str::<ImportExportCostCostType>("\"IMPORTEXPORT\"")
@@ -21026,12 +21223,20 @@ pub mod defaults {
         ::serde_json::from_str::<DiscreteControlledACBranchNormalBranchStatus>("\"CLOSED\"")
             .expect("schema default for DiscreteControlledACBranch.normal_branch_status")
     }
+    pub fn DeterministicSingleTimeSeries_interval_alignment() -> IntervalAlignment {
+        ::serde_json::from_str::<IntervalAlignment>("\"PERIOD_ENDING\"")
+            .expect("schema default for DeterministicSingleTimeSeries.interval_alignment")
+    }
     pub fn DeterministicSingleTimeSeries_time_series_type(
     ) -> DeterministicSingleTimeSeriesTimeSeriesType {
         ::serde_json::from_str::<DeterministicSingleTimeSeriesTimeSeriesType>(
             "\"DeterministicSingleTimeSeries\"",
         )
         .expect("schema default for DeterministicSingleTimeSeries.time_series_type")
+    }
+    pub fn Deterministic_interval_alignment() -> IntervalAlignment {
+        ::serde_json::from_str::<IntervalAlignment>("\"PERIOD_ENDING\"")
+            .expect("schema default for Deterministic.interval_alignment")
     }
     pub fn Deterministic_time_series_type() -> DeterministicTimeSeriesType {
         ::serde_json::from_str::<DeterministicTimeSeriesType>("\"Deterministic\"")
@@ -21061,6 +21266,18 @@ pub mod defaults {
     }
     pub fn DemandRequirement_new_demand_mw() -> f64 {
         0f64
+    }
+    pub fn CurrentLossCurve_power_units() -> UnitSystem {
+        ::serde_json::from_str::<UnitSystem>("\"NATURAL_UNITS\"")
+            .expect("schema default for CurrentLossCurve.power_units")
+    }
+    pub fn CurrentLossCurve_value_curve() -> LossValueCurve {
+        ::serde_json::from_str::<
+            LossValueCurve,
+        >(
+                "{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}",
+            )
+            .expect("schema default for CurrentLossCurve.value_curve")
     }
     pub fn CombinedCycleBlock_heat_recovery_to_steam_factor() -> f64 {
         0f64
@@ -21095,6 +21312,10 @@ pub mod defaults {
     }
     pub fn Area_load_response() -> f64 {
         0f64
+    }
+    pub fn Area_out_of_area_load_ids() -> Vec<i64> {
+        ::serde_json::from_str::<Vec<i64>>("[]")
+            .expect("schema default for Area.out_of_area_load_ids")
     }
     pub fn Area_peak_active_power() -> f64 {
         0f64
@@ -21398,7 +21619,11 @@ mod default_tests {
         let _ = defaults::Source_parameter_units();
         let _ = defaults::Source_reactive_power();
         let _ = defaults::Source_reactive_power_limits();
+        let _ = defaults::SingleTimeSeries_interval_alignment();
         let _ = defaults::SingleTimeSeries_time_series_type();
+        let _ = defaults::SeriesCompensator_control_mode();
+        let _ = defaults::SeriesCompensator_parameter_units();
+        let _ = defaults::Scenarios_interval_alignment();
         let _ = defaults::Scenarios_time_series_type();
         let _ = defaults::ST8C_ifd_ref();
         let _ = defaults::ST8C_v_ref();
@@ -21412,6 +21637,7 @@ mod default_tests {
         let _ = defaults::RenewableEnergyConverterTypeA_x_source();
         let _ = defaults::ReactiveRenewableControllerAB_q_ref();
         let _ = defaults::ReactiveRenewableControllerAB_v_ref();
+        let _ = defaults::Probabilistic_interval_alignment();
         let _ = defaults::Probabilistic_time_series_type();
         let _ = defaults::PowerLoad_conformity();
         let _ = defaults::PIDGOV_p_ref();
@@ -21431,6 +21657,8 @@ mod default_tests {
         let _ = defaults::NodalACTransportTechnology_unit_size();
         let _ = defaults::NodalACTransportTechnology_voltage();
         let _ = defaults::MotorLoad_motor_technology();
+        let _ = defaults::LossCurve_power_units();
+        let _ = defaults::LossCurve_value_curve();
         let _ = defaults::Line_g();
         let _ = defaults::Line_parameter_units();
         let _ = defaults::InterruptibleStandardLoad_conformity();
@@ -21453,9 +21681,9 @@ mod default_tests {
         let _ = defaults::InterconnectingConverter_dc_voltage_droop();
         let _ = defaults::InterconnectingConverter_max_dc_current();
         let _ = defaults::InterconnectingConverter_power_factor_weighting_fraction();
+        let _ = defaults::InterconnectingConverter_rated_ac_voltage();
+        let _ = defaults::InterconnectingConverter_rated_dc_voltage();
         let _ = defaults::InterconnectingConverter_voltage_limits();
-        let _ = defaults::LossCurve_power_units();
-        let _ = defaults::LossCurve_value_curve();
         let _ = defaults::ImportExportCost_cost_type();
         let _ = defaults::IEEETurbineGov1_p_ref();
         let _ = defaults::IEEET1_v_ref();
@@ -21546,7 +21774,9 @@ mod default_tests {
         let _ = defaults::DiscreteControlledACBranch_branch_status();
         let _ = defaults::DiscreteControlledACBranch_discrete_branch_type();
         let _ = defaults::DiscreteControlledACBranch_normal_branch_status();
+        let _ = defaults::DeterministicSingleTimeSeries_interval_alignment();
         let _ = defaults::DeterministicSingleTimeSeries_time_series_type();
+        let _ = defaults::Deterministic_interval_alignment();
         let _ = defaults::Deterministic_time_series_type();
         let _ = defaults::DemandSideTechnology_min_power();
         let _ = defaults::DemandSideTechnology_peak_demand_mw();
@@ -21556,6 +21786,8 @@ mod default_tests {
         let _ = defaults::DemandRequirement_growth_rate();
         let _ = defaults::DemandRequirement_new_construction_year();
         let _ = defaults::DemandRequirement_new_demand_mw();
+        let _ = defaults::CurrentLossCurve_power_units();
+        let _ = defaults::CurrentLossCurve_value_curve();
         let _ = defaults::CombinedCycleBlock_heat_recovery_to_steam_factor();
         let _ = defaults::FuelCurve_variable_cost_type();
         let _ = defaults::FuelCurve_vom_cost();
@@ -21563,6 +21795,7 @@ mod default_tests {
         let _ = defaults::CostCurve_variable_cost_type();
         let _ = defaults::CostCurve_vom_cost();
         let _ = defaults::Area_load_response();
+        let _ = defaults::Area_out_of_area_load_ids();
         let _ = defaults::Area_peak_active_power();
         let _ = defaults::Area_peak_reactive_power();
         let _ = defaults::CapitalCost_interconnection_cost();

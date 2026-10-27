@@ -3,7 +3,7 @@
  * Do not edit manually.
  * InfrastructureCoreOpenAPIModels
  * Domain-neutral shared types: the unit convention, the function-data family, and the value shapes and supplemental attributes that carry no power semantics. Consumed by the data layer and the time series store, neither of which should inherit power-specific definitions.
- * OpenAPI spec version: 0.2.0
+ * OpenAPI spec version: 0.3.0
  */
 import * as zod from "zod";
 
@@ -26,15 +26,19 @@ export const ComplexNumber = zod
 export type ComplexNumber = zod.input<typeof ComplexNumber>;
 export type ComplexNumberOutput = zod.output<typeof ComplexNumber>;
 
-export const XYCoords = zod
+export const TwoDimensionalFunctionPoint = zod
   .object({
     x: zod.number().describe("Units: the wrapped function's input unit."),
     y: zod.number().describe("Units: the wrapped function's output unit."),
   })
   .describe("A single point, given as its `x` and `y` coordinates.");
 
-export type XYCoords = zod.input<typeof XYCoords>;
-export type XYCoordsOutput = zod.output<typeof XYCoords>;
+export type TwoDimensionalFunctionPoint = zod.input<
+  typeof TwoDimensionalFunctionPoint
+>;
+export type TwoDimensionalFunctionPointOutput = zod.output<
+  typeof TwoDimensionalFunctionPoint
+>;
 
 export const MinMax = zod
   .object({
@@ -467,6 +471,12 @@ export const DataSource = zod
       .string()
       .optional()
       .describe("Data version or vintage, e.g. '2023 final'."),
+    license: zod
+      .string()
+      .optional()
+      .describe(
+        "License of the source data, if known: an SPDX identifier such as 'CC-BY-4.0', or a license name or URL.",
+      ),
     published_at: zod.iso
       .datetime({ offset: true, local: true })
       .nullish()

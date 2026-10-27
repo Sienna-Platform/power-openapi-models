@@ -25,9 +25,9 @@ from power_openapi_models.infrastructure_core.models import (
     TimeSeriesPiecewiseLinearData,
     TimeSeriesPiecewiseStepData,
     TimeSeriesQuadraticFunctionData,
+    TwoDimensionalFunctionPoint,
     UnitSystem,
     UpDown,
-    XYCoords,
 )
 
 __all__ = [
@@ -48,9 +48,9 @@ __all__ = [
     "TimeSeriesPiecewiseLinearData",
     "TimeSeriesPiecewiseStepData",
     "TimeSeriesQuadraticFunctionData",
+    "TwoDimensionalFunctionPoint",
     "UnitSystem",
     "UpDown",
-    "XYCoords",
 ]
 
 
@@ -196,6 +196,11 @@ class ShuntAdmittanceUnitBasis(Enum):
 class FdbdPnts(BaseModel):
     fdbd1: float | None = None
     fdbd2: float | None = None
+
+
+class FuelUnit(Enum):
+    MMBTU = "MMBTU"
+    GJ = "GJ"
 
 
 class HydroReservoirCost(BaseModel):
@@ -385,6 +390,14 @@ class Area(BaseModel):
         0.0,
         description="Load-frequency damping parameter modeling how much the load in the area changes due to changes in frequency. Units: MW/Hz.",
     )
+    scheduled_net_interchange: float | None = Field(
+        None,
+        description="Scheduled net active power interchange of the area (PSS/E PDES): the area's total export minus its total import that area interchange control holds. Positive means the area exports power. `null` when the area has no scheduled interchange; `0.0` is a valid schedule. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    out_of_area_load_ids: list[int] | None = Field(
+        [],
+        description="IDs of the loads that belong to this area but connect to a bus in another area (PSS/E off-area loads). When area interchange control includes these loads (PSS/E AREAIN=2), their demand counts in the net interchange of this area, not of the area of their bus.",
+    )
     base_power: float = Field(
         ...,
         description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
@@ -418,6 +431,21 @@ class LossValueCurve(RootModel[InputOutputCurve | IncrementalCurve]):
         description="The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
         discriminator="curve_type",
         title="LossValueCurve",
+    )
+
+
+class LossCurve(BaseModel):
+    power_units: UnitSystem = UnitSystem.NATURAL_UNITS
+    value_curve: LossValueCurve = Field(
+        {
+            "curve_type": "INPUT_OUTPUT",
+            "function_data": {
+                "function_type": "LINEAR",
+                "constant_term": 0,
+                "proportional_term": 0,
+            },
+        },
+        validate_default=True,
     )
 
 
@@ -465,7 +493,7 @@ class TimeSeriesInputOutputCurve(BaseModel):
     )
 
 
-class LossCurve(BaseModel):
+class CurrentLossCurve(BaseModel):
     power_units: UnitSystem = UnitSystem.NATURAL_UNITS
     value_curve: LossValueCurve = Field(
         {
@@ -564,15 +592,19 @@ class EmissionsData(BaseModel):
 class FuelCurve(BaseModel):
     fuel_cost: float | None = Field(
         None,
-        description="Fixed fuel cost per unit of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
+        description="Fixed fuel cost in USD per one `fuel_units` of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
     )
     fuel_cost_time_series: int | None = Field(
         None,
         description="Store-minted id of the fuel-cost time series association, or null when fuel_cost carries a fixed value. Exactly one of the two is set.",
     )
+    fuel_units: FuelUnit = Field(
+        ...,
+        description="The fuel quantity the curve's y axis counts (per hour) and `fuel_cost` is priced per. No default: an unstated fuel unit is ambiguous.",
+    )
     power_units: UnitSystem
     startup_fuel_offtake: InputOutputCurve | None = Field(
-        None, description="Fuel consumed during startup, as a curve in the unit's fuel units."
+        None, description="Fuel consumed during startup, as a curve in `fuel_units`."
     )
     value_curve: ValueCurve
     variable_cost_type: Literal["FUEL"] = "FUEL"

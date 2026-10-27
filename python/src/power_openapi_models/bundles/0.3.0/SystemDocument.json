@@ -1,5 +1,5 @@
 {
-  "$comment": "Strict validation bundle for schema release 0.2.0.",
+  "$comment": "Strict validation bundle for schema release 0.3.0.",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "definitions": {
@@ -188,6 +188,15 @@
           "description": "Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
           "type": "string"
         },
+        "out_of_area_load_ids": {
+          "default": [],
+          "description": "IDs of the loads that belong to this area but connect to a bus in another area (PSS/E off-area loads). When area interchange control includes these loads (PSS/E AREAIN=2), their demand counts in the net interchange of this area, not of the area of their bus.",
+          "items": {
+            "type": "integer"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
         "peak_active_power": {
           "default": 0.0,
           "description": "Peak active power in the area. Units: per power_units \u2014 NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
@@ -201,6 +210,13 @@
         "power_units": {
           "$ref": "#/definitions/UnitSystem",
           "description": "Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit."
+        },
+        "scheduled_net_interchange": {
+          "description": "Scheduled net active power interchange of the area (PSS/E PDES): the area's total export minus its total import that area interchange control holds. Positive means the area exports power. `null` when the area has no scheduled interchange; `0.0` is a valid schedule. Units: per power_units \u2014 NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+          "type": [
+            "number",
+            "null"
+          ]
         }
       },
       "required": [
@@ -269,7 +285,7 @@
     },
     "AverageRateCurve": {
       "additionalProperties": false,
-      "description": "A curve whose y values are the average rate `f(x)/x` at production level `x` \u2014 total cost or fuel divided by output, the form heat rate tables use when they report MBTU/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+      "description": "A curve whose y values are the average rate `f(x)/x` at production level `x` \u2014 total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
       "properties": {
         "curve_type": {
           "const": "AVERAGE_RATE",
@@ -572,6 +588,25 @@
       "title": "CostCurve",
       "type": "object"
     },
+    "CurrentLossCurve": {
+      "additionalProperties": false,
+      "description": "Losses of a device as a function of the current through it (a converter's DC current), together with the basis the curve is expressed in. `power_units` governs both axes: the y values are power and the x values current, each per-unit on the component's base (current's base being base power over base voltage) or natural. Units: x-axis per power_units \u2014 NATURAL_UNITS: kA, COMPONENT_BASE: pu ; y-axis per power_units \u2014 NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      "properties": {
+        "power_units": {
+          "$ref": "#/definitions/UnitSystem",
+          "default": "NATURAL_UNITS"
+        },
+        "value_curve": {
+          "$ref": "#/definitions/LossValueCurve"
+        }
+      },
+      "required": [
+        "value_curve",
+        "power_units"
+      ],
+      "title": "CurrentLossCurve",
+      "type": "object"
+    },
     "CurveMultiStep": {
       "default": 0,
       "description": "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
@@ -670,6 +705,10 @@
         },
         "id": {
           "type": "integer"
+        },
+        "license": {
+          "description": "License of the source data, if known: an SPDX identifier such as 'CC-BY-4.0', or a license name or URL.",
+          "type": "string"
         },
         "organization": {
           "description": "Publishing organization, e.g. 'U.S. Energy Information Administration'.",
@@ -775,6 +814,11 @@
         "interval": {
           "$ref": "#/definitions/Period",
           "description": "Step between the start of consecutive forecast windows. Part of the series' identity: two forecasts of one variable at the same resolution but different intervals \u2014 a day-ahead and a real-time forecast \u2014 are distinct series. `PT0S` is the canonical interval of a single-window forecast, which has no second window to step to."
+        },
+        "interval_alignment": {
+          "$ref": "#/definitions/IntervalAlignment",
+          "default": "PERIOD_ENDING",
+          "description": "Position of each timestamp in the period it represents."
         },
         "name": {
           "description": "Time series name (e.g. max_active_power). Part of the series' identity, and often carrying a disambiguating suffix; `component_field` records what the values are for.",
@@ -906,6 +950,11 @@
         "interval": {
           "$ref": "#/definitions/Period",
           "description": "Step between the start of consecutive forecast windows. Part of the series' identity: two forecasts of one variable at the same resolution but different intervals \u2014 a day-ahead and a real-time forecast \u2014 are distinct series. `PT0S` is the canonical interval of a single-window forecast, which has no second window to step to."
+        },
+        "interval_alignment": {
+          "$ref": "#/definitions/IntervalAlignment",
+          "default": "PERIOD_ENDING",
+          "description": "Position of each timestamp in the period it represents."
         },
         "name": {
           "description": "Time series name (e.g. max_active_power). Part of the series' identity, and often carrying a disambiguating suffix; `component_field` records what the values are for.",
@@ -1667,10 +1716,10 @@
     },
     "FuelCurve": {
       "additionalProperties": false,
-      "description": "Variable operation cost of a device expressed in fuel consumed \u2014 MBTU, liters, m^3 \u2014 together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
+      "description": "Variable operation cost of a device expressed in fuel consumed, in the fuel quantity `fuel_units` names, together with the price that converts fuel to currency. Wraps a `ValueCurve` in input-output, incremental, or average-rate form, whose y axis is fuel per hour; exactly one of `fuel_cost` and `fuel_cost_time_series` supplies the price.",
       "properties": {
         "fuel_cost": {
-          "description": "Fixed fuel cost per unit of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
+          "description": "Fixed fuel cost in USD per one `fuel_units` of fuel, or null when fuel_cost_time_series names a time-varying one. Exactly one of the two is set; producers and consumers enforce it.",
           "type": [
             "number",
             "null"
@@ -1683,12 +1732,16 @@
             "null"
           ]
         },
+        "fuel_units": {
+          "$ref": "#/definitions/FuelUnit",
+          "description": "The fuel quantity the curve's y axis counts (per hour) and `fuel_cost` is priced per. No default: an unstated fuel unit is ambiguous."
+        },
         "power_units": {
           "$ref": "#/definitions/UnitSystem"
         },
         "startup_fuel_offtake": {
           "$ref": "#/definitions/InputOutputCurve",
-          "description": "Fuel consumed during startup, as a curve in the unit's fuel units."
+          "description": "Fuel consumed during startup, as a curve in `fuel_units`."
         },
         "value_curve": {
           "$ref": "#/definitions/ValueCurve"
@@ -1705,11 +1758,21 @@
       "required": [
         "value_curve",
         "power_units",
+        "fuel_units",
         "vom_cost",
         "variable_cost_type"
       ],
       "title": "FuelCurve",
       "type": "object"
+    },
+    "FuelUnit": {
+      "description": "Fuel quantity a `FuelCurve` is expressed in: `MMBTU` (million British thermal units) or `GJ` (gigajoules) of heat content.",
+      "enum": [
+        "MMBTU",
+        "GJ"
+      ],
+      "title": "FuelUnit",
+      "type": "string"
     },
     "FunctionData": {
       "description": "Raw mathematical data defining a function `f(x)` \u2014 coefficients or point tables with no units or interpretation attached. `function_type` selects the shape: linear, quadratic, piecewise linear through (x, y) points, or piecewise constant between x endpoints. What `x` and `y` stand for is supplied by whatever wraps this, and the `TIME_SERIES_*` variants hold a reference to a stored series in place of the numbers.",
@@ -2242,7 +2305,7 @@
             "pump": 1.0,
             "turbine": 1.0
           },
-          "description": "Turbine/Pump efficiency [0, 1.0]."
+          "description": "Turbine/Pump efficiency [0, 1.0]. Units: 1."
         },
         "id": {
           "description": "Unique integer identifier for this component.",
@@ -2544,7 +2607,7 @@
         },
         "efficiency": {
           "default": 1.0,
-          "description": "Turbine efficiency [0, 1.0].",
+          "description": "Turbine efficiency [0, 1.0]. Units: 1.",
           "type": "number"
         },
         "id": {
@@ -3021,7 +3084,7 @@
           }
         }
       ],
-      "description": "Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus. Voltage and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them.",
+      "description": "Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus. Voltage and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them. `rated_dc_voltage` and `rated_ac_voltage` record the voltage bases, so a consumer can convert the voltage fields to per unit.",
       "properties": {
         "ac_control": {
           "$ref": "#/definitions/VSCACControlModes",
@@ -3064,7 +3127,7 @@
         },
         "dc_current": {
           "default": 0.0,
-          "description": "DC current on the converter. Units: A.",
+          "description": "DC current on the converter. Units: kA.",
           "type": "number"
         },
         "dc_power_setpoint": {
@@ -3098,12 +3161,12 @@
           "type": "integer"
         },
         "loss_function": {
-          "$ref": "#/definitions/LossCurve",
-          "description": "Linear or quadratic loss function with respect to the converter current."
+          "$ref": "#/definitions/CurrentLossCurve",
+          "description": "Linear or quadratic loss (power) as a function of the converter's DC current."
         },
         "max_dc_current": {
-          "default": 100000000.0,
-          "description": "Maximum stable dc current limits. Units: A.",
+          "default": 9999.0,
+          "description": "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
           "type": "number"
         },
         "name": {
@@ -3127,6 +3190,16 @@
         "power_units": {
           "$ref": "#/definitions/UnitSystem",
           "description": "Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit."
+        },
+        "rated_ac_voltage": {
+          "default": 0.0,
+          "description": "Rated AC voltage at the converter's AC terminal, the base for `ac_voltage_setpoint`; 0.0 means unspecified. Units: kV.",
+          "type": "number"
+        },
+        "rated_dc_voltage": {
+          "default": 0.0,
+          "description": "Rated DC voltage of the converter, the base for `dc_voltage_setpoint` and `voltage_limits`; 0.0 means unspecified. Units: kV.",
+          "type": "number"
         },
         "rating": {
           "description": "Maximum output power rating of the converter. Units: per power_units \u2014 NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
@@ -3388,8 +3461,18 @@
       "title": "InterruptibleStandardLoad",
       "type": "object"
     },
+    "IntervalAlignment": {
+      "description": "Position of a timestamp in the period of length `resolution` that its value represents. At a one-hour resolution, the value at 01:00 covers 01:00 to 02:00 for `PERIOD_BEGINNING`, 00:30 to 01:30 for `PERIOD_MIDPOINT`, and 00:00 to 01:00 for `PERIOD_ENDING`. Descriptive: the store records it and does not realign a series.",
+      "enum": [
+        "PERIOD_BEGINNING",
+        "PERIOD_MIDPOINT",
+        "PERIOD_ENDING"
+      ],
+      "title": "IntervalAlignment",
+      "type": "string"
+    },
     "LCCControlMode": {
-      "description": "Control mode of an LCC-HVDC line (PSS/E MDC). BLOCKED: the line is blocked and holds no schedule. POWER: the line holds a power schedule (power_transfer_setpoint, MW). CURRENT: the line holds a current schedule (current_transfer_setpoint, A).",
+      "description": "Control mode of an LCC-HVDC line (PSS/E MDC). BLOCKED: the line is blocked and holds no schedule. POWER: the line holds a power schedule (power_transfer_setpoint, MW). CURRENT: the line holds a current schedule (current_transfer_setpoint, kA).",
       "enum": [
         "BLOCKED",
         "POWER",
@@ -3598,7 +3681,7 @@
     },
     "LossCurve": {
       "additionalProperties": false,
-      "description": "Losses of a device as a function of the flow through it, together with the power basis the curve is expressed in. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units \u2014 NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      "description": "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units \u2014 NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       "properties": {
         "power_units": {
           "$ref": "#/definitions/UnitSystem",
@@ -4213,7 +4296,7 @@
         },
         "points": {
           "items": {
-            "$ref": "#/definitions/XY_Coords"
+            "$ref": "#/definitions/TwoDimensionalFunctionPoint"
           },
           "type": "array"
         }
@@ -4566,6 +4649,11 @@
         "interval": {
           "$ref": "#/definitions/Period",
           "description": "Step between the start of consecutive forecast windows. Part of the series' identity: two forecasts of one variable at the same resolution but different intervals \u2014 a day-ahead and a real-time forecast \u2014 are distinct series. `PT0S` is the canonical interval of a single-window forecast, which has no second window to step to."
+        },
+        "interval_alignment": {
+          "$ref": "#/definitions/IntervalAlignment",
+          "default": "PERIOD_ENDING",
+          "description": "Position of each timestamp in the period it represents."
         },
         "name": {
           "description": "Time series name (e.g. max_active_power). Part of the series' identity, and often carrying a disambiguating suffix; `component_field` records what the values are for.",
@@ -5011,6 +5099,11 @@
           "$ref": "#/definitions/Period",
           "description": "Step between the start of consecutive forecast windows. Part of the series' identity: two forecasts of one variable at the same resolution but different intervals \u2014 a day-ahead and a real-time forecast \u2014 are distinct series. `PT0S` is the canonical interval of a single-window forecast, which has no second window to step to."
         },
+        "interval_alignment": {
+          "$ref": "#/definitions/IntervalAlignment",
+          "default": "PERIOD_ENDING",
+          "description": "Position of each timestamp in the period it represents."
+        },
         "name": {
           "description": "Time series name (e.g. max_active_power). Part of the series' identity, and often carrying a disambiguating suffix; `component_field` records what the values are for.",
           "type": "string"
@@ -5083,6 +5176,163 @@
       ],
       "title": "Scenarios",
       "type": "object"
+    },
+    "SeriesCompensator": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "control_mode": {
+                "enum": [
+                  "DISPATCHABLE",
+                  "ACTIVE_POWER_FLOW"
+                ]
+              }
+            },
+            "required": [
+              "control_mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "reactance_limits": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "reactance_limits"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "control_mode": {
+                "enum": [
+                  "ACTIVE_POWER_FLOW"
+                ]
+              }
+            },
+            "required": [
+              "control_mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "active_power_flow_setpoint": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "active_power_flow_setpoint"
+            ]
+          }
+        }
+      ],
+      "description": "A series compensator on an `Arc`: a series capacitor or reactor, or a thyristor-controlled or static synchronous series compensator, with one series reactance. Devices that also inject at a bus, such as a UPFC, are not covered.",
+      "properties": {
+        "active_power_flow": {
+          "description": "Initial condition of active power flow through the compensator. Units: per power_units \u2014 NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+          "type": "number"
+        },
+        "active_power_flow_setpoint": {
+          "description": "Active power flow, from the `from` bus to the `to` bus, the compensator holds. Required when `control_mode` is `ACTIVE_POWER_FLOW`. Units: per power_units \u2014 NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+          "type": "number"
+        },
+        "arc": {
+          "description": "An `Arc` defining this line `from` a bus `to` another bus.",
+          "type": "integer"
+        },
+        "available": {
+          "description": "Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+          "type": "boolean"
+        },
+        "base_power": {
+          "description": "System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+          "type": "number"
+        },
+        "control_mode": {
+          "$ref": "#/definitions/SeriesCompensatorControlMode",
+          "default": "FIXED",
+          "description": "How the series reactance is set. `FIXED` holds `x`; `BYPASSED` shorts the compensator into a zero-impedance tie; `DISPATCHABLE` makes the reactance a decision within `reactance_limits`; `ACTIVE_POWER_FLOW` sets it to hold `active_power_flow_setpoint`."
+        },
+        "id": {
+          "description": "Unique integer identifier for this component.",
+          "type": "integer"
+        },
+        "name": {
+          "description": "Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+          "type": "string"
+        },
+        "operational_flow_limit": {
+          "$ref": "#/definitions/OperationalFlowLimit",
+          "description": "Operator-set minimum and maximum flow in each direction. Absent means no operational limit. Units: per power_units \u2014 NATURAL_UNITS: MW, COMPONENT_BASE: pu ."
+        },
+        "parameter_units": {
+          "$ref": "#/definitions/ImpedanceUnitBasis",
+          "default": "COMPONENT_BASE",
+          "description": "Unit basis for r and x. COMPONENT_BASE is per-unit on this component's base_power, which records the system base."
+        },
+        "power_units": {
+          "$ref": "#/definitions/UnitSystem",
+          "description": "Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit."
+        },
+        "r": {
+          "description": "Resistance. Units: per parameter_units \u2014 NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+          "type": "number"
+        },
+        "rating": {
+          "description": "Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units \u2014 NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+          "type": "number"
+        },
+        "rating_b": {
+          "description": "Second current rating. Units: per power_units \u2014 NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+          "type": "number"
+        },
+        "rating_c": {
+          "description": "Third current rating. Units: per power_units \u2014 NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+          "type": "number"
+        },
+        "reactance_limits": {
+          "$ref": "#/definitions/MinMax",
+          "description": "Minimum and maximum series reactance. Required when `control_mode` is `DISPATCHABLE` or `ACTIVE_POWER_FLOW`. Units: per parameter_units \u2014 NATURAL_UNITS: ohm, COMPONENT_BASE: pu ."
+        },
+        "reactive_power_flow": {
+          "description": "Initial condition of reactive power flow through the compensator. Units: per power_units \u2014 NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+          "type": "number"
+        },
+        "x": {
+          "description": "Series reactance; negative for a capacitor. Under `DISPATCHABLE` and `ACTIVE_POWER_FLOW`, the present value. Units: per parameter_units \u2014 NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "available",
+        "active_power_flow",
+        "reactive_power_flow",
+        "arc",
+        "r",
+        "x",
+        "rating",
+        "base_power",
+        "power_units"
+      ],
+      "title": "SeriesCompensator",
+      "type": "object"
+    },
+    "SeriesCompensatorControlMode": {
+      "description": "Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.",
+      "enum": [
+        "FIXED",
+        "BYPASSED",
+        "DISPATCHABLE",
+        "ACTIVE_POWER_FLOW"
+      ],
+      "title": "SeriesCompensatorControlMode",
+      "type": "string"
     },
     "ServiceAssociation": {
       "additionalProperties": false,
@@ -5258,6 +5508,11 @@
           "description": "First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. An RFC3339 string with at most 3 fractional-second digits: the store's floor is one millisecond, matching Julia's millisecond-precision DateTime.",
           "format": "date-time",
           "type": "string"
+        },
+        "interval_alignment": {
+          "$ref": "#/definitions/IntervalAlignment",
+          "default": "PERIOD_ENDING",
+          "description": "Position of each timestamp in the period it represents."
         },
         "length": {
           "description": "Number of timesteps.",
@@ -6013,7 +6268,7 @@
           "type": "boolean"
         },
         "base_current": {
-          "description": "Base current of the line as recorded by the source data. No field of this component is per-unit on it. Units: A.",
+          "description": "Base current of the line as recorded by the source data. No field of this component is per-unit on it. Units: kA.",
           "type": "number"
         },
         "c": {
@@ -6636,6 +6891,7 @@
             "id",
             "initial_timestamp",
             "interval",
+            "interval_alignment",
             "length",
             "name",
             "owner_category",
@@ -7193,6 +7449,26 @@
       "title": "TurbinePump",
       "type": "object"
     },
+    "TwoDimensionalFunctionPoint": {
+      "additionalProperties": false,
+      "description": "A single point, given as its `x` and `y` coordinates.",
+      "properties": {
+        "x": {
+          "description": "Units: the wrapped function's input unit.",
+          "type": "number"
+        },
+        "y": {
+          "description": "Units: the wrapped function's output unit.",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "title": "TwoDimensionalFunctionPoint",
+      "type": "object"
+    },
     "TwoTerminalGenericHVDCLine": {
       "additionalProperties": false,
       "description": "A High Voltage DC line, which must be connected to an ACBus on each end. This model is appropriate for operational simulations with a linearized DC power flow approximation with losses proportional to the power flow. For modeling a DC network, see TModelHVDCLine.",
@@ -7346,7 +7622,7 @@
           "description": "Control mode of the line (PSS/E MDC). `BLOCKED` holds no schedule, `POWER` holds `power_transfer_setpoint`, `CURRENT` holds `current_transfer_setpoint`."
         },
         "current_transfer_setpoint": {
-          "description": "Scheduled current transfer, used when `control_mode` is `CURRENT`; `null` otherwise. Units: A.",
+          "description": "Scheduled current transfer, used when `control_mode` is `CURRENT`; `null` otherwise. Units: kA.",
           "type": [
             "number",
             "null"
@@ -7834,7 +8110,7 @@
         },
         "dc_current": {
           "default": 0.0,
-          "description": "DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: A.",
+          "description": "DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: kA.",
           "type": "number"
         },
         "dc_power_setpoint_from": {
@@ -7885,13 +8161,13 @@
           "type": "integer"
         },
         "max_dc_current_from": {
-          "default": 100000000.0,
-          "description": "Maximum stable dc current limits. Units: A.",
+          "default": 9999.0,
+          "description": "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
           "type": "number"
         },
         "max_dc_current_to": {
-          "default": 100000000.0,
-          "description": "Maximum stable dc current limits. Units: A.",
+          "default": 9999.0,
+          "description": "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
           "type": "number"
         },
         "name": {
@@ -8317,26 +8593,6 @@
       ],
       "title": "VoltageUnitBasis",
       "type": "string"
-    },
-    "XY_Coords": {
-      "additionalProperties": false,
-      "description": "A single point, given as its `x` and `y` coordinates.",
-      "properties": {
-        "x": {
-          "description": "Units: the wrapped function's input unit.",
-          "type": "number"
-        },
-        "y": {
-          "description": "Units: the wrapped function's output unit.",
-          "type": "number"
-        }
-      },
-      "required": [
-        "x",
-        "y"
-      ],
-      "title": "XY_Coords",
-      "type": "object"
     }
   },
   "description": "The serialized form of a whole power system: every component, the association tables that link them, and the name of the HDF5 sidecar holding time series values. This is the interchange format between producers (the producing parsers and the data model library) and consumers (the data model library, the relational mirror, non-Julia clients), so the shape is defined here rather than by convention in each producer.\n\nThere is no document-level unit system or base power: every value in the document is interpretable from its own component blob alone. A discriminated field is resolved against a basis-selector property recorded on that same blob (`power_units`, `parameter_units`, `energy_units`, and the like) and, for a COMPONENT_BASE reading, against that blob's own `base_power` \u2014 never a document-wide table. A field with a fixed `x-unit` is already in its natural unit and needs no basis at all. This applies uniformly to component blobs and to any embedded cost payload's own `power_units`; a time series association's `unit_system` likewise governs only that one series.\n\nDeliberately excluded from openapi-generator: `components` is a map from type name to an array of heterogeneous component objects, which the generated Julia client cannot express as typed buckets. The hand-written container in the generated core model package (`src/document.jl`) is the single Julia representation, and its fields are checked against this file. This schema remains authoritative for every other language binding.\n\nTime series *values* never appear here. `time_series_associations` carries the metadata rows and `time_series_storage_file` names the sidecar; reading or writing that file is the consumer's job.",
@@ -8535,6 +8791,12 @@
         "RenewableNonDispatch": {
           "items": {
             "$ref": "#/definitions/RenewableNonDispatch"
+          },
+          "type": "array"
+        },
+        "SeriesCompensator": {
+          "items": {
+            "$ref": "#/definitions/SeriesCompensator"
           },
           "type": "array"
         },

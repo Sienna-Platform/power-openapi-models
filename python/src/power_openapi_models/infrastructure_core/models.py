@@ -18,7 +18,7 @@ class ComplexNumber(BaseModel):
     imag: float | None = None
 
 
-class XYCoords(BaseModel):
+class TwoDimensionalFunctionPoint(BaseModel):
     x: float = Field(..., description="Units: the wrapped function's input unit.")
     y: float = Field(..., description="Units: the wrapped function's output unit.")
 
@@ -58,7 +58,7 @@ class LinearFunctionData(BaseModel):
 
 class PiecewiseLinearData(BaseModel):
     function_type: Literal["PIECEWISE_LINEAR"] = "PIECEWISE_LINEAR"
-    points: list[XYCoords]
+    points: list[TwoDimensionalFunctionPoint]
 
 
 class PiecewiseStepData(BaseModel):
@@ -127,6 +127,10 @@ class DataSource(BaseModel):
     )
     url: str | None = Field(None, description="URL the data was retrieved from.")
     version: str | None = Field(None, description="Data version or vintage, e.g. '2023 final'.")
+    license: str | None = Field(
+        None,
+        description="License of the source data, if known: an SPDX identifier such as 'CC-BY-4.0', or a license name or URL.",
+    )
     published_at: UtcDatetime | None = Field(
         None, description="When the source published the data; null if unknown."
     )

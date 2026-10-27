@@ -3,7 +3,7 @@
  * Do not edit manually.
  * InfrastructureTimeSeriesOpenAPIModels
  * Time series associations: the six canonical time series types defined by the upstream data layer and their metadata, without the dense values
- * OpenAPI spec version: 0.2.0
+ * OpenAPI spec version: 0.3.0
  */
 import * as zod from "zod";
 
@@ -147,6 +147,12 @@ export const TimeSeriesAssociation = zod
           .optional()
           .describe(
             "How a series' timestamps were spelled, recorded so a read hands back what the write declared instead of relabelling every series UTC. Four forms share one string, and are unambiguous because a zone name that would read as either literal or as an offset is rejected: `utc`; `zoneless` for a wall clock, which names no instant; a fixed UTC offset (`-07:00`, `+0530`, `+05`); or an IANA zone name (`America/Denver`). Only the name's shape is checked here — whether a zone exists is a tz-database question, and the store records the name either way. A spelling, not a grid: it does not change what a calendar `resolution` steps on, and a series on a local-clock grid is a NonSequentialTimeSeries. Descriptive, so two series differing only in it are duplicates rather than distinct series, but not inert — a query's bounds must match the series' spelling, and the zoneless series form their own group.",
+          ),
+        interval_alignment: zod
+          .enum(["PERIOD_BEGINNING", "PERIOD_MIDPOINT", "PERIOD_ENDING"])
+          .optional()
+          .describe(
+            "Position of a timestamp in the period of length `resolution` that its value represents. At a one-hour resolution, the value at 01:00 covers 01:00 to 02:00 for `PERIOD_BEGINNING`, 00:30 to 01:30 for `PERIOD_MIDPOINT`, and 00:00 to 01:00 for `PERIOD_ENDING`. Descriptive: the store records it and does not realign a series.",
           ),
         component_field: zod
           .string()
@@ -400,6 +406,12 @@ export const TimeSeriesAssociation = zod
           .describe(
             "How a series' timestamps were spelled, recorded so a read hands back what the write declared instead of relabelling every series UTC. Four forms share one string, and are unambiguous because a zone name that would read as either literal or as an offset is rejected: `utc`; `zoneless` for a wall clock, which names no instant; a fixed UTC offset (`-07:00`, `+0530`, `+05`); or an IANA zone name (`America/Denver`). Only the name's shape is checked here — whether a zone exists is a tz-database question, and the store records the name either way. A spelling, not a grid: it does not change what a calendar `resolution` steps on, and a series on a local-clock grid is a NonSequentialTimeSeries. Descriptive, so two series differing only in it are duplicates rather than distinct series, but not inert — a query's bounds must match the series' spelling, and the zoneless series form their own group.",
           ),
+        interval_alignment: zod
+          .enum(["PERIOD_BEGINNING", "PERIOD_MIDPOINT", "PERIOD_ENDING"])
+          .optional()
+          .describe(
+            "Position of a timestamp in the period of length `resolution` that its value represents. At a one-hour resolution, the value at 01:00 covers 01:00 to 02:00 for `PERIOD_BEGINNING`, 00:30 to 01:30 for `PERIOD_MIDPOINT`, and 00:00 to 01:00 for `PERIOD_ENDING`. Descriptive: the store records it and does not realign a series.",
+          ),
         component_field: zod
           .string()
           .optional()
@@ -537,6 +549,12 @@ export const TimeSeriesAssociation = zod
           .describe(
             "How a series' timestamps were spelled, recorded so a read hands back what the write declared instead of relabelling every series UTC. Four forms share one string, and are unambiguous because a zone name that would read as either literal or as an offset is rejected: `utc`; `zoneless` for a wall clock, which names no instant; a fixed UTC offset (`-07:00`, `+0530`, `+05`); or an IANA zone name (`America/Denver`). Only the name's shape is checked here — whether a zone exists is a tz-database question, and the store records the name either way. A spelling, not a grid: it does not change what a calendar `resolution` steps on, and a series on a local-clock grid is a NonSequentialTimeSeries. Descriptive, so two series differing only in it are duplicates rather than distinct series, but not inert — a query's bounds must match the series' spelling, and the zoneless series form their own group.",
           ),
+        interval_alignment: zod
+          .enum(["PERIOD_BEGINNING", "PERIOD_MIDPOINT", "PERIOD_ENDING"])
+          .optional()
+          .describe(
+            "Position of a timestamp in the period of length `resolution` that its value represents. At a one-hour resolution, the value at 01:00 covers 01:00 to 02:00 for `PERIOD_BEGINNING`, 00:30 to 01:30 for `PERIOD_MIDPOINT`, and 00:00 to 01:00 for `PERIOD_ENDING`. Descriptive: the store records it and does not realign a series.",
+          ),
         component_field: zod
           .string()
           .optional()
@@ -673,6 +691,12 @@ export const TimeSeriesAssociation = zod
           .optional()
           .describe(
             "How a series' timestamps were spelled, recorded so a read hands back what the write declared instead of relabelling every series UTC. Four forms share one string, and are unambiguous because a zone name that would read as either literal or as an offset is rejected: `utc`; `zoneless` for a wall clock, which names no instant; a fixed UTC offset (`-07:00`, `+0530`, `+05`); or an IANA zone name (`America/Denver`). Only the name's shape is checked here — whether a zone exists is a tz-database question, and the store records the name either way. A spelling, not a grid: it does not change what a calendar `resolution` steps on, and a series on a local-clock grid is a NonSequentialTimeSeries. Descriptive, so two series differing only in it are duplicates rather than distinct series, but not inert — a query's bounds must match the series' spelling, and the zoneless series form their own group.",
+          ),
+        interval_alignment: zod
+          .enum(["PERIOD_BEGINNING", "PERIOD_MIDPOINT", "PERIOD_ENDING"])
+          .optional()
+          .describe(
+            "Position of a timestamp in the period of length `resolution` that its value represents. At a one-hour resolution, the value at 01:00 covers 01:00 to 02:00 for `PERIOD_BEGINNING`, 00:30 to 01:30 for `PERIOD_MIDPOINT`, and 00:00 to 01:00 for `PERIOD_ENDING`. Descriptive: the store records it and does not realign a series.",
           ),
         component_field: zod
           .string()
@@ -816,6 +840,12 @@ export const TimeSeriesAssociation = zod
           .optional()
           .describe(
             "How a series' timestamps were spelled, recorded so a read hands back what the write declared instead of relabelling every series UTC. Four forms share one string, and are unambiguous because a zone name that would read as either literal or as an offset is rejected: `utc`; `zoneless` for a wall clock, which names no instant; a fixed UTC offset (`-07:00`, `+0530`, `+05`); or an IANA zone name (`America/Denver`). Only the name's shape is checked here — whether a zone exists is a tz-database question, and the store records the name either way. A spelling, not a grid: it does not change what a calendar `resolution` steps on, and a series on a local-clock grid is a NonSequentialTimeSeries. Descriptive, so two series differing only in it are duplicates rather than distinct series, but not inert — a query's bounds must match the series' spelling, and the zoneless series form their own group.",
+          ),
+        interval_alignment: zod
+          .enum(["PERIOD_BEGINNING", "PERIOD_MIDPOINT", "PERIOD_ENDING"])
+          .optional()
+          .describe(
+            "Position of a timestamp in the period of length `resolution` that its value represents. At a one-hour resolution, the value at 01:00 covers 01:00 to 02:00 for `PERIOD_BEGINNING`, 00:30 to 01:30 for `PERIOD_MIDPOINT`, and 00:00 to 01:00 for `PERIOD_ENDING`. Descriptive: the store records it and does not realign a series.",
           ),
         component_field: zod
           .string()
@@ -976,6 +1006,13 @@ export const SingleTimeSeries = zod
       .optional()
       .describe(
         "How a series' timestamps were spelled, recorded so a read hands back what the write declared instead of relabelling every series UTC. Four forms share one string, and are unambiguous because a zone name that would read as either literal or as an offset is rejected: `utc`; `zoneless` for a wall clock, which names no instant; a fixed UTC offset (`-07:00`, `+0530`, `+05`); or an IANA zone name (`America/Denver`). Only the name's shape is checked here — whether a zone exists is a tz-database question, and the store records the name either way. A spelling, not a grid: it does not change what a calendar `resolution` steps on, and a series on a local-clock grid is a NonSequentialTimeSeries. Descriptive, so two series differing only in it are duplicates rather than distinct series, but not inert — a query's bounds must match the series' spelling, and the zoneless series form their own group.",
+      ),
+    interval_alignment: zod
+      .enum(["PERIOD_BEGINNING", "PERIOD_MIDPOINT", "PERIOD_ENDING"])
+      .optional()
+      .default("PERIOD_ENDING")
+      .describe(
+        "Position of a timestamp in the period of length `resolution` that its value represents. At a one-hour resolution, the value at 01:00 covers 01:00 to 02:00 for `PERIOD_BEGINNING`, 00:30 to 01:30 for `PERIOD_MIDPOINT`, and 00:00 to 01:00 for `PERIOD_ENDING`. Descriptive: the store records it and does not realign a series.",
       ),
     component_field: zod
       .string()
@@ -1253,6 +1290,13 @@ export const Deterministic = zod
       .describe(
         "How a series' timestamps were spelled, recorded so a read hands back what the write declared instead of relabelling every series UTC. Four forms share one string, and are unambiguous because a zone name that would read as either literal or as an offset is rejected: `utc`; `zoneless` for a wall clock, which names no instant; a fixed UTC offset (`-07:00`, `+0530`, `+05`); or an IANA zone name (`America/Denver`). Only the name's shape is checked here — whether a zone exists is a tz-database question, and the store records the name either way. A spelling, not a grid: it does not change what a calendar `resolution` steps on, and a series on a local-clock grid is a NonSequentialTimeSeries. Descriptive, so two series differing only in it are duplicates rather than distinct series, but not inert — a query's bounds must match the series' spelling, and the zoneless series form their own group.",
       ),
+    interval_alignment: zod
+      .enum(["PERIOD_BEGINNING", "PERIOD_MIDPOINT", "PERIOD_ENDING"])
+      .optional()
+      .default("PERIOD_ENDING")
+      .describe(
+        "Position of a timestamp in the period of length `resolution` that its value represents. At a one-hour resolution, the value at 01:00 covers 01:00 to 02:00 for `PERIOD_BEGINNING`, 00:30 to 01:30 for `PERIOD_MIDPOINT`, and 00:00 to 01:00 for `PERIOD_ENDING`. Descriptive: the store records it and does not realign a series.",
+      ),
     component_field: zod
       .string()
       .optional()
@@ -1400,6 +1444,13 @@ export const DeterministicSingleTimeSeries = zod
       .optional()
       .describe(
         "How a series' timestamps were spelled, recorded so a read hands back what the write declared instead of relabelling every series UTC. Four forms share one string, and are unambiguous because a zone name that would read as either literal or as an offset is rejected: `utc`; `zoneless` for a wall clock, which names no instant; a fixed UTC offset (`-07:00`, `+0530`, `+05`); or an IANA zone name (`America/Denver`). Only the name's shape is checked here — whether a zone exists is a tz-database question, and the store records the name either way. A spelling, not a grid: it does not change what a calendar `resolution` steps on, and a series on a local-clock grid is a NonSequentialTimeSeries. Descriptive, so two series differing only in it are duplicates rather than distinct series, but not inert — a query's bounds must match the series' spelling, and the zoneless series form their own group.",
+      ),
+    interval_alignment: zod
+      .enum(["PERIOD_BEGINNING", "PERIOD_MIDPOINT", "PERIOD_ENDING"])
+      .optional()
+      .default("PERIOD_ENDING")
+      .describe(
+        "Position of a timestamp in the period of length `resolution` that its value represents. At a one-hour resolution, the value at 01:00 covers 01:00 to 02:00 for `PERIOD_BEGINNING`, 00:30 to 01:30 for `PERIOD_MIDPOINT`, and 00:00 to 01:00 for `PERIOD_ENDING`. Descriptive: the store records it and does not realign a series.",
       ),
     component_field: zod
       .string()
@@ -1552,6 +1603,13 @@ export const Probabilistic = zod
       .optional()
       .describe(
         "How a series' timestamps were spelled, recorded so a read hands back what the write declared instead of relabelling every series UTC. Four forms share one string, and are unambiguous because a zone name that would read as either literal or as an offset is rejected: `utc`; `zoneless` for a wall clock, which names no instant; a fixed UTC offset (`-07:00`, `+0530`, `+05`); or an IANA zone name (`America/Denver`). Only the name's shape is checked here — whether a zone exists is a tz-database question, and the store records the name either way. A spelling, not a grid: it does not change what a calendar `resolution` steps on, and a series on a local-clock grid is a NonSequentialTimeSeries. Descriptive, so two series differing only in it are duplicates rather than distinct series, but not inert — a query's bounds must match the series' spelling, and the zoneless series form their own group.",
+      ),
+    interval_alignment: zod
+      .enum(["PERIOD_BEGINNING", "PERIOD_MIDPOINT", "PERIOD_ENDING"])
+      .optional()
+      .default("PERIOD_ENDING")
+      .describe(
+        "Position of a timestamp in the period of length `resolution` that its value represents. At a one-hour resolution, the value at 01:00 covers 01:00 to 02:00 for `PERIOD_BEGINNING`, 00:30 to 01:30 for `PERIOD_MIDPOINT`, and 00:00 to 01:00 for `PERIOD_ENDING`. Descriptive: the store records it and does not realign a series.",
       ),
     component_field: zod
       .string()
@@ -1707,6 +1765,13 @@ export const Scenarios = zod
       .describe(
         "How a series' timestamps were spelled, recorded so a read hands back what the write declared instead of relabelling every series UTC. Four forms share one string, and are unambiguous because a zone name that would read as either literal or as an offset is rejected: `utc`; `zoneless` for a wall clock, which names no instant; a fixed UTC offset (`-07:00`, `+0530`, `+05`); or an IANA zone name (`America/Denver`). Only the name's shape is checked here — whether a zone exists is a tz-database question, and the store records the name either way. A spelling, not a grid: it does not change what a calendar `resolution` steps on, and a series on a local-clock grid is a NonSequentialTimeSeries. Descriptive, so two series differing only in it are duplicates rather than distinct series, but not inert — a query's bounds must match the series' spelling, and the zoneless series form their own group.",
       ),
+    interval_alignment: zod
+      .enum(["PERIOD_BEGINNING", "PERIOD_MIDPOINT", "PERIOD_ENDING"])
+      .optional()
+      .default("PERIOD_ENDING")
+      .describe(
+        "Position of a timestamp in the period of length `resolution` that its value represents. At a one-hour resolution, the value at 01:00 covers 01:00 to 02:00 for `PERIOD_BEGINNING`, 00:30 to 01:30 for `PERIOD_MIDPOINT`, and 00:00 to 01:00 for `PERIOD_ENDING`. Descriptive: the store records it and does not realign a series.",
+      ),
     component_field: zod
       .string()
       .optional()
@@ -1819,5 +1884,14 @@ export const TimeReference = zod
 
 export type TimeReference = zod.input<typeof TimeReference>;
 export type TimeReferenceOutput = zod.output<typeof TimeReference>;
+
+export const IntervalAlignment = zod
+  .enum(["PERIOD_BEGINNING", "PERIOD_MIDPOINT", "PERIOD_ENDING"])
+  .describe(
+    "Position of a timestamp in the period of length `resolution` that its value represents. At a one-hour resolution, the value at 01:00 covers 01:00 to 02:00 for `PERIOD_BEGINNING`, 00:30 to 01:30 for `PERIOD_MIDPOINT`, and 00:00 to 01:00 for `PERIOD_ENDING`. Descriptive: the store records it and does not realign a series.",
+  );
+
+export type IntervalAlignment = zod.input<typeof IntervalAlignment>;
+export type IntervalAlignmentOutput = zod.output<typeof IntervalAlignment>;
 export { UnitSystem } from "../infrastructure_core/models";
 export type { UnitSystemOutput } from "../infrastructure_core/models";

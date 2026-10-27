@@ -42,6 +42,12 @@ class TimeReference(RootModel[str]):
     )
 
 
+class IntervalAlignment(Enum):
+    PERIOD_BEGINNING = "PERIOD_BEGINNING"
+    PERIOD_MIDPOINT = "PERIOD_MIDPOINT"
+    PERIOD_ENDING = "PERIOD_ENDING"
+
+
 class Period(RootModel[str]):
     root: str = Field(
         ...,
@@ -206,6 +212,9 @@ class Deterministic(BaseModel):
         None,
         description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
+    interval_alignment: IntervalAlignment | None = Field(
+        "PERIOD_ENDING", description="Position of each timestamp in the period it represents."
+    )
     component_field: str | None = Field(
         None,
         description="The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.",
@@ -298,6 +307,9 @@ class DeterministicSingleTimeSeries(BaseModel):
         None,
         description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
+    interval_alignment: IntervalAlignment | None = Field(
+        "PERIOD_ENDING", description="Position of each timestamp in the period it represents."
+    )
     component_field: str | None = Field(
         None,
         description="The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.",
@@ -389,6 +401,9 @@ class Probabilistic(BaseModel):
     time_reference: TimeReference | None = Field(
         None,
         description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
+    )
+    interval_alignment: IntervalAlignment | None = Field(
+        "PERIOD_ENDING", description="Position of each timestamp in the period it represents."
     )
     component_field: str | None = Field(
         None,
@@ -487,6 +502,9 @@ class Scenarios(BaseModel):
         None,
         description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
+    interval_alignment: IntervalAlignment | None = Field(
+        "PERIOD_ENDING", description="Position of each timestamp in the period it represents."
+    )
     component_field: str | None = Field(
         None,
         description="The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.",
@@ -582,6 +600,9 @@ class SingleTimeSeries(BaseModel):
     time_reference: TimeReference | None = Field(
         None,
         description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
+    )
+    interval_alignment: IntervalAlignment | None = Field(
+        "PERIOD_ENDING", description="Position of each timestamp in the period it represents."
     )
     component_field: str | None = Field(
         None,

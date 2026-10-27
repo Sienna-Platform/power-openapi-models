@@ -150,6 +150,7 @@ const EXTERNAL_REFS_ALLOW = [
   "Operations/Branch/DiscreteControlledACBranch.json",
   "Operations/Branch/GenericArcImpedance.json",
   "Operations/Branch/Line.json",
+  "Operations/Branch/SeriesCompensator.json",
   "Operations/Branch/TModelHVDCLine.json",
   "Operations/Branch/ThreeWindingTransformer.json",
   "Operations/Branch/TransformerCircuit.json",
