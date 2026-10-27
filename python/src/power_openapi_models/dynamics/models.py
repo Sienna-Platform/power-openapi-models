@@ -3,15 +3,21 @@
 
 from __future__ import annotations
 from power_openapi_models.core.models import DbdPnts, FdbdPnts, MinMax, UpDown
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AverageConverter(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     rated_voltage: float = Field(..., description="Rated voltage (V)")
     rated_current: float = Field(..., description="Rated current (A)")
 
 
 class RenewableEnergyConverterTypeA(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     T_g: float = Field(..., description="Converter time constant. Units: s.")
     Rrpwr: float = Field(..., description="Low Voltage Power Logic (LVPL) ramp rate limit.")
     Brkpt: float = Field(..., description="LVPL characteristic voltage 2.")
@@ -56,6 +62,9 @@ class RenewableEnergyConverterTypeA(BaseModel):
 
 
 class RenewableEnergyVoltageConverterTypeA(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     T_g: float = Field(..., description="Converter time constant. Units: s.")
     Rrpwr: float = Field(..., description="Low Voltage Power Logic (LVPL) ramp rate limit.")
     Brkpt: float = Field(..., description="LVPL characteristic voltage 2.")
@@ -91,10 +100,16 @@ class RenewableEnergyVoltageConverterTypeA(BaseModel):
 
 
 class FixedDCSource(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     voltage: float = Field(..., description="Voltage (V)")
 
 
 class ZeroOrderBESS(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     rated_voltage: float = Field(..., description="Rated voltage (V)")
     rated_current: float = Field(..., description="Rated current (A)")
     battery_voltage: float = Field(..., description="Battery voltage")
@@ -110,12 +125,18 @@ class ZeroOrderBESS(BaseModel):
 
 
 class LCFilter(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     lf: float = Field(..., description="Filter inductance")
     rf: float = Field(..., description="Filter resistance")
     cf: float = Field(..., description="Filter capacitance")
 
 
 class LCLFilter(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     lf: float = Field(..., description="Series inductance of converter filter")
     rf: float = Field(..., description="Series resistance of converter filter")
     cf: float = Field(..., description="Shunt capacitance of converter filter")
@@ -124,33 +145,51 @@ class LCLFilter(BaseModel):
 
 
 class RLFilter(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     rf: float = Field(..., description="Series resistance in p.u. of converter filter to the grid")
     lf: float = Field(..., description="Series inductance in p.u. of converter filter to the grid")
 
 
 class FixedFrequency(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     frequency: float | None = Field(1.0, description="Reference frequency")
 
 
 class KauraPLL(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     omega_lp: float = Field(..., description="PLL low-pass filter frequency")
     kp_pll: float = Field(..., description="PLL proportional gain")
     ki_pll: float = Field(..., description="PLL integral gain")
 
 
 class ReducedOrderPLL(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     omega_lp: float = Field(..., description="PLL low-pass filter frequency")
     kp_pll: float = Field(..., description="PLL proportional gain")
     ki_pll: float = Field(..., description="PLL integral gain")
 
 
 class CurrentModeControl(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     kpc: float
     kic: float
     kffv: float
 
 
 class RECurrentControlB(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     Q_Flag: bool
     PQ_Flag: bool
     Vdip_lim: MinMax
@@ -166,6 +205,9 @@ class RECurrentControlB(BaseModel):
 
 
 class VoltageModeControl(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     kpv: float
     kiv: float
     kffv: float
@@ -179,12 +221,18 @@ class VoltageModeControl(BaseModel):
 
 
 class ActivePowerDroop(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     Rp: float
     omegaz: float
     P_ref: float | None = 1.0
 
 
 class ActivePowerPI(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     Kp_p: float
     Ki_p: float
     omegaz: float
@@ -192,6 +240,9 @@ class ActivePowerPI(BaseModel):
 
 
 class ActiveRenewableControllerAB(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     bus_control: int = Field(
         ...,
         description="ACBus identification number for voltage control. `0` identifies the local bus connected to this component.",
@@ -238,18 +289,27 @@ class ActiveRenewableControllerAB(BaseModel):
 
 
 class ActiveVirtualOscillator(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     k1: float
     psi: float
     P_ref: float | None = 1.0
 
 
 class ReactivePowerDroop(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     kq: float
     omegaf: float
     V_ref: float | None = 1.0
 
 
 class ReactivePowerPI(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     Kp_q: float
     Ki_q: float
     omegaf: float
@@ -258,6 +318,9 @@ class ReactivePowerPI(BaseModel):
 
 
 class ReactiveRenewableControllerAB(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     bus_control: int = Field(
         ...,
         description="ACBus identification number for voltage control. `0` identifies the local bus connected to this component.",
@@ -337,12 +400,18 @@ class ReactiveRenewableControllerAB(BaseModel):
 
 
 class ReactiveVirtualOscillator(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     k2: float
     V_ref: float | None = 1.0
     Q_ref: float | None = 1.0
 
 
 class VirtualInertia(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     Ta: float
     kd: float
     komega: float
@@ -350,12 +419,18 @@ class VirtualInertia(BaseModel):
 
 
 class HybridOutputCurrentLimiter(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     I_max: float = Field(..., description="Maximum limit on current controller input current")
     rv: float = Field(..., description="Real part of the virtual impedance")
     lv: float = Field(..., description="Imaginary part of the virtual impedance")
 
 
 class InstantaneousOutputCurrentLimiter(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     Id_max: float = Field(
         ..., description="Maximum limit on d-axis current controller input current"
     )
@@ -365,10 +440,16 @@ class InstantaneousOutputCurrentLimiter(BaseModel):
 
 
 class MagnitudeOutputCurrentLimiter(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     I_max: float = Field(..., description="Maximum limit on current controller input current")
 
 
 class PriorityOutputCurrentLimiter(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     I_max: float = Field(..., description="Maximum limit on current controller input current")
     phi_I: float = Field(
         ...,
@@ -377,23 +458,35 @@ class PriorityOutputCurrentLimiter(BaseModel):
 
 
 class SaturationOutputCurrentLimiter(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     I_max: float = Field(..., description="Maximum limit on current controller input current")
     kw: float = Field(..., description="Defined feedback gain")
 
 
 class AVRFixed(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Vf: float = Field(..., description="Fixed voltage field applied to the rotor winding")
     V_ref: float | None = Field(1.0, description="Reference Voltage Set-point")
 
 
 class AVRSimple(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Kv: float = Field(..., description="Proportional Gain")
     V_ref: float | None = Field(1.0, description="Reference Voltage Set-point")
 
 
 class AVRTypeI(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Ka: float = Field(..., description="Amplifier gain")
     Ke: float = Field(..., description="Field circuit integral deviation")
@@ -409,6 +502,9 @@ class AVRTypeI(BaseModel):
 
 
 class AVRTypeII(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     K0: float = Field(..., description="Regulator gain")
     T1: float = Field(..., description="First pole in s")
@@ -424,6 +520,9 @@ class AVRTypeII(BaseModel):
 
 
 class ESAC1A(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Tr: float = Field(..., description="Regulator input filter time constant")
     Tb: float = Field(..., description="Regulator denominator (lag) time constant")
@@ -455,6 +554,9 @@ class ESAC1A(BaseModel):
 
 
 class ESAC6A(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Tr: float = Field(..., description="Regulator input filter time constant")
     Ka: float = Field(..., description="Regulator output gain")
@@ -492,6 +594,9 @@ class ESAC6A(BaseModel):
 
 
 class ESAC8B(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Tr: float = Field(..., description="Regulator input filter time constant")
     Kp: float = Field(..., description="Regulator proportional PID gain")
@@ -516,6 +621,9 @@ class ESAC8B(BaseModel):
 
 
 class ESDC1A(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Tr: float = Field(..., description="Voltage measurement time constant")
     Ka: float = Field(..., description="Amplifier gain")
@@ -543,6 +651,9 @@ class ESDC1A(BaseModel):
 
 
 class ESDC2A(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Tr: float = Field(..., description="Voltage measurement time constant")
     Ka: float = Field(..., description="Amplifier gain")
@@ -570,6 +681,9 @@ class ESDC2A(BaseModel):
 
 
 class ESST1A(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     UEL_flags: int = Field(..., description="Code input for Underexcitization limiter (UEL) entry")
     PSS_flags: int = Field(
@@ -598,6 +712,9 @@ class ESST1A(BaseModel):
 
 
 class ESST4B(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     Tr: float = Field(..., description="Regulator input filter time constant")
     id: int = Field(..., description="Unique integer identifier for this component")
     K_pr: float = Field(..., description="Regulator proportional gain")
@@ -620,6 +737,9 @@ class ESST4B(BaseModel):
 
 
 class EX4VSA(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Iflim: float = Field(..., description="OEL field current limit")
     d: float = Field(..., description="OEL parameter d")
@@ -637,6 +757,9 @@ class EX4VSA(BaseModel):
 
 
 class EXAC1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Tr: float = Field(..., description="Regulator input filter time constant")
     Tb: float = Field(..., description="Regulator denominator (lag) time constant")
@@ -667,6 +790,9 @@ class EXAC1(BaseModel):
 
 
 class EXAC1A(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Tr: float = Field(..., description="Regulator input filter time constant")
     Tb: float = Field(..., description="Regulator denominator (lag) time constant")
@@ -698,6 +824,9 @@ class EXAC1A(BaseModel):
 
 
 class EXAC2(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Tr: float = Field(..., description="Regulator input filter time constant")
     Tb: float = Field(..., description="Regulator denominator (lag) time constant")
@@ -733,6 +862,9 @@ class EXAC2(BaseModel):
 
 
 class EXPIC1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Tr: float = Field(..., description="Regulator input filter time constant")
     Ka: float = Field(..., description="Voltage regulator gain")
@@ -764,6 +896,9 @@ class EXPIC1(BaseModel):
 
 
 class EXST1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Tr: float = Field(..., description="Voltage measurement time constant")
     Vi_lim: MinMax = Field(..., description="Voltage input limits")
@@ -779,6 +914,9 @@ class EXST1(BaseModel):
 
 
 class IEEET1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Tr: float = Field(..., description="Voltage measurement time constant")
     Ka: float = Field(..., description="Amplifier gain")
@@ -804,6 +942,9 @@ class IEEET1(BaseModel):
 
 
 class SCRX(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Ta_Tb: float = Field(..., description="Lead input constant ratio")
     Tb: float = Field(..., description="Lag input constant")
@@ -819,6 +960,9 @@ class SCRX(BaseModel):
 
 
 class SEXS(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Ta_Tb: float = Field(..., description="Ratio of lead and lag time constants")
     Tb: float = Field(..., description="Lag time constant. Units: s.")
@@ -829,6 +973,9 @@ class SEXS(BaseModel):
 
 
 class ST6B(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     OEL_Flag: int = Field(..., description="OEL Flag for ST6B: 1: before HV gate, 2: after HV gate")
     Tr: float = Field(..., description="Regulator input filter time constant")
@@ -851,6 +998,9 @@ class ST6B(BaseModel):
 
 
 class ST8C(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     OEL_Flag: int = Field(
         ...,
@@ -898,6 +1048,9 @@ class ST8C(BaseModel):
 
 
 class AndersonFouadMachine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Resistance after EMF")
     Xd: float = Field(..., description="Reactance after EMF in d-axis")
@@ -917,6 +1070,9 @@ class AndersonFouadMachine(BaseModel):
 
 
 class BaseMachine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Resistance after EMF")
     Xd_p: float = Field(..., description="Reactance after EMF")
@@ -924,6 +1080,9 @@ class BaseMachine(BaseModel):
 
 
 class FullMachine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Resistance after EMF")
     R_f: float = Field(..., description="Field rotor winding resistance")
@@ -965,6 +1124,9 @@ class FullMachine(BaseModel):
 
 
 class MarconatoMachine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Resistance after EMF")
     Xd: float = Field(..., description="Reactance after EMF in d-axis")
@@ -983,6 +1145,9 @@ class MarconatoMachine(BaseModel):
 
 
 class OneDOneQMachine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Resistance after EMF")
     Xd: float = Field(..., description="Reactance after EMF in d-axis")
@@ -994,6 +1159,9 @@ class OneDOneQMachine(BaseModel):
 
 
 class RoundRotorExponential(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     base_machine: int = Field(..., description="Round Rotor machine parameters")
     saturation_coeffs: list[float] = Field(
@@ -1005,6 +1173,9 @@ class RoundRotorExponential(BaseModel):
 
 
 class RoundRotorMachine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Armature resistance")
     Td0_p: float = Field(..., description="Time constant of transient d-axis voltage. Units: s.")
@@ -1032,6 +1203,9 @@ class RoundRotorMachine(BaseModel):
 
 
 class RoundRotorQuadratic(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     base_machine: int = Field(..., description="Round Rotor machine parameters")
     saturation_coeffs: list[float] = Field(
@@ -1043,6 +1217,9 @@ class RoundRotorQuadratic(BaseModel):
 
 
 class SalientPoleExponential(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     base_machine: int = Field(..., description="Salient pole machine parameters")
     saturation_coeffs: list[float] = Field(
@@ -1054,6 +1231,9 @@ class SalientPoleExponential(BaseModel):
 
 
 class SalientPoleMachine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Armature resistance")
     Td0_p: float = Field(..., description="Time constant of transient d-axis voltage Units: s.")
@@ -1079,6 +1259,9 @@ class SalientPoleMachine(BaseModel):
 
 
 class SalientPoleQuadratic(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     base_machine: int = Field(..., description="Salient pole machine parameters")
     saturation_coeffs: list[float] = Field(
@@ -1090,6 +1273,9 @@ class SalientPoleQuadratic(BaseModel):
 
 
 class SauerPaiMachine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Resistance after EMF")
     Xd: float = Field(..., description="Reactance after EMF in d-axis")
@@ -1110,6 +1296,9 @@ class SauerPaiMachine(BaseModel):
 
 
 class SimpleAFMachine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Resistance after EMF")
     Xd: float = Field(..., description="Reactance after EMF in d-axis")
@@ -1129,6 +1318,9 @@ class SimpleAFMachine(BaseModel):
 
 
 class SimpleFullMachine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Resistance after EMF")
     R_f: float = Field(..., description="Field motor winding resistance")
@@ -1164,6 +1356,9 @@ class SimpleFullMachine(BaseModel):
 
 
 class SimpleMarconatoMachine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Resistance after EMF")
     Xd: float = Field(..., description="Reactance after EMF in d-axis")
@@ -1180,6 +1375,9 @@ class SimpleMarconatoMachine(BaseModel):
 
 
 class IEEEST(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     input_code: int = Field(..., description="Code input for stabilizer")
     remote_bus_control: int = Field(
@@ -1210,6 +1408,9 @@ class IEEEST(BaseModel):
 
 
 class PSS2A(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     input_code_1: int = Field(..., description="First input code for stabilizer")
     remote_bus_control_1: int = Field(
@@ -1244,6 +1445,9 @@ class PSS2A(BaseModel):
 
 
 class PSS2B(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     input_code_1: int = Field(..., description="First input code for stabilizer")
     remote_bus_control_1: int = Field(
@@ -1286,6 +1490,9 @@ class PSS2B(BaseModel):
 
 
 class PSS2C(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     input_code_1: int = Field(..., description="First input code for stabilizer")
     remote_bus_control_1: int = Field(
@@ -1339,17 +1546,26 @@ class PSS2C(BaseModel):
 
 
 class PSSFixed(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     V_pss: float = Field(..., description="Fixed voltage stabilization signal")
 
 
 class PSSSimple(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     K_omega: float = Field(..., description="Proportional gain for frequency")
     K_p: float = Field(..., description="Proportional gain for active power")
 
 
 class STAB1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     KT: float = Field(..., description="K/T for washout filter")
     T: float = Field(..., description="Time constant for washout filter")
@@ -1361,6 +1577,9 @@ class STAB1(BaseModel):
 
 
 class FiveMassShaft(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     H: float = Field(..., description="Rotor inertia constant in MWs/MVA")
     H_hp: float = Field(..., description="High pressure turbine inertia constant in MWs/MVA")
@@ -1385,12 +1604,18 @@ class FiveMassShaft(BaseModel):
 
 
 class SingleMass(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     H: float = Field(..., description="Rotor inertia constant in MWs/MVA")
     D: float = Field(..., description="Rotor natural damping")
 
 
 class DEGOV(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     T1: float = Field(..., description="Governor mechanism time constant")
     T2: float = Field(..., description="Turbine power time constant")
@@ -1404,6 +1629,9 @@ class DEGOV(BaseModel):
 
 
 class DEGOV1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     droop_flag: int | None = Field(
         None,
@@ -1429,6 +1657,9 @@ class DEGOV1(BaseModel):
 
 
 class GasTG(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Speed droop parameter")
     T1: float = Field(..., description="Governor time constant")
@@ -1447,6 +1678,9 @@ class GasTG(BaseModel):
 
 
 class GeneralGovModel(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     Rselect: int = Field(..., description="Feedback signal for governor droop")
     fuel_flag: int = Field(..., description="Flag switch for fuel source characteristic")
@@ -1484,6 +1718,9 @@ class GeneralGovModel(BaseModel):
 
 
 class HydroTurbineGov(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Permanent droop parameter")
     r: float = Field(..., description="Temporary droop")
@@ -1500,6 +1737,9 @@ class HydroTurbineGov(BaseModel):
 
 
 class IEEETurbineGov1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     K: int = Field(..., description="Governor gain")
     T1: int = Field(..., description="Input filter lag")
@@ -1524,6 +1764,9 @@ class IEEETurbineGov1(BaseModel):
 
 
 class PIDGOV(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     feedback_flag: int = Field(
         ...,
@@ -1551,6 +1794,9 @@ class PIDGOV(BaseModel):
 
 
 class SteamTurbineGov1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Droop parameter")
     T1: float = Field(..., description="Governor time constant. Units: s.")
@@ -1567,12 +1813,18 @@ class SteamTurbineGov1(BaseModel):
 
 
 class TGFixed(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     efficiency: float = Field(..., description="Efficiency factor that multiplies P_ref")
     P_ref: float | None = Field(1.0, description="Reference power set-point")
 
 
 class TGSimple(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     d_t: float = Field(..., description="Inverse droop parameter")
     Tm: float = Field(..., description="Turbine governor low-pass time constant")
@@ -1580,6 +1832,9 @@ class TGSimple(BaseModel):
 
 
 class TGTypeI(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Droop parameter")
     Ts: float = Field(..., description="Governor time constant")
@@ -1592,6 +1847,9 @@ class TGTypeI(BaseModel):
 
 
 class TGTypeII(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Droop parameter")
     T1: float = Field(..., description="Transient gain time constant")
@@ -1601,6 +1859,9 @@ class TGTypeII(BaseModel):
 
 
 class WPIDHY(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int = Field(..., description="Unique integer identifier for this component")
     T_reg: float = Field(..., description="Input time constant of the governor")
     reg: float = Field(..., description="Input governor gain")

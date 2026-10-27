@@ -433,8 +433,36 @@ function applyGeneratorFixes(
   [out, fixes] = fixMissingCostCurvePowerUnits(out, fixes);
   [out, fixes] = restoreDroppedSchemaDefaults(out, schemaDefaults, fixes);
   [out, fixes, stripped] = stripUndeclaredTopLevelDefaults(out, resolvedSchemas, fixes);
+  [out, fixes] = strictObjects(out, fixes);
 
   return [out, fixes, stripped];
+}
+
+/**
+ * Reject a property the schema does not list.
+ *
+ * `zod.object` strips unknown keys, so a misspelled field parses without error
+ * and its value is lost. The strict bundles close every object that has no
+ * explicit `additionalProperties`, and the Python and Rust models reject an
+ * unknown property too. A map schema renders as `zod.record`, so it stays open.
+ *
+ * Runs last: the default fixes above find object calls by the name `object`.
+ * Fails loudly on an object call in a shape this does not recognize.
+ */
+function strictObjects(content: string, fixes: number): [string, number] {
+  let count = 0;
+  const out = content.replace(/\bzod(\s*)\.object\(/g, (_m, space) => {
+    count += 1;
+    return `zod${space}.strictObject(`;
+  });
+  const other = out.match(/\.(object|looseObject|passthrough|catchall)\(/g);
+  if (other) {
+    throw new Error(
+      `strictObjects: ${other.length} object call(s) in an unrecognized shape; ` +
+        `update the fix instead of leaving those objects open`,
+    );
+  }
+  return [out, fixes + count];
 }
 
 /**

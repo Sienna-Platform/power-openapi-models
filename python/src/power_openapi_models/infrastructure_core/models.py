@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 from enum import Enum
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel
 from power_openapi_models.timestamps import UtcDatetime
 from typing import Any, Literal
 
@@ -14,41 +14,65 @@ class UnitSystem(Enum):
 
 
 class ComplexNumber(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     real: float | None = None
     imag: float | None = None
 
 
 class XYCoords(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     x: float = Field(..., description="Units: the wrapped function's input unit.")
     y: float = Field(..., description="Units: the wrapped function's output unit.")
 
 
 class MinMax(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     max: float | None = Field(None, title="Max")
     min: float | None = Field(None, title="Min")
 
 
 class UpDown(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     down: float = Field(..., title="Down")
     up: float = Field(..., title="Up")
 
 
 class InOut(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     in_: float | None = Field(None, alias="in")
     out: float | None = None
 
 
 class FromTo(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     from_: float | None = Field(None, alias="from", title="From")
     to: float | None = Field(None, title="To")
 
 
 class FromToToFrom(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     from_to: float | None = Field(None, title="FromTo")
     to_from: float | None = Field(None, title="ToFrom")
 
 
 class LinearFunctionData(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     constant_term: float = Field(..., description="Units: the wrapped function's output unit.")
     function_type: Literal["LINEAR"] = "LINEAR"
     proportional_term: float = Field(
@@ -57,17 +81,26 @@ class LinearFunctionData(BaseModel):
 
 
 class PiecewiseLinearData(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     function_type: Literal["PIECEWISE_LINEAR"] = "PIECEWISE_LINEAR"
     points: list[XYCoords]
 
 
 class PiecewiseStepData(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     function_type: Literal["PIECEWISE_STEP"] = "PIECEWISE_STEP"
     x_coords: list[float]
     y_coords: list[float]
 
 
 class QuadraticFunctionData(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     constant_term: float = Field(..., description="Units: the wrapped function's output unit.")
     function_type: Literal["QUADRATIC"] = "QUADRATIC"
     proportional_term: float = Field(
@@ -79,6 +112,9 @@ class QuadraticFunctionData(BaseModel):
 
 
 class TimeSeriesLinearFunctionData(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     function_type: Literal["TIME_SERIES_LINEAR"] = "TIME_SERIES_LINEAR"
     association_id: int = Field(
         ...,
@@ -87,6 +123,9 @@ class TimeSeriesLinearFunctionData(BaseModel):
 
 
 class TimeSeriesPiecewiseLinearData(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     function_type: Literal["TIME_SERIES_PIECEWISE_LINEAR"] = "TIME_SERIES_PIECEWISE_LINEAR"
     association_id: int = Field(
         ...,
@@ -95,6 +134,9 @@ class TimeSeriesPiecewiseLinearData(BaseModel):
 
 
 class TimeSeriesPiecewiseStepData(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     function_type: Literal["TIME_SERIES_PIECEWISE_STEP"] = "TIME_SERIES_PIECEWISE_STEP"
     association_id: int = Field(
         ...,
@@ -103,6 +145,9 @@ class TimeSeriesPiecewiseStepData(BaseModel):
 
 
 class TimeSeriesQuadraticFunctionData(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     function_type: Literal["TIME_SERIES_QUADRATIC"] = "TIME_SERIES_QUADRATIC"
     association_id: int = Field(
         ...,
@@ -111,11 +156,17 @@ class TimeSeriesQuadraticFunctionData(BaseModel):
 
 
 class GeographicInfo(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     geo_json: dict[str, Any]
 
 
 class DataSource(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     id: int
     organization: str | None = Field(
         None, description="Publishing organization, e.g. 'U.S. Energy Information Administration'."
@@ -141,6 +192,9 @@ class DataSource(BaseModel):
 
 
 class SupplementalAttributeAssociation(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     component_id: int = Field(..., description="ID of the component the attribute describes.")
     component_type: str = Field(
         ...,
