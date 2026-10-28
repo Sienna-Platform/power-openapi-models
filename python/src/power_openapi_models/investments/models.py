@@ -464,7 +464,9 @@ class StorageTechnology(BaseModel):
     min_discharge_fraction: float | None = Field(
         0.0, description="Minimum discharge as a fraction of total discharge capacity. Units: 1."
     )
-    prime_mover_type: PrimeMovers | None = Field("OT", description="Prime mover for generator.")
+    prime_mover_type: PrimeMovers | None = Field(
+        PrimeMovers.OT, description="Prime mover for generator."
+    )
     storage_tech: StorageTech = Field(..., description="Storage Technology Type.")
     capital_costs: StorageCapitalCost | None = Field(
         None,
@@ -533,7 +535,9 @@ class SupplyTechnology(BaseModel):
     region: list[int] | None = Field(
         None, description="Location where the component applies. Can be a zone or node."
     )
-    prime_mover_type: PrimeMovers | None = Field("OT", description="Prime mover for generator.")
+    prime_mover_type: PrimeMovers | None = Field(
+        PrimeMovers.OT, description="Prime mover for generator."
+    )
     fuel: list[ThermalFuels] | None = Field(None, description="Fuel type according to IEA.")
     cofire_start_limits: dict[str, MinMax] | None = Field(
         None,
