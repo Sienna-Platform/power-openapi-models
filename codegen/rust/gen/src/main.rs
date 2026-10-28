@@ -43,7 +43,7 @@ fn main() {
     integer_enums(&mut file, &schemas);
     derive_partial_eq(&mut file);
     deny_unknown_fields(&mut file);
-    lenient_timestamps(&mut file);
+    rfc3339_timestamps(&mut file, &schemas);
     order_fields_like_schema(&mut file, &schemas);
     let idents = rust_idents(&file, &schemas);
     let out = Path::new(&args[3]);
@@ -251,93 +251,75 @@ fn integer_enums(file: &mut syn::File, schemas: &Schemas) {
     file.items = items;
 }
 
-/// DEFECT: a `format: date-time` field is `chrono::DateTime<Utc>`, which rejects a
-/// timestamp with no offset. Real producers write `2024-01-01T00:00:00`, and the
-/// Python and TypeScript packages accept it too (read as UTC), so every such field
-/// is routed through the hand-written `crate::timestamp`. Fails loudly on a
-/// `DateTime` in a shape this does not handle rather than leaving one field
-/// stricter than the rest.
-fn lenient_timestamps(file: &mut syn::File) {
-    let datetime = "chrono :: DateTime < chrono :: Utc >";
-    let text = |ty: &Type| quote!(#ty).to_string();
-    let mut handled = 0;
+fn schema_format(schema: &Value) -> Option<&str> {
+    schema.get("format").and_then(Value::as_str)
+}
+
+/// The `crate::timestamp` type for a property whose schema is a `date-time`, a
+/// `date-time-local`, or an `anyOf` of exactly those two forms.
+fn timestamp_type(property: &Value) -> Option<&'static str> {
+    if let Some(form) = schema_format(property) {
+        return match form {
+            "date-time" => Some("OffsetDateTime"),
+            "date-time-local" => Some("LocalDateTime"),
+            _ => None,
+        };
+    }
+    let branches = property.get("anyOf")?.as_array()?;
+    let mut forms: Vec<&str> = branches.iter().filter_map(schema_format).collect();
+    forms.sort_unstable();
+    if branches.len() == 2 && forms == ["date-time", "date-time-local"] {
+        return Some("Timestamp");
+    }
+    None
+}
+
+/// DEFECT: openapi-to-rust maps `format: date-time` to `chrono::DateTime<Utc>`, whose
+/// serde impl accepts more than RFC 3339 and drops the offset, and maps
+/// `format: date-time-local`, and an `anyOf` of both forms, to `String`. Each such field
+/// becomes the hand-written `crate::timestamp` type, which parses the same forms as the
+/// schema `pattern`; the `String` alias emitted for an `anyOf` is removed. Each type has
+/// its own serde impls, so `Option` and tri-state fields need no extra attribute. Fails
+/// loudly when a timestamp property has no struct field or a `chrono::DateTime` survives.
+fn rfc3339_timestamps(file: &mut syn::File, schemas: &Schemas) {
+    let mut aliases = BTreeSet::new();
+    let (mut expected, mut handled) = (0, 0);
     for item in &mut file.items {
         let Item::Struct(item_struct) = item else { continue };
+        let name = item_struct.ident.to_string();
+        let Some(properties) = schemas
+            .get(&name)
+            .and_then(|s| s.get("properties"))
+            .and_then(Value::as_object)
+        else {
+            continue;
+        };
+        expected += properties.values().filter(|p| timestamp_type(p).is_some()).count();
         let Fields::Named(fields) = &mut item_struct.fields else { continue };
         for field in &mut fields.named {
-            let ty = text(&field.ty);
-            if !ty.contains("DateTime") {
-                continue;
+            let ident = field.ident.as_ref().expect("named field").to_string();
+            let wire = serde_rename(&field.attrs).unwrap_or_else(|| ident.trim_start_matches("r#").to_string());
+            let Some(target) = properties.get(&wire).and_then(timestamp_type) else { continue };
+            let ty = &field.ty;
+            let leaf = unwrap_option(&unwrap_option(ty));
+            let leaf = quote!(#leaf).to_string();
+            if target == "Timestamp" {
+                aliases.insert(leaf.clone());
             }
-            let name = format!("{}.{}", item_struct.ident, field.ident.as_ref().unwrap());
-            if ty == datetime {
-                field.attrs.push(syn::parse_quote!(#[serde(with = "crate::timestamp")]));
-            } else if ty == format!("Option < {datetime} >") {
-                field.attrs.push(syn::parse_quote!(#[serde(with = "crate::timestamp::option")]));
-                if serde_default(&field.attrs).is_none() {
-                    field.attrs.push(syn::parse_quote!(#[serde(default)]));
-                }
-            } else if ty == format!("Option < Option < {datetime} > >") {
-                retarget_deserialize_with(&mut field.attrs, "crate::timestamp::deserialize_tri_state")
-                    .unwrap_or_else(|| die(format!("{name}: tri-state field without deserialize_with")));
-            } else {
-                die(format!("{name}: unhandled date-time shape `{ty}`"));
-            }
+            let retyped = quote!(#ty).to_string().replace(&leaf, &format!("crate :: timestamp :: {target}"));
+            field.ty = syn::parse_str(&retyped)
+                .unwrap_or_else(|e| die(format!("{name}.{wire}: retyped `{retyped}`: {e}")));
             handled += 1;
         }
     }
-    let total = quote!(#file).to_string().matches(datetime).count();
-    if total != handled {
-        die(format!(
-            "{total} date-time type(s) in the output but {handled} were routed through timestamp"
-        ));
+    file.items
+        .retain(|item| !matches!(item, Item::Type(alias) if aliases.contains(&alias.ident.to_string())));
+    if handled != expected {
+        die(format!("{expected} timestamp properties in the schemas but {handled} struct fields retyped"));
     }
-}
-
-/// The value of a field's serde `default`, or `Some("")` for a bare one.
-fn serde_default(attrs: &[syn::Attribute]) -> Option<String> {
-    for attr in attrs.iter().filter(|a| a.path().is_ident("serde")) {
-        let Meta::List(list) = &attr.meta else { continue };
-        let metas = list
-            .parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
-            .expect("parse serde attr");
-        for meta in metas {
-            match &meta {
-                Meta::Path(p) if p.is_ident("default") => return Some(String::new()),
-                Meta::NameValue(nv) if nv.path.is_ident("default") => return Some("set".into()),
-                _ => {}
-            }
-        }
+    if quote!(#file).to_string().contains("chrono :: DateTime") {
+        die("a chrono::DateTime outside a schema property was not routed through timestamp".into());
     }
-    None
-}
-
-/// Rewrites the field's serde `deserialize_with` path; `None` if it had none.
-fn retarget_deserialize_with(attrs: &mut [syn::Attribute], path: &str) -> Option<()> {
-    for attr in attrs.iter_mut().filter(|a| a.path().is_ident("serde")) {
-        let Meta::List(list) = &attr.meta else { continue };
-        let metas: Vec<Meta> = list
-            .parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
-            .expect("parse serde attr")
-            .into_iter()
-            .collect();
-        if !metas.iter().any(|m| m.path().is_ident("deserialize_with")) {
-            continue;
-        }
-        let rewritten: Vec<Meta> = metas
-            .into_iter()
-            .map(|m| {
-                if m.path().is_ident("deserialize_with") {
-                    syn::parse_quote!(deserialize_with = #path)
-                } else {
-                    m
-                }
-            })
-            .collect();
-        *attr = syn::parse_quote!(#[serde(#(#rewritten),*)]);
-        return Some(());
-    }
-    None
 }
 
 /// DEFECT: openapi-to-rust derives `PartialEq` on enums but not on structs, so

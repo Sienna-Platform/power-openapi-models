@@ -41,9 +41,10 @@ Issues = "https://github.com/Sienna-Platform/power-openapi-models/issues"
 Changelog = "https://github.com/Sienna-Platform/power-openapi-models/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
-source-version = ["jsonschema>=4"]
+source-version = ["jsonschema>=4", "regress>=2025.10.1"]
 dev = [
     "jsonschema>=4",
+    "regress>=2025.10.1",
     "ruff>=0.6",
     "pytest>=8",
     "pyright>=1.1.380",

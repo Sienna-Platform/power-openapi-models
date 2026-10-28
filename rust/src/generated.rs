@@ -4415,8 +4415,7 @@ pub struct SingleTimeSeries {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub application_data: Option<String>,
     ///First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. An RFC3339 string with at most 3 fractional-second digits: the store's floor is one millisecond, matching Julia's millisecond-precision DateTime.
-    #[serde(with = "crate::timestamp")]
-    pub initial_timestamp: chrono::DateTime<chrono::Utc>,
+    pub initial_timestamp: crate::timestamp::OffsetDateTime,
     pub resolution: Period,
     ///Number of timesteps.
     ///Constraint: minimum=0
@@ -5074,8 +5073,7 @@ pub struct Scenarios {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub application_data: Option<String>,
     ///Start of the first forecast window.
-    #[serde(with = "crate::timestamp")]
-    pub initial_timestamp: chrono::DateTime<chrono::Utc>,
+    pub initial_timestamp: crate::timestamp::OffsetDateTime,
     pub resolution: Period,
     pub horizon: Period,
     pub interval: Period,
@@ -6185,8 +6183,7 @@ pub struct Probabilistic {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub application_data: Option<String>,
     ///Start of the first forecast window.
-    #[serde(with = "crate::timestamp")]
-    pub initial_timestamp: chrono::DateTime<chrono::Utc>,
+    pub initial_timestamp: crate::timestamp::OffsetDateTime,
     pub resolution: Period,
     pub horizon: Period,
     pub interval: Period,
@@ -13858,8 +13855,7 @@ pub struct DeterministicSingleTimeSeries {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub application_data: Option<String>,
     ///Start of the first forecast window.
-    #[serde(with = "crate::timestamp")]
-    pub initial_timestamp: chrono::DateTime<chrono::Utc>,
+    pub initial_timestamp: crate::timestamp::OffsetDateTime,
     pub resolution: Period,
     pub horizon: Period,
     pub interval: Period,
@@ -13939,8 +13935,7 @@ pub struct Deterministic {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub application_data: Option<String>,
     ///Start of the first forecast window.
-    #[serde(with = "crate::timestamp")]
-    pub initial_timestamp: chrono::DateTime<chrono::Utc>,
+    pub initial_timestamp: crate::timestamp::OffsetDateTime,
     pub resolution: Period,
     pub horizon: Period,
     pub interval: Period,
@@ -14138,8 +14133,7 @@ pub struct DataSource {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub organization: Option<String>,
     ///When the data was obtained.
-    #[serde(with = "crate::timestamp")]
-    pub retrieved_at: chrono::DateTime<chrono::Utc>,
+    pub retrieved_at: crate::timestamp::OffsetDateTime,
     ///Dataset identifier within the publishing organization, e.g. 'EIA-860 2023, Schedule 3'.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dataset: Option<String>,
@@ -14156,9 +14150,9 @@ pub struct DataSource {
     #[serde(
         skip_serializing_if = "Option::is_none",
         default,
-        deserialize_with = "crate::timestamp::deserialize_tri_state"
+        deserialize_with = "tri_state_serde::deserialize"
     )]
-    pub published_at: Option<Option<chrono::DateTime<chrono::Utc>>>,
+    pub published_at: Option<Option<crate::timestamp::OffsetDateTime>>,
     ///Confidence qualifier, e.g. 'high', 'medium'.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub confidence: Option<String>,

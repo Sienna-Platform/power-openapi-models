@@ -80,12 +80,13 @@ Many component fields carry a sibling `*_units` field (for example
 power-family field on that same component. There is no document-level unit
 system: each component blob is self-describing.
 
-### Timestamps may omit the offset
+### Timestamps follow RFC 3339
 
-The schema says RFC 3339, which requires an offset, but producers write
-`2024-01-01T00:00:00`, so all three packages accept it. An offset is accepted too; a
-bare date or text that is not a timestamp is rejected. Python and Rust read a missing
-offset as UTC. zod only validates, so here the string is returned exactly as written.
+A `format: date-time` field needs `Z` or a UTC offset. A `format: date-time-local` field
+has no offset: it is a wall clock that names no instant. A series' `initial_timestamp` takes
+either form, and its `time_reference` says which. Each field also carries the schema
+`pattern`: uppercase `T` and `Z`, seconds, and at most three fractional digits. zod only
+validates, so a valid string is returned exactly as written.
 
 ### Discriminated unions parse to the variant directly
 

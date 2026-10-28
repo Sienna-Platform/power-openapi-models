@@ -32,11 +32,38 @@ fn a_valid_row_passes() {
     rows().validate(&single_time_series()).unwrap();
 }
 
+fn schema_at_least(major: u32, minor: u32) -> bool {
+    let mut parts = power_openapi_models::SCHEMA_VERSION
+        .trim_start_matches('v')
+        .split('.');
+    let found: (u32, u32) = (
+        parts.next().unwrap().parse().unwrap(),
+        parts.next().unwrap().parse().unwrap(),
+    );
+    found >= (major, minor)
+}
+
+/// Schema 0.4.0 gave timestamps an ECMA-262 `pattern` and tied their form to
+/// `time_reference`.
 #[test]
-fn a_timestamp_without_an_offset_passes_as_in_the_generated_types() {
-    let mut row = single_time_series();
-    row["initial_timestamp"] = json!("2030-01-01T00:00:00");
-    rows().validate(&row).unwrap();
+fn a_timestamp_must_match_its_time_reference() {
+    if !schema_at_least(0, 4) {
+        return;
+    }
+    let with = |time_reference: &str, timestamp: &str| {
+        let mut row = single_time_series();
+        row["time_reference"] = json!(time_reference);
+        row["initial_timestamp"] = json!(timestamp);
+        rows().validate(&row)
+    };
+    with("zoneless", "2030-01-01T00:00:00").unwrap();
+    with("utc", "2030-01-01T00:00:00Z").unwrap();
+    with("America/Denver", "2030-01-01T00:00:00-07:00").unwrap();
+    assert!(with("zoneless", "2030-01-01T00:00:00Z").is_err());
+    assert!(with("utc", "2030-01-01T00:00:00-00:00").is_err());
+    assert!(with("America/Denver", "2030-01-01T00:00:00").is_err());
+    // ECMA-262 `$` does not match before a trailing newline.
+    assert!(with("zoneless", "2030-01-01T00:00:00\n").is_err());
 }
 
 #[test]

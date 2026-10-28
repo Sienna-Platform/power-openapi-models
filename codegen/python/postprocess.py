@@ -442,29 +442,33 @@ def drop_redundant_root_aliases(content: str) -> tuple[str, bool]:
     return pattern.sub(drop, content), removed
 
 
-def fix_naive_timestamps(content: str) -> tuple[str, bool]:
-    """Swap pydantic's `AwareDatetime` for `timestamps.UtcDatetime`.
+def fix_rfc3339_timestamps(content: str) -> tuple[str, bool]:
+    """Swap pydantic's datetime types for the strict ones in `timestamps.py`.
 
-    datamodel-codegen maps `format: date-time` to `AwareDatetime`, which rejects a
-    timestamp with no offset. Real producers write `2024-01-01T00:00:00`, and the
-    TypeScript and Rust packages accept it too, so it is read as UTC everywhere. The
-    schemas' RFC 3339 wording is unchanged; this is a deliberate, recorded
-    leniency (see CHANGELOG.md), applied in one place per language.
+    datamodel-codegen maps `format: date-time` to `AwareDatetime` and `format:
+    date-time-local` to `NaiveDatetime`. Both accept more than RFC 3339 (a space separator,
+    no seconds, six fractional digits, and an epoch number for `AwareDatetime`), and both
+    write six fractional digits, which the schema `pattern` forbids. `OffsetDatetime` and
+    `LocalDatetime` check the same forms as the `pattern`, in one place per language.
     """
-    if not re.search(r"\bAwareDatetime\b", content):
+    swaps = {"AwareDatetime": "OffsetDatetime", "NaiveDatetime": "LocalDatetime"}
+    used = [name for name in swaps if re.search(rf"\b{name}\b", content)]
+    if not used:
         return content, False
 
     import_stmt = re.compile(r"^from pydantic import (\([^)]*\)|[^\n]*)$", re.MULTILINE)
     match = import_stmt.search(content)
     if match is None:
-        raise RuntimeError("fix_naive_timestamps: no `from pydantic import ...` line found")
-    names = [n for n in re.findall(r"\w+", match.group(1)) if n != "AwareDatetime"]
+        raise RuntimeError("fix_rfc3339_timestamps: no `from pydantic import ...` line found")
+    names = [n for n in re.findall(r"\w+", match.group(1)) if n not in swaps]
     replacement = (
         f"from pydantic import {', '.join(names)}\n"
-        "from power_openapi_models.timestamps import UtcDatetime"
+        f"from power_openapi_models.timestamps import {', '.join(swaps[n] for n in used)}"
     )
     content = content[: match.start()] + replacement + content[match.end() :]
-    return re.sub(r"\bAwareDatetime\b", "UtcDatetime", content), True
+    for name in used:
+        content = re.sub(rf"\b{name}\b", swaps[name], content)
+    return content, True
 
 
 def _enum_members() -> dict[str, dict[str, str]]:
@@ -519,7 +523,7 @@ FIXES = [
     fix_feature_property_count,
     drop_redundant_root_aliases,
     fix_imported_enum_defaults,
-    fix_naive_timestamps,
+    fix_rfc3339_timestamps,
 ]
 
 

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { SCHEMA_VERSION } from "../src/document";
 import { DataSource } from "../src/infrastructure_core/models";
 import { SingleTimeSeries } from "../src/timeseries/models";
 
-// `format: date-time` fields accept a timestamp with no offset, as the Python and
-// Rust packages do (both read it as UTC). zod only validates, so the string is
-// returned as written. See codegen/typescript/postprocess.ts (fixNaiveTimestamps).
+// `format: date-time` needs `Z` or a UTC offset; `format: date-time-local` has none.
+// zod only validates, so a valid string is returned exactly as written.
 
 const series = (initial_timestamp: string) => ({
   association_id: 1,
@@ -23,31 +23,62 @@ const series = (initial_timestamp: string) => ({
   length: 24,
 });
 
-describe("date-time fields", () => {
-  it.each([
-    "2024-01-01T00:00:00",
-    "2024-01-01T00:00:00.250",
-    "2024-01-01T00:00:00Z",
-    "2024-01-01T02:00:00+02:00",
-  ])("accepts %s", (ts) => {
-    expect(SingleTimeSeries.parse(series(ts)).initial_timestamp).toBe(ts);
-  });
+const [major, minor] = SCHEMA_VERSION.split(".").map(Number);
+const hasLocalSeriesTimestamps = major > 0 || minor >= 4;
 
-  it.each(["2024-01-01", "not a timestamp", "", "2024-13-01T00:00:00"])(
-    "still rejects %j",
+describe("date-time fields", () => {
+  it.each(["2024-01-01T00:00:00Z", "2024-01-01T02:00:00+02:00"])(
+    "accepts %s",
     (ts) => {
-      expect(SingleTimeSeries.safeParse(series(ts)).success).toBe(false);
+      expect(SingleTimeSeries.parse(series(ts)).initial_timestamp).toBe(ts);
     },
   );
 
-  it("applies to the nullable field too", () => {
-    const base = { id: 1, fields: [], retrieved_at: "2024-01-01T00:00:00" };
-    expect(
-      DataSource.safeParse({ ...base, published_at: "2024-02-01T00:00:00" })
-        .success,
-    ).toBe(true);
+  it.each([
+    "2024-01-01",
+    "not a timestamp",
+    "",
+    "2024-13-01T00:00:00Z",
+    "2024-01-01 00:00:00Z",
+    "2024-01-01t00:00:00z",
+    "2024-01-01T00:00Z",
+    "2024-01-01T00:00:00+0200",
+    "2024-01-01T00:00:00Z\n",
+  ])("rejects %j", (ts) => {
+    expect(SingleTimeSeries.safeParse(series(ts)).success).toBe(false);
+  });
+
+  it("needs an offset on a data source", () => {
+    const base = { id: 1, fields: [], retrieved_at: "2024-01-01T00:00:00Z" };
     expect(DataSource.safeParse({ ...base, published_at: null }).success).toBe(
       true,
     );
+    expect(
+      DataSource.safeParse({ ...base, retrieved_at: "2024-01-01T00:00:00" })
+        .success,
+    ).toBe(false);
+    expect(
+      DataSource.safeParse({ ...base, published_at: "2024-02-01T00:00:00" })
+        .success,
+    ).toBe(false);
   });
 });
+
+describe.runIf(hasLocalSeriesTimestamps)(
+  "date-time-local series timestamps",
+  () => {
+    it.each(["2024-01-01T00:00:00", "2024-01-01T00:00:00.250"])(
+      "accepts %s as written",
+      (ts) => {
+        expect(SingleTimeSeries.parse(series(ts)).initial_timestamp).toBe(ts);
+      },
+    );
+
+    it("rejects more than three fractional digits", () => {
+      expect(
+        SingleTimeSeries.safeParse(series("2024-01-01T00:00:00.123456Z"))
+          .success,
+      ).toBe(false);
+    });
+  },
+);

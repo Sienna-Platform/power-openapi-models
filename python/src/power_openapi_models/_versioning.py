@@ -174,7 +174,9 @@ def validate_source(tree: dict, document: str, bundle_name: str, bundle_dir: Pat
     Raises one `ValueError` listing every offending path.
     """
     try:
-        from jsonschema import Draft7Validator
+        import regress
+        from jsonschema import Draft7Validator, validators
+        from jsonschema.exceptions import ValidationError
     except ImportError as e:
         raise ImportError(
             f"writing at the source schema version {document} needs a validator; "
@@ -184,9 +186,19 @@ def validate_source(tree: dict, document: str, bundle_name: str, bundle_dir: Pat
     if not bundle.is_file():
         raise FileNotFoundError(f"strict bundle for schema {document} not found at {bundle}")
     root = json.loads(bundle.read_text())
-    found = sorted(
-        {leaf for e in Draft7Validator(root).iter_errors(tree) for leaf in _leaves(e, root)}
-    )
+    regexes: dict[str, regress.Regex] = {}
+
+    def ecma_pattern(validator, pattern, instance, schema):
+        # JSON Schema `pattern` is ECMA-262. Python's `re` differs: `$` also matches before a
+        # trailing newline, and `\d` matches any Unicode digit.
+        if not validator.is_type(instance, "string"):
+            return
+        regex = regexes.setdefault(pattern, regress.Regex(pattern, "u"))
+        if regex.find(instance) is None:
+            yield ValidationError(f"{instance!r} does not match {pattern!r}")
+
+    validator = validators.extend(Draft7Validator, {"pattern": ecma_pattern})(root)
+    found = sorted({leaf for e in validator.iter_errors(tree) for leaf in _leaves(e, root)})
     if found:
         lines = "\n".join(f"  {path}: {message}" for path, message in found)
         raise ValueError(
