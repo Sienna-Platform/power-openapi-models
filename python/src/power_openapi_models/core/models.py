@@ -652,7 +652,9 @@ class EmissionsData(BaseModel):
         0.0,
         description="Per-start emission pulse, in mass_unit. Must be finite and non-negative. Units: per mass_unit — KG: kg, LB: lb, SHORT_TON: ston, METRIC_TON: t .",
     )
-    mass_unit: MassUnit | None = Field("KG", description="Mass unit of the emission rate numerator")
+    mass_unit: MassUnit | None = Field(
+        MassUnit.KG, description="Mass unit of the emission rate numerator"
+    )
     energy_unit: EnergyUnit = Field(
         ...,
         description="Energy unit for the rate denominator. Must be MMBTU or GJ when basis is FUEL_INPUT, and MWH when basis is POWER_OUTPUT.",
@@ -841,11 +843,11 @@ class MarketBidTimeSeriesCost(BaseModel):
         description="Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
     )
     curve_style: CurveStyles | None = Field(
-        0,
+        CurveStyles.integer_0,
         description="Curve-clearing style for the bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
     )
     curve_multistep: CurveMultiStep | None = Field(
-        0,
+        CurveMultiStep.integer_0,
         description="Multi-step block indicator for the bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve_style: curve_style is the quantity structure, curve_multistep is the time structure, and they compose.",
     )
 
@@ -910,11 +912,11 @@ class MarketBidCost(BaseModel):
         description="Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
     )
     curve_style: CurveStyles | None = Field(
-        0,
+        CurveStyles.integer_0,
         description="Curve-clearing style for the bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
     )
     curve_multistep: CurveMultiStep | None = Field(
-        0,
+        CurveMultiStep.integer_0,
         description="Multi-step block indicator for the bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve_style: curve_style is the quantity structure, curve_multistep is the time structure, and they compose.",
     )
 

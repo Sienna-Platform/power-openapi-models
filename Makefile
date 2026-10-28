@@ -16,6 +16,7 @@ CODEGEN := datamodel-codegen --input-file-type openapi \
 	--output-model-type pydantic_v2.BaseModel \
 	--formatters ruff-format \
 	--use-enum-values-in-discriminator \
+	--set-default-enum-member \
 	--extra-fields forbid \
 	--disable-timestamp
 CORE_REF := --external-ref-mapping "Core/common.json=power_openapi_models.core.models"

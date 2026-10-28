@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — Python
+
+- **An enum field's default was a plain value, not the enum member.** pydantic does not
+  validate a default, so `interval_alignment`, `prime_mover_type`, `parameter_units` and
+  the other defaulted enum fields held `"PERIOD_ENDING"` or `0` where a validated value
+  holds `IntervalAlignment.PERIOD_ENDING`, and `model_dump(mode="json")` warned
+  `PydanticSerializationUnexpectedValue`. The Makefile passes `--set-default-enum-member`,
+  which covers an enum the module defines; `fix_imported_enum_defaults` covers one it
+  imports from `core`. A test checks every defaulted enum field of every model.
+
+### Fixed — TypeScript
+
+- **A model with `if`/`then` rules accepted an unknown property.** orval renders a
+  validation-only `allOf` as `zod.unknown().and(...).and(zod.strictObject(...))`, and zod
+  v4 lets an undeclared key through an intersection with `unknown()`. `SeriesCompensator`,
+  `EmissionsData` and the other schemas with rules were affected.
+  `dropUnknownIntersections` removes the placeholders; the rules stay in the strict
+  bundles that ajv applies.
+
 ## [0.3.0] — 2026-10-26
 
 Generated from SiennaSchemas v0.3.0. Schema 0.3.0 starts a new compatibility

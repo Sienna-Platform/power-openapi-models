@@ -6939,39 +6939,262 @@ const emissionsDataThreeStartUpAdderDefault = 0;
 const emissionsDataThreeGwpDefault = 1;
 const emissionsDataThreeAvailableDefault = true;
 export const EmissionsData = zod
-  .unknown()
-  .and(zod.unknown())
-  .and(
-    zod.strictObject({
-      id: zod.int(),
-      name: zod.string().describe("Identifier for this emissions attribute"),
-      pollutant: zod
-        .enum([
-          "CO2",
-          "CO2E",
-          "CH4",
-          "N2O",
-          "NOX",
-          "SO2",
-          "CO",
-          "VOC",
-          "PM25",
-          "PM10",
-          "HG",
-          "HAP",
-          "CUSTOM",
-        ])
-        .describe(
-          "Pollutant an emission rate is reported for, spanning greenhouse gases (`CO2`, `CO2E`, `CH4`, `N2O`), criteria pollutants (`NOX`, `SO2`, `CO`, `VOC`, `PM25`, `PM10`), and toxics (`HG`, `HAP`), with `CUSTOM` for a user-defined pollutant.",
-        ),
-      emission_rate: zod
-        .union([
-          zod
-            .strictObject({
-              curve_type: zod
-                .literal("INPUT_OUTPUT")
-                .default(emissionsDataThreeEmissionRateOneCurveTypeDefault),
-              function_data: zod.union([
+  .strictObject({
+    id: zod.int(),
+    name: zod.string().describe("Identifier for this emissions attribute"),
+    pollutant: zod
+      .enum([
+        "CO2",
+        "CO2E",
+        "CH4",
+        "N2O",
+        "NOX",
+        "SO2",
+        "CO",
+        "VOC",
+        "PM25",
+        "PM10",
+        "HG",
+        "HAP",
+        "CUSTOM",
+      ])
+      .describe(
+        "Pollutant an emission rate is reported for, spanning greenhouse gases (`CO2`, `CO2E`, `CH4`, `N2O`), criteria pollutants (`NOX`, `SO2`, `CO`, `VOC`, `PM25`, `PM10`), and toxics (`HG`, `HAP`), with `CUSTOM` for a user-defined pollutant.",
+      ),
+    emission_rate: zod
+      .union([
+        zod
+          .strictObject({
+            curve_type: zod
+              .literal("INPUT_OUTPUT")
+              .default(emissionsDataThreeEmissionRateOneCurveTypeDefault),
+            function_data: zod.union([
+              zod
+                .strictObject({
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
+                  function_type: zod
+                    .literal("QUADRATIC")
+                    .default(
+                      emissionsDataThreeEmissionRateOneFunctionDataOneFunctionTypeDefault,
+                    ),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
+                  quadratic_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input squared.",
+                    ),
+                })
+                .describe(
+                  "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
+                ),
+              zod
+                .strictObject({
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
+                  function_type: zod
+                    .literal("LINEAR")
+                    .default(
+                      emissionsDataThreeEmissionRateOneFunctionDataTwoFunctionTypeDefault,
+                    ),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
+                })
+                .describe(
+                  "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
+                ),
+              zod
+                .strictObject({
+                  function_type: zod
+                    .literal("PIECEWISE_LINEAR")
+                    .default(
+                      emissionsDataThreeEmissionRateOneFunctionDataThreeFunctionTypeDefault,
+                    ),
+                  points: zod.array(
+                    zod
+                      .strictObject({
+                        x: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                        y: zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's output unit.",
+                          ),
+                      })
+                      .describe(
+                        "A single point, given as its `x` and `y` coordinates.",
+                      ),
+                  ),
+                })
+                .describe(
+                  "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
+                ),
+            ]),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+          })
+          .default(emissionsDataThreeEmissionRateOneDefault)
+          .describe(
+            "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
+          ),
+        zod
+          .strictObject({
+            curve_type: zod
+              .literal("INCREMENTAL")
+              .default(emissionsDataThreeEmissionRateTwoCurveTypeDefault),
+            function_data: zod.union([
+              zod
+                .strictObject({
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
+                  function_type: zod
+                    .literal("LINEAR")
+                    .default(
+                      emissionsDataThreeEmissionRateTwoFunctionDataOneFunctionTypeDefault,
+                    ),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
+                })
+                .describe(
+                  "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
+                ),
+              zod
+                .strictObject({
+                  function_type: zod
+                    .literal("PIECEWISE_STEP")
+                    .default(
+                      emissionsDataThreeEmissionRateTwoFunctionDataTwoFunctionTypeDefault,
+                    ),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
+                })
+                .describe(
+                  "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
+                ),
+            ]),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+          })
+          .describe(
+            "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
+          ),
+        zod
+          .strictObject({
+            curve_type: zod
+              .literal("AVERAGE_RATE")
+              .default(emissionsDataThreeEmissionRateThreeCurveTypeDefault),
+            function_data: zod.union([
+              zod
+                .strictObject({
+                  constant_term: zod
+                    .number()
+                    .describe("Units: the wrapped function's output unit."),
+                  function_type: zod
+                    .literal("LINEAR")
+                    .default(
+                      emissionsDataThreeEmissionRateThreeFunctionDataOneFunctionTypeDefault,
+                    ),
+                  proportional_term: zod
+                    .number()
+                    .describe(
+                      "Units: the wrapped function's output unit per unit of its input.",
+                    ),
+                })
+                .describe(
+                  "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
+                ),
+              zod
+                .strictObject({
+                  function_type: zod
+                    .literal("PIECEWISE_STEP")
+                    .default(
+                      emissionsDataThreeEmissionRateThreeFunctionDataTwoFunctionTypeDefault,
+                    ),
+                  x_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's input unit."),
+                  ),
+                  y_coords: zod.array(
+                    zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                  ),
+                })
+                .describe(
+                  "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
+                ),
+            ]),
+            initial_input: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+            input_at_zero: zod
+              .number()
+              .optional()
+              .describe("Units: the curve's y-axis unit."),
+          })
+          .describe(
+            "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
+          ),
+        zod
+          .strictObject({
+            curve_type: zod
+              .literal("TIME_SERIES_INPUT_OUTPUT")
+              .default(emissionsDataThreeEmissionRateFourCurveTypeDefault),
+            function_data: zod
+              .union([
+                zod
+                  .strictObject({
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                    function_type: zod
+                      .literal("LINEAR")
+                      .default(
+                        emissionsDataThreeEmissionRateFourFunctionDataOneFunctionTypeDefault,
+                      ),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                  })
+                  .describe(
+                    "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
+                  ),
                 zod
                   .strictObject({
                     constant_term: zod
@@ -6980,7 +7203,7 @@ export const EmissionsData = zod
                     function_type: zod
                       .literal("QUADRATIC")
                       .default(
-                        emissionsDataThreeEmissionRateOneFunctionDataOneFunctionTypeDefault,
+                        emissionsDataThreeEmissionRateFourFunctionDataTwoFunctionTypeDefault,
                       ),
                     proportional_term: zod
                       .number()
@@ -6998,29 +7221,10 @@ export const EmissionsData = zod
                   ),
                 zod
                   .strictObject({
-                    constant_term: zod
-                      .number()
-                      .describe("Units: the wrapped function's output unit."),
-                    function_type: zod
-                      .literal("LINEAR")
-                      .default(
-                        emissionsDataThreeEmissionRateOneFunctionDataTwoFunctionTypeDefault,
-                      ),
-                    proportional_term: zod
-                      .number()
-                      .describe(
-                        "Units: the wrapped function's output unit per unit of its input.",
-                      ),
-                  })
-                  .describe(
-                    "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
-                  ),
-                zod
-                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_LINEAR")
                       .default(
-                        emissionsDataThreeEmissionRateOneFunctionDataThreeFunctionTypeDefault,
+                        emissionsDataThreeEmissionRateFourFunctionDataThreeFunctionTypeDefault,
                       ),
                     points: zod.array(
                       zod
@@ -7044,47 +7248,12 @@ export const EmissionsData = zod
                   .describe(
                     "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
                   ),
-              ]),
-              input_at_zero: zod
-                .number()
-                .optional()
-                .describe("Units: the curve's y-axis unit."),
-            })
-            .default(emissionsDataThreeEmissionRateOneDefault)
-            .describe(
-              "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
-            ),
-          zod
-            .strictObject({
-              curve_type: zod
-                .literal("INCREMENTAL")
-                .default(emissionsDataThreeEmissionRateTwoCurveTypeDefault),
-              function_data: zod.union([
-                zod
-                  .strictObject({
-                    constant_term: zod
-                      .number()
-                      .describe("Units: the wrapped function's output unit."),
-                    function_type: zod
-                      .literal("LINEAR")
-                      .default(
-                        emissionsDataThreeEmissionRateTwoFunctionDataOneFunctionTypeDefault,
-                      ),
-                    proportional_term: zod
-                      .number()
-                      .describe(
-                        "Units: the wrapped function's output unit per unit of its input.",
-                      ),
-                  })
-                  .describe(
-                    "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
-                  ),
                 zod
                   .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
-                        emissionsDataThreeEmissionRateTwoFunctionDataTwoFunctionTypeDefault,
+                        emissionsDataThreeEmissionRateFourFunctionDataFourFunctionTypeDefault,
                       ),
                     x_coords: zod.array(
                       zod
@@ -7100,25 +7269,91 @@ export const EmissionsData = zod
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
-              ]),
-              initial_input: zod
-                .number()
-                .optional()
-                .describe("Units: the curve's y-axis unit."),
-              input_at_zero: zod
-                .number()
-                .optional()
-                .describe("Units: the curve's y-axis unit."),
-            })
-            .describe(
-              "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
-            ),
-          zod
-            .strictObject({
-              curve_type: zod
-                .literal("AVERAGE_RATE")
-                .default(emissionsDataThreeEmissionRateThreeCurveTypeDefault),
-              function_data: zod.union([
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("TIME_SERIES_LINEAR")
+                      .default(
+                        emissionsDataThreeEmissionRateFourFunctionDataFiveFunctionTypeDefault,
+                      ),
+                    association_id: zod
+                      .int()
+                      .describe(
+                        "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
+                      ),
+                  })
+                  .describe(
+                    "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
+                  ),
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("TIME_SERIES_QUADRATIC")
+                      .default(
+                        emissionsDataThreeEmissionRateFourFunctionDataSixFunctionTypeDefault,
+                      ),
+                    association_id: zod
+                      .int()
+                      .describe(
+                        "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
+                      ),
+                  })
+                  .describe(
+                    "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
+                  ),
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("TIME_SERIES_PIECEWISE_LINEAR")
+                      .default(
+                        emissionsDataThreeEmissionRateFourFunctionDataSevenFunctionTypeDefault,
+                      ),
+                    association_id: zod
+                      .int()
+                      .describe(
+                        "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
+                      ),
+                  })
+                  .describe(
+                    "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
+                  ),
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("TIME_SERIES_PIECEWISE_STEP")
+                      .default(
+                        emissionsDataThreeEmissionRateFourFunctionDataEightFunctionTypeDefault,
+                      ),
+                    association_id: zod
+                      .int()
+                      .describe(
+                        "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
+                      ),
+                  })
+                  .describe(
+                    "Time-series-backed variant of `PiecewiseStepData`. In place of inline coordinate vectors it carries `association_id`, referencing a stored series that supplies them at each step; use it when the segments change over time.",
+                  ),
+              ])
+              .describe(
+                "Raw mathematical data defining a function `f(x)` — coefficients or point tables with no units or interpretation attached. `function_type` selects the shape: linear, quadratic, piecewise linear through (x, y) points, or piecewise constant between x endpoints. What `x` and `y` stand for is supplied by whatever wraps this, and the `TIME_SERIES_*` variants hold a reference to a stored series in place of the numbers.",
+              ),
+            input_at_zero: zod
+              .number()
+              .nullish()
+              .describe(
+                "Optional explicit input value at zero output. A number here, unlike the incremental and average-rate variants, where it is a time series reference.",
+              ),
+          })
+          .describe(
+            "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
+          ),
+        zod
+          .strictObject({
+            curve_type: zod
+              .literal("TIME_SERIES_INCREMENTAL")
+              .default(emissionsDataThreeEmissionRateFiveCurveTypeDefault),
+            function_data: zod
+              .union([
                 zod
                   .strictObject({
                     constant_term: zod
@@ -7127,7 +7362,7 @@ export const EmissionsData = zod
                     function_type: zod
                       .literal("LINEAR")
                       .default(
-                        emissionsDataThreeEmissionRateThreeFunctionDataOneFunctionTypeDefault,
+                        emissionsDataThreeEmissionRateFiveFunctionDataOneFunctionTypeDefault,
                       ),
                     proportional_term: zod
                       .number()
@@ -7140,10 +7375,63 @@ export const EmissionsData = zod
                   ),
                 zod
                   .strictObject({
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                    function_type: zod
+                      .literal("QUADRATIC")
+                      .default(
+                        emissionsDataThreeEmissionRateFiveFunctionDataTwoFunctionTypeDefault,
+                      ),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
+                  })
+                  .describe(
+                    "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
+                  ),
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("PIECEWISE_LINEAR")
+                      .default(
+                        emissionsDataThreeEmissionRateFiveFunctionDataThreeFunctionTypeDefault,
+                      ),
+                    points: zod.array(
+                      zod
+                        .strictObject({
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        })
+                        .describe(
+                          "A single point, given as its `x` and `y` coordinates.",
+                        ),
+                    ),
+                  })
+                  .describe(
+                    "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
+                  ),
+                zod
+                  .strictObject({
                     function_type: zod
                       .literal("PIECEWISE_STEP")
                       .default(
-                        emissionsDataThreeEmissionRateThreeFunctionDataTwoFunctionTypeDefault,
+                        emissionsDataThreeEmissionRateFiveFunctionDataFourFunctionTypeDefault,
                       ),
                     x_coords: zod.array(
                       zod
@@ -7159,616 +7447,312 @@ export const EmissionsData = zod
                   .describe(
                     "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
                   ),
-              ]),
-              initial_input: zod
-                .number()
-                .optional()
-                .describe("Units: the curve's y-axis unit."),
-              input_at_zero: zod
-                .number()
-                .optional()
-                .describe("Units: the curve's y-axis unit."),
-            })
-            .describe(
-              "A curve whose y values are the average rate `f(x)/x` at production level `x` — total cost or fuel divided by output, the form heat rate tables use when they report MMBtu/MWh against MW. `initial_input` records the total input at the minimum production point and is what makes conversion to an `InputOutputCurve` possible. Use `IncrementalCurve` when the data gives marginal rather than average rates.",
-            ),
-          zod
-            .strictObject({
-              curve_type: zod
-                .literal("TIME_SERIES_INPUT_OUTPUT")
-                .default(emissionsDataThreeEmissionRateFourCurveTypeDefault),
-              function_data: zod
-                .union([
-                  zod
-                    .strictObject({
-                      constant_term: zod
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("TIME_SERIES_LINEAR")
+                      .default(
+                        emissionsDataThreeEmissionRateFiveFunctionDataFiveFunctionTypeDefault,
+                      ),
+                    association_id: zod
+                      .int()
+                      .describe(
+                        "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
+                      ),
+                  })
+                  .describe(
+                    "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
+                  ),
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("TIME_SERIES_QUADRATIC")
+                      .default(
+                        emissionsDataThreeEmissionRateFiveFunctionDataSixFunctionTypeDefault,
+                      ),
+                    association_id: zod
+                      .int()
+                      .describe(
+                        "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
+                      ),
+                  })
+                  .describe(
+                    "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
+                  ),
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("TIME_SERIES_PIECEWISE_LINEAR")
+                      .default(
+                        emissionsDataThreeEmissionRateFiveFunctionDataSevenFunctionTypeDefault,
+                      ),
+                    association_id: zod
+                      .int()
+                      .describe(
+                        "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
+                      ),
+                  })
+                  .describe(
+                    "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
+                  ),
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("TIME_SERIES_PIECEWISE_STEP")
+                      .default(
+                        emissionsDataThreeEmissionRateFiveFunctionDataEightFunctionTypeDefault,
+                      ),
+                    association_id: zod
+                      .int()
+                      .describe(
+                        "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
+                      ),
+                  })
+                  .describe(
+                    "Time-series-backed variant of `PiecewiseStepData`. In place of inline coordinate vectors it carries `association_id`, referencing a stored series that supplies them at each step; use it when the segments change over time.",
+                  ),
+              ])
+              .describe(
+                "Raw mathematical data defining a function `f(x)` — coefficients or point tables with no units or interpretation attached. `function_type` selects the shape: linear, quadratic, piecewise linear through (x, y) points, or piecewise constant between x endpoints. What `x` and `y` stand for is supplied by whatever wraps this, and the `TIME_SERIES_*` variants hold a reference to a stored series in place of the numbers.",
+              ),
+            initial_input_association_id: zod
+              .int()
+              .nullish()
+              .describe(
+                "Store-minted id of the time series supplying the initial input value, or null.",
+              ),
+            input_at_zero_association_id: zod
+              .int()
+              .nullish()
+              .describe(
+                "Store-minted id of the time series supplying the input at zero output, or null.",
+              ),
+          })
+          .describe(
+            "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
+          ),
+        zod
+          .strictObject({
+            curve_type: zod
+              .literal("TIME_SERIES_AVERAGE_RATE")
+              .default(emissionsDataThreeEmissionRateSixCurveTypeDefault),
+            function_data: zod
+              .union([
+                zod
+                  .strictObject({
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                    function_type: zod
+                      .literal("LINEAR")
+                      .default(
+                        emissionsDataThreeEmissionRateSixFunctionDataOneFunctionTypeDefault,
+                      ),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                  })
+                  .describe(
+                    "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
+                  ),
+                zod
+                  .strictObject({
+                    constant_term: zod
+                      .number()
+                      .describe("Units: the wrapped function's output unit."),
+                    function_type: zod
+                      .literal("QUADRATIC")
+                      .default(
+                        emissionsDataThreeEmissionRateSixFunctionDataTwoFunctionTypeDefault,
+                      ),
+                    proportional_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input.",
+                      ),
+                    quadratic_term: zod
+                      .number()
+                      .describe(
+                        "Units: the wrapped function's output unit per unit of its input squared.",
+                      ),
+                  })
+                  .describe(
+                    "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
+                  ),
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("PIECEWISE_LINEAR")
+                      .default(
+                        emissionsDataThreeEmissionRateSixFunctionDataThreeFunctionTypeDefault,
+                      ),
+                    points: zod.array(
+                      zod
+                        .strictObject({
+                          x: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's input unit.",
+                            ),
+                          y: zod
+                            .number()
+                            .describe(
+                              "Units: the wrapped function's output unit.",
+                            ),
+                        })
+                        .describe(
+                          "A single point, given as its `x` and `y` coordinates.",
+                        ),
+                    ),
+                  })
+                  .describe(
+                    "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
+                  ),
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("PIECEWISE_STEP")
+                      .default(
+                        emissionsDataThreeEmissionRateSixFunctionDataFourFunctionTypeDefault,
+                      ),
+                    x_coords: zod.array(
+                      zod
+                        .number()
+                        .describe("Units: the wrapped function's input unit."),
+                    ),
+                    y_coords: zod.array(
+                      zod
                         .number()
                         .describe("Units: the wrapped function's output unit."),
-                      function_type: zod
-                        .literal("LINEAR")
-                        .default(
-                          emissionsDataThreeEmissionRateFourFunctionDataOneFunctionTypeDefault,
-                        ),
-                      proportional_term: zod
-                        .number()
-                        .describe(
-                          "Units: the wrapped function's output unit per unit of its input.",
-                        ),
-                    })
-                    .describe(
-                      "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
-                  zod
-                    .strictObject({
-                      constant_term: zod
-                        .number()
-                        .describe("Units: the wrapped function's output unit."),
-                      function_type: zod
-                        .literal("QUADRATIC")
-                        .default(
-                          emissionsDataThreeEmissionRateFourFunctionDataTwoFunctionTypeDefault,
-                        ),
-                      proportional_term: zod
-                        .number()
-                        .describe(
-                          "Units: the wrapped function's output unit per unit of its input.",
-                        ),
-                      quadratic_term: zod
-                        .number()
-                        .describe(
-                          "Units: the wrapped function's output unit per unit of its input squared.",
-                        ),
-                    })
-                    .describe(
-                      "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("PIECEWISE_LINEAR")
-                        .default(
-                          emissionsDataThreeEmissionRateFourFunctionDataThreeFunctionTypeDefault,
-                        ),
-                      points: zod.array(
-                        zod
-                          .strictObject({
-                            x: zod
-                              .number()
-                              .describe(
-                                "Units: the wrapped function's input unit.",
-                              ),
-                            y: zod
-                              .number()
-                              .describe(
-                                "Units: the wrapped function's output unit.",
-                              ),
-                          })
-                          .describe(
-                            "A single point, given as its `x` and `y` coordinates.",
-                          ),
+                  })
+                  .describe(
+                    "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
+                  ),
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("TIME_SERIES_LINEAR")
+                      .default(
+                        emissionsDataThreeEmissionRateSixFunctionDataFiveFunctionTypeDefault,
                       ),
-                    })
-                    .describe(
-                      "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("PIECEWISE_STEP")
-                        .default(
-                          emissionsDataThreeEmissionRateFourFunctionDataFourFunctionTypeDefault,
-                        ),
-                      x_coords: zod.array(
-                        zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's input unit.",
-                          ),
+                    association_id: zod
+                      .int()
+                      .describe(
+                        "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
                       ),
-                      y_coords: zod.array(
-                        zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit.",
-                          ),
+                  })
+                  .describe(
+                    "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
+                  ),
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("TIME_SERIES_QUADRATIC")
+                      .default(
+                        emissionsDataThreeEmissionRateSixFunctionDataSixFunctionTypeDefault,
                       ),
-                    })
-                    .describe(
-                      "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("TIME_SERIES_LINEAR")
-                        .default(
-                          emissionsDataThreeEmissionRateFourFunctionDataFiveFunctionTypeDefault,
-                        ),
-                      association_id: zod
-                        .int()
-                        .describe(
-                          "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
-                        ),
-                    })
-                    .describe(
-                      "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("TIME_SERIES_QUADRATIC")
-                        .default(
-                          emissionsDataThreeEmissionRateFourFunctionDataSixFunctionTypeDefault,
-                        ),
-                      association_id: zod
-                        .int()
-                        .describe(
-                          "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
-                        ),
-                    })
-                    .describe(
-                      "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("TIME_SERIES_PIECEWISE_LINEAR")
-                        .default(
-                          emissionsDataThreeEmissionRateFourFunctionDataSevenFunctionTypeDefault,
-                        ),
-                      association_id: zod
-                        .int()
-                        .describe(
-                          "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
-                        ),
-                    })
-                    .describe(
-                      "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("TIME_SERIES_PIECEWISE_STEP")
-                        .default(
-                          emissionsDataThreeEmissionRateFourFunctionDataEightFunctionTypeDefault,
-                        ),
-                      association_id: zod
-                        .int()
-                        .describe(
-                          "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
-                        ),
-                    })
-                    .describe(
-                      "Time-series-backed variant of `PiecewiseStepData`. In place of inline coordinate vectors it carries `association_id`, referencing a stored series that supplies them at each step; use it when the segments change over time.",
-                    ),
-                ])
-                .describe(
-                  "Raw mathematical data defining a function `f(x)` — coefficients or point tables with no units or interpretation attached. `function_type` selects the shape: linear, quadratic, piecewise linear through (x, y) points, or piecewise constant between x endpoints. What `x` and `y` stand for is supplied by whatever wraps this, and the `TIME_SERIES_*` variants hold a reference to a stored series in place of the numbers.",
-                ),
-              input_at_zero: zod
-                .number()
-                .nullish()
-                .describe(
-                  "Optional explicit input value at zero output. A number here, unlike the incremental and average-rate variants, where it is a time series reference.",
-                ),
-            })
-            .describe(
-              "A time-series-backed input-output curve. The static counterpart is InputOutputCurve.",
-            ),
-          zod
-            .strictObject({
-              curve_type: zod
-                .literal("TIME_SERIES_INCREMENTAL")
-                .default(emissionsDataThreeEmissionRateFiveCurveTypeDefault),
-              function_data: zod
-                .union([
-                  zod
-                    .strictObject({
-                      constant_term: zod
-                        .number()
-                        .describe("Units: the wrapped function's output unit."),
-                      function_type: zod
-                        .literal("LINEAR")
-                        .default(
-                          emissionsDataThreeEmissionRateFiveFunctionDataOneFunctionTypeDefault,
-                        ),
-                      proportional_term: zod
-                        .number()
-                        .describe(
-                          "Units: the wrapped function's output unit per unit of its input.",
-                        ),
-                    })
-                    .describe(
-                      "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
-                    ),
-                  zod
-                    .strictObject({
-                      constant_term: zod
-                        .number()
-                        .describe("Units: the wrapped function's output unit."),
-                      function_type: zod
-                        .literal("QUADRATIC")
-                        .default(
-                          emissionsDataThreeEmissionRateFiveFunctionDataTwoFunctionTypeDefault,
-                        ),
-                      proportional_term: zod
-                        .number()
-                        .describe(
-                          "Units: the wrapped function's output unit per unit of its input.",
-                        ),
-                      quadratic_term: zod
-                        .number()
-                        .describe(
-                          "Units: the wrapped function's output unit per unit of its input squared.",
-                        ),
-                    })
-                    .describe(
-                      "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("PIECEWISE_LINEAR")
-                        .default(
-                          emissionsDataThreeEmissionRateFiveFunctionDataThreeFunctionTypeDefault,
-                        ),
-                      points: zod.array(
-                        zod
-                          .strictObject({
-                            x: zod
-                              .number()
-                              .describe(
-                                "Units: the wrapped function's input unit.",
-                              ),
-                            y: zod
-                              .number()
-                              .describe(
-                                "Units: the wrapped function's output unit.",
-                              ),
-                          })
-                          .describe(
-                            "A single point, given as its `x` and `y` coordinates.",
-                          ),
+                    association_id: zod
+                      .int()
+                      .describe(
+                        "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
                       ),
-                    })
-                    .describe(
-                      "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("PIECEWISE_STEP")
-                        .default(
-                          emissionsDataThreeEmissionRateFiveFunctionDataFourFunctionTypeDefault,
-                        ),
-                      x_coords: zod.array(
-                        zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's input unit.",
-                          ),
+                  })
+                  .describe(
+                    "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
+                  ),
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("TIME_SERIES_PIECEWISE_LINEAR")
+                      .default(
+                        emissionsDataThreeEmissionRateSixFunctionDataSevenFunctionTypeDefault,
                       ),
-                      y_coords: zod.array(
-                        zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit.",
-                          ),
+                    association_id: zod
+                      .int()
+                      .describe(
+                        "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
                       ),
-                    })
-                    .describe(
-                      "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("TIME_SERIES_LINEAR")
-                        .default(
-                          emissionsDataThreeEmissionRateFiveFunctionDataFiveFunctionTypeDefault,
-                        ),
-                      association_id: zod
-                        .int()
-                        .describe(
-                          "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
-                        ),
-                    })
-                    .describe(
-                      "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("TIME_SERIES_QUADRATIC")
-                        .default(
-                          emissionsDataThreeEmissionRateFiveFunctionDataSixFunctionTypeDefault,
-                        ),
-                      association_id: zod
-                        .int()
-                        .describe(
-                          "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
-                        ),
-                    })
-                    .describe(
-                      "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("TIME_SERIES_PIECEWISE_LINEAR")
-                        .default(
-                          emissionsDataThreeEmissionRateFiveFunctionDataSevenFunctionTypeDefault,
-                        ),
-                      association_id: zod
-                        .int()
-                        .describe(
-                          "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
-                        ),
-                    })
-                    .describe(
-                      "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("TIME_SERIES_PIECEWISE_STEP")
-                        .default(
-                          emissionsDataThreeEmissionRateFiveFunctionDataEightFunctionTypeDefault,
-                        ),
-                      association_id: zod
-                        .int()
-                        .describe(
-                          "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
-                        ),
-                    })
-                    .describe(
-                      "Time-series-backed variant of `PiecewiseStepData`. In place of inline coordinate vectors it carries `association_id`, referencing a stored series that supplies them at each step; use it when the segments change over time.",
-                    ),
-                ])
-                .describe(
-                  "Raw mathematical data defining a function `f(x)` — coefficients or point tables with no units or interpretation attached. `function_type` selects the shape: linear, quadratic, piecewise linear through (x, y) points, or piecewise constant between x endpoints. What `x` and `y` stand for is supplied by whatever wraps this, and the `TIME_SERIES_*` variants hold a reference to a stored series in place of the numbers.",
-                ),
-              initial_input_association_id: zod
-                .int()
-                .nullish()
-                .describe(
-                  "Store-minted id of the time series supplying the initial input value, or null.",
-                ),
-              input_at_zero_association_id: zod
-                .int()
-                .nullish()
-                .describe(
-                  "Store-minted id of the time series supplying the input at zero output, or null.",
-                ),
-            })
-            .describe(
-              "A time-series-backed incremental curve. The static counterpart is IncrementalCurve.",
-            ),
-          zod
-            .strictObject({
-              curve_type: zod
-                .literal("TIME_SERIES_AVERAGE_RATE")
-                .default(emissionsDataThreeEmissionRateSixCurveTypeDefault),
-              function_data: zod
-                .union([
-                  zod
-                    .strictObject({
-                      constant_term: zod
-                        .number()
-                        .describe("Units: the wrapped function's output unit."),
-                      function_type: zod
-                        .literal("LINEAR")
-                        .default(
-                          emissionsDataThreeEmissionRateSixFunctionDataOneFunctionTypeDefault,
-                        ),
-                      proportional_term: zod
-                        .number()
-                        .describe(
-                          "Units: the wrapped function's output unit per unit of its input.",
-                        ),
-                    })
-                    .describe(
-                      "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
-                    ),
-                  zod
-                    .strictObject({
-                      constant_term: zod
-                        .number()
-                        .describe("Units: the wrapped function's output unit."),
-                      function_type: zod
-                        .literal("QUADRATIC")
-                        .default(
-                          emissionsDataThreeEmissionRateSixFunctionDataTwoFunctionTypeDefault,
-                        ),
-                      proportional_term: zod
-                        .number()
-                        .describe(
-                          "Units: the wrapped function's output unit per unit of its input.",
-                        ),
-                      quadratic_term: zod
-                        .number()
-                        .describe(
-                          "Units: the wrapped function's output unit per unit of its input squared.",
-                        ),
-                    })
-                    .describe(
-                      "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("PIECEWISE_LINEAR")
-                        .default(
-                          emissionsDataThreeEmissionRateSixFunctionDataThreeFunctionTypeDefault,
-                        ),
-                      points: zod.array(
-                        zod
-                          .strictObject({
-                            x: zod
-                              .number()
-                              .describe(
-                                "Units: the wrapped function's input unit.",
-                              ),
-                            y: zod
-                              .number()
-                              .describe(
-                                "Units: the wrapped function's output unit.",
-                              ),
-                          })
-                          .describe(
-                            "A single point, given as its `x` and `y` coordinates.",
-                          ),
+                  })
+                  .describe(
+                    "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
+                  ),
+                zod
+                  .strictObject({
+                    function_type: zod
+                      .literal("TIME_SERIES_PIECEWISE_STEP")
+                      .default(
+                        emissionsDataThreeEmissionRateSixFunctionDataEightFunctionTypeDefault,
                       ),
-                    })
-                    .describe(
-                      "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("PIECEWISE_STEP")
-                        .default(
-                          emissionsDataThreeEmissionRateSixFunctionDataFourFunctionTypeDefault,
-                        ),
-                      x_coords: zod.array(
-                        zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's input unit.",
-                          ),
+                    association_id: zod
+                      .int()
+                      .describe(
+                        "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
                       ),
-                      y_coords: zod.array(
-                        zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit.",
-                          ),
-                      ),
-                    })
-                    .describe(
-                      "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("TIME_SERIES_LINEAR")
-                        .default(
-                          emissionsDataThreeEmissionRateSixFunctionDataFiveFunctionTypeDefault,
-                        ),
-                      association_id: zod
-                        .int()
-                        .describe(
-                          "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
-                        ),
-                    })
-                    .describe(
-                      "Time-series-backed variant of `LinearFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("TIME_SERIES_QUADRATIC")
-                        .default(
-                          emissionsDataThreeEmissionRateSixFunctionDataSixFunctionTypeDefault,
-                        ),
-                      association_id: zod
-                        .int()
-                        .describe(
-                          "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
-                        ),
-                    })
-                    .describe(
-                      "Time-series-backed variant of `QuadraticFunctionData`. In place of inline coefficients it carries `association_id`, referencing a stored series that supplies them at each step; use it when the coefficients change over time.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("TIME_SERIES_PIECEWISE_LINEAR")
-                        .default(
-                          emissionsDataThreeEmissionRateSixFunctionDataSevenFunctionTypeDefault,
-                        ),
-                      association_id: zod
-                        .int()
-                        .describe(
-                          "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
-                        ),
-                    })
-                    .describe(
-                      "Time-series-backed variant of `PiecewiseLinearData`. In place of an inline point table it carries `association_id`, referencing a stored series that supplies one at each step; use it when the points change over time.",
-                    ),
-                  zod
-                    .strictObject({
-                      function_type: zod
-                        .literal("TIME_SERIES_PIECEWISE_STEP")
-                        .default(
-                          emissionsDataThreeEmissionRateSixFunctionDataEightFunctionTypeDefault,
-                        ),
-                      association_id: zod
-                        .int()
-                        .describe(
-                          "Store-minted id of the time series association whose values supply this function data over time. Resolved against the accompanying time series store on read; minted by that store and meaningful only against it, never assigned by a document producer.",
-                        ),
-                    })
-                    .describe(
-                      "Time-series-backed variant of `PiecewiseStepData`. In place of inline coordinate vectors it carries `association_id`, referencing a stored series that supplies them at each step; use it when the segments change over time.",
-                    ),
-                ])
-                .describe(
-                  "Raw mathematical data defining a function `f(x)` — coefficients or point tables with no units or interpretation attached. `function_type` selects the shape: linear, quadratic, piecewise linear through (x, y) points, or piecewise constant between x endpoints. What `x` and `y` stand for is supplied by whatever wraps this, and the `TIME_SERIES_*` variants hold a reference to a stored series in place of the numbers.",
-                ),
-              initial_input_association_id: zod
-                .int()
-                .nullish()
-                .describe(
-                  "Store-minted id of the time series supplying the initial input value, or null.",
-                ),
-              input_at_zero_association_id: zod
-                .int()
-                .nullish()
-                .describe(
-                  "Store-minted id of the time series supplying the input at zero output, or null.",
-                ),
-            })
-            .describe(
-              "A time-series-backed average rate curve. The static counterpart is AverageRateCurve.",
-            ),
-        ])
-        .describe(
-          "A cost or fuel curve: function data plus a declaration of how to read its y axis. `INPUT_OUTPUT` reads y as the total `f(x)`, `INCREMENTAL` as the marginal rate `f'(x)`, and `AVERAGE_RATE` as the average `f(x)/x`; the three can express the same underlying function and are inter-convertible given `initial_input`. The `TIME_SERIES_*` variants are the time-varying equivalents. Which form to use follows the data source: bid stacks are incremental, total cost tables input-output, efficiency tables average rate.",
-        ),
-      basis: zod
-        .enum(["FUEL_INPUT", "POWER_OUTPUT"])
-        .describe(
-          "What an emission rate is measured against: `FUEL_INPUT` for mass per unit of heat input, `POWER_OUTPUT` for mass per unit of electrical output. The choice constrains the accompanying energy unit — a heat unit for `FUEL_INPUT`, `MWH` for `POWER_OUTPUT`.",
-        ),
-      start_up_adder: zod
-        .number()
-        .default(emissionsDataThreeStartUpAdderDefault)
-        .describe(
-          "Per-start emission pulse, in mass_unit. Must be finite and non-negative. Units: per mass_unit — KG: kg, LB: lb, SHORT_TON: ston, METRIC_TON: t .",
-        ),
-      mass_unit: zod
-        .enum(["KG", "LB", "SHORT_TON", "METRIC_TON"])
-        .optional()
-        .default("KG")
-        .describe(
-          "Mass unit an emission quantity is reported in: kilograms, pounds, short tons (2000 lb), or metric tons (1000 kg).",
-        ),
-      energy_unit: zod
-        .enum(["MMBTU", "GJ", "MWH"])
-        .describe(
-          "Energy unit forming the denominator of an emission rate: `MMBTU` or `GJ` for a fuel-input basis, `MWH` for a power-output basis.",
-        ),
-      gwp: zod
-        .number()
-        .default(emissionsDataThreeGwpDefault)
-        .describe(
-          "GWP100 multiplier for CO2-equivalent reporting. Must be finite and non-negative. Units: 1.",
-        ),
-      available: zod
-        .boolean()
-        .default(emissionsDataThreeAvailableDefault)
-        .describe("Whether this attribute is active"),
-    }),
-  )
+                  })
+                  .describe(
+                    "Time-series-backed variant of `PiecewiseStepData`. In place of inline coordinate vectors it carries `association_id`, referencing a stored series that supplies them at each step; use it when the segments change over time.",
+                  ),
+              ])
+              .describe(
+                "Raw mathematical data defining a function `f(x)` — coefficients or point tables with no units or interpretation attached. `function_type` selects the shape: linear, quadratic, piecewise linear through (x, y) points, or piecewise constant between x endpoints. What `x` and `y` stand for is supplied by whatever wraps this, and the `TIME_SERIES_*` variants hold a reference to a stored series in place of the numbers.",
+              ),
+            initial_input_association_id: zod
+              .int()
+              .nullish()
+              .describe(
+                "Store-minted id of the time series supplying the initial input value, or null.",
+              ),
+            input_at_zero_association_id: zod
+              .int()
+              .nullish()
+              .describe(
+                "Store-minted id of the time series supplying the input at zero output, or null.",
+              ),
+          })
+          .describe(
+            "A time-series-backed average rate curve. The static counterpart is AverageRateCurve.",
+          ),
+      ])
+      .describe(
+        "A cost or fuel curve: function data plus a declaration of how to read its y axis. `INPUT_OUTPUT` reads y as the total `f(x)`, `INCREMENTAL` as the marginal rate `f'(x)`, and `AVERAGE_RATE` as the average `f(x)/x`; the three can express the same underlying function and are inter-convertible given `initial_input`. The `TIME_SERIES_*` variants are the time-varying equivalents. Which form to use follows the data source: bid stacks are incremental, total cost tables input-output, efficiency tables average rate.",
+      ),
+    basis: zod
+      .enum(["FUEL_INPUT", "POWER_OUTPUT"])
+      .describe(
+        "What an emission rate is measured against: `FUEL_INPUT` for mass per unit of heat input, `POWER_OUTPUT` for mass per unit of electrical output. The choice constrains the accompanying energy unit — a heat unit for `FUEL_INPUT`, `MWH` for `POWER_OUTPUT`.",
+      ),
+    start_up_adder: zod
+      .number()
+      .default(emissionsDataThreeStartUpAdderDefault)
+      .describe(
+        "Per-start emission pulse, in mass_unit. Must be finite and non-negative. Units: per mass_unit — KG: kg, LB: lb, SHORT_TON: ston, METRIC_TON: t .",
+      ),
+    mass_unit: zod
+      .enum(["KG", "LB", "SHORT_TON", "METRIC_TON"])
+      .optional()
+      .default("KG")
+      .describe(
+        "Mass unit an emission quantity is reported in: kilograms, pounds, short tons (2000 lb), or metric tons (1000 kg).",
+      ),
+    energy_unit: zod
+      .enum(["MMBTU", "GJ", "MWH"])
+      .describe(
+        "Energy unit forming the denominator of an emission rate: `MMBTU` or `GJ` for a fuel-input basis, `MWH` for a power-output basis.",
+      ),
+    gwp: zod
+      .number()
+      .default(emissionsDataThreeGwpDefault)
+      .describe(
+        "GWP100 multiplier for CO2-equivalent reporting. Must be finite and non-negative. Units: 1.",
+      ),
+    available: zod
+      .boolean()
+      .default(emissionsDataThreeAvailableDefault)
+      .describe("Whether this attribute is active"),
+  })
   .describe(
     "Supplemental attribute describing the emission of a single pollutant from a host component. Combines pollutant identity (CO2, NOx, etc.) with an emission rate expressed as a ValueCurve (supporting constant, linear, or piecewise relationships between fuel consumption / power output and emissions). One EmissionsData instance can be attached to one or many components.",
   );
