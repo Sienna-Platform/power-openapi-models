@@ -428,6 +428,7 @@ function applyGeneratorFixes(
   let out = content;
   let stripped: string[];
 
+  [out, fixes] = dropUnknownIntersections(out, fixes);
   [out, fixes] = fixEmptyArrayDefaults(out, fixes);
   [out, fixes] = fixNaiveTimestamps(out, fixes);
   [out, fixes] = fixMissingCostCurvePowerUnits(out, fixes);
@@ -436,6 +437,41 @@ function applyGeneratorFixes(
   [out, fixes] = strictObjects(out, fixes);
 
   return [out, fixes, stripped];
+}
+
+/**
+ * Drop the `zod.unknown()` placeholders orval renders for a validation-only `allOf`.
+ *
+ * An object schema whose `allOf` holds only `if`/`then` rules (`SeriesCompensator`, and
+ * the time series types from schema 0.4.0) renders as
+ * `zod.unknown().and(zod.unknown()).and(zod.object({...}))`. zod v4 lets a key the object
+ * does not declare pass through an intersection with `unknown()`, so `strictObjects`
+ * below no longer rejects it. A placeholder accepts every value, so dropping it loses no
+ * check; the rules stay in the strict bundles that ajv applies.
+ *
+ * Runs first, on orval's raw emission, so later fixes see a plain object call.
+ */
+function dropUnknownIntersections(content: string, fixes: number): [string, number] {
+  const prefix = /zod\.unknown\(\)(?:\.and\(zod\.unknown\(\)\))*\.and\(/g;
+  let count = 0;
+  let out = content;
+  for (;;) {
+    const mask = maskStrings(out);
+    prefix.lastIndex = 0;
+    let found: RegExpExecArray | null = null;
+    for (let m = prefix.exec(out); m !== null; m = prefix.exec(out)) {
+      if (!mask[m.index]) {
+        found = m;
+        break;
+      }
+    }
+    if (found === null) break;
+    const open = found.index + found[0].length - 1;
+    const close = matchingBracket(out, mask, open);
+    out = out.slice(0, found.index) + out.slice(open + 1, close) + out.slice(close + 1);
+    count += 1;
+  }
+  return [out, fixes + count];
 }
 
 /**

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { SeriesCompensator } from "../src/operations";
 import { SingleTimeSeries, TimeSeriesAssociation } from "../src/timeseries";
 
 // A model rejects a property its schema does not list, as the strict bundles and
@@ -32,6 +33,13 @@ describe("unknown properties", () => {
     expect(
       TimeSeriesAssociation.safeParse(series({ owner_typ: "Typo" })).success,
     ).toBe(false);
+  });
+
+  // A schema with `if`/`then` rules renders as an `allOf`; zod's intersection with
+  // the `unknown()` placeholder let an undeclared key through (dropUnknownIntersections).
+  it("are rejected by a model with validation rules", () => {
+    const result = SeriesCompensator.safeParse({ bogus_field: 1 });
+    expect(JSON.stringify(result.error?.issues)).toContain("bogus_field");
   });
 
   it("are accepted by a map schema", () => {

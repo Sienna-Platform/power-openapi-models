@@ -350,121 +350,117 @@ export const seriesCompensatorThreeOperationalFlowLimitToFromMinMin = 0;
 export const seriesCompensatorThreeOperationalFlowLimitToFromMaxMin = 0;
 
 export const SeriesCompensator = zod
-  .unknown()
-  .and(zod.unknown())
-  .and(
-    zod.strictObject({
-      id: zod.int().describe("Unique integer identifier for this component."),
-      name: zod
-        .string()
-        .describe(
-          "Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-        ),
-      available: zod
-        .boolean()
-        .describe(
-          "Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-        ),
-      active_power_flow: zod
-        .number()
-        .describe(
-          "Initial condition of active power flow through the compensator. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      reactive_power_flow: zod
-        .number()
-        .describe(
-          "Initial condition of reactive power flow through the compensator. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-        ),
-      arc: zod
-        .int()
-        .describe("An `Arc` defining this line `from` a bus `to` another bus."),
-      r: zod
-        .number()
-        .describe(
-          "Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-        ),
-      x: zod
-        .number()
-        .describe(
-          "Series reactance; negative for a capacitor. Under `DISPATCHABLE` and `ACTIVE_POWER_FLOW`, the present value. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-        ),
-      rating: zod
-        .number()
-        .describe(
-          "Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-        ),
-      control_mode: zod
-        .enum(["FIXED", "BYPASSED", "DISPATCHABLE", "ACTIVE_POWER_FLOW"])
-        .optional()
-        .default("FIXED")
-        .describe(
-          "Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.",
-        ),
-      reactance_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      active_power_flow_setpoint: zod
-        .number()
-        .optional()
-        .describe(
-          "Active power flow, from the `from` bus to the `to` bus, the compensator holds. Required when `control_mode` is `ACTIVE_POWER_FLOW`. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      rating_b: zod
-        .number()
-        .optional()
-        .describe(
-          "Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-        ),
-      rating_c: zod
-        .number()
-        .optional()
-        .describe(
-          "Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-        ),
-      operational_flow_limit: zod
-        .strictObject({
-          from_to_min: zod
-            .number()
-            .min(seriesCompensatorThreeOperationalFlowLimitFromToMinMin),
-          from_to_max: zod
-            .number()
-            .min(seriesCompensatorThreeOperationalFlowLimitFromToMaxMin),
-          to_from_min: zod
-            .number()
-            .min(seriesCompensatorThreeOperationalFlowLimitToFromMinMin),
-          to_from_max: zod
-            .number()
-            .min(seriesCompensatorThreeOperationalFlowLimitToFromMaxMin),
-        })
-        .optional()
-        .describe(
-          "Operator-set flow limits on a directed branch: a minimum and a maximum flow in each direction, applied in addition to the branch's thermal rating.",
-        ),
-      base_power: zod
-        .number()
-        .describe(
-          "System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
-        ),
-      power_units: zod
-        .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-        .describe(
-          "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-        ),
-      parameter_units: zod
-        .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
-        .optional()
-        .default("COMPONENT_BASE")
-        .describe(
-          "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
-        ),
-    }),
-  )
+  .strictObject({
+    id: zod.int().describe("Unique integer identifier for this component."),
+    name: zod
+      .string()
+      .describe(
+        "Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+      ),
+    available: zod
+      .boolean()
+      .describe(
+        "Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+      ),
+    active_power_flow: zod
+      .number()
+      .describe(
+        "Initial condition of active power flow through the compensator. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    reactive_power_flow: zod
+      .number()
+      .describe(
+        "Initial condition of reactive power flow through the compensator. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+      ),
+    arc: zod
+      .int()
+      .describe("An `Arc` defining this line `from` a bus `to` another bus."),
+    r: zod
+      .number()
+      .describe(
+        "Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+      ),
+    x: zod
+      .number()
+      .describe(
+        "Series reactance; negative for a capacitor. Under `DISPATCHABLE` and `ACTIVE_POWER_FLOW`, the present value. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+      ),
+    rating: zod
+      .number()
+      .describe(
+        "Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    control_mode: zod
+      .enum(["FIXED", "BYPASSED", "DISPATCHABLE", "ACTIVE_POWER_FLOW"])
+      .optional()
+      .default("FIXED")
+      .describe(
+        "Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.",
+      ),
+    reactance_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    active_power_flow_setpoint: zod
+      .number()
+      .optional()
+      .describe(
+        "Active power flow, from the `from` bus to the `to` bus, the compensator holds. Required when `control_mode` is `ACTIVE_POWER_FLOW`. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    rating_b: zod
+      .number()
+      .optional()
+      .describe(
+        "Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    rating_c: zod
+      .number()
+      .optional()
+      .describe(
+        "Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    operational_flow_limit: zod
+      .strictObject({
+        from_to_min: zod
+          .number()
+          .min(seriesCompensatorThreeOperationalFlowLimitFromToMinMin),
+        from_to_max: zod
+          .number()
+          .min(seriesCompensatorThreeOperationalFlowLimitFromToMaxMin),
+        to_from_min: zod
+          .number()
+          .min(seriesCompensatorThreeOperationalFlowLimitToFromMinMin),
+        to_from_max: zod
+          .number()
+          .min(seriesCompensatorThreeOperationalFlowLimitToFromMaxMin),
+      })
+      .optional()
+      .describe(
+        "Operator-set flow limits on a directed branch: a minimum and a maximum flow in each direction, applied in addition to the branch's thermal rating.",
+      ),
+    base_power: zod
+      .number()
+      .describe(
+        "System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+      ),
+    power_units: zod
+      .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
+      .describe(
+        "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+      ),
+    parameter_units: zod
+      .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
+      .optional()
+      .default("COMPONENT_BASE")
+      .describe(
+        "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
+      ),
+  })
   .describe(
     "A series compensator on an `Arc`: a series capacitor or reactor, or a thyristor-controlled or static synchronous series compensator, with one series reactance. Devices that also inject at a bus, such as a UPFC, are not covered.",
   );
@@ -44428,73 +44424,65 @@ export type HydroTurbineOutput = zod.output<typeof HydroTurbine>;
 const impedanceCorrectionDataThreeTapRatioCorrectionCurveFunctionTypeDefault = `PIECEWISE_LINEAR`;
 const impedanceCorrectionDataThreePhaseAngleCorrectionCurveFunctionTypeDefault = `PIECEWISE_LINEAR`;
 export const ImpedanceCorrectionData = zod
-  .unknown()
-  .and(zod.unknown())
-  .and(
-    zod.strictObject({
-      id: zod.int(),
-      table_number: zod.int(),
-      tap_ratio_correction_curve: zod
-        .strictObject({
-          function_type: zod
-            .literal("PIECEWISE_LINEAR")
-            .default(
-              impedanceCorrectionDataThreeTapRatioCorrectionCurveFunctionTypeDefault,
-            ),
-          points: zod.array(
-            zod
-              .strictObject({
-                x: zod
-                  .number()
-                  .describe("Units: the wrapped function's input unit."),
-                y: zod
-                  .number()
-                  .describe("Units: the wrapped function's output unit."),
-              })
-              .describe(
-                "A single point, given as its `x` and `y` coordinates.",
-              ),
+  .strictObject({
+    id: zod.int(),
+    table_number: zod.int(),
+    tap_ratio_correction_curve: zod
+      .strictObject({
+        function_type: zod
+          .literal("PIECEWISE_LINEAR")
+          .default(
+            impedanceCorrectionDataThreeTapRatioCorrectionCurveFunctionTypeDefault,
           ),
-        })
-        .optional()
-        .describe(
-          "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
+        points: zod.array(
+          zod
+            .strictObject({
+              x: zod
+                .number()
+                .describe("Units: the wrapped function's input unit."),
+              y: zod
+                .number()
+                .describe("Units: the wrapped function's output unit."),
+            })
+            .describe("A single point, given as its `x` and `y` coordinates."),
         ),
-      phase_angle_correction_curve: zod
-        .strictObject({
-          function_type: zod
-            .literal("PIECEWISE_LINEAR")
-            .default(
-              impedanceCorrectionDataThreePhaseAngleCorrectionCurveFunctionTypeDefault,
-            ),
-          points: zod.array(
-            zod
-              .strictObject({
-                x: zod
-                  .number()
-                  .describe("Units: the wrapped function's input unit."),
-                y: zod
-                  .number()
-                  .describe("Units: the wrapped function's output unit."),
-              })
-              .describe(
-                "A single point, given as its `x` and `y` coordinates.",
-              ),
+      })
+      .optional()
+      .describe(
+        "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
+      ),
+    phase_angle_correction_curve: zod
+      .strictObject({
+        function_type: zod
+          .literal("PIECEWISE_LINEAR")
+          .default(
+            impedanceCorrectionDataThreePhaseAngleCorrectionCurveFunctionTypeDefault,
           ),
-        })
-        .optional()
-        .describe(
-          "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
+        points: zod.array(
+          zod
+            .strictObject({
+              x: zod
+                .number()
+                .describe("Units: the wrapped function's input unit."),
+              y: zod
+                .number()
+                .describe("Units: the wrapped function's output unit."),
+            })
+            .describe("A single point, given as its `x` and `y` coordinates."),
         ),
-      transformer_winding: zod.enum([
-        "TR2W_WINDING",
-        "PRIMARY_WINDING",
-        "SECONDARY_WINDING",
-        "TERTIARY_WINDING",
-      ]),
-      transformer_control_mode: zod.enum(["PHASE_SHIFT_ANGLE", "TAP_RATIO"]),
-    }),
-  )
+      })
+      .optional()
+      .describe(
+        "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
+      ),
+    transformer_winding: zod.enum([
+      "TR2W_WINDING",
+      "PRIMARY_WINDING",
+      "SECONDARY_WINDING",
+      "TERTIARY_WINDING",
+    ]),
+    transformer_control_mode: zod.enum(["PHASE_SHIFT_ANGLE", "TAP_RATIO"]),
+  })
   .describe(
     "Supplemental attribute carrying one row of an impedance correction table, linked to a transformer. Exactly one correction curve is present, selected by `transformer_control_mode`: `tap_ratio_correction_curve` spans off-nominal turns ratio and `phase_angle_correction_curve` spans phase-shift angle. `transformer_winding` names the winding the row applies to.",
   );
@@ -44538,345 +44526,327 @@ const interconnectingConverterFiveDcVoltageDroopDefault = 0;
 const interconnectingConverterFiveRemoteBusControlDefault = null;
 const interconnectingConverterFivePowerFactorWeightingFractionDefault = 1;
 export const InterconnectingConverter = zod
-  .unknown()
-  .and(zod.unknown())
-  .and(zod.unknown())
-  .and(zod.unknown())
-  .and(
-    zod.strictObject({
-      id: zod.int().describe("Unique integer identifier for this component."),
-      name: zod
-        .string()
-        .describe(
-          "Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-        ),
-      available: zod
-        .boolean()
-        .describe(
-          "Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-        ),
-      bus: zod
-        .int()
-        .describe("ID of the bus on the AC side of this converter."),
-      dc_bus: zod
-        .int()
-        .describe("ID of the bus on the DC side of this converter."),
-      active_power: zod
-        .number()
-        .describe(
-          "Active power on the DC side. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      rating: zod
-        .number()
-        .describe(
-          "Maximum output power rating of the converter. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-        ),
-      active_power_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      base_power: zod
-        .number()
-        .describe(
-          "Base power of the converter for per unitization. Units: MVA.",
-        ),
-      power_units: zod
-        .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-        .describe(
-          "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-        ),
-      reactive_power_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      dc_current: zod
-        .number()
-        .default(interconnectingConverterFiveDcCurrentDefault)
-        .describe("DC current on the converter. Units: kA."),
-      max_dc_current: zod
-        .number()
-        .default(interconnectingConverterFiveMaxDcCurrentDefault)
-        .describe(
-          "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
-        ),
-      loss_function: zod
-        .strictObject({
-          power_units: zod
-            .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-            .describe(
-              "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-            ),
-          value_curve: zod
-            .union([
-              zod
-                .strictObject({
-                  curve_type: zod
-                    .literal("INPUT_OUTPUT")
-                    .default(
-                      interconnectingConverterFiveLossFunctionValueCurveOneCurveTypeDefault,
+  .strictObject({
+    id: zod.int().describe("Unique integer identifier for this component."),
+    name: zod
+      .string()
+      .describe(
+        "Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+      ),
+    available: zod
+      .boolean()
+      .describe(
+        "Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+      ),
+    bus: zod.int().describe("ID of the bus on the AC side of this converter."),
+    dc_bus: zod
+      .int()
+      .describe("ID of the bus on the DC side of this converter."),
+    active_power: zod
+      .number()
+      .describe(
+        "Active power on the DC side. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    rating: zod
+      .number()
+      .describe(
+        "Maximum output power rating of the converter. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    active_power_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    base_power: zod
+      .number()
+      .describe("Base power of the converter for per unitization. Units: MVA."),
+    power_units: zod
+      .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
+      .describe(
+        "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+      ),
+    reactive_power_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    dc_current: zod
+      .number()
+      .default(interconnectingConverterFiveDcCurrentDefault)
+      .describe("DC current on the converter. Units: kA."),
+    max_dc_current: zod
+      .number()
+      .default(interconnectingConverterFiveMaxDcCurrentDefault)
+      .describe(
+        "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
+      ),
+    loss_function: zod
+      .strictObject({
+        power_units: zod
+          .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
+          .describe(
+            "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+          ),
+        value_curve: zod
+          .union([
+            zod
+              .strictObject({
+                curve_type: zod
+                  .literal("INPUT_OUTPUT")
+                  .default(
+                    interconnectingConverterFiveLossFunctionValueCurveOneCurveTypeDefault,
+                  ),
+                function_data: zod.union([
+                  zod
+                    .strictObject({
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                      function_type: zod
+                        .literal("QUADRATIC")
+                        .default(
+                          interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataOneFunctionTypeDefault,
+                        ),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
+                    })
+                    .describe(
+                      "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
-                  function_data: zod.union([
-                    zod
-                      .strictObject({
-                        constant_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit.",
-                          ),
-                        function_type: zod
-                          .literal("QUADRATIC")
-                          .default(
-                            interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataOneFunctionTypeDefault,
-                          ),
-                        proportional_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input.",
-                          ),
-                        quadratic_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input squared.",
-                          ),
-                      })
-                      .describe(
-                        "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
-                      ),
-                    zod
-                      .strictObject({
-                        constant_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit.",
-                          ),
-                        function_type: zod
-                          .literal("LINEAR")
-                          .default(
-                            interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataTwoFunctionTypeDefault,
-                          ),
-                        proportional_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input.",
-                          ),
-                      })
-                      .describe(
-                        "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
-                      ),
-                    zod
-                      .strictObject({
-                        function_type: zod
-                          .literal("PIECEWISE_LINEAR")
-                          .default(
-                            interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataThreeFunctionTypeDefault,
-                          ),
-                        points: zod.array(
-                          zod
-                            .strictObject({
-                              x: zod
-                                .number()
-                                .describe(
-                                  "Units: the wrapped function's input unit.",
-                                ),
-                              y: zod
-                                .number()
-                                .describe(
-                                  "Units: the wrapped function's output unit.",
-                                ),
-                            })
-                            .describe(
-                              "A single point, given as its `x` and `y` coordinates.",
-                            ),
+                  zod
+                    .strictObject({
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                      function_type: zod
+                        .literal("LINEAR")
+                        .default(
+                          interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataTwoFunctionTypeDefault,
                         ),
-                      })
-                      .describe(
-                        "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
-                      ),
-                  ]),
-                  input_at_zero: zod
-                    .number()
-                    .optional()
-                    .describe("Units: the curve's y-axis unit."),
-                })
-                .default(
-                  interconnectingConverterFiveLossFunctionValueCurveOneDefault,
-                )
-                .describe(
-                  "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
-                ),
-              zod
-                .strictObject({
-                  curve_type: zod
-                    .literal("INCREMENTAL")
-                    .default(
-                      interconnectingConverterFiveLossFunctionValueCurveTwoCurveTypeDefault,
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                    })
+                    .describe(
+                      "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
-                  function_data: zod.union([
-                    zod
-                      .strictObject({
-                        constant_term: zod
+                  zod
+                    .strictObject({
+                      function_type: zod
+                        .literal("PIECEWISE_LINEAR")
+                        .default(
+                          interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataThreeFunctionTypeDefault,
+                        ),
+                      points: zod.array(
+                        zod
+                          .strictObject({
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
+                          })
+                          .describe(
+                            "A single point, given as its `x` and `y` coordinates.",
+                          ),
+                      ),
+                    })
+                    .describe(
+                      "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
+                    ),
+                ]),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+              })
+              .default(
+                interconnectingConverterFiveLossFunctionValueCurveOneDefault,
+              )
+              .describe(
+                "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
+              ),
+            zod
+              .strictObject({
+                curve_type: zod
+                  .literal("INCREMENTAL")
+                  .default(
+                    interconnectingConverterFiveLossFunctionValueCurveTwoCurveTypeDefault,
+                  ),
+                function_data: zod.union([
+                  zod
+                    .strictObject({
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                      function_type: zod
+                        .literal("LINEAR")
+                        .default(
+                          interconnectingConverterFiveLossFunctionValueCurveTwoFunctionDataOneFunctionTypeDefault,
+                        ),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                    })
+                    .describe(
+                      "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
+                    ),
+                  zod
+                    .strictObject({
+                      function_type: zod
+                        .literal("PIECEWISE_STEP")
+                        .default(
+                          interconnectingConverterFiveLossFunctionValueCurveTwoFunctionDataTwoFunctionTypeDefault,
+                        ),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
                           .number()
                           .describe(
                             "Units: the wrapped function's output unit.",
                           ),
-                        function_type: zod
-                          .literal("LINEAR")
-                          .default(
-                            interconnectingConverterFiveLossFunctionValueCurveTwoFunctionDataOneFunctionTypeDefault,
-                          ),
-                        proportional_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input.",
-                          ),
-                      })
-                      .describe(
-                        "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
-                    zod
-                      .strictObject({
-                        function_type: zod
-                          .literal("PIECEWISE_STEP")
-                          .default(
-                            interconnectingConverterFiveLossFunctionValueCurveTwoFunctionDataTwoFunctionTypeDefault,
-                          ),
-                        x_coords: zod.array(
-                          zod
-                            .number()
-                            .describe(
-                              "Units: the wrapped function's input unit.",
-                            ),
-                        ),
-                        y_coords: zod.array(
-                          zod
-                            .number()
-                            .describe(
-                              "Units: the wrapped function's output unit.",
-                            ),
-                        ),
-                      })
-                      .describe(
-                        "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
-                      ),
-                  ]),
-                  initial_input: zod
-                    .number()
-                    .optional()
-                    .describe("Units: the curve's y-axis unit."),
-                  input_at_zero: zod
-                    .number()
-                    .optional()
-                    .describe("Units: the curve's y-axis unit."),
-                })
-                .describe(
-                  "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
-                ),
-            ])
-            .default(interconnectingConverterFiveLossFunctionValueCurveDefault)
-            .describe(
-              "The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
-            ),
-        })
-        .optional()
-        .describe(
-          "Losses of a device as a function of the current through it (a converter's DC current), together with the basis the curve is expressed in. `power_units` governs both axes: the y values are power and the x values current, each per-unit on the component's base (current's base being base power over base voltage) or natural. Units: x-axis per power_units — NATURAL_UNITS: kA, COMPONENT_BASE: pu ; y-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      dc_control: zod
-        .enum(["DC_POWER", "DC_VOLTAGE", "DC_VOLTAGE_DROOP"])
-        .optional()
-        .describe(
-          "DC-side control mode of a voltage-source-converter (VSC) terminal. DC_POWER: converter controls active power transferred to the DC side. DC_VOLTAGE: converter controls the DC-side voltage. DC_VOLTAGE_DROOP: P-Vdc droop, V_dc = dc_setpoint - droop_gain * P_c.",
-        ),
-      ac_control: zod
-        .enum(["AC_REACTIVE_POWER", "AC_VOLTAGE"])
-        .optional()
-        .describe(
-          "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.",
-        ),
-      dc_power_setpoint: zod
-        .number()
-        .nullish()
-        .describe(
-          "Active-power order of the converter, used when `dc_control` is `DC_POWER`; `null` otherwise. Positive means the converter supplies power to the AC network; negative means it withdraws power from it. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      dc_voltage_setpoint: zod
-        .number()
-        .nullish()
-        .describe(
-          "DC-side voltage target of the converter, used when `dc_control` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.",
-        ),
-      rated_dc_voltage: zod
-        .number()
-        .default(interconnectingConverterFiveRatedDcVoltageDefault)
-        .describe(
-          "Rated DC voltage of the converter, the base for `dc_voltage_setpoint` and `voltage_limits`; 0.0 means unspecified. Units: kV.",
-        ),
-      power_factor_setpoint: zod
-        .number()
-        .min(interconnectingConverterFivePowerFactorSetpointMin)
-        .max(interconnectingConverterFivePowerFactorSetpointMax)
-        .nullish()
-        .describe(
-          "Power-factor setpoint of the converter, used when `ac_control` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.",
-        ),
-      ac_voltage_setpoint: zod
-        .number()
-        .nullish()
-        .describe(
-          "AC-side voltage magnitude target of the converter, used when `ac_control` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
-        ),
-      rated_ac_voltage: zod
-        .number()
-        .default(interconnectingConverterFiveRatedAcVoltageDefault)
-        .describe(
-          "Rated AC voltage at the converter's AC terminal, the base for `ac_voltage_setpoint`; 0.0 means unspecified. Units: kV.",
-        ),
-      dc_voltage_droop: zod
-        .number()
-        .default(interconnectingConverterFiveDcVoltageDroopDefault)
-        .describe(
-          "DC-voltage droop gain on the converter, used when `dc_control` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint - dc_voltage_droop * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.",
-        ),
-      remote_bus_control: zod
-        .int()
-        .nullish()
-        .default(interconnectingConverterFiveRemoteBusControlDefault)
-        .describe(
-          "Number of the AC bus whose voltage the converter regulates when `ac_control` is `AC_VOLTAGE`; null regulates its own terminal bus.",
-        ),
-      power_factor_weighting_fraction: zod
-        .number()
-        .default(
-          interconnectingConverterFivePowerFactorWeightingFractionDefault,
-        )
-        .describe(
-          "Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.",
-        ),
-      voltage_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .default({ max: 999.9 as const, min: 0 as const })
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      dynamic_injector: zod
-        .int()
-        .nullish()
-        .describe("ID of the corresponding dynamic injection device, if any."),
-    }),
-  )
+                    })
+                    .describe(
+                      "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
+                    ),
+                ]),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+              })
+              .describe(
+                "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
+              ),
+          ])
+          .default(interconnectingConverterFiveLossFunctionValueCurveDefault)
+          .describe(
+            "The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
+          ),
+      })
+      .optional()
+      .describe(
+        "Losses of a device as a function of the current through it (a converter's DC current), together with the basis the curve is expressed in. `power_units` governs both axes: the y values are power and the x values current, each per-unit on the component's base (current's base being base power over base voltage) or natural. Units: x-axis per power_units — NATURAL_UNITS: kA, COMPONENT_BASE: pu ; y-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    dc_control: zod
+      .enum(["DC_POWER", "DC_VOLTAGE", "DC_VOLTAGE_DROOP"])
+      .optional()
+      .describe(
+        "DC-side control mode of a voltage-source-converter (VSC) terminal. DC_POWER: converter controls active power transferred to the DC side. DC_VOLTAGE: converter controls the DC-side voltage. DC_VOLTAGE_DROOP: P-Vdc droop, V_dc = dc_setpoint - droop_gain * P_c.",
+      ),
+    ac_control: zod
+      .enum(["AC_REACTIVE_POWER", "AC_VOLTAGE"])
+      .optional()
+      .describe(
+        "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.",
+      ),
+    dc_power_setpoint: zod
+      .number()
+      .nullish()
+      .describe(
+        "Active-power order of the converter, used when `dc_control` is `DC_POWER`; `null` otherwise. Positive means the converter supplies power to the AC network; negative means it withdraws power from it. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    dc_voltage_setpoint: zod
+      .number()
+      .nullish()
+      .describe(
+        "DC-side voltage target of the converter, used when `dc_control` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.",
+      ),
+    rated_dc_voltage: zod
+      .number()
+      .default(interconnectingConverterFiveRatedDcVoltageDefault)
+      .describe(
+        "Rated DC voltage of the converter, the base for `dc_voltage_setpoint` and `voltage_limits`; 0.0 means unspecified. Units: kV.",
+      ),
+    power_factor_setpoint: zod
+      .number()
+      .min(interconnectingConverterFivePowerFactorSetpointMin)
+      .max(interconnectingConverterFivePowerFactorSetpointMax)
+      .nullish()
+      .describe(
+        "Power-factor setpoint of the converter, used when `ac_control` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.",
+      ),
+    ac_voltage_setpoint: zod
+      .number()
+      .nullish()
+      .describe(
+        "AC-side voltage magnitude target of the converter, used when `ac_control` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
+      ),
+    rated_ac_voltage: zod
+      .number()
+      .default(interconnectingConverterFiveRatedAcVoltageDefault)
+      .describe(
+        "Rated AC voltage at the converter's AC terminal, the base for `ac_voltage_setpoint`; 0.0 means unspecified. Units: kV.",
+      ),
+    dc_voltage_droop: zod
+      .number()
+      .default(interconnectingConverterFiveDcVoltageDroopDefault)
+      .describe(
+        "DC-voltage droop gain on the converter, used when `dc_control` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint - dc_voltage_droop * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.",
+      ),
+    remote_bus_control: zod
+      .int()
+      .nullish()
+      .default(interconnectingConverterFiveRemoteBusControlDefault)
+      .describe(
+        "Number of the AC bus whose voltage the converter regulates when `ac_control` is `AC_VOLTAGE`; null regulates its own terminal bus.",
+      ),
+    power_factor_weighting_fraction: zod
+      .number()
+      .default(interconnectingConverterFivePowerFactorWeightingFractionDefault)
+      .describe(
+        "Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.",
+      ),
+    voltage_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .default({ max: 999.9 as const, min: 0 as const })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    dynamic_injector: zod
+      .int()
+      .nullish()
+      .describe("ID of the corresponding dynamic injection device, if any."),
+  })
   .describe(
     "Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus. Voltage and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them. `rated_dc_voltage` and `rated_ac_voltage` record the voltage bases, so a consumer can convert the voltage fields to per unit.",
   );
@@ -90630,112 +90600,106 @@ export type SubstationOutput = zod.output<typeof Substation>;
 
 const switchedAdmittanceThreeRegulatedBusNumberDefault = 0;
 export const SwitchedAdmittance = zod
-  .unknown()
-  .and(zod.unknown())
-  .and(
-    zod.strictObject({
-      id: zod.int().describe("Unique integer identifier for this component."),
-      name: zod
-        .string()
-        .describe(
-          "Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-        ),
-      available: zod
-        .boolean()
-        .describe(
-          "Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-        ),
-      bus: zod
-        .int()
-        .describe("ID of the bus that this component is connected to."),
-      admittance_units: zod
-        .enum(["NATURAL_UNITS", "COMPONENT_MVAR"])
-        .optional()
-        .default("COMPONENT_MVAR")
-        .describe(
-          "Subset of AdmittanceUnitBasis for fixed and switched shunts: omits COMPONENT_BASE because a shunt has no device MVA rating to per-unitize against. NATURAL_UNITS: physical siemens. COMPONENT_MVAR: reactive power at unity voltage (Mvar for susceptance, MW for conductance) — PSS/E RAW native for shunts.",
-        ),
-      number_engaged: zod
-        .array(zod.int())
-        .optional()
-        .describe(
-          "Vector with the number of steps currently engaged (switched in) for each adjustable shunt block. For example, `number_engaged[2]` is the number of steps in service at block 2, and cannot exceed `number_of_steps[2]`.",
-        ),
-      number_of_steps: zod
-        .array(zod.int())
-        .optional()
-        .describe(
-          "Vector with number of steps for each adjustable shunt block. For example, `number_of_steps[2]` are the number of available steps for admittance increment at block 2.",
-        ),
-      Y_increase: zod
-        .array(
-          zod
-            .strictObject({
-              real: zod.number().optional(),
-              imag: zod.number().optional(),
-            })
-            .describe(
-              "A complex number, given as its `real` and `imag` parts.",
-            ),
-        )
-        .optional()
-        .describe(
-          "Vector with admittance increment step for each adjustable shunt block. For example, `Y_increase[2]` is the complex admittance increment for each step at block 2. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
-        ),
-      solved_admittance: zod
-        .number()
-        .nullish()
-        .describe(
-          "Solved-case switched shunt admittance (PSS/E BINIT); when present it is the shunt's effective admittance, used in place of `number_engaged` * `Y_increase`. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
-        ),
-      voltage_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      reactive_power_range_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      control_mode: zod
-        .enum([
-          "UNDEFINED",
-          "FIXED",
-          "DISCRETE_VOLTAGE",
-          "CONTINUOUS_VOLTAGE",
-          "DISCRETE_REACTIVE_PLANT",
-          "DISCRETE_REACTIVE_VSC",
-          "DISCRETE_ADMITTANCE_REMOTE",
-          "DISCRETE_REACTIVE_FACTS",
-        ])
-        .optional()
-        .default("FIXED")
-        .describe(
-          "Control mode of a switched shunt admittance (PSS/E MODSW). `UNDEFINED` leaves the mode unspecified; `FIXED` holds the admittance constant. `DISCRETE_VOLTAGE` and `CONTINUOUS_VOLTAGE` regulate voltage in steps or continuously and use `voltage_limits`. `DISCRETE_REACTIVE_PLANT`, `DISCRETE_REACTIVE_VSC`, `DISCRETE_ADMITTANCE_REMOTE` and `DISCRETE_REACTIVE_FACTS` regulate a plant's, a voltage-source-converter terminal's, a remote bus's, or a FACTS device's reactive quantity in steps and use `reactive_power_range_limits`.",
-        ),
-      regulated_bus_number: zod
-        .int()
-        .default(switchedAdmittanceThreeRegulatedBusNumberDefault)
-        .describe(
-          "Bus number whose voltage/quantity this shunt regulates; 0 means local bus (PSS/E SWREM/NREG). Units: 1.",
-        ),
-      dynamic_injector: zod
-        .int()
-        .nullish()
-        .describe(
-          "ID of the corresponding dynamic injection model for admittance, if any.",
-        ),
-    }),
-  )
+  .strictObject({
+    id: zod.int().describe("Unique integer identifier for this component."),
+    name: zod
+      .string()
+      .describe(
+        "Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+      ),
+    available: zod
+      .boolean()
+      .describe(
+        "Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+      ),
+    bus: zod
+      .int()
+      .describe("ID of the bus that this component is connected to."),
+    admittance_units: zod
+      .enum(["NATURAL_UNITS", "COMPONENT_MVAR"])
+      .optional()
+      .default("COMPONENT_MVAR")
+      .describe(
+        "Subset of AdmittanceUnitBasis for fixed and switched shunts: omits COMPONENT_BASE because a shunt has no device MVA rating to per-unitize against. NATURAL_UNITS: physical siemens. COMPONENT_MVAR: reactive power at unity voltage (Mvar for susceptance, MW for conductance) — PSS/E RAW native for shunts.",
+      ),
+    number_engaged: zod
+      .array(zod.int())
+      .optional()
+      .describe(
+        "Vector with the number of steps currently engaged (switched in) for each adjustable shunt block. For example, `number_engaged[2]` is the number of steps in service at block 2, and cannot exceed `number_of_steps[2]`.",
+      ),
+    number_of_steps: zod
+      .array(zod.int())
+      .optional()
+      .describe(
+        "Vector with number of steps for each adjustable shunt block. For example, `number_of_steps[2]` are the number of available steps for admittance increment at block 2.",
+      ),
+    Y_increase: zod
+      .array(
+        zod
+          .strictObject({
+            real: zod.number().optional(),
+            imag: zod.number().optional(),
+          })
+          .describe("A complex number, given as its `real` and `imag` parts."),
+      )
+      .optional()
+      .describe(
+        "Vector with admittance increment step for each adjustable shunt block. For example, `Y_increase[2]` is the complex admittance increment for each step at block 2. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
+      ),
+    solved_admittance: zod
+      .number()
+      .nullish()
+      .describe(
+        "Solved-case switched shunt admittance (PSS/E BINIT); when present it is the shunt's effective admittance, used in place of `number_engaged` * `Y_increase`. Units: per admittance_units — NATURAL_UNITS: S, COMPONENT_MVAR: MVAr .",
+      ),
+    voltage_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    reactive_power_range_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    control_mode: zod
+      .enum([
+        "UNDEFINED",
+        "FIXED",
+        "DISCRETE_VOLTAGE",
+        "CONTINUOUS_VOLTAGE",
+        "DISCRETE_REACTIVE_PLANT",
+        "DISCRETE_REACTIVE_VSC",
+        "DISCRETE_ADMITTANCE_REMOTE",
+        "DISCRETE_REACTIVE_FACTS",
+      ])
+      .optional()
+      .default("FIXED")
+      .describe(
+        "Control mode of a switched shunt admittance (PSS/E MODSW). `UNDEFINED` leaves the mode unspecified; `FIXED` holds the admittance constant. `DISCRETE_VOLTAGE` and `CONTINUOUS_VOLTAGE` regulate voltage in steps or continuously and use `voltage_limits`. `DISCRETE_REACTIVE_PLANT`, `DISCRETE_REACTIVE_VSC`, `DISCRETE_ADMITTANCE_REMOTE` and `DISCRETE_REACTIVE_FACTS` regulate a plant's, a voltage-source-converter terminal's, a remote bus's, or a FACTS device's reactive quantity in steps and use `reactive_power_range_limits`.",
+      ),
+    regulated_bus_number: zod
+      .int()
+      .default(switchedAdmittanceThreeRegulatedBusNumberDefault)
+      .describe(
+        "Bus number whose voltage/quantity this shunt regulates; 0 means local bus (PSS/E SWREM/NREG). Units: 1.",
+      ),
+    dynamic_injector: zod
+      .int()
+      .nullish()
+      .describe(
+        "ID of the corresponding dynamic injection model for admittance, if any.",
+      ),
+  })
   .describe(
     "A switched admittance, with discrete steps to adjust the admittance.\n\nMost often used in power flow studies, iterating over the steps to see impacts of admittance on the results. Total admittance is `number_engaged` * `Y_increase`, unless `solved_admittance` is set, in which case that value is the effective admittance. There is no fixed base admittance: a PSS/E SWITCHED SHUNT record carries only BINIT and the per-block increments.",
   );
@@ -108998,200 +108962,190 @@ const transformerCircuitFiveActivePowerFlowDefault = 0;
 const transformerCircuitFiveReactivePowerFlowDefault = 0;
 const transformerCircuitFiveBasePowerDefault = 100;
 export const TransformerCircuit = zod
-  .unknown()
-  .and(zod.unknown())
-  .and(zod.unknown())
-  .and(zod.unknown())
-  .and(
-    zod.strictObject({
-      id: zod.int().describe("Unique integer identifier for this component."),
-      available: zod
-        .boolean()
-        .describe("Indicator of whether this circuit is connected and online."),
-      arc: zod
-        .int()
-        .describe(
-          "An `Arc` defining this circuit `from` a terminal bus `to` the transformer's other terminal or star bus.",
-        ),
-      tap: zod
-        .number()
-        .default(transformerCircuitFiveTapDefault)
-        .describe(
-          "Normalized tap changer position for voltage control, varying between 0 and 2, with 1 centered at the nominal voltage. Units: 1.",
-        ),
-      alpha: zod
-        .number()
-        .default(transformerCircuitFiveAlphaDefault)
-        .describe(
-          "Initial condition of phase shift across this circuit. Units: rad.",
-        ),
-      parameter_units: zod
-        .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
-        .optional()
-        .default("COMPONENT_BASE")
-        .describe(
-          "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
-        ),
-      r: zod
-        .number()
-        .default(transformerCircuitFiveRDefault)
-        .describe(
-          "Circuit resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-        ),
-      x: zod
-        .number()
-        .default(transformerCircuitFiveXDefault)
-        .describe(
-          "Circuit reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-        ),
-      control_objective: zod
-        .enum([
-          "UNDEFINED",
-          "VOLTAGE_DISABLED",
-          "REACTIVE_POWER_FLOW_DISABLED",
-          "ACTIVE_POWER_FLOW_DISABLED",
-          "CONTROL_OF_DC_LINE_DISABLED",
-          "ASYMMETRIC_ACTIVE_POWER_FLOW_DISABLED",
-          "FIXED",
-          "VOLTAGE",
-          "REACTIVE_POWER_FLOW",
-          "ACTIVE_POWER_FLOW",
-          "CONTROL_OF_DC_LINE",
-          "ASYMMETRIC_ACTIVE_POWER_FLOW",
-        ])
-        .optional()
-        .default("UNDEFINED")
-        .describe(
-          "Control objective of a transformer tap changer or phase shifter: a fixed tap position with no automatic adjustment (`FIXED`), or regulation of voltage magnitude at the controlled bus, reactive power flow, active power flow, asymmetric active power flow, or a DC line. Each regulating objective has a paired `_DISABLED` value naming the same control block while it is out of service, and `UNDEFINED` means no control objective is stated.",
-        ),
-      regulated_bus_number: zod
-        .int()
-        .default(transformerCircuitFiveRegulatedBusNumberDefault)
-        .describe(
-          "Controlled bus number (PSS/E CONT; sign = regulation side).",
-        ),
-      tap_ratio_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      phase_angle_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      controlled_voltage_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      controlled_reactive_power_flow_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      controlled_active_power_flow_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      number_of_tap_positions: zod
-        .int()
-        .default(transformerCircuitFiveNumberOfTapPositionsDefault)
-        .describe("Number of tap positions (PSS/E NTP)."),
-      rating: zod
-        .number()
-        .describe(
-          "Thermal rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-        ),
-      rating_b: zod
-        .number()
-        .optional()
-        .describe(
-          "Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-        ),
-      rating_c: zod
-        .number()
-        .optional()
-        .describe(
-          "Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-        ),
-      operational_flow_limit: zod
-        .strictObject({
-          from_to_min: zod
-            .number()
-            .min(transformerCircuitFiveOperationalFlowLimitFromToMinMin),
-          from_to_max: zod
-            .number()
-            .min(transformerCircuitFiveOperationalFlowLimitFromToMaxMin),
-          to_from_min: zod
-            .number()
-            .min(transformerCircuitFiveOperationalFlowLimitToFromMinMin),
-          to_from_max: zod
-            .number()
-            .min(transformerCircuitFiveOperationalFlowLimitToFromMaxMin),
-        })
-        .optional()
-        .describe(
-          "Operator-set flow limits on a directed branch: a minimum and a maximum flow in each direction, applied in addition to the branch's thermal rating.",
-        ),
-      active_power_flow: zod
-        .number()
-        .default(transformerCircuitFiveActivePowerFlowDefault)
-        .describe(
-          "Initial condition of active power flow through this circuit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      reactive_power_flow: zod
-        .number()
-        .default(transformerCircuitFiveReactivePowerFlowDefault)
-        .describe(
-          "Initial condition of reactive power flow through this circuit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-        ),
-      base_power: zod
-        .number()
-        .default(transformerCircuitFiveBasePowerDefault)
-        .describe(
-          "Base power for per unitization of this circuit. Units: MVA.",
-        ),
-      power_units: zod
-        .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-        .describe(
-          "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-        ),
-      base_voltage_primary: zod
-        .number()
-        .optional()
-        .describe(
-          "Primary (from) terminal-side base voltage; the reference voltage for this circuit's per-unit impedance. Units: kV.",
-        ),
-      base_voltage_secondary: zod
-        .number()
-        .optional()
-        .describe(
-          "Secondary (to) terminal-side base voltage. For a three-winding transformer this defaults to the primary base voltage at parse time. Units: kV.",
-        ),
-    }),
-  )
+  .strictObject({
+    id: zod.int().describe("Unique integer identifier for this component."),
+    available: zod
+      .boolean()
+      .describe("Indicator of whether this circuit is connected and online."),
+    arc: zod
+      .int()
+      .describe(
+        "An `Arc` defining this circuit `from` a terminal bus `to` the transformer's other terminal or star bus.",
+      ),
+    tap: zod
+      .number()
+      .default(transformerCircuitFiveTapDefault)
+      .describe(
+        "Normalized tap changer position for voltage control, varying between 0 and 2, with 1 centered at the nominal voltage. Units: 1.",
+      ),
+    alpha: zod
+      .number()
+      .default(transformerCircuitFiveAlphaDefault)
+      .describe(
+        "Initial condition of phase shift across this circuit. Units: rad.",
+      ),
+    parameter_units: zod
+      .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
+      .optional()
+      .default("COMPONENT_BASE")
+      .describe(
+        "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
+      ),
+    r: zod
+      .number()
+      .default(transformerCircuitFiveRDefault)
+      .describe(
+        "Circuit resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+      ),
+    x: zod
+      .number()
+      .default(transformerCircuitFiveXDefault)
+      .describe(
+        "Circuit reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+      ),
+    control_objective: zod
+      .enum([
+        "UNDEFINED",
+        "VOLTAGE_DISABLED",
+        "REACTIVE_POWER_FLOW_DISABLED",
+        "ACTIVE_POWER_FLOW_DISABLED",
+        "CONTROL_OF_DC_LINE_DISABLED",
+        "ASYMMETRIC_ACTIVE_POWER_FLOW_DISABLED",
+        "FIXED",
+        "VOLTAGE",
+        "REACTIVE_POWER_FLOW",
+        "ACTIVE_POWER_FLOW",
+        "CONTROL_OF_DC_LINE",
+        "ASYMMETRIC_ACTIVE_POWER_FLOW",
+      ])
+      .optional()
+      .default("UNDEFINED")
+      .describe(
+        "Control objective of a transformer tap changer or phase shifter: a fixed tap position with no automatic adjustment (`FIXED`), or regulation of voltage magnitude at the controlled bus, reactive power flow, active power flow, asymmetric active power flow, or a DC line. Each regulating objective has a paired `_DISABLED` value naming the same control block while it is out of service, and `UNDEFINED` means no control objective is stated.",
+      ),
+    regulated_bus_number: zod
+      .int()
+      .default(transformerCircuitFiveRegulatedBusNumberDefault)
+      .describe("Controlled bus number (PSS/E CONT; sign = regulation side)."),
+    tap_ratio_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    phase_angle_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    controlled_voltage_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    controlled_reactive_power_flow_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    controlled_active_power_flow_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    number_of_tap_positions: zod
+      .int()
+      .default(transformerCircuitFiveNumberOfTapPositionsDefault)
+      .describe("Number of tap positions (PSS/E NTP)."),
+    rating: zod
+      .number()
+      .describe(
+        "Thermal rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    rating_b: zod
+      .number()
+      .optional()
+      .describe(
+        "Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    rating_c: zod
+      .number()
+      .optional()
+      .describe(
+        "Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    operational_flow_limit: zod
+      .strictObject({
+        from_to_min: zod
+          .number()
+          .min(transformerCircuitFiveOperationalFlowLimitFromToMinMin),
+        from_to_max: zod
+          .number()
+          .min(transformerCircuitFiveOperationalFlowLimitFromToMaxMin),
+        to_from_min: zod
+          .number()
+          .min(transformerCircuitFiveOperationalFlowLimitToFromMinMin),
+        to_from_max: zod
+          .number()
+          .min(transformerCircuitFiveOperationalFlowLimitToFromMaxMin),
+      })
+      .optional()
+      .describe(
+        "Operator-set flow limits on a directed branch: a minimum and a maximum flow in each direction, applied in addition to the branch's thermal rating.",
+      ),
+    active_power_flow: zod
+      .number()
+      .default(transformerCircuitFiveActivePowerFlowDefault)
+      .describe(
+        "Initial condition of active power flow through this circuit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    reactive_power_flow: zod
+      .number()
+      .default(transformerCircuitFiveReactivePowerFlowDefault)
+      .describe(
+        "Initial condition of reactive power flow through this circuit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+      ),
+    base_power: zod
+      .number()
+      .default(transformerCircuitFiveBasePowerDefault)
+      .describe("Base power for per unitization of this circuit. Units: MVA."),
+    power_units: zod
+      .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
+      .describe(
+        "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+      ),
+    base_voltage_primary: zod
+      .number()
+      .optional()
+      .describe(
+        "Primary (from) terminal-side base voltage; the reference voltage for this circuit's per-unit impedance. Units: kV.",
+      ),
+    base_voltage_secondary: zod
+      .number()
+      .optional()
+      .describe(
+        "Secondary (to) terminal-side base voltage. For a three-winding transformer this defaults to the primary base voltage at parse time. Units: kV.",
+      ),
+  })
   .describe(
     "The data defining one modeled arc of a transformer.\n\nA `TwoWindingTransformer` has one circuit; a `ThreeWindingTransformer` has three, each connecting a terminal bus to the star bus. Circuit `available` is the single source of truth for availability; the owning transformer derives its availability from its circuits. `r`/`x` are the circuit impedance (for a two-winding transformer, the series impedance; for a three-winding transformer, the star-leg equivalent), in pu (device base) on `base_power` referenced to `base_voltage_primary`. Tap-changer / phase-shifter control is described by the flat control fields: `control_objective = UNDEFINED` means the circuit has no control block. Each objective selects exactly one actuator band (`tap_ratio_limits` or `phase_angle_limits`) and one target band (`controlled_voltage_limits`, `controlled_reactive_power_flow_limits` or `controlled_active_power_flow_limits`); every other band is `null`. For a `TwoWindingTransformer`, the single circuit's `base_power` is the transformer's device base.",
   );
@@ -109595,453 +109549,439 @@ const twoTerminalLCCLineThreeLossValueCurveDefault = {
   },
 };
 export const TwoTerminalLCCLine = zod
-  .unknown()
-  .and(zod.unknown())
-  .and(
-    zod.strictObject({
-      id: zod.int().describe("Unique integer identifier for this component."),
-      name: zod
-        .string()
-        .describe(
-          "Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-        ),
-      available: zod
-        .boolean()
-        .describe(
-          "Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-        ),
-      arc: zod
-        .int()
-        .describe(
-          "An Arc defining this line `from` a rectifier bus `to` an inverter bus. The rectifier bus must be specified in the `from` bus and inverter bus in the `to` bus.",
-        ),
-      active_power_flow: zod
-        .number()
-        .describe(
-          "Initial condition of active power flow on the line. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      r: zod.number().describe("Series resistance of the DC line. Units: ohm."),
-      power_transfer_setpoint: zod
-        .number()
-        .nullish()
-        .describe(
-          "Scheduled power transfer, used when `control_mode` is `POWER`; `null` otherwise. Must not be specified in per-unit. A positive value is the power consumed at the rectifier bus; a negative value is the power delivered at the inverter bus (its absolute value is the generated power at the inverter bus). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      current_transfer_setpoint: zod
-        .number()
-        .nullish()
-        .describe(
-          "Scheduled current transfer, used when `control_mode` is `CURRENT`; `null` otherwise. Units: kA.",
-        ),
-      scheduled_dc_voltage: zod
-        .number()
-        .describe(
-          "Scheduled compounded DC voltage. By default this parameter is the scheduled DC voltage in the inverter bus. Units: kV.",
-        ),
-      rectifier_bridges: zod
-        .int()
-        .describe("Number of bridges in series in the rectifier side."),
-      rectifier_delay_angle_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      rectifier_rc: zod
-        .number()
-        .describe(
-          "Rectifier commutating transformer resistance per bridge. Units: ohm.",
-        ),
-      rectifier_xc: zod
-        .number()
-        .describe(
-          "Rectifier commutating transformer reactance per bridge. Units: ohm.",
-        ),
-      rectifier_base_voltage: zod
-        .number()
-        .describe(
-          "Rectifier primary base AC voltage, entered in kV. Units: kV.",
-        ),
-      inverter_bridges: zod
-        .int()
-        .describe("Number of bridges in series in the inverter side."),
-      inverter_extinction_angle_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      inverter_rc: zod
-        .number()
-        .describe(
-          "Inverter commutating transformer resistance per bridge. Units: ohm.",
-        ),
-      inverter_xc: zod
-        .number()
-        .describe(
-          "Inverter commutating transformer reactance per bridge. Units: ohm.",
-        ),
-      inverter_base_voltage: zod
-        .number()
-        .describe(
-          "Inverter primary base AC voltage, entered in kV. Units: kV.",
-        ),
-      control_mode: zod
-        .enum(["BLOCKED", "POWER", "CURRENT"])
-        .optional()
-        .default("BLOCKED")
-        .describe(
-          "Control mode of an LCC-HVDC line (PSS/E MDC). BLOCKED: the line is blocked and holds no schedule. POWER: the line holds a power schedule (power_transfer_setpoint, MW). CURRENT: the line holds a current schedule (current_transfer_setpoint, kA).",
-        ),
-      switch_mode_voltage: zod
-        .number()
-        .default(twoTerminalLCCLineThreeSwitchModeVoltageDefault)
-        .describe(
-          "Mode switch DC voltage. If `control_mode` is `POWER` and the DC voltage falls below this value, the line switches to current control. Units: kV.",
-        ),
-      compounding_resistance: zod
-        .number()
-        .default(twoTerminalLCCLineThreeCompoundingResistanceDefault)
-        .describe(
-          "Compounding Resistance. This parameter is for control of the DC voltage in the rectifier or inverter end. For inverter DC voltage control, the parameter is set to zero; for rectifier DC voltage control, the parameter is set to the DC line resistance; otherwise, set to a fraction of the DC line resistance. Units: ohm.",
-        ),
-      min_compounding_voltage: zod
-        .number()
-        .default(twoTerminalLCCLineThreeMinCompoundingVoltageDefault)
-        .describe(
-          "Minimum compounded voltage. Only used in constant gamma operation (gamma_min = gamma_max), and the AC transformer is used to control the DC voltage. Units: kV.",
-        ),
-      rectifier_transformer_ratio: zod
-        .number()
-        .default(twoTerminalLCCLineThreeRectifierTransformerRatioDefault)
-        .describe(
-          "Rectifier transformer ratio between the primary and secondary side AC voltages. Units: 1.",
-        ),
-      rectifier_tap_setting: zod
-        .number()
-        .default(twoTerminalLCCLineThreeRectifierTapSettingDefault)
-        .describe("Rectifier transformer tap setting. Units: 1."),
-      rectifier_tap_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .default({ max: 1.5 as const, min: 0.51 as const })
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      rectifier_tap_step: zod
-        .number()
-        .default(twoTerminalLCCLineThreeRectifierTapStepDefault)
-        .describe("Rectifier transformer tap step value. Units: 1."),
-      rectifier_delay_angle: zod
-        .number()
-        .default(twoTerminalLCCLineThreeRectifierDelayAngleDefault)
-        .describe("Rectifier firing delay angle (alpha). Units: rad."),
-      rectifier_capacitor_reactance: zod
-        .number()
-        .default(twoTerminalLCCLineThreeRectifierCapacitorReactanceDefault)
-        .describe(
-          "Commutating rectifier capacitor reactance magnitude per bridge. Units: ohm.",
-        ),
-      inverter_transformer_ratio: zod
-        .number()
-        .default(twoTerminalLCCLineThreeInverterTransformerRatioDefault)
-        .describe(
-          "Inverter transformer ratio between the primary and secondary side AC voltages. Units: 1.",
-        ),
-      inverter_tap_setting: zod
-        .number()
-        .default(twoTerminalLCCLineThreeInverterTapSettingDefault)
-        .describe("Inverter transformer tap setting. Units: 1."),
-      inverter_tap_limits: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .default({ max: 1.5 as const, min: 0.51 as const })
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      inverter_tap_step: zod
-        .number()
-        .default(twoTerminalLCCLineThreeInverterTapStepDefault)
-        .describe("Inverter transformer tap step value. Units: 1."),
-      inverter_extinction_angle: zod
-        .number()
-        .default(twoTerminalLCCLineThreeInverterExtinctionAngleDefault)
-        .describe("Inverter extinction angle (gamma). Units: rad."),
-      inverter_capacitor_reactance: zod
-        .number()
-        .default(twoTerminalLCCLineThreeInverterCapacitorReactanceDefault)
-        .describe(
-          "Commutating inverter capacitor reactance magnitude per bridge. Units: ohm.",
-        ),
-      rating: zod
-        .number()
-        .describe(
-          "Transfer rating of the DC line, independent of the converter ratings at each end. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-        ),
-      rating_from: zod
-        .number()
-        .optional()
-        .describe(
-          "Converter rating in the `from` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-        ),
-      rating_to: zod
-        .number()
-        .optional()
-        .describe(
-          "Converter rating in the `to` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-        ),
-      operational_flow_limit: zod
-        .strictObject({
-          from_to_min: zod
-            .number()
-            .min(twoTerminalLCCLineThreeOperationalFlowLimitFromToMinMin),
-          from_to_max: zod
-            .number()
-            .min(twoTerminalLCCLineThreeOperationalFlowLimitFromToMaxMin),
-          to_from_min: zod
-            .number()
-            .min(twoTerminalLCCLineThreeOperationalFlowLimitToFromMinMin),
-          to_from_max: zod
-            .number()
-            .min(twoTerminalLCCLineThreeOperationalFlowLimitToFromMaxMin),
-        })
-        .optional()
-        .describe(
-          "Operator-set flow limits on a directed branch: a minimum and a maximum flow in each direction, applied in addition to the branch's thermal rating.",
-        ),
-      reactive_power_limits_from: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .default({ max: 0 as const, min: 0 as const })
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      reactive_power_limits_to: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .default({ max: 0 as const, min: 0 as const })
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      loss: zod
-        .strictObject({
-          power_units: zod
-            .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-            .describe(
-              "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-            ),
-          value_curve: zod
-            .union([
-              zod
-                .strictObject({
-                  curve_type: zod
-                    .literal("INPUT_OUTPUT")
-                    .default(
-                      twoTerminalLCCLineThreeLossValueCurveOneCurveTypeDefault,
+  .strictObject({
+    id: zod.int().describe("Unique integer identifier for this component."),
+    name: zod
+      .string()
+      .describe(
+        "Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+      ),
+    available: zod
+      .boolean()
+      .describe(
+        "Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+      ),
+    arc: zod
+      .int()
+      .describe(
+        "An Arc defining this line `from` a rectifier bus `to` an inverter bus. The rectifier bus must be specified in the `from` bus and inverter bus in the `to` bus.",
+      ),
+    active_power_flow: zod
+      .number()
+      .describe(
+        "Initial condition of active power flow on the line. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    r: zod.number().describe("Series resistance of the DC line. Units: ohm."),
+    power_transfer_setpoint: zod
+      .number()
+      .nullish()
+      .describe(
+        "Scheduled power transfer, used when `control_mode` is `POWER`; `null` otherwise. Must not be specified in per-unit. A positive value is the power consumed at the rectifier bus; a negative value is the power delivered at the inverter bus (its absolute value is the generated power at the inverter bus). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    current_transfer_setpoint: zod
+      .number()
+      .nullish()
+      .describe(
+        "Scheduled current transfer, used when `control_mode` is `CURRENT`; `null` otherwise. Units: kA.",
+      ),
+    scheduled_dc_voltage: zod
+      .number()
+      .describe(
+        "Scheduled compounded DC voltage. By default this parameter is the scheduled DC voltage in the inverter bus. Units: kV.",
+      ),
+    rectifier_bridges: zod
+      .int()
+      .describe("Number of bridges in series in the rectifier side."),
+    rectifier_delay_angle_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    rectifier_rc: zod
+      .number()
+      .describe(
+        "Rectifier commutating transformer resistance per bridge. Units: ohm.",
+      ),
+    rectifier_xc: zod
+      .number()
+      .describe(
+        "Rectifier commutating transformer reactance per bridge. Units: ohm.",
+      ),
+    rectifier_base_voltage: zod
+      .number()
+      .describe("Rectifier primary base AC voltage, entered in kV. Units: kV."),
+    inverter_bridges: zod
+      .int()
+      .describe("Number of bridges in series in the inverter side."),
+    inverter_extinction_angle_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    inverter_rc: zod
+      .number()
+      .describe(
+        "Inverter commutating transformer resistance per bridge. Units: ohm.",
+      ),
+    inverter_xc: zod
+      .number()
+      .describe(
+        "Inverter commutating transformer reactance per bridge. Units: ohm.",
+      ),
+    inverter_base_voltage: zod
+      .number()
+      .describe("Inverter primary base AC voltage, entered in kV. Units: kV."),
+    control_mode: zod
+      .enum(["BLOCKED", "POWER", "CURRENT"])
+      .optional()
+      .default("BLOCKED")
+      .describe(
+        "Control mode of an LCC-HVDC line (PSS/E MDC). BLOCKED: the line is blocked and holds no schedule. POWER: the line holds a power schedule (power_transfer_setpoint, MW). CURRENT: the line holds a current schedule (current_transfer_setpoint, kA).",
+      ),
+    switch_mode_voltage: zod
+      .number()
+      .default(twoTerminalLCCLineThreeSwitchModeVoltageDefault)
+      .describe(
+        "Mode switch DC voltage. If `control_mode` is `POWER` and the DC voltage falls below this value, the line switches to current control. Units: kV.",
+      ),
+    compounding_resistance: zod
+      .number()
+      .default(twoTerminalLCCLineThreeCompoundingResistanceDefault)
+      .describe(
+        "Compounding Resistance. This parameter is for control of the DC voltage in the rectifier or inverter end. For inverter DC voltage control, the parameter is set to zero; for rectifier DC voltage control, the parameter is set to the DC line resistance; otherwise, set to a fraction of the DC line resistance. Units: ohm.",
+      ),
+    min_compounding_voltage: zod
+      .number()
+      .default(twoTerminalLCCLineThreeMinCompoundingVoltageDefault)
+      .describe(
+        "Minimum compounded voltage. Only used in constant gamma operation (gamma_min = gamma_max), and the AC transformer is used to control the DC voltage. Units: kV.",
+      ),
+    rectifier_transformer_ratio: zod
+      .number()
+      .default(twoTerminalLCCLineThreeRectifierTransformerRatioDefault)
+      .describe(
+        "Rectifier transformer ratio between the primary and secondary side AC voltages. Units: 1.",
+      ),
+    rectifier_tap_setting: zod
+      .number()
+      .default(twoTerminalLCCLineThreeRectifierTapSettingDefault)
+      .describe("Rectifier transformer tap setting. Units: 1."),
+    rectifier_tap_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .default({ max: 1.5 as const, min: 0.51 as const })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    rectifier_tap_step: zod
+      .number()
+      .default(twoTerminalLCCLineThreeRectifierTapStepDefault)
+      .describe("Rectifier transformer tap step value. Units: 1."),
+    rectifier_delay_angle: zod
+      .number()
+      .default(twoTerminalLCCLineThreeRectifierDelayAngleDefault)
+      .describe("Rectifier firing delay angle (alpha). Units: rad."),
+    rectifier_capacitor_reactance: zod
+      .number()
+      .default(twoTerminalLCCLineThreeRectifierCapacitorReactanceDefault)
+      .describe(
+        "Commutating rectifier capacitor reactance magnitude per bridge. Units: ohm.",
+      ),
+    inverter_transformer_ratio: zod
+      .number()
+      .default(twoTerminalLCCLineThreeInverterTransformerRatioDefault)
+      .describe(
+        "Inverter transformer ratio between the primary and secondary side AC voltages. Units: 1.",
+      ),
+    inverter_tap_setting: zod
+      .number()
+      .default(twoTerminalLCCLineThreeInverterTapSettingDefault)
+      .describe("Inverter transformer tap setting. Units: 1."),
+    inverter_tap_limits: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .default({ max: 1.5 as const, min: 0.51 as const })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    inverter_tap_step: zod
+      .number()
+      .default(twoTerminalLCCLineThreeInverterTapStepDefault)
+      .describe("Inverter transformer tap step value. Units: 1."),
+    inverter_extinction_angle: zod
+      .number()
+      .default(twoTerminalLCCLineThreeInverterExtinctionAngleDefault)
+      .describe("Inverter extinction angle (gamma). Units: rad."),
+    inverter_capacitor_reactance: zod
+      .number()
+      .default(twoTerminalLCCLineThreeInverterCapacitorReactanceDefault)
+      .describe(
+        "Commutating inverter capacitor reactance magnitude per bridge. Units: ohm.",
+      ),
+    rating: zod
+      .number()
+      .describe(
+        "Transfer rating of the DC line, independent of the converter ratings at each end. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    rating_from: zod
+      .number()
+      .optional()
+      .describe(
+        "Converter rating in the `from` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    rating_to: zod
+      .number()
+      .optional()
+      .describe(
+        "Converter rating in the `to` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    operational_flow_limit: zod
+      .strictObject({
+        from_to_min: zod
+          .number()
+          .min(twoTerminalLCCLineThreeOperationalFlowLimitFromToMinMin),
+        from_to_max: zod
+          .number()
+          .min(twoTerminalLCCLineThreeOperationalFlowLimitFromToMaxMin),
+        to_from_min: zod
+          .number()
+          .min(twoTerminalLCCLineThreeOperationalFlowLimitToFromMinMin),
+        to_from_max: zod
+          .number()
+          .min(twoTerminalLCCLineThreeOperationalFlowLimitToFromMaxMin),
+      })
+      .optional()
+      .describe(
+        "Operator-set flow limits on a directed branch: a minimum and a maximum flow in each direction, applied in addition to the branch's thermal rating.",
+      ),
+    reactive_power_limits_from: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .default({ max: 0 as const, min: 0 as const })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    reactive_power_limits_to: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .default({ max: 0 as const, min: 0 as const })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    loss: zod
+      .strictObject({
+        power_units: zod
+          .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
+          .describe(
+            "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+          ),
+        value_curve: zod
+          .union([
+            zod
+              .strictObject({
+                curve_type: zod
+                  .literal("INPUT_OUTPUT")
+                  .default(
+                    twoTerminalLCCLineThreeLossValueCurveOneCurveTypeDefault,
+                  ),
+                function_data: zod.union([
+                  zod
+                    .strictObject({
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                      function_type: zod
+                        .literal("QUADRATIC")
+                        .default(
+                          twoTerminalLCCLineThreeLossValueCurveOneFunctionDataOneFunctionTypeDefault,
+                        ),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
+                    })
+                    .describe(
+                      "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
-                  function_data: zod.union([
-                    zod
-                      .strictObject({
-                        constant_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit.",
-                          ),
-                        function_type: zod
-                          .literal("QUADRATIC")
-                          .default(
-                            twoTerminalLCCLineThreeLossValueCurveOneFunctionDataOneFunctionTypeDefault,
-                          ),
-                        proportional_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input.",
-                          ),
-                        quadratic_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input squared.",
-                          ),
-                      })
-                      .describe(
-                        "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
-                      ),
-                    zod
-                      .strictObject({
-                        constant_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit.",
-                          ),
-                        function_type: zod
-                          .literal("LINEAR")
-                          .default(
-                            twoTerminalLCCLineThreeLossValueCurveOneFunctionDataTwoFunctionTypeDefault,
-                          ),
-                        proportional_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input.",
-                          ),
-                      })
-                      .describe(
-                        "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
-                      ),
-                    zod
-                      .strictObject({
-                        function_type: zod
-                          .literal("PIECEWISE_LINEAR")
-                          .default(
-                            twoTerminalLCCLineThreeLossValueCurveOneFunctionDataThreeFunctionTypeDefault,
-                          ),
-                        points: zod.array(
-                          zod
-                            .strictObject({
-                              x: zod
-                                .number()
-                                .describe(
-                                  "Units: the wrapped function's input unit.",
-                                ),
-                              y: zod
-                                .number()
-                                .describe(
-                                  "Units: the wrapped function's output unit.",
-                                ),
-                            })
-                            .describe(
-                              "A single point, given as its `x` and `y` coordinates.",
-                            ),
+                  zod
+                    .strictObject({
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                      function_type: zod
+                        .literal("LINEAR")
+                        .default(
+                          twoTerminalLCCLineThreeLossValueCurveOneFunctionDataTwoFunctionTypeDefault,
                         ),
-                      })
-                      .describe(
-                        "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
-                      ),
-                  ]),
-                  input_at_zero: zod
-                    .number()
-                    .optional()
-                    .describe("Units: the curve's y-axis unit."),
-                })
-                .default(twoTerminalLCCLineThreeLossValueCurveOneDefault)
-                .describe(
-                  "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
-                ),
-              zod
-                .strictObject({
-                  curve_type: zod
-                    .literal("INCREMENTAL")
-                    .default(
-                      twoTerminalLCCLineThreeLossValueCurveTwoCurveTypeDefault,
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                    })
+                    .describe(
+                      "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
-                  function_data: zod.union([
-                    zod
-                      .strictObject({
-                        constant_term: zod
+                  zod
+                    .strictObject({
+                      function_type: zod
+                        .literal("PIECEWISE_LINEAR")
+                        .default(
+                          twoTerminalLCCLineThreeLossValueCurveOneFunctionDataThreeFunctionTypeDefault,
+                        ),
+                      points: zod.array(
+                        zod
+                          .strictObject({
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
+                          })
+                          .describe(
+                            "A single point, given as its `x` and `y` coordinates.",
+                          ),
+                      ),
+                    })
+                    .describe(
+                      "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
+                    ),
+                ]),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+              })
+              .default(twoTerminalLCCLineThreeLossValueCurveOneDefault)
+              .describe(
+                "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
+              ),
+            zod
+              .strictObject({
+                curve_type: zod
+                  .literal("INCREMENTAL")
+                  .default(
+                    twoTerminalLCCLineThreeLossValueCurveTwoCurveTypeDefault,
+                  ),
+                function_data: zod.union([
+                  zod
+                    .strictObject({
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                      function_type: zod
+                        .literal("LINEAR")
+                        .default(
+                          twoTerminalLCCLineThreeLossValueCurveTwoFunctionDataOneFunctionTypeDefault,
+                        ),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                    })
+                    .describe(
+                      "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
+                    ),
+                  zod
+                    .strictObject({
+                      function_type: zod
+                        .literal("PIECEWISE_STEP")
+                        .default(
+                          twoTerminalLCCLineThreeLossValueCurveTwoFunctionDataTwoFunctionTypeDefault,
+                        ),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
                           .number()
                           .describe(
                             "Units: the wrapped function's output unit.",
                           ),
-                        function_type: zod
-                          .literal("LINEAR")
-                          .default(
-                            twoTerminalLCCLineThreeLossValueCurveTwoFunctionDataOneFunctionTypeDefault,
-                          ),
-                        proportional_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input.",
-                          ),
-                      })
-                      .describe(
-                        "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
-                    zod
-                      .strictObject({
-                        function_type: zod
-                          .literal("PIECEWISE_STEP")
-                          .default(
-                            twoTerminalLCCLineThreeLossValueCurveTwoFunctionDataTwoFunctionTypeDefault,
-                          ),
-                        x_coords: zod.array(
-                          zod
-                            .number()
-                            .describe(
-                              "Units: the wrapped function's input unit.",
-                            ),
-                        ),
-                        y_coords: zod.array(
-                          zod
-                            .number()
-                            .describe(
-                              "Units: the wrapped function's output unit.",
-                            ),
-                        ),
-                      })
-                      .describe(
-                        "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
-                      ),
-                  ]),
-                  initial_input: zod
-                    .number()
-                    .optional()
-                    .describe("Units: the curve's y-axis unit."),
-                  input_at_zero: zod
-                    .number()
-                    .optional()
-                    .describe("Units: the curve's y-axis unit."),
-                })
-                .describe(
-                  "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
-                ),
-            ])
-            .default(twoTerminalLCCLineThreeLossValueCurveDefault)
-            .describe(
-              "The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
-            ),
-        })
-        .optional()
-        .default({
-          power_units: "NATURAL_UNITS" as const,
-          value_curve: {
-            curve_type: "INPUT_OUTPUT" as const,
-            function_data: {
-              function_type: "LINEAR" as const,
-              constant_term: 0 as const,
-              proportional_term: 0 as const,
-            },
+                    })
+                    .describe(
+                      "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
+                    ),
+                ]),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+              })
+              .describe(
+                "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
+              ),
+          ])
+          .default(twoTerminalLCCLineThreeLossValueCurveDefault)
+          .describe(
+            "The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
+          ),
+      })
+      .optional()
+      .default({
+        power_units: "NATURAL_UNITS" as const,
+        value_curve: {
+          curve_type: "INPUT_OUTPUT" as const,
+          function_data: {
+            function_type: "LINEAR" as const,
+            constant_term: 0 as const,
+            proportional_term: 0 as const,
           },
-        })
-        .describe(
-          "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      base_power: zod
-        .number()
-        .describe(
-          "System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
-        ),
-      power_units: zod
-        .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-        .describe(
-          "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-        ),
-    }),
-  )
+        },
+      })
+      .describe(
+        "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    base_power: zod
+      .number()
+      .describe(
+        "System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+      ),
+    power_units: zod
+      .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
+      .describe(
+        "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+      ),
+  })
   .describe(
     "A Non-Capacitor Line Commutated Converter (LCC)-HVDC transmission line. As implemented in PSS/E. Impedance, voltage, and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them.",
   );
@@ -110125,675 +110065,653 @@ const twoTerminalVSCLineNineRatedDcVoltageDefault = 0;
 const twoTerminalVSCLineNineRemoteBusControlFromDefault = null;
 const twoTerminalVSCLineNineRemoteBusControlToDefault = null;
 export const TwoTerminalVSCLine = zod
-  .unknown()
-  .and(zod.unknown())
-  .and(zod.unknown())
-  .and(zod.unknown())
-  .and(zod.unknown())
-  .and(zod.unknown())
-  .and(zod.unknown())
-  .and(zod.unknown())
-  .and(
-    zod.strictObject({
-      id: zod.int().describe("Unique integer identifier for this component."),
-      name: zod
-        .string()
-        .describe(
-          "Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-        ),
-      available: zod
-        .boolean()
-        .describe(
-          "Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-        ),
-      arc: zod
-        .int()
-        .describe("An Arc defining this line `from` a bus `to` another bus."),
-      active_power_flow: zod
-        .number()
-        .describe(
-          "Initial condition of active power flowing from the from-bus to the to-bus in DC. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      rating: zod
-        .number()
-        .describe(
-          "Transfer rating of the DC line, independent of the converter ratings at each end. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-        ),
-      g: zod
-        .number()
-        .default(twoTerminalVSCLineNineGDefault)
-        .describe("Series conductance of the DC line. Units: S."),
-      dc_current: zod
-        .number()
-        .default(twoTerminalVSCLineNineDcCurrentDefault)
-        .describe(
-          "DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: kA.",
-        ),
-      reactive_power_from: zod
-        .number()
-        .default(twoTerminalVSCLineNineReactivePowerFromDefault)
-        .describe(
-          "Initial condition of reactive power flowing into the from-bus. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-        ),
-      dc_control_from: zod
-        .enum(["DC_POWER", "DC_VOLTAGE", "DC_VOLTAGE_DROOP"])
-        .optional()
-        .describe(
-          "DC-side control mode of a voltage-source-converter (VSC) terminal. DC_POWER: converter controls active power transferred to the DC side. DC_VOLTAGE: converter controls the DC-side voltage. DC_VOLTAGE_DROOP: P-Vdc droop, V_dc = dc_setpoint - droop_gain * P_c.",
-        ),
-      ac_control_from: zod
-        .enum(["AC_REACTIVE_POWER", "AC_VOLTAGE"])
-        .optional()
-        .describe(
-          "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.",
-        ),
-      dc_power_setpoint_from: zod
-        .number()
-        .nullish()
-        .describe(
-          "Active-power order of the `from` bus converter, used when `dc_control_from` is `DC_POWER`; `null` otherwise. Positive means the converter supplies power to the AC network; negative means it withdraws power from it. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      dc_voltage_setpoint_from: zod
-        .number()
-        .nullish()
-        .describe(
-          "DC-side voltage target of the `from` bus converter, used when `dc_control_from` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.",
-        ),
-      power_factor_setpoint_from: zod
-        .number()
-        .min(twoTerminalVSCLineNinePowerFactorSetpointFromMin)
-        .max(twoTerminalVSCLineNinePowerFactorSetpointFromMax)
-        .nullish()
-        .describe(
-          "Power-factor setpoint of the `from` bus converter, used when `ac_control_from` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.",
-        ),
-      ac_voltage_setpoint_from: zod
-        .number()
-        .nullish()
-        .describe(
-          "AC-side voltage magnitude target of the `from` bus converter, used when `ac_control_from` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
-        ),
-      rated_ac_voltage_from: zod
-        .number()
-        .default(twoTerminalVSCLineNineRatedAcVoltageFromDefault)
-        .describe(
-          "Rated AC voltage at the `from` converter's AC terminal; 0.0 means unspecified. Units: kV.",
-        ),
-      converter_loss_from: zod
-        .strictObject({
-          power_units: zod
-            .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-            .describe(
-              "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-            ),
-          value_curve: zod
-            .union([
-              zod
-                .strictObject({
-                  curve_type: zod
-                    .literal("INPUT_OUTPUT")
-                    .default(
-                      twoTerminalVSCLineNineConverterLossFromValueCurveOneCurveTypeDefault,
+  .strictObject({
+    id: zod.int().describe("Unique integer identifier for this component."),
+    name: zod
+      .string()
+      .describe(
+        "Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+      ),
+    available: zod
+      .boolean()
+      .describe(
+        "Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+      ),
+    arc: zod
+      .int()
+      .describe("An Arc defining this line `from` a bus `to` another bus."),
+    active_power_flow: zod
+      .number()
+      .describe(
+        "Initial condition of active power flowing from the from-bus to the to-bus in DC. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    rating: zod
+      .number()
+      .describe(
+        "Transfer rating of the DC line, independent of the converter ratings at each end. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    g: zod
+      .number()
+      .default(twoTerminalVSCLineNineGDefault)
+      .describe("Series conductance of the DC line. Units: S."),
+    dc_current: zod
+      .number()
+      .default(twoTerminalVSCLineNineDcCurrentDefault)
+      .describe(
+        "DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: kA.",
+      ),
+    reactive_power_from: zod
+      .number()
+      .default(twoTerminalVSCLineNineReactivePowerFromDefault)
+      .describe(
+        "Initial condition of reactive power flowing into the from-bus. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+      ),
+    dc_control_from: zod
+      .enum(["DC_POWER", "DC_VOLTAGE", "DC_VOLTAGE_DROOP"])
+      .optional()
+      .describe(
+        "DC-side control mode of a voltage-source-converter (VSC) terminal. DC_POWER: converter controls active power transferred to the DC side. DC_VOLTAGE: converter controls the DC-side voltage. DC_VOLTAGE_DROOP: P-Vdc droop, V_dc = dc_setpoint - droop_gain * P_c.",
+      ),
+    ac_control_from: zod
+      .enum(["AC_REACTIVE_POWER", "AC_VOLTAGE"])
+      .optional()
+      .describe(
+        "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.",
+      ),
+    dc_power_setpoint_from: zod
+      .number()
+      .nullish()
+      .describe(
+        "Active-power order of the `from` bus converter, used when `dc_control_from` is `DC_POWER`; `null` otherwise. Positive means the converter supplies power to the AC network; negative means it withdraws power from it. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    dc_voltage_setpoint_from: zod
+      .number()
+      .nullish()
+      .describe(
+        "DC-side voltage target of the `from` bus converter, used when `dc_control_from` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.",
+      ),
+    power_factor_setpoint_from: zod
+      .number()
+      .min(twoTerminalVSCLineNinePowerFactorSetpointFromMin)
+      .max(twoTerminalVSCLineNinePowerFactorSetpointFromMax)
+      .nullish()
+      .describe(
+        "Power-factor setpoint of the `from` bus converter, used when `ac_control_from` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.",
+      ),
+    ac_voltage_setpoint_from: zod
+      .number()
+      .nullish()
+      .describe(
+        "AC-side voltage magnitude target of the `from` bus converter, used when `ac_control_from` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
+      ),
+    rated_ac_voltage_from: zod
+      .number()
+      .default(twoTerminalVSCLineNineRatedAcVoltageFromDefault)
+      .describe(
+        "Rated AC voltage at the `from` converter's AC terminal; 0.0 means unspecified. Units: kV.",
+      ),
+    converter_loss_from: zod
+      .strictObject({
+        power_units: zod
+          .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
+          .describe(
+            "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+          ),
+        value_curve: zod
+          .union([
+            zod
+              .strictObject({
+                curve_type: zod
+                  .literal("INPUT_OUTPUT")
+                  .default(
+                    twoTerminalVSCLineNineConverterLossFromValueCurveOneCurveTypeDefault,
+                  ),
+                function_data: zod.union([
+                  zod
+                    .strictObject({
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                      function_type: zod
+                        .literal("QUADRATIC")
+                        .default(
+                          twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataOneFunctionTypeDefault,
+                        ),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
+                    })
+                    .describe(
+                      "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
-                  function_data: zod.union([
-                    zod
-                      .strictObject({
-                        constant_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit.",
-                          ),
-                        function_type: zod
-                          .literal("QUADRATIC")
-                          .default(
-                            twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataOneFunctionTypeDefault,
-                          ),
-                        proportional_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input.",
-                          ),
-                        quadratic_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input squared.",
-                          ),
-                      })
-                      .describe(
-                        "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
-                      ),
-                    zod
-                      .strictObject({
-                        constant_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit.",
-                          ),
-                        function_type: zod
-                          .literal("LINEAR")
-                          .default(
-                            twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataTwoFunctionTypeDefault,
-                          ),
-                        proportional_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input.",
-                          ),
-                      })
-                      .describe(
-                        "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
-                      ),
-                    zod
-                      .strictObject({
-                        function_type: zod
-                          .literal("PIECEWISE_LINEAR")
-                          .default(
-                            twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataThreeFunctionTypeDefault,
-                          ),
-                        points: zod.array(
-                          zod
-                            .strictObject({
-                              x: zod
-                                .number()
-                                .describe(
-                                  "Units: the wrapped function's input unit.",
-                                ),
-                              y: zod
-                                .number()
-                                .describe(
-                                  "Units: the wrapped function's output unit.",
-                                ),
-                            })
-                            .describe(
-                              "A single point, given as its `x` and `y` coordinates.",
-                            ),
+                  zod
+                    .strictObject({
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                      function_type: zod
+                        .literal("LINEAR")
+                        .default(
+                          twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataTwoFunctionTypeDefault,
                         ),
-                      })
-                      .describe(
-                        "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
-                      ),
-                  ]),
-                  input_at_zero: zod
-                    .number()
-                    .optional()
-                    .describe("Units: the curve's y-axis unit."),
-                })
-                .default(
-                  twoTerminalVSCLineNineConverterLossFromValueCurveOneDefault,
-                )
-                .describe(
-                  "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
-                ),
-              zod
-                .strictObject({
-                  curve_type: zod
-                    .literal("INCREMENTAL")
-                    .default(
-                      twoTerminalVSCLineNineConverterLossFromValueCurveTwoCurveTypeDefault,
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                    })
+                    .describe(
+                      "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
-                  function_data: zod.union([
-                    zod
-                      .strictObject({
-                        constant_term: zod
+                  zod
+                    .strictObject({
+                      function_type: zod
+                        .literal("PIECEWISE_LINEAR")
+                        .default(
+                          twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataThreeFunctionTypeDefault,
+                        ),
+                      points: zod.array(
+                        zod
+                          .strictObject({
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
+                          })
+                          .describe(
+                            "A single point, given as its `x` and `y` coordinates.",
+                          ),
+                      ),
+                    })
+                    .describe(
+                      "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
+                    ),
+                ]),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+              })
+              .default(
+                twoTerminalVSCLineNineConverterLossFromValueCurveOneDefault,
+              )
+              .describe(
+                "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
+              ),
+            zod
+              .strictObject({
+                curve_type: zod
+                  .literal("INCREMENTAL")
+                  .default(
+                    twoTerminalVSCLineNineConverterLossFromValueCurveTwoCurveTypeDefault,
+                  ),
+                function_data: zod.union([
+                  zod
+                    .strictObject({
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                      function_type: zod
+                        .literal("LINEAR")
+                        .default(
+                          twoTerminalVSCLineNineConverterLossFromValueCurveTwoFunctionDataOneFunctionTypeDefault,
+                        ),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                    })
+                    .describe(
+                      "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
+                    ),
+                  zod
+                    .strictObject({
+                      function_type: zod
+                        .literal("PIECEWISE_STEP")
+                        .default(
+                          twoTerminalVSCLineNineConverterLossFromValueCurveTwoFunctionDataTwoFunctionTypeDefault,
+                        ),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
                           .number()
                           .describe(
                             "Units: the wrapped function's output unit.",
                           ),
-                        function_type: zod
-                          .literal("LINEAR")
-                          .default(
-                            twoTerminalVSCLineNineConverterLossFromValueCurveTwoFunctionDataOneFunctionTypeDefault,
-                          ),
-                        proportional_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input.",
-                          ),
-                      })
-                      .describe(
-                        "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
-                    zod
-                      .strictObject({
-                        function_type: zod
-                          .literal("PIECEWISE_STEP")
-                          .default(
-                            twoTerminalVSCLineNineConverterLossFromValueCurveTwoFunctionDataTwoFunctionTypeDefault,
-                          ),
-                        x_coords: zod.array(
-                          zod
-                            .number()
-                            .describe(
-                              "Units: the wrapped function's input unit.",
-                            ),
-                        ),
-                        y_coords: zod.array(
-                          zod
-                            .number()
-                            .describe(
-                              "Units: the wrapped function's output unit.",
-                            ),
-                        ),
-                      })
-                      .describe(
-                        "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
-                      ),
-                  ]),
-                  initial_input: zod
-                    .number()
-                    .optional()
-                    .describe("Units: the curve's y-axis unit."),
-                  input_at_zero: zod
-                    .number()
-                    .optional()
-                    .describe("Units: the curve's y-axis unit."),
-                })
-                .describe(
-                  "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
-                ),
-            ])
-            .default(twoTerminalVSCLineNineConverterLossFromValueCurveDefault)
-            .describe(
-              "The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
-            ),
-        })
-        .optional()
-        .default({
-          power_units: "NATURAL_UNITS" as const,
-          value_curve: {
-            curve_type: "INPUT_OUTPUT" as const,
-            function_data: {
-              function_type: "LINEAR" as const,
-              constant_term: 0 as const,
-              proportional_term: 0 as const,
-            },
+                    })
+                    .describe(
+                      "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
+                    ),
+                ]),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+              })
+              .describe(
+                "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
+              ),
+          ])
+          .default(twoTerminalVSCLineNineConverterLossFromValueCurveDefault)
+          .describe(
+            "The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
+          ),
+      })
+      .optional()
+      .default({
+        power_units: "NATURAL_UNITS" as const,
+        value_curve: {
+          curve_type: "INPUT_OUTPUT" as const,
+          function_data: {
+            function_type: "LINEAR" as const,
+            constant_term: 0 as const,
+            proportional_term: 0 as const,
           },
-        })
-        .describe(
-          "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      max_dc_current_from: zod
-        .number()
-        .default(twoTerminalVSCLineNineMaxDcCurrentFromDefault)
-        .describe(
-          "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
-        ),
-      rating_from: zod
-        .number()
-        .optional()
-        .describe(
-          "Converter rating in the `from` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-        ),
-      reactive_power_limits_from: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .default({ max: 0 as const, min: 0 as const })
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      power_factor_weighting_fraction_from: zod
-        .number()
-        .default(twoTerminalVSCLineNinePowerFactorWeightingFractionFromDefault)
-        .describe(
-          "Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.",
-        ),
-      voltage_limits_from: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .default({ max: 999.9 as const, min: 0 as const })
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      dc_voltage_droop_from: zod
-        .number()
-        .default(twoTerminalVSCLineNineDcVoltageDroopFromDefault)
-        .describe(
-          "DC-voltage droop gain on the `from` converter, used when `dc_control_from` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint_from - dc_voltage_droop_from * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.",
-        ),
-      reactive_power_to: zod
-        .number()
-        .default(twoTerminalVSCLineNineReactivePowerToDefault)
-        .describe(
-          "Initial condition of reactive power flowing into the to-bus. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-        ),
-      dc_control_to: zod
-        .enum(["DC_POWER", "DC_VOLTAGE", "DC_VOLTAGE_DROOP"])
-        .optional()
-        .describe(
-          "DC-side control mode of a voltage-source-converter (VSC) terminal. DC_POWER: converter controls active power transferred to the DC side. DC_VOLTAGE: converter controls the DC-side voltage. DC_VOLTAGE_DROOP: P-Vdc droop, V_dc = dc_setpoint - droop_gain * P_c.",
-        ),
-      ac_control_to: zod
-        .enum(["AC_REACTIVE_POWER", "AC_VOLTAGE"])
-        .optional()
-        .describe(
-          "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.",
-        ),
-      dc_power_setpoint_to: zod
-        .number()
-        .nullish()
-        .describe(
-          "Active-power order of the `to` bus converter, used when `dc_control_to` is `DC_POWER`; `null` otherwise. Positive means the converter supplies power to the AC network; negative means it withdraws power from it. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      dc_voltage_setpoint_to: zod
-        .number()
-        .nullish()
-        .describe(
-          "DC-side voltage target of the `to` bus converter, used when `dc_control_to` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.",
-        ),
-      power_factor_setpoint_to: zod
-        .number()
-        .min(twoTerminalVSCLineNinePowerFactorSetpointToMin)
-        .max(twoTerminalVSCLineNinePowerFactorSetpointToMax)
-        .nullish()
-        .describe(
-          "Power-factor setpoint of the `to` bus converter, used when `ac_control_to` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.",
-        ),
-      ac_voltage_setpoint_to: zod
-        .number()
-        .nullish()
-        .describe(
-          "AC-side voltage magnitude target of the `to` bus converter, used when `ac_control_to` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
-        ),
-      rated_ac_voltage_to: zod
-        .number()
-        .default(twoTerminalVSCLineNineRatedAcVoltageToDefault)
-        .describe(
-          "Rated AC voltage at the `to` converter's AC terminal; 0.0 means unspecified. Units: kV.",
-        ),
-      converter_loss_to: zod
-        .strictObject({
-          power_units: zod
-            .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-            .describe(
-              "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-            ),
-          value_curve: zod
-            .union([
-              zod
-                .strictObject({
-                  curve_type: zod
-                    .literal("INPUT_OUTPUT")
-                    .default(
-                      twoTerminalVSCLineNineConverterLossToValueCurveOneCurveTypeDefault,
+        },
+      })
+      .describe(
+        "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    max_dc_current_from: zod
+      .number()
+      .default(twoTerminalVSCLineNineMaxDcCurrentFromDefault)
+      .describe(
+        "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
+      ),
+    rating_from: zod
+      .number()
+      .optional()
+      .describe(
+        "Converter rating in the `from` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    reactive_power_limits_from: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .default({ max: 0 as const, min: 0 as const })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    power_factor_weighting_fraction_from: zod
+      .number()
+      .default(twoTerminalVSCLineNinePowerFactorWeightingFractionFromDefault)
+      .describe(
+        "Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.",
+      ),
+    voltage_limits_from: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .default({ max: 999.9 as const, min: 0 as const })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    dc_voltage_droop_from: zod
+      .number()
+      .default(twoTerminalVSCLineNineDcVoltageDroopFromDefault)
+      .describe(
+        "DC-voltage droop gain on the `from` converter, used when `dc_control_from` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint_from - dc_voltage_droop_from * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.",
+      ),
+    reactive_power_to: zod
+      .number()
+      .default(twoTerminalVSCLineNineReactivePowerToDefault)
+      .describe(
+        "Initial condition of reactive power flowing into the to-bus. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+      ),
+    dc_control_to: zod
+      .enum(["DC_POWER", "DC_VOLTAGE", "DC_VOLTAGE_DROOP"])
+      .optional()
+      .describe(
+        "DC-side control mode of a voltage-source-converter (VSC) terminal. DC_POWER: converter controls active power transferred to the DC side. DC_VOLTAGE: converter controls the DC-side voltage. DC_VOLTAGE_DROOP: P-Vdc droop, V_dc = dc_setpoint - droop_gain * P_c.",
+      ),
+    ac_control_to: zod
+      .enum(["AC_REACTIVE_POWER", "AC_VOLTAGE"])
+      .optional()
+      .describe(
+        "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.",
+      ),
+    dc_power_setpoint_to: zod
+      .number()
+      .nullish()
+      .describe(
+        "Active-power order of the `to` bus converter, used when `dc_control_to` is `DC_POWER`; `null` otherwise. Positive means the converter supplies power to the AC network; negative means it withdraws power from it. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    dc_voltage_setpoint_to: zod
+      .number()
+      .nullish()
+      .describe(
+        "DC-side voltage target of the `to` bus converter, used when `dc_control_to` is `DC_VOLTAGE` or `DC_VOLTAGE_DROOP`; `null` otherwise. Units: kV.",
+      ),
+    power_factor_setpoint_to: zod
+      .number()
+      .min(twoTerminalVSCLineNinePowerFactorSetpointToMin)
+      .max(twoTerminalVSCLineNinePowerFactorSetpointToMax)
+      .nullish()
+      .describe(
+        "Power-factor setpoint of the `to` bus converter, used when `ac_control_to` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.",
+      ),
+    ac_voltage_setpoint_to: zod
+      .number()
+      .nullish()
+      .describe(
+        "AC-side voltage magnitude target of the `to` bus converter, used when `ac_control_to` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
+      ),
+    rated_ac_voltage_to: zod
+      .number()
+      .default(twoTerminalVSCLineNineRatedAcVoltageToDefault)
+      .describe(
+        "Rated AC voltage at the `to` converter's AC terminal; 0.0 means unspecified. Units: kV.",
+      ),
+    converter_loss_to: zod
+      .strictObject({
+        power_units: zod
+          .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
+          .describe(
+            "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+          ),
+        value_curve: zod
+          .union([
+            zod
+              .strictObject({
+                curve_type: zod
+                  .literal("INPUT_OUTPUT")
+                  .default(
+                    twoTerminalVSCLineNineConverterLossToValueCurveOneCurveTypeDefault,
+                  ),
+                function_data: zod.union([
+                  zod
+                    .strictObject({
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                      function_type: zod
+                        .literal("QUADRATIC")
+                        .default(
+                          twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataOneFunctionTypeDefault,
+                        ),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                      quadratic_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input squared.",
+                        ),
+                    })
+                    .describe(
+                      "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
                     ),
-                  function_data: zod.union([
-                    zod
-                      .strictObject({
-                        constant_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit.",
-                          ),
-                        function_type: zod
-                          .literal("QUADRATIC")
-                          .default(
-                            twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataOneFunctionTypeDefault,
-                          ),
-                        proportional_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input.",
-                          ),
-                        quadratic_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input squared.",
-                          ),
-                      })
-                      .describe(
-                        "Data for a quadratic function `f(x) = quadratic_term * x^2 + proportional_term * x + constant_term`. A non-negative `quadratic_term` makes the function convex.",
-                      ),
-                    zod
-                      .strictObject({
-                        constant_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit.",
-                          ),
-                        function_type: zod
-                          .literal("LINEAR")
-                          .default(
-                            twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataTwoFunctionTypeDefault,
-                          ),
-                        proportional_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input.",
-                          ),
-                      })
-                      .describe(
-                        "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
-                      ),
-                    zod
-                      .strictObject({
-                        function_type: zod
-                          .literal("PIECEWISE_LINEAR")
-                          .default(
-                            twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataThreeFunctionTypeDefault,
-                          ),
-                        points: zod.array(
-                          zod
-                            .strictObject({
-                              x: zod
-                                .number()
-                                .describe(
-                                  "Units: the wrapped function's input unit.",
-                                ),
-                              y: zod
-                                .number()
-                                .describe(
-                                  "Units: the wrapped function's output unit.",
-                                ),
-                            })
-                            .describe(
-                              "A single point, given as its `x` and `y` coordinates.",
-                            ),
+                  zod
+                    .strictObject({
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                      function_type: zod
+                        .literal("LINEAR")
+                        .default(
+                          twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataTwoFunctionTypeDefault,
                         ),
-                      })
-                      .describe(
-                        "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
-                      ),
-                  ]),
-                  input_at_zero: zod
-                    .number()
-                    .optional()
-                    .describe("Units: the curve's y-axis unit."),
-                })
-                .default(
-                  twoTerminalVSCLineNineConverterLossToValueCurveOneDefault,
-                )
-                .describe(
-                  "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
-                ),
-              zod
-                .strictObject({
-                  curve_type: zod
-                    .literal("INCREMENTAL")
-                    .default(
-                      twoTerminalVSCLineNineConverterLossToValueCurveTwoCurveTypeDefault,
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                    })
+                    .describe(
+                      "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                     ),
-                  function_data: zod.union([
-                    zod
-                      .strictObject({
-                        constant_term: zod
+                  zod
+                    .strictObject({
+                      function_type: zod
+                        .literal("PIECEWISE_LINEAR")
+                        .default(
+                          twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataThreeFunctionTypeDefault,
+                        ),
+                      points: zod.array(
+                        zod
+                          .strictObject({
+                            x: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's input unit.",
+                              ),
+                            y: zod
+                              .number()
+                              .describe(
+                                "Units: the wrapped function's output unit.",
+                              ),
+                          })
+                          .describe(
+                            "A single point, given as its `x` and `y` coordinates.",
+                          ),
+                      ),
+                    })
+                    .describe(
+                      "Data for a piecewise linear function defined by (x, y) points and interpolated linearly between consecutive ones. The y values are absolute values at each x, not per-segment slopes; use `PiecewiseStepData` when the data gives per-segment rates. Points run in ascending x order, and two of them define one segment.",
+                    ),
+                ]),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+              })
+              .default(
+                twoTerminalVSCLineNineConverterLossToValueCurveOneDefault,
+              )
+              .describe(
+                "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
+              ),
+            zod
+              .strictObject({
+                curve_type: zod
+                  .literal("INCREMENTAL")
+                  .default(
+                    twoTerminalVSCLineNineConverterLossToValueCurveTwoCurveTypeDefault,
+                  ),
+                function_data: zod.union([
+                  zod
+                    .strictObject({
+                      constant_term: zod
+                        .number()
+                        .describe("Units: the wrapped function's output unit."),
+                      function_type: zod
+                        .literal("LINEAR")
+                        .default(
+                          twoTerminalVSCLineNineConverterLossToValueCurveTwoFunctionDataOneFunctionTypeDefault,
+                        ),
+                      proportional_term: zod
+                        .number()
+                        .describe(
+                          "Units: the wrapped function's output unit per unit of its input.",
+                        ),
+                    })
+                    .describe(
+                      "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
+                    ),
+                  zod
+                    .strictObject({
+                      function_type: zod
+                        .literal("PIECEWISE_STEP")
+                        .default(
+                          twoTerminalVSCLineNineConverterLossToValueCurveTwoFunctionDataTwoFunctionTypeDefault,
+                        ),
+                      x_coords: zod.array(
+                        zod
+                          .number()
+                          .describe(
+                            "Units: the wrapped function's input unit.",
+                          ),
+                      ),
+                      y_coords: zod.array(
+                        zod
                           .number()
                           .describe(
                             "Units: the wrapped function's output unit.",
                           ),
-                        function_type: zod
-                          .literal("LINEAR")
-                          .default(
-                            twoTerminalVSCLineNineConverterLossToValueCurveTwoFunctionDataOneFunctionTypeDefault,
-                          ),
-                        proportional_term: zod
-                          .number()
-                          .describe(
-                            "Units: the wrapped function's output unit per unit of its input.",
-                          ),
-                      })
-                      .describe(
-                        "Data for a linear function `f(x) = proportional_term * x + constant_term`.",
                       ),
-                    zod
-                      .strictObject({
-                        function_type: zod
-                          .literal("PIECEWISE_STEP")
-                          .default(
-                            twoTerminalVSCLineNineConverterLossToValueCurveTwoFunctionDataTwoFunctionTypeDefault,
-                          ),
-                        x_coords: zod.array(
-                          zod
-                            .number()
-                            .describe(
-                              "Units: the wrapped function's input unit.",
-                            ),
-                        ),
-                        y_coords: zod.array(
-                          zod
-                            .number()
-                            .describe(
-                              "Units: the wrapped function's output unit.",
-                            ),
-                        ),
-                      })
-                      .describe(
-                        "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
-                      ),
-                  ]),
-                  initial_input: zod
-                    .number()
-                    .optional()
-                    .describe("Units: the curve's y-axis unit."),
-                  input_at_zero: zod
-                    .number()
-                    .optional()
-                    .describe("Units: the curve's y-axis unit."),
-                })
-                .describe(
-                  "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
-                ),
-            ])
-            .default(twoTerminalVSCLineNineConverterLossToValueCurveDefault)
-            .describe(
-              "The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
-            ),
-        })
-        .optional()
-        .default({
-          power_units: "NATURAL_UNITS" as const,
-          value_curve: {
-            curve_type: "INPUT_OUTPUT" as const,
-            function_data: {
-              function_type: "LINEAR" as const,
-              constant_term: 0 as const,
-              proportional_term: 0 as const,
-            },
+                    })
+                    .describe(
+                      "Data for a step function, constant on each segment, defined by the x coordinates of the segment endpoints and one y value per segment. The y values are per-segment rates, not absolute values; use `PiecewiseLinearData` when the data gives a value at each point. `x_coords` ascends and holds at least two entries, and `y_coords` holds exactly one fewer.",
+                    ),
+                ]),
+                initial_input: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+                input_at_zero: zod
+                  .number()
+                  .optional()
+                  .describe("Units: the curve's y-axis unit."),
+              })
+              .describe(
+                "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
+              ),
+          ])
+          .default(twoTerminalVSCLineNineConverterLossToValueCurveDefault)
+          .describe(
+            "The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
+          ),
+      })
+      .optional()
+      .default({
+        power_units: "NATURAL_UNITS" as const,
+        value_curve: {
+          curve_type: "INPUT_OUTPUT" as const,
+          function_data: {
+            function_type: "LINEAR" as const,
+            constant_term: 0 as const,
+            proportional_term: 0 as const,
           },
-        })
-        .describe(
-          "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-        ),
-      max_dc_current_to: zod
-        .number()
-        .default(twoTerminalVSCLineNineMaxDcCurrentToDefault)
-        .describe(
-          "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
-        ),
-      rating_to: zod
-        .number()
-        .optional()
-        .describe(
-          "Converter rating in the `to` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-        ),
-      operational_flow_limit: zod
-        .strictObject({
-          from_to_min: zod
-            .number()
-            .min(twoTerminalVSCLineNineOperationalFlowLimitFromToMinMin),
-          from_to_max: zod
-            .number()
-            .min(twoTerminalVSCLineNineOperationalFlowLimitFromToMaxMin),
-          to_from_min: zod
-            .number()
-            .min(twoTerminalVSCLineNineOperationalFlowLimitToFromMinMin),
-          to_from_max: zod
-            .number()
-            .min(twoTerminalVSCLineNineOperationalFlowLimitToFromMaxMin),
-        })
-        .optional()
-        .describe(
-          "Operator-set flow limits on a directed branch: a minimum and a maximum flow in each direction, applied in addition to the branch's thermal rating.",
-        ),
-      reactive_power_limits_to: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .default({ max: 0 as const, min: 0 as const })
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      power_factor_weighting_fraction_to: zod
-        .number()
-        .default(twoTerminalVSCLineNinePowerFactorWeightingFractionToDefault)
-        .describe(
-          "Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.",
-        ),
-      voltage_limits_to: zod
-        .strictObject({
-          max: zod.number().optional(),
-          min: zod.number().optional(),
-        })
-        .optional()
-        .default({ max: 999.9 as const, min: 0 as const })
-        .describe(
-          "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-        ),
-      dc_voltage_droop_to: zod
-        .number()
-        .default(twoTerminalVSCLineNineDcVoltageDroopToDefault)
-        .describe(
-          "DC-voltage droop gain on the `to` converter, used when `dc_control_to` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint_to - dc_voltage_droop_to * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.",
-        ),
-      rated_dc_voltage: zod
-        .number()
-        .default(twoTerminalVSCLineNineRatedDcVoltageDefault)
-        .describe(
-          "Rated DC voltage of the link; 0.0 means unspecified. Units: kV.",
-        ),
-      remote_bus_control_from: zod
-        .int()
-        .nullish()
-        .default(twoTerminalVSCLineNineRemoteBusControlFromDefault)
-        .describe(
-          "Number of the AC bus whose voltage the `from` converter regulates when `ac_control_from` is `AC_VOLTAGE`; null regulates its own terminal bus.",
-        ),
-      remote_bus_control_to: zod
-        .int()
-        .nullish()
-        .default(twoTerminalVSCLineNineRemoteBusControlToDefault)
-        .describe(
-          "Number of the AC bus whose voltage the `to` converter regulates when `ac_control_to` is `AC_VOLTAGE`; null regulates its own terminal bus.",
-        ),
-      base_power: zod
-        .number()
-        .describe(
-          "System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
-        ),
-      power_units: zod
-        .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
-        .describe(
-          "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
-        ),
-    }),
-  )
+        },
+      })
+      .describe(
+        "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+      ),
+    max_dc_current_to: zod
+      .number()
+      .default(twoTerminalVSCLineNineMaxDcCurrentToDefault)
+      .describe(
+        "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
+      ),
+    rating_to: zod
+      .number()
+      .optional()
+      .describe(
+        "Converter rating in the `to` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    operational_flow_limit: zod
+      .strictObject({
+        from_to_min: zod
+          .number()
+          .min(twoTerminalVSCLineNineOperationalFlowLimitFromToMinMin),
+        from_to_max: zod
+          .number()
+          .min(twoTerminalVSCLineNineOperationalFlowLimitFromToMaxMin),
+        to_from_min: zod
+          .number()
+          .min(twoTerminalVSCLineNineOperationalFlowLimitToFromMinMin),
+        to_from_max: zod
+          .number()
+          .min(twoTerminalVSCLineNineOperationalFlowLimitToFromMaxMin),
+      })
+      .optional()
+      .describe(
+        "Operator-set flow limits on a directed branch: a minimum and a maximum flow in each direction, applied in addition to the branch's thermal rating.",
+      ),
+    reactive_power_limits_to: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .default({ max: 0 as const, min: 0 as const })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    power_factor_weighting_fraction_to: zod
+      .number()
+      .default(twoTerminalVSCLineNinePowerFactorWeightingFractionToDefault)
+      .describe(
+        "Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.",
+      ),
+    voltage_limits_to: zod
+      .strictObject({
+        max: zod.number().optional(),
+        min: zod.number().optional(),
+      })
+      .optional()
+      .default({ max: 999.9 as const, min: 0 as const })
+      .describe(
+        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
+      ),
+    dc_voltage_droop_to: zod
+      .number()
+      .default(twoTerminalVSCLineNineDcVoltageDroopToDefault)
+      .describe(
+        "DC-voltage droop gain on the `to` converter, used when `dc_control_to` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint_to - dc_voltage_droop_to * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.",
+      ),
+    rated_dc_voltage: zod
+      .number()
+      .default(twoTerminalVSCLineNineRatedDcVoltageDefault)
+      .describe(
+        "Rated DC voltage of the link; 0.0 means unspecified. Units: kV.",
+      ),
+    remote_bus_control_from: zod
+      .int()
+      .nullish()
+      .default(twoTerminalVSCLineNineRemoteBusControlFromDefault)
+      .describe(
+        "Number of the AC bus whose voltage the `from` converter regulates when `ac_control_from` is `AC_VOLTAGE`; null regulates its own terminal bus.",
+      ),
+    remote_bus_control_to: zod
+      .int()
+      .nullish()
+      .default(twoTerminalVSCLineNineRemoteBusControlToDefault)
+      .describe(
+        "Number of the AC bus whose voltage the `to` converter regulates when `ac_control_to` is `AC_VOLTAGE`; null regulates its own terminal bus.",
+      ),
+    base_power: zod
+      .number()
+      .describe(
+        "System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+      ),
+    power_units: zod
+      .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
+      .describe(
+        "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+      ),
+  })
   .describe(
     "A High Voltage Voltage-Source Converter DC line, which must be connected to an ACBus on each end. This model is appropriate for operational simulations with a linearized DC power flow approximation with losses using a voltage-current model. For modeling a DC network, see TModelHVDCLine. Impedance, voltage, and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them.",
   );
