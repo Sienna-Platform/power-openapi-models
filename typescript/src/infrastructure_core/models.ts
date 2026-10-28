@@ -458,7 +458,7 @@ export const DataSource = zod
         "Publishing organization, e.g. 'U.S. Energy Information Administration'.",
       ),
     retrieved_at: zod.iso
-      .datetime({ offset: true, local: true })
+      .datetime({ offset: true })
       .describe("When the data was obtained."),
     dataset: zod
       .string()
@@ -478,7 +478,7 @@ export const DataSource = zod
         "License of the source data, if known: an SPDX identifier such as 'CC-BY-4.0', or a license name or URL.",
       ),
     published_at: zod.iso
-      .datetime({ offset: true, local: true })
+      .datetime({ offset: true })
       .nullish()
       .describe("When the source published the data; null if unknown."),
     confidence: zod

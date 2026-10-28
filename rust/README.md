@@ -130,8 +130,8 @@ assert!(rows.validate(&row).is_err());
 
 `violations` returns every offending path as `/json/pointer: reason`; a failed
 `oneOf` reports its closest branch, so a time series row reports against its own
-type. Formats are not checked, so a timestamp without an offset passes, as it does
-in the generated types.
+type. `format` is an annotation and is not checked; from schema 0.4.0, every timestamp
+also has a `pattern`, which is checked with ECMA-262 semantics.
 
 ## Units
 
@@ -203,16 +203,21 @@ exceptions are the string-keyed maps below, whose schemas allow any key.
 **Enums reject unlisted values**, including the integer ones (`curve_style`
 accepts `0` and `1`, nothing else).
 
-**Timestamps may omit the offset.** The schema says RFC 3339, which requires one, but
-producers write `2024-01-01T00:00:00`, so all three packages accept it and read it
-as UTC. An offset is honoured and the value normalized to UTC; a bare date or text
-that is not a timestamp is rejected. Values are always written with a `Z`.
+**Timestamps follow RFC 3339.** A `format: date-time` field is a
+`timestamp::OffsetDateTime`: it needs `Z` or a UTC offset, and it keeps the offset. A
+`format: date-time-local` field is a `timestamp::LocalDateTime`: it has no offset, and it is
+a wall clock that names no instant. A field that takes either form, such as a series'
+`initial_timestamp` from schema 0.4.0, is a `timestamp::Timestamp`. They parse the same
+forms as the schema `pattern` (uppercase `T` and `Z`, seconds, at most three fractional
+digits) and write the same forms, with `Z` for a zero offset.
 
 ```rust
-use power_openapi_models::timestamp::parse;
+use power_openapi_models::timestamp::{OffsetDateTime, Timestamp};
 
-assert_eq!(parse("2024-01-01T00:00:00")?, parse("2024-01-01T02:00:00+02:00")?);
-assert!(parse("2024-01-01").is_err());
+assert!(matches!("2024-01-01T00:00:00".parse::<Timestamp>()?, Timestamp::Local(_)));
+let at: OffsetDateTime = "2024-01-01T02:00:00+02:00".parse()?;
+assert_eq!(at.to_string(), "2024-01-01T02:00:00+02:00");
+assert!("2024-01-01 00:00:00Z".parse::<Timestamp>().is_err());
 # Ok::<(), String>(())
 ```
 

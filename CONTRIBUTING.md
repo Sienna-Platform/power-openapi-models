@@ -20,9 +20,10 @@ Fixes belong in one of two upstream places:
    generator behavior it works around.
 
 `python/src/power_openapi_models/timestamps.py` and `rust/src/timestamp.rs` are
-hand-written too: they are the timestamp type the generated `date-time` fields use,
-which accept an offset-less timestamp as UTC (see CHANGELOG.md, "Changed from the
-schema"). Each language's postprocess wires its generated fields to them.
+hand-written too: they are the types of the generated `date-time` and `date-time-local`
+fields. They accept the RFC 3339 forms of the schema `pattern` only, because the
+generators' own types accept more. Each language's postprocess wires its generated
+fields to them. TypeScript needs no such module: zod applies the `pattern`.
 
 A `<Base><N>` class whose `<Base>` also exists is a generator alias leak; the
 cure is naming the inline object or enum as a `$defs` entry in the SiennaSchemas

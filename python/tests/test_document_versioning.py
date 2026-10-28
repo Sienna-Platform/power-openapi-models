@@ -328,6 +328,34 @@ def test_source_write_lists_every_offending_path(kind, tmp_path, bundles):
     assert not (tmp_path / "doc.json").exists()
 
 
+@pytest.mark.parametrize(
+    ("pattern", "value", "ok"),
+    [
+        ("^a$", "a", True),
+        # ECMA-262 `$` does not match before a trailing newline; Python's `re` does.
+        ("^a$", "a\n", False),
+        # ECMA-262 `\d` is ASCII only; Python's `re` matches any Unicode digit.
+        ("^\\d$", "3", True),
+        ("^\\d$", "\u0663", False),
+    ],
+)
+def test_source_validation_uses_ecma_262_patterns(tmp_path, pattern, value, ok):
+    pytest.importorskip("regress")
+    bundle = tmp_path / "9.9.9"
+    bundle.mkdir()
+    schema = {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {"stamp": {"type": "string", "pattern": pattern}},
+    }
+    (bundle / "Probe.json").write_text(json.dumps(schema))
+    if ok:
+        _versioning.validate_source({"stamp": value}, "9.9.9", "Probe", tmp_path)
+        return
+    with pytest.raises(ValueError, match="/stamp"):
+        _versioning.validate_source({"stamp": value}, "9.9.9", "Probe", tmp_path)
+
+
 def test_source_write_with_missing_bundle_names_the_path(kind, tmp_path):
     pytest.importorskip("jsonschema")
     cls, minimal, bundle_name, *_ = kind

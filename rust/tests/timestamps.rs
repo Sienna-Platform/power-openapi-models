@@ -1,10 +1,100 @@
-//! `format: date-time` fields accept a timestamp with no offset, read as UTC, as
-//! the Python and TypeScript packages do. See `src/timestamp.rs`.
+//! `format: date-time` and `format: date-time-local` fields accept the RFC 3339 forms
+//! only, and write the same forms. See `src/timestamp.rs`.
 
-use chrono::{TimeZone, Utc};
+use chrono::{NaiveDate, Timelike};
 use power_openapi_models::generated::{DataSource, SingleTimeSeries};
-use power_openapi_models::timestamp;
+use power_openapi_models::timestamp::{LocalDateTime, OffsetDateTime, Timestamp};
 use serde_json::{json, Value};
+
+const NOT_RFC3339: [&str; 11] = [
+    "2024-01-01",
+    "not a timestamp",
+    "",
+    "2024-13-01T00:00:00Z",
+    "2024-01-01 00:00:00Z",
+    "2024-01-01t00:00:00z",
+    "2024-01-01T00:00Z",
+    "2024-01-01T00:00:00.123456Z",
+    "2024-01-01T00:00:00+0200",
+    "2024-01-01T00:00:00Z\n",
+    "\u{0662}024-01-01T00:00:00Z",
+];
+
+#[test]
+fn offset_form_round_trips_and_keeps_the_offset() {
+    for written in [
+        "2024-01-01T00:00:00Z",
+        "2024-01-01T02:00:00+02:00",
+        "2024-01-01T00:00:00.250-07:00",
+    ] {
+        let parsed: OffsetDateTime = written.parse().unwrap();
+        assert_eq!(parsed.to_string(), written);
+    }
+    let plus: OffsetDateTime = "2024-01-01T02:00:00+02:00".parse().unwrap();
+    assert_eq!(plus.0.offset().local_minus_utc(), 2 * 3600);
+    let zero: OffsetDateTime = "2024-01-01T00:00:00+00:00".parse().unwrap();
+    assert_eq!(zero.to_string(), "2024-01-01T00:00:00Z");
+}
+
+#[test]
+fn local_form_round_trips() {
+    for written in ["2024-01-01T00:00:00", "2024-01-01T00:00:00.250"] {
+        let parsed: LocalDateTime = written.parse().unwrap();
+        assert_eq!(parsed.to_string(), written);
+    }
+    let parsed: LocalDateTime = "2024-01-01T00:00:00.250".parse().unwrap();
+    assert_eq!(parsed.0.nanosecond(), 250_000_000);
+}
+
+#[test]
+fn either_form_is_chosen_by_the_text() {
+    assert!(matches!(
+        "2024-01-01T00:00:00".parse::<Timestamp>().unwrap(),
+        Timestamp::Local(_)
+    ));
+    assert!(matches!(
+        "2024-01-01T00:00:00Z".parse::<Timestamp>().unwrap(),
+        Timestamp::Offset(_)
+    ));
+}
+
+#[test]
+fn everything_else_is_rejected() {
+    for bad in NOT_RFC3339 {
+        assert!(bad.parse::<Timestamp>().is_err(), "{bad:?}");
+    }
+    assert!("2024-01-01T00:00:00".parse::<OffsetDateTime>().is_err());
+    assert!("2024-01-01T00:00:00Z".parse::<LocalDateTime>().is_err());
+}
+
+#[test]
+fn sub_millisecond_values_are_not_written() {
+    let clock = NaiveDate::from_ymd_opt(2024, 1, 1)
+        .unwrap()
+        .and_hms_nano_opt(0, 0, 0, 1)
+        .unwrap();
+    assert!(serde_json::to_value(LocalDateTime(clock)).is_err());
+}
+
+#[test]
+fn data_source_timestamps_need_an_offset() {
+    let base = json!({"id": 1, "fields": [], "retrieved_at": "2024-01-01T00:00:00Z"});
+    let with = |key: &str, value: Value| {
+        let mut doc = base.clone();
+        doc[key] = value;
+        serde_json::from_value::<DataSource>(doc)
+    };
+    let source = with("published_at", json!(null)).unwrap();
+    assert_eq!(source.published_at, Some(None));
+    assert_eq!(
+        serde_json::to_value(&source).unwrap()["retrieved_at"],
+        "2024-01-01T00:00:00Z"
+    );
+    assert!(with("retrieved_at", json!("2024-01-01T00:00:00")).is_err());
+    assert!(with("published_at", json!("2024-02-01T00:00:00")).is_err());
+    let absent: DataSource = serde_json::from_value(base).unwrap();
+    assert_eq!(absent.published_at, None);
+}
 
 fn series(timestamp: &str) -> Value {
     json!({
@@ -16,77 +106,36 @@ fn series(timestamp: &str) -> Value {
     })
 }
 
-fn initial(timestamp: &str) -> Result<chrono::DateTime<Utc>, serde_json::Error> {
-    serde_json::from_value::<SingleTimeSeries>(series(timestamp)).map(|s| s.initial_timestamp)
+fn round_trip(timestamp: &str) -> Result<Value, serde_json::Error> {
+    let parsed: SingleTimeSeries = serde_json::from_value(series(timestamp))?;
+    Ok(serde_json::to_value(&parsed)?["initial_timestamp"].clone())
 }
 
 #[test]
-fn naive_timestamp_is_read_as_utc() {
+fn series_timestamp_with_an_offset() {
     assert_eq!(
-        initial("2024-01-01T00:00:00").unwrap(),
-        Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap()
+        round_trip("2024-01-01T02:00:00+02:00").unwrap(),
+        "2024-01-01T02:00:00+02:00"
     );
-}
-
-#[test]
-fn naive_fractional_seconds() {
-    let ts = initial("2024-01-01T00:00:00.250").unwrap();
-    assert_eq!(ts.timestamp_subsec_millis(), 250);
-}
-
-#[test]
-fn z_and_offsets_are_honoured_and_normalized_to_utc() {
-    let midnight = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
-    assert_eq!(initial("2024-01-01T00:00:00Z").unwrap(), midnight);
-    assert_eq!(initial("2024-01-01T02:00:00+02:00").unwrap(), midnight);
-}
-
-#[test]
-fn non_timestamps_are_still_rejected() {
-    for bad in [
-        "2024-01-01",
-        "not a timestamp",
-        "",
-        "2024-13-01T00:00:00",
-        "2024-01-01 00:00:00",
-    ] {
-        let error = initial(bad).expect_err(bad);
-        assert!(
-            error.to_string().contains("not a timestamp"),
-            "{bad}: {error}"
-        );
+    for bad in NOT_RFC3339 {
+        assert!(round_trip(bad).is_err(), "{bad:?}");
     }
 }
 
+/// Schema 0.4.0 made a series' `initial_timestamp` either RFC 3339 form.
 #[test]
-fn written_timestamp_always_carries_an_offset() {
-    let parsed: SingleTimeSeries = serde_json::from_value(series("2024-01-01T00:00:00")).unwrap();
+fn series_timestamp_without_an_offset_from_schema_0_4() {
+    let mut parts = power_openapi_models::SCHEMA_VERSION
+        .trim_start_matches('v')
+        .split('.');
+    let major: u32 = parts.next().unwrap().parse().unwrap();
+    let minor: u32 = parts.next().unwrap().parse().unwrap();
+    if (major, minor) < (0, 4) {
+        assert!(round_trip("2024-01-01T00:00:00").is_err());
+        return;
+    }
     assert_eq!(
-        serde_json::to_value(&parsed).unwrap()["initial_timestamp"],
-        "2024-01-01T00:00:00Z"
+        round_trip("2024-01-01T00:00:00").unwrap(),
+        "2024-01-01T00:00:00"
     );
-}
-
-#[test]
-fn nullable_field_is_tri_state() {
-    let base = json!({"id": 1, "fields": [], "retrieved_at": "2024-01-01T00:00:00"});
-    let with = |published: Value| -> DataSource {
-        let mut doc = base.clone();
-        doc["published_at"] = published;
-        serde_json::from_value(doc).unwrap_or_else(|e| panic!("{e}"))
-    };
-    let set = with(json!("2024-02-01T00:00:00"));
-    assert_eq!(
-        set.published_at,
-        Some(Some(Utc.with_ymd_and_hms(2024, 2, 1, 0, 0, 0).unwrap()))
-    );
-    assert_eq!(with(json!(null)).published_at, Some(None));
-    let absent: DataSource = serde_json::from_value(base).unwrap();
-    assert_eq!(absent.published_at, None);
-}
-
-#[test]
-fn parse_is_public_for_callers_holding_a_bare_string() {
-    assert!(timestamp::parse("2024-01-01T00:00:00").is_ok());
-    assert!(timestamp::parse("2024-01-01").is_err());
 }

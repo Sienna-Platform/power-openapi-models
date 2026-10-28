@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Codegen for SiennaSchemas 0.4.0, which declares a zoneless series timestamp as
+`date-time-local`. Merge this before the 0.4.0 schema release: the update-schema workflow
+regenerates with it. Against schema 0.3.0, every timestamp field is now strict `date-time`.
+
+### Changed — all three packages
+
+- **Timestamps follow RFC 3339; no package assumes UTC.** The leniency patches are removed:
+  `fix_naive_timestamps` (Python), `fixNaiveTimestamps` (TypeScript) and
+  `lenient_timestamps` (Rust). A `date-time` field needs `Z` or a UTC offset. A
+  `date-time-local` field has no offset. A field that takes either form follows the text.
+- **Python:** `timestamps.UtcDatetime` is removed. `OffsetDatetime` and `LocalDatetime`
+  replace pydantic's `AwareDatetime` and `NaiveDatetime`, which accept a space separator,
+  no seconds, six fractional digits and (`AwareDatetime`) an epoch number, and which write
+  six fractional digits. The new types accept the forms of the schema `pattern` and write
+  at most milliseconds, with `Z` for a zero offset.
+- **Rust:** `timestamp::parse`, `timestamp::option` and `timestamp::deserialize_tri_state`
+  are removed. A `date-time` field is `timestamp::OffsetDateTime` (it keeps the offset,
+  where `chrono::DateTime<Utc>` dropped it), a `date-time-local` field is
+  `timestamp::LocalDateTime`, and a field that takes either is `timestamp::Timestamp`.
+  chrono's serde impl accepted a space separator, lowercase `t`, nine fractional digits,
+  `+0200` and a trailing newline.
+- **Python source-version writes** check `pattern` with ECMA-262 semantics through
+  `regress`, a new dependency of the `source-version` extra. Python's `re` let `$` match
+  before a trailing newline and `\d` match any Unicode digit. TypeScript (ajv) and Rust
+  (`jsonschema`) already use ECMA-262 semantics.
+
 ### Fixed — Python
 
 - **An enum field's default was a plain value, not the enum member.** pydantic does not
@@ -25,6 +51,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `EmissionsData` and the other schemas with rules were affected.
   `dropUnknownIntersections` removes the placeholders; the rules stay in the strict
   bundles that ajv applies.
+
+### Fixed — Rust
+
+- **openapi-to-rust 0.19 reads a validation-only `allOf` as composition.** An object
+  schema whose `allOf` holds only `if`/`then` rules became `serde_json::Value`, and a
+  tagged union of such objects (`TimeSeriesAssociation`, from schema 0.4.0) turned
+  untagged. `codegen/rust/bundle.py` (`drop_validation_rules`) removes such an `allOf`
+  before generation; the strict bundles behind `validate` still check the rules.
+  Upstream: gpu-cli/openapi-to-rust#111.
 
 ## [0.3.0] — 2026-10-26
 

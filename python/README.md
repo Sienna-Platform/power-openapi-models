@@ -78,18 +78,25 @@ print(UnitSystem.NATURAL_UNITS.value)
 `base_power`. Getting this wrong is the most common source of
 wrong-by-a-factor-of-100 bugs across the ecosystem.
 
-### Timestamps may omit the offset
+### Timestamps follow RFC 3339
 
-The schema says RFC 3339, which requires an offset, but producers write
-`2024-01-01T00:00:00`, so all three packages accept it and read it as UTC. An offset is
-kept; a bare date or text that is not a timestamp is rejected. Fields are typed
-`power_openapi_models.timestamps.UtcDatetime`, so they always hold an aware `datetime`.
+A `format: date-time` field is an `OffsetDatetime`: it needs `Z` or a UTC offset, and it
+keeps the offset. A `format: date-time-local` field is a `LocalDatetime`: it has no offset,
+and it is a wall clock that names no instant. Both live in `power_openapi_models.timestamps`.
+They accept the same forms as the schema `pattern`: uppercase `T` and `Z`, seconds, and at
+most three fractional digits. They write the same form, with `Z` for a zero offset.
 
 ```python
 from power_openapi_models.infrastructure_core.models import DataSource
 
-source = DataSource(id=1, fields=[], retrieved_at="2024-01-01T00:00:00")
-assert source.retrieved_at.utcoffset().total_seconds() == 0
+source = DataSource(id=1, fields=[], retrieved_at="2024-01-01T00:00:00-07:00")
+assert source.retrieved_at.utcoffset().total_seconds() == -7 * 3600
+try:
+    DataSource(id=1, fields=[], retrieved_at="2024-01-01T00:00:00")
+except ValueError:
+    pass
+else:
+    raise AssertionError("a data source timestamp needs an offset")
 ```
 
 ### Discriminated unions carry a `.root`
