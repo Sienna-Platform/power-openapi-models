@@ -1,6 +1,7 @@
-//! Schema defaults. openapi-to-rust drops them; the post-process restores them.
-//! Each case mirrors a divergence the Python and TypeScript packages already had
-//! to fix, and asserts what pydantic materializes.
+//! Schema defaults. The SDK contract (see the README): a schema `default` documents the
+//! value a consumer assumes for an absent field, and no SDK inserts it. An omitted optional
+//! field stays absent, and a schema-required field stays required even with a default, as
+//! in the Julia package. A `const` field, such as a discriminator, keeps its fixed value.
 
 use power_openapi_models::generated::*;
 use serde_json::{json, Value};
@@ -9,63 +10,37 @@ fn written<T: serde::Serialize>(value: &T) -> Value {
     serde_json::to_value(value).unwrap()
 }
 
-#[test]
-fn required_and_defaulted_field_may_be_omitted() {
-    // CostCurve requires vom_cost and power_units and defaults both.
-    let curve: CostCurve = serde_json::from_value(json!({
-        "value_curve": {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0.0,
-                "proportional_term": 1.0
-            }
+fn linear(proportional_term: f64) -> Value {
+    json!({
+        "curve_type": "INPUT_OUTPUT",
+        "function_data": {
+            "function_type": "LINEAR",
+            "constant_term": 0.0,
+            "proportional_term": proportional_term
         }
-    }))
-    .expect("omitted vom_cost / power_units take their schema defaults");
-    let out = written(&curve);
-    assert_eq!(out["power_units"], "NATURAL_UNITS");
-    assert_eq!(out["variable_cost_type"], "COST");
-    assert_eq!(
-        out["vom_cost"]["function_data"]["proportional_term"].as_f64(),
-        Some(0.0)
-    );
+    })
 }
 
 #[test]
-fn required_defaulted_object_with_its_own_defaults_is_complete() {
-    // Source.operation_cost defaults to an object whose CostCurves omit
-    // power_units; that must resolve through CostCurve's own default.
-    let source: Source = serde_json::from_value(json!({
-        "id": 1, "name": "s", "available": true, "bus": 1,
+fn required_field_with_a_default_must_be_given() {
+    // CostCurve requires vom_cost and power_units, and the schema gives both a default.
+    let omitted = serde_json::from_value::<CostCurve>(json!({"value_curve": linear(1.0)}));
+    assert!(omitted.is_err());
+    let curve: CostCurve = serde_json::from_value(json!({
+        "value_curve": linear(1.0),
+        "vom_cost": linear(0.0),
         "power_units": "NATURAL_UNITS"
     }))
     .unwrap_or_else(|e| panic!("{e}"));
-    let out = written(&source);
-    assert_eq!(out["operation_cost"]["cost_type"], "IMPORTEXPORT");
-    assert_eq!(
-        out["operation_cost"]["import_offer_curves"]["power_units"],
-        "NATURAL_UNITS"
-    );
+    let out = written(&curve);
+    assert_eq!(out["power_units"], "NATURAL_UNITS");
+    // A `const` discriminator keeps its fixed value.
+    assert_eq!(out["variable_cost_type"], "COST");
 }
 
 #[test]
-fn optional_defaulted_field_materializes_its_nonzero_default() {
-    // internal_voltage defaults to 1.0: a Rust zero would be 0.0, an Option None.
-    let source: Source = serde_json::from_value(json!({
-        "id": 1, "name": "s", "available": true, "bus": 1,
-        "power_units": "NATURAL_UNITS"
-    }))
-    .unwrap();
-    let out = written(&source);
-    assert_eq!(out["internal_voltage"].as_f64(), Some(1.0));
-    assert_eq!(out["base_power"].as_f64(), Some(100.0));
-    assert_eq!(out["active_power_limits"]["max"].as_f64(), Some(0.0));
-}
-
-#[test]
-fn optional_defaulted_enum_field_materializes_its_default() {
-    let data: EmissionsData = serde_json::from_value(json!({
+fn optional_field_with_a_default_stays_absent() {
+    let emissions = json!({
         "id": 1, "name": "e", "pollutant": "CO2",
         "emission_rate": {
             "curve_type": "INCREMENTAL",
@@ -73,25 +48,21 @@ fn optional_defaulted_enum_field_materializes_its_default() {
             "initial_input": 0.0
         },
         "basis": "FUEL_INPUT", "energy_unit": "MMBTU"
-    }))
-    .unwrap_or_else(|e| panic!("{e}"));
+    });
+    let data: EmissionsData =
+        serde_json::from_value(emissions.clone()).unwrap_or_else(|e| panic!("{e}"));
     let out = written(&data);
-    assert_eq!(out["mass_unit"], "KG");
-    assert_eq!(out["available"], true);
+    assert!(out.get("mass_unit").is_none(), "{out}");
+    assert!(out.get("available").is_none(), "{out}");
+
+    let mut given = emissions;
+    given["mass_unit"] = json!("LB");
+    let data: EmissionsData = serde_json::from_value(given).unwrap_or_else(|e| panic!("{e}"));
+    assert_eq!(written(&data)["mass_unit"], "LB");
 }
 
 #[test]
-fn explicit_values_override_defaults() {
-    let source: Source = serde_json::from_value(json!({
-        "id": 1, "name": "s", "available": true, "bus": 1,
-        "power_units": "NATURAL_UNITS", "internal_voltage": 1.05
-    }))
-    .unwrap();
-    assert_eq!(written(&source)["internal_voltage"].as_f64(), Some(1.05));
-}
-
-#[test]
-fn nullable_field_without_default_stays_null() {
+fn nullable_field_stays_null_and_defaulted_field_stays_absent() {
     let converter: InterconnectingConverter = serde_json::from_value(json!({
         "id": 1, "name": "c", "available": true, "bus": 1, "dc_bus": 2,
         "active_power": 0.0, "rating": 1.0, "base_power": 100.0,
@@ -100,9 +71,12 @@ fn nullable_field_without_default_stays_null() {
     }))
     .unwrap_or_else(|e| panic!("{e}"));
     let out = written(&converter);
-    assert!(out["remote_bus_control"].is_null());
-    // power_factor_weighting_fraction defaults to 1.0; Rust's zero value would be 0.0.
-    assert_eq!(out["power_factor_weighting_fraction"].as_f64(), Some(1.0));
+    assert!(out.get("remote_bus_control").is_none_or(Value::is_null));
+    // The schema default of power_factor_weighting_fraction is 1.0; it is not inserted.
+    assert!(
+        out.get("power_factor_weighting_fraction").is_none(),
+        "{out}"
+    );
 }
 
 #[test]
@@ -130,21 +104,15 @@ fn integer_enums_reject_values_the_schema_does_not_list() {
 }
 
 #[test]
-fn optional_ref_to_a_defaulted_type_gets_no_default() {
-    // Only a *required* property inherits its target type's default.
+fn optional_ref_to_a_defaulted_type_stays_absent() {
     let curve: FuelCurve = serde_json::from_value(json!({
-        "value_curve": {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {"function_type": "LINEAR", "constant_term": 0, "proportional_term": 0}
-        },
+        "value_curve": linear(0.0),
+        "vom_cost": linear(0.0),
         "power_units": "NATURAL_UNITS",
         "fuel_units": "MMBTU"
     }))
     .unwrap_or_else(|e| panic!("{e}"));
-    let out = written(&curve);
-    assert!(
-        out["vom_cost"].is_object(),
-        "required vom_cost inherits InputOutputCurve's default"
-    );
-    assert!(out.get("startup_fuel_offtake").is_none_or(Value::is_null));
+    assert!(written(&curve)
+        .get("startup_fuel_offtake")
+        .is_none_or(Value::is_null));
 }

@@ -32,16 +32,27 @@ regenerates with it. Against schema 0.3.0, every timestamp field is now strict `
   `regress`, a new dependency of the `source-version` extra. Python's `re` let `$` match
   before a trailing newline and `\d` match any Unicode digit. TypeScript (ajv) and Rust
   (`jsonschema`) already use ECMA-262 semantics.
-
-### Fixed — Python
-
-- **An enum field's default was a plain value, not the enum member.** pydantic does not
-  validate a default, so `interval_alignment`, `prime_mover_type`, `parameter_units` and
-  the other defaulted enum fields held `"PERIOD_ENDING"` or `0` where a validated value
-  holds `IntervalAlignment.PERIOD_ENDING`, and `model_dump(mode="json")` warned
-  `PydanticSerializationUnexpectedValue`. The Makefile passes `--set-default-enum-member`,
-  which covers an enum the module defines; `fix_imported_enum_defaults` covers one it
-  imports from `core`. A test checks every defaulted enum field of every model.
+- **No SDK fills a schema default.** A schema `default` documents the value a consumer
+  assumes for an absent field; it is no longer inserted, as in the Julia package. An
+  omitted optional field stays absent (`None` in Python and Rust, `undefined` in
+  TypeScript), so reading and writing a document never adds a value the producer did not
+  write. Before, Python, TypeScript and Rust filled 318 schema defaults, such as
+  `interval_alignment` (`PERIOD_ENDING`) and `AVRFixed.V_ref` (`1.0`).
+- **A schema-required field with a default is required.** `CostCurve.vom_cost` and
+  `power_units`, `PortfolioFinancialData.discount_rate`, `inflation_rate` and
+  `interest_rate`, and 13 more fields: a document must carry them, as the schema's
+  `required` list and the Julia package say. The writers no longer add the financial
+  rates.
+- **A `const` field keeps its fixed value** (`time_series_type`, `curve_type`,
+  `cost_type`): the schema fixes it, so it is not invented.
+- How: every generator reads a copy of the schemas without `default`
+  (`codegen/strip_defaults.py`, `GEN_SCHEMA_DIR` in the Makefile). The Python enum-default
+  fix that was on `main` (`--set-default-enum-member`, `fix_imported_enum_defaults`) is
+  removed, because no enum default remains.
+- Tests: `test_no_schema_defaults.py` checks that no generated Python field fills a
+  default except a `const`; `rust/tests/defaults.rs` and the TypeScript tests check the
+  same contract. In `check_cross_language.py` the four required-with-default exemptions
+  are removed, and the Julia report drops from 333 divergences to 18.
 
 ### Fixed — TypeScript
 

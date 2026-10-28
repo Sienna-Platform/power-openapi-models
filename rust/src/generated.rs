@@ -67,8 +67,8 @@ pub struct WPIDHY {
     ///Constraint: minItems=3, maxItems=3
     pub power_gate_openings: Vec<f64>,
     ///Reference load set-point
-    #[serde(rename = "P_ref", default = "defaults::WPIDHY_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 ///Supplemental attribute for a voltage droop controller (PSS/E voltage droop control): a set of generators jointly regulating the reactive power at one bus along a Q–V characteristic. While the controller is available its regulated bus and characteristic override each member's own voltage target; while it is unavailable the members fall back to their own targets. Membership and each member's relative reactive power weight are VoltageControlAssociation rows. The characteristic holds `reactive_power_limits.max` below `voltage_limits.min`, ramps to `deadband_reactive_power` at `deadband_voltage_limits.min`, holds it through `deadband_voltage_limits.max`, ramps to `reactive_power_limits.min` at `voltage_limits.max`, and holds it above.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -79,15 +79,15 @@ pub struct VoltageDroopControl {
     ///Name of the voltage droop controller.
     pub name: String,
     ///Whether the controller is in service (PSS/E STATUS). While false, members regulate their own targets.
-    #[serde(default = "defaults::VoltageDroopControl_available")]
-    pub available: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub available: Option<bool>,
     ///ID of the bus whose reactive power the controller regulates; overrides every member's own regulated bus while the controller is available.
     pub regulated_bus_id: i64,
     pub reactive_power_limits: MinMax,
     ///Reactive power held while the regulated bus voltage is inside `deadband_voltage_limits` (PSS/E QDB). Must lie strictly between `reactive_power_limits.min` and `reactive_power_limits.max`. Units: MVAr.
     pub deadband_reactive_power: f64,
-    #[serde(default = "defaults::VoltageDroopControl_voltage_units")]
-    pub voltage_units: VoltageUnitBasis,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub voltage_units: Option<VoltageUnitBasis>,
     pub deadband_voltage_limits: MinMax,
     pub voltage_limits: MinMax,
 }
@@ -101,10 +101,10 @@ pub struct VoltageControlAssociation {
     pub entity_id: i64,
     ///Positive relative weight of this member. Its share of the reactive power required at the regulated bus is weight divided by the sum of the weights of the members in service. Units: 1.
     ///Constraint: exclusiveMinimum=0
-    #[serde(default = "defaults::VoltageControlAssociation_weight")]
-    pub weight: f64,
-    #[serde(default = "defaults::VoltageControlAssociation_terminal")]
-    pub terminal: VoltageControlTerminal,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub weight: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub terminal: Option<VoltageControlTerminal>,
 }
 ///Which converter of a two-terminal line a voltage control membership refers to. UNDEFINED: the member is a single-bus device, so no converter is named. FROM: the converter at the arc's `from` bus. TO: the converter at the arc's `to` bus.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -366,12 +366,12 @@ pub struct TwoWindingTransformer {
     pub name: String,
     ///The `TransformerCircuit` carrying this transformer's series electrical data.
     pub circuit: i64,
-    #[serde(default = "defaults::TwoWindingTransformer_admittance_units")]
-    pub admittance_units: AdmittanceUnitBasis,
-    #[serde(default = "defaults::TwoWindingTransformer_magnetizing_shunt")]
-    pub magnetizing_shunt: ComplexNumber,
-    #[serde(default = "defaults::TwoWindingTransformer_shunt_location")]
-    pub shunt_location: TwoWindingTransformerShuntLocation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub admittance_units: Option<AdmittanceUnitBasis>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub magnetizing_shunt: Option<ComplexNumber>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub shunt_location: Option<TwoWindingTransformerShuntLocation>,
 }
 ///Placement of a `TwoWindingTransformer`'s magnetizing shunt admittance on the two sides of its single circuit arc. PRIMARY: the full magnetizing shunt is applied on the primary (from) side. SECONDARY: the full magnetizing shunt is applied on the secondary (to) side. SPLIT: the full complex magnetizing shunt value is applied on BOTH sides.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -420,14 +420,14 @@ pub struct TwoTerminalVSCLine {
     ///Transfer rating of the DC line, independent of the converter ratings at each end. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     pub rating: f64,
     ///Series conductance of the DC line. Units: S.
-    #[serde(default = "defaults::TwoTerminalVSCLine_g")]
-    pub g: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub g: Option<f64>,
     ///DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: kA.
-    #[serde(default = "defaults::TwoTerminalVSCLine_dc_current")]
-    pub dc_current: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dc_current: Option<f64>,
     ///Initial condition of reactive power flowing into the from-bus. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::TwoTerminalVSCLine_reactive_power_from")]
-    pub reactive_power_from: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactive_power_from: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dc_control_from: Option<VSCDCControlModes>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -462,29 +462,29 @@ pub struct TwoTerminalVSCLine {
     )]
     pub ac_voltage_setpoint_from: Option<Option<f64>>,
     ///Rated AC voltage at the `from` converter's AC terminal; 0.0 means unspecified. Units: kV.
-    #[serde(default = "defaults::TwoTerminalVSCLine_rated_ac_voltage_from")]
-    pub rated_ac_voltage_from: f64,
-    #[serde(default = "defaults::TwoTerminalVSCLine_converter_loss_from")]
-    pub converter_loss_from: LossCurve,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rated_ac_voltage_from: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub converter_loss_from: Option<LossCurve>,
     ///Maximum stable dc current limits. 9999 means no limit. Units: kA.
-    #[serde(default = "defaults::TwoTerminalVSCLine_max_dc_current_from")]
-    pub max_dc_current_from: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_dc_current_from: Option<f64>,
     ///Converter rating in the `from` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rating_from: Option<f64>,
-    #[serde(default = "defaults::TwoTerminalVSCLine_reactive_power_limits_from")]
-    pub reactive_power_limits_from: MinMax,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactive_power_limits_from: Option<MinMax>,
     ///Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.
-    #[serde(default = "defaults::TwoTerminalVSCLine_power_factor_weighting_fraction_from")]
-    pub power_factor_weighting_fraction_from: f64,
-    #[serde(default = "defaults::TwoTerminalVSCLine_voltage_limits_from")]
-    pub voltage_limits_from: MinMax,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub power_factor_weighting_fraction_from: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub voltage_limits_from: Option<MinMax>,
     ///DC-voltage droop gain on the `from` converter, used when `dc_control_from` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint_from - dc_voltage_droop_from * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.
-    #[serde(default = "defaults::TwoTerminalVSCLine_dc_voltage_droop_from")]
-    pub dc_voltage_droop_from: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dc_voltage_droop_from: Option<f64>,
     ///Initial condition of reactive power flowing into the to-bus. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::TwoTerminalVSCLine_reactive_power_to")]
-    pub reactive_power_to: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactive_power_to: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dc_control_to: Option<VSCDCControlModes>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -519,31 +519,31 @@ pub struct TwoTerminalVSCLine {
     )]
     pub ac_voltage_setpoint_to: Option<Option<f64>>,
     ///Rated AC voltage at the `to` converter's AC terminal; 0.0 means unspecified. Units: kV.
-    #[serde(default = "defaults::TwoTerminalVSCLine_rated_ac_voltage_to")]
-    pub rated_ac_voltage_to: f64,
-    #[serde(default = "defaults::TwoTerminalVSCLine_converter_loss_to")]
-    pub converter_loss_to: LossCurve,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rated_ac_voltage_to: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub converter_loss_to: Option<LossCurve>,
     ///Maximum stable dc current limits. 9999 means no limit. Units: kA.
-    #[serde(default = "defaults::TwoTerminalVSCLine_max_dc_current_to")]
-    pub max_dc_current_to: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_dc_current_to: Option<f64>,
     ///Converter rating in the `to` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rating_to: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub operational_flow_limit: Option<OperationalFlowLimit>,
-    #[serde(default = "defaults::TwoTerminalVSCLine_reactive_power_limits_to")]
-    pub reactive_power_limits_to: MinMax,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactive_power_limits_to: Option<MinMax>,
     ///Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.
-    #[serde(default = "defaults::TwoTerminalVSCLine_power_factor_weighting_fraction_to")]
-    pub power_factor_weighting_fraction_to: f64,
-    #[serde(default = "defaults::TwoTerminalVSCLine_voltage_limits_to")]
-    pub voltage_limits_to: MinMax,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub power_factor_weighting_fraction_to: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub voltage_limits_to: Option<MinMax>,
     ///DC-voltage droop gain on the `to` converter, used when `dc_control_to` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint_to - dc_voltage_droop_to * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.
-    #[serde(default = "defaults::TwoTerminalVSCLine_dc_voltage_droop_to")]
-    pub dc_voltage_droop_to: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dc_voltage_droop_to: Option<f64>,
     ///Rated DC voltage of the link; 0.0 means unspecified. Units: kV.
-    #[serde(default = "defaults::TwoTerminalVSCLine_rated_dc_voltage")]
-    pub rated_dc_voltage: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rated_dc_voltage: Option<f64>,
     ///Number of the AC bus whose voltage the `from` converter regulates when `ac_control_from` is `AC_VOLTAGE`; null regulates its own terminal bus.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -612,51 +612,51 @@ pub struct TwoTerminalLCCLine {
     pub inverter_xc: f64,
     ///Inverter primary base AC voltage, entered in kV. Units: kV.
     pub inverter_base_voltage: f64,
-    #[serde(default = "defaults::TwoTerminalLCCLine_control_mode")]
-    pub control_mode: LCCControlMode,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub control_mode: Option<LCCControlMode>,
     ///Mode switch DC voltage. If `control_mode` is `POWER` and the DC voltage falls below this value, the line switches to current control. Units: kV.
-    #[serde(default = "defaults::TwoTerminalLCCLine_switch_mode_voltage")]
-    pub switch_mode_voltage: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub switch_mode_voltage: Option<f64>,
     ///Compounding Resistance. This parameter is for control of the DC voltage in the rectifier or inverter end. For inverter DC voltage control, the parameter is set to zero; for rectifier DC voltage control, the parameter is set to the DC line resistance; otherwise, set to a fraction of the DC line resistance. Units: ohm.
-    #[serde(default = "defaults::TwoTerminalLCCLine_compounding_resistance")]
-    pub compounding_resistance: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub compounding_resistance: Option<f64>,
     ///Minimum compounded voltage. Only used in constant gamma operation (gamma_min = gamma_max), and the AC transformer is used to control the DC voltage. Units: kV.
-    #[serde(default = "defaults::TwoTerminalLCCLine_min_compounding_voltage")]
-    pub min_compounding_voltage: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_compounding_voltage: Option<f64>,
     ///Rectifier transformer ratio between the primary and secondary side AC voltages. Units: 1.
-    #[serde(default = "defaults::TwoTerminalLCCLine_rectifier_transformer_ratio")]
-    pub rectifier_transformer_ratio: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rectifier_transformer_ratio: Option<f64>,
     ///Rectifier transformer tap setting. Units: 1.
-    #[serde(default = "defaults::TwoTerminalLCCLine_rectifier_tap_setting")]
-    pub rectifier_tap_setting: f64,
-    #[serde(default = "defaults::TwoTerminalLCCLine_rectifier_tap_limits")]
-    pub rectifier_tap_limits: MinMax,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rectifier_tap_setting: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rectifier_tap_limits: Option<MinMax>,
     ///Rectifier transformer tap step value. Units: 1.
-    #[serde(default = "defaults::TwoTerminalLCCLine_rectifier_tap_step")]
-    pub rectifier_tap_step: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rectifier_tap_step: Option<f64>,
     ///Rectifier firing delay angle (alpha). Units: rad.
-    #[serde(default = "defaults::TwoTerminalLCCLine_rectifier_delay_angle")]
-    pub rectifier_delay_angle: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rectifier_delay_angle: Option<f64>,
     ///Commutating rectifier capacitor reactance magnitude per bridge. Units: ohm.
-    #[serde(default = "defaults::TwoTerminalLCCLine_rectifier_capacitor_reactance")]
-    pub rectifier_capacitor_reactance: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rectifier_capacitor_reactance: Option<f64>,
     ///Inverter transformer ratio between the primary and secondary side AC voltages. Units: 1.
-    #[serde(default = "defaults::TwoTerminalLCCLine_inverter_transformer_ratio")]
-    pub inverter_transformer_ratio: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inverter_transformer_ratio: Option<f64>,
     ///Inverter transformer tap setting. Units: 1.
-    #[serde(default = "defaults::TwoTerminalLCCLine_inverter_tap_setting")]
-    pub inverter_tap_setting: f64,
-    #[serde(default = "defaults::TwoTerminalLCCLine_inverter_tap_limits")]
-    pub inverter_tap_limits: MinMax,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inverter_tap_setting: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inverter_tap_limits: Option<MinMax>,
     ///Inverter transformer tap step value. Units: 1.
-    #[serde(default = "defaults::TwoTerminalLCCLine_inverter_tap_step")]
-    pub inverter_tap_step: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inverter_tap_step: Option<f64>,
     ///Inverter extinction angle (gamma). Units: rad.
-    #[serde(default = "defaults::TwoTerminalLCCLine_inverter_extinction_angle")]
-    pub inverter_extinction_angle: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inverter_extinction_angle: Option<f64>,
     ///Commutating inverter capacitor reactance magnitude per bridge. Units: ohm.
-    #[serde(default = "defaults::TwoTerminalLCCLine_inverter_capacitor_reactance")]
-    pub inverter_capacitor_reactance: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inverter_capacitor_reactance: Option<f64>,
     ///Transfer rating of the DC line, independent of the converter ratings at each end. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     pub rating: f64,
     ///Converter rating in the `from` bus. Absent means the converter imposes no limit beyond `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
@@ -667,12 +667,12 @@ pub struct TwoTerminalLCCLine {
     pub rating_to: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub operational_flow_limit: Option<OperationalFlowLimit>,
-    #[serde(default = "defaults::TwoTerminalLCCLine_reactive_power_limits_from")]
-    pub reactive_power_limits_from: MinMax,
-    #[serde(default = "defaults::TwoTerminalLCCLine_reactive_power_limits_to")]
-    pub reactive_power_limits_to: MinMax,
-    #[serde(default = "defaults::TwoTerminalLCCLine_loss")]
-    pub loss: LossCurve,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactive_power_limits_from: Option<MinMax>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactive_power_limits_to: Option<MinMax>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub loss: Option<LossCurve>,
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
@@ -781,24 +781,24 @@ pub struct TransformerCircuit {
     ///An `Arc` defining this circuit `from` a terminal bus `to` the transformer's other terminal or star bus.
     pub arc: i64,
     ///Normalized tap changer position for voltage control, varying between 0 and 2, with 1 centered at the nominal voltage. Units: 1.
-    #[serde(default = "defaults::TransformerCircuit_tap")]
-    pub tap: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tap: Option<f64>,
     ///Initial condition of phase shift across this circuit. Units: rad.
-    #[serde(default = "defaults::TransformerCircuit_alpha")]
-    pub alpha: f64,
-    #[serde(default = "defaults::TransformerCircuit_parameter_units")]
-    pub parameter_units: ImpedanceUnitBasis,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub alpha: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parameter_units: Option<ImpedanceUnitBasis>,
     ///Circuit resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::TransformerCircuit_r")]
-    pub r: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub r: Option<f64>,
     ///Circuit reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::TransformerCircuit_x")]
-    pub x: f64,
-    #[serde(default = "defaults::TransformerCircuit_control_objective")]
-    pub control_objective: TransformerControlObjective,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub x: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub control_objective: Option<TransformerControlObjective>,
     ///Controlled bus number (PSS/E CONT; sign = regulation side).
-    #[serde(default = "defaults::TransformerCircuit_regulated_bus_number")]
-    pub regulated_bus_number: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub regulated_bus_number: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tap_ratio_limits: Option<MinMax>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -810,8 +810,8 @@ pub struct TransformerCircuit {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub controlled_active_power_flow_limits: Option<MinMax>,
     ///Number of tap positions (PSS/E NTP).
-    #[serde(default = "defaults::TransformerCircuit_number_of_tap_positions")]
-    pub number_of_tap_positions: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub number_of_tap_positions: Option<i64>,
     ///Thermal rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     pub rating: f64,
     ///Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
@@ -823,14 +823,14 @@ pub struct TransformerCircuit {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub operational_flow_limit: Option<OperationalFlowLimit>,
     ///Initial condition of active power flow through this circuit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::TransformerCircuit_active_power_flow")]
-    pub active_power_flow: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub active_power_flow: Option<f64>,
     ///Initial condition of reactive power flow through this circuit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::TransformerCircuit_reactive_power_flow")]
-    pub reactive_power_flow: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactive_power_flow: Option<f64>,
     ///Base power for per unitization of this circuit. Units: MVA.
-    #[serde(default = "defaults::TransformerCircuit_base_power")]
-    pub base_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub base_power: Option<f64>,
     pub power_units: UnitSystem,
     ///Primary (from) terminal-side base voltage; the reference voltage for this circuit's per-unit impedance. Units: kV.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1746,8 +1746,8 @@ pub struct ThreeWindingTransformer {
     pub tertiary_circuit: i64,
     ///Star (hidden) Bus that this component (equivalent model) is connected to.
     pub star_bus: i64,
-    #[serde(default = "defaults::ThreeWindingTransformer_parameter_units")]
-    pub parameter_units: ImpedanceUnitBasis,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parameter_units: Option<ImpedanceUnitBasis>,
     ///Measured resistance, referenced to the primary winding's base voltage, from primary to secondary windings (R1-2 in PSS/E). Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r_12: Option<f64>,
@@ -1775,12 +1775,12 @@ pub struct ThreeWindingTransformer {
     ///Base power for per unitization for tertiary-primary windings. Units: MVA.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub base_power_31: Option<f64>,
-    #[serde(default = "defaults::ThreeWindingTransformer_admittance_units")]
-    pub admittance_units: AdmittanceUnitBasis,
-    #[serde(default = "defaults::ThreeWindingTransformer_magnetizing_shunt")]
-    pub magnetizing_shunt: ComplexNumber,
-    #[serde(default = "defaults::ThreeWindingTransformer_shunt_location")]
-    pub shunt_location: ThreeWindingTransformerShuntLocation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub admittance_units: Option<AdmittanceUnitBasis>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub magnetizing_shunt: Option<ComplexNumber>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub shunt_location: Option<ThreeWindingTransformerShuntLocation>,
 }
 ///Placement of a `ThreeWindingTransformer`'s magnetizing shunt admittance in the equivalent star model. PRIMARY: the full magnetizing shunt is applied on the winding-1 (primary) terminal side. STAR: the full magnetizing shunt is applied at the star node.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -1852,8 +1852,8 @@ pub struct ThermalStandard {
     ///Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.
     pub available: bool,
     pub status: OperationalStates,
-    #[serde(default = "defaults::ThermalStandard_commitment_mode")]
-    pub commitment_mode: CommitmentModes,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub commitment_mode: Option<CommitmentModes>,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
     ///Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
@@ -1874,13 +1874,13 @@ pub struct ThermalStandard {
     pub power_units: UnitSystem,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_limits: Option<UpDown>,
-    #[serde(default = "defaults::ThermalStandard_prime_mover_type")]
-    pub prime_mover_type: PrimeMovers,
-    #[serde(default = "defaults::ThermalStandard_fuel")]
-    pub fuel: ThermalFuels,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prime_mover_type: Option<PrimeMovers>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fuel: Option<ThermalFuels>,
     ///Time the generator has been in its current status. Units: min.
-    #[serde(default = "defaults::ThermalStandard_time_at_status")]
-    pub time_at_status: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time_at_status: Option<f64>,
     ///ID of the corresponding dynamic injection device, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -2394,8 +2394,8 @@ pub struct ThermalMultiStart {
     ///Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.
     pub available: bool,
     pub status: OperationalStates,
-    #[serde(default = "defaults::ThermalMultiStart_commitment_mode")]
-    pub commitment_mode: CommitmentModes,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub commitment_mode: Option<CommitmentModes>,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
     ///Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
@@ -2425,8 +2425,8 @@ pub struct ThermalMultiStart {
     pub base_power: f64,
     pub power_units: UnitSystem,
     ///Time the generator has been in its current status. Units: min.
-    #[serde(default = "defaults::ThermalMultiStart_time_at_status")]
-    pub time_at_status: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time_at_status: Option<f64>,
     ///ID of the corresponding dynamic injection device, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -3034,8 +3034,8 @@ pub struct SynchronousCondenser {
     pub base_power: f64,
     pub power_units: UnitSystem,
     ///Active power loss incurred by having the unit online. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::SynchronousCondenser_active_power_losses")]
-    pub active_power_losses: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub active_power_losses: Option<f64>,
     ///ID of the corresponding dynamic injection device, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -3058,8 +3058,8 @@ pub struct SwitchedAdmittance {
     pub available: bool,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
-    #[serde(default = "defaults::SwitchedAdmittance_admittance_units")]
-    pub admittance_units: ShuntAdmittanceUnitBasis,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub admittance_units: Option<ShuntAdmittanceUnitBasis>,
     ///Vector with the number of steps currently engaged (switched in) for each adjustable shunt block. For example, `number_engaged[2]` is the number of steps in service at block 2, and cannot exceed `number_of_steps[2]`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub number_engaged: Option<Vec<i64>>,
@@ -3080,11 +3080,11 @@ pub struct SwitchedAdmittance {
     pub voltage_limits: Option<MinMax>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reactive_power_range_limits: Option<MinMax>,
-    #[serde(default = "defaults::SwitchedAdmittance_control_mode")]
-    pub control_mode: SwitchedAdmittanceControlMode,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub control_mode: Option<SwitchedAdmittanceControlMode>,
     ///Bus number whose voltage/quantity this shunt regulates; 0 means local bus (PSS/E SWREM/NREG). Units: 1.
-    #[serde(default = "defaults::SwitchedAdmittance_regulated_bus_number")]
-    pub regulated_bus_number: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub regulated_bus_number: Option<i64>,
     ///ID of the corresponding dynamic injection model for admittance, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -3154,8 +3154,8 @@ pub struct SupplyTechnology {
     ///Location where the component applies. Can be a zone or node.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub region: Option<Vec<i64>>,
-    #[serde(default = "defaults::SupplyTechnology_prime_mover_type")]
-    pub prime_mover_type: PrimeMovers,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prime_mover_type: Option<PrimeMovers>,
     ///Fuel type according to IEA.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fuel: Option<Vec<ThermalFuels>>,
@@ -3170,26 +3170,26 @@ pub struct SupplyTechnology {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub operation_costs: Option<GenericOperationCost>,
     ///Used for discrete investment decisions. Size of each unit being built. Units: MW.
-    #[serde(default = "defaults::SupplyTechnology_unit_size")]
-    pub unit_size: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unit_size: Option<f64>,
     ///Minimum and maximum allowable installed capacity for a technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MW.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub capacity_limits: Option<SupplyTechnologyCapacityLimits>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub outage_factor: Option<OutageFactors>,
     ///Minimum generation as a fraction of total capacity. Units: 1.
-    #[serde(default = "defaults::SupplyTechnology_min_generation_fraction")]
-    pub min_generation_fraction: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_generation_fraction: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ramp_limits: Option<UpDown>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_limits: Option<UpDown>,
     ///Startup fuel use per MW of nameplate capacity of each generator. Units: MMBtu/MW.
-    #[serde(default = "defaults::SupplyTechnology_start_fuel_mmbtu_per_mw")]
-    pub start_fuel_mmbtu_per_mw: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start_fuel_mmbtu_per_mw: Option<f64>,
     ///Maximum number of years a technology can be active once installed. Units: yr.
-    #[serde(default = "defaults::SupplyTechnology_lifetime")]
-    pub lifetime: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lifetime: Option<i64>,
     pub financial_data: TechnologyFinancialData,
 }
 ///Thermal fuels that reflect options in the EIA annual energy review.
@@ -3477,24 +3477,24 @@ pub struct StorageTechnology {
     ///Corresponding type to be used in PCM modeling.
     pub power_systems_type: String,
     ///Minimum discharge as a fraction of total discharge capacity. Units: 1.
-    #[serde(default = "defaults::StorageTechnology_min_discharge_fraction")]
-    pub min_discharge_fraction: f64,
-    #[serde(default = "defaults::StorageTechnology_prime_mover_type")]
-    pub prime_mover_type: PrimeMovers,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_discharge_fraction: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prime_mover_type: Option<PrimeMovers>,
     pub storage_tech: StorageTech,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub capital_costs: Option<StorageCapitalCost>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub operation_costs: Option<StorageCost>,
     ///Used for discrete investment decisions. Size of each unit of discharging capacity being built. Units: MW.
-    #[serde(default = "defaults::StorageTechnology_unit_size_discharge")]
-    pub unit_size_discharge: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unit_size_discharge: Option<f64>,
     ///Used for discrete investment decisions. Unit size of charging capacity. Units: MW.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_size_charge: Option<f64>,
     ///Used for discrete investment decisions. Size of each unit of energy capacity being built. Units: MWh.
-    #[serde(default = "defaults::StorageTechnology_unit_size_energy")]
-    pub unit_size_energy: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unit_size_energy: Option<f64>,
     ///Allowable installed power capacity for charging of a storage technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MW.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub capacity_limits_charge: Option<StorageTechnologyCapacityLimitsCharge>,
@@ -3509,11 +3509,11 @@ pub struct StorageTechnology {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub efficiency: Option<InOut>,
     ///Self-discharge of storage (fraction of energy stored per hour). Units: 1.
-    #[serde(default = "defaults::StorageTechnology_losses")]
-    pub losses: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub losses: Option<f64>,
     ///Maximum number of years a technology can be active once installed. Units: yr.
-    #[serde(default = "defaults::StorageTechnology_lifetime")]
-    pub lifetime: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lifetime: Option<i64>,
     pub financial_data: TechnologyFinancialData,
 }
 ///Allowable installed energy capacity for a storage technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MWh.
@@ -3886,7 +3886,6 @@ pub struct StorageCapitalCost {
     pub charge_capital_cost: ValueCurve,
     pub discharge_capital_cost: ValueCurve,
     pub energy_capital_cost: ValueCurve,
-    #[serde(default = "defaults::StorageCapitalCost_interconnection_cost")]
     pub interconnection_cost: f64,
 }
 ///Steam Turbine-Governor. This model considers both TGOV1 or TGOV1DU in PSS/E
@@ -3944,43 +3943,43 @@ pub struct StandardLoad {
     pub base_power: f64,
     pub power_units: UnitSystem,
     ///Constant active power demand (P_P). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::StandardLoad_constant_active_power")]
-    pub constant_active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub constant_active_power: Option<f64>,
     ///Constant reactive power demand (Q_P). Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::StandardLoad_constant_reactive_power")]
-    pub constant_reactive_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub constant_reactive_power: Option<f64>,
     ///Active power coefficient for constant impedance load (P_Z). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::StandardLoad_impedance_active_power")]
-    pub impedance_active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub impedance_active_power: Option<f64>,
     ///Reactive power coefficient for constant impedance load (Q_Z). Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::StandardLoad_impedance_reactive_power")]
-    pub impedance_reactive_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub impedance_reactive_power: Option<f64>,
     ///Active power coefficient for constant current load (P_I). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::StandardLoad_current_active_power")]
-    pub current_active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub current_active_power: Option<f64>,
     ///Reactive power coefficient for constant current load (Q_I). Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::StandardLoad_current_reactive_power")]
-    pub current_reactive_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub current_reactive_power: Option<f64>,
     ///Maximum active power drawn by constant power load. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::StandardLoad_max_constant_active_power")]
-    pub max_constant_active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_constant_active_power: Option<f64>,
     ///Maximum reactive power drawn by constant power load. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::StandardLoad_max_constant_reactive_power")]
-    pub max_constant_reactive_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_constant_reactive_power: Option<f64>,
     ///Maximum active power drawn by constant impedance load. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::StandardLoad_max_impedance_active_power")]
-    pub max_impedance_active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_impedance_active_power: Option<f64>,
     ///Maximum reactive power drawn by constant impedance load. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::StandardLoad_max_impedance_reactive_power")]
-    pub max_impedance_reactive_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_impedance_reactive_power: Option<f64>,
     ///Maximum active power drawn by constant current load. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::StandardLoad_max_current_active_power")]
-    pub max_current_active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_current_active_power: Option<f64>,
     ///Maximum reactive power drawn by constant current load. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::StandardLoad_max_current_reactive_power")]
-    pub max_current_reactive_power: f64,
-    #[serde(default = "defaults::StandardLoad_conformity")]
-    pub conformity: LoadConformity,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_current_reactive_power: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conformity: Option<LoadConformity>,
     ///ID of the corresponding dynamic injection device, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -4004,38 +4003,37 @@ pub struct Source {
     ///ID of the bus that this component is connected to.
     pub bus: i64,
     ///Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::Source_active_power")]
-    pub active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub active_power: Option<f64>,
     ///Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::Source_reactive_power")]
-    pub reactive_power: f64,
-    #[serde(default = "defaults::Source_active_power_limits")]
-    pub active_power_limits: MinMax,
-    #[serde(default = "defaults::Source_reactive_power_limits")]
-    pub reactive_power_limits: MinMax,
-    #[serde(default = "defaults::Source_parameter_units")]
-    pub parameter_units: ImpedanceUnitBasis,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactive_power: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub active_power_limits: Option<MinMax>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactive_power_limits: Option<MinMax>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parameter_units: Option<ImpedanceUnitBasis>,
     ///Source Thevenin resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
-    #[serde(rename = "R_th", default = "defaults::Source_r_th")]
-    pub r_th: f64,
+    #[serde(rename = "R_th", skip_serializing_if = "Option::is_none")]
+    pub r_th: Option<f64>,
     ///Source Thevenin reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
-    #[serde(rename = "X_th", default = "defaults::Source_x_th")]
-    pub x_th: f64,
+    #[serde(rename = "X_th", skip_serializing_if = "Option::is_none")]
+    pub x_th: Option<f64>,
     ///Internal voltage. Units: pu.
-    #[serde(default = "defaults::Source_internal_voltage")]
-    pub internal_voltage: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub internal_voltage: Option<f64>,
     ///Internal angle. Units: rad.
-    #[serde(default = "defaults::Source_internal_angle")]
-    pub internal_angle: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub internal_angle: Option<f64>,
     ///The base voltage. Units: kV.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub base_voltage: Option<f64>,
     ///Base power of the unit for per unitization. Units: MVA.
-    #[serde(default = "defaults::Source_base_power")]
-    pub base_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub base_power: Option<f64>,
     pub power_units: UnitSystem,
     ///Cost of importing and exporting power at the source. or MarketBidCost
-    #[serde(default = "defaults::Source_operation_cost")]
     pub operation_cost: SourceOperationCost,
     ///ID of the corresponding dynamic injection device, if any.
     #[serde(
@@ -4406,8 +4404,8 @@ pub struct SingleTimeSeries {
     pub unit_system: Option<UnitSystem>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
-    #[serde(default = "defaults::SingleTimeSeries_interval_alignment")]
-    pub interval_alignment: IntervalAlignment,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub interval_alignment: Option<IntervalAlignment>,
     ///The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component_field: Option<String>,
@@ -4971,8 +4969,8 @@ pub struct SeriesCompensator {
     pub x: f64,
     ///Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     pub rating: f64,
-    #[serde(default = "defaults::SeriesCompensator_control_mode")]
-    pub control_mode: SeriesCompensatorControlMode,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub control_mode: Option<SeriesCompensatorControlMode>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reactance_limits: Option<MinMax>,
     ///Active power flow, from the `from` bus to the `to` bus, the compensator holds. Required when `control_mode` is `ACTIVE_POWER_FLOW`. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
@@ -4989,8 +4987,8 @@ pub struct SeriesCompensator {
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
-    #[serde(default = "defaults::SeriesCompensator_parameter_units")]
-    pub parameter_units: ImpedanceUnitBasis,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parameter_units: Option<ImpedanceUnitBasis>,
 }
 ///Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -5064,8 +5062,8 @@ pub struct Scenarios {
     pub unit_system: Option<UnitSystem>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
-    #[serde(default = "defaults::Scenarios_interval_alignment")]
-    pub interval_alignment: IntervalAlignment,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub interval_alignment: Option<IntervalAlignment>,
     ///The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component_field: Option<String>,
@@ -5186,11 +5184,11 @@ pub struct ST8C {
     #[serde(rename = "VB2_max")]
     pub vb2_max: f64,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::ST8C_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
     ///Reference field current set-point
-    #[serde(rename = "Ifd_ref", default = "defaults::ST8C_ifd_ref")]
-    pub ifd_ref: f64,
+    #[serde(rename = "Ifd_ref", skip_serializing_if = "Option::is_none")]
+    pub ifd_ref: Option<f64>,
 }
 ///In these excitation systems, voltage (and also current in compounded systems) is transformed to an appropriate level. Rectifiers, either controlled or non-controlled, provide the necessary direct current for the generator field. Parameters of IEEE Std 421.5 Type ST6B Excitacion System. ST6B in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -5242,8 +5240,8 @@ pub struct ST6B {
     #[serde(rename = "Tg")]
     pub tg: f64,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::ST6B_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///Parameters of Simplified Excitation System Model - SEXS in PSSE
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -5266,8 +5264,8 @@ pub struct SEXS {
     #[serde(rename = "V_lim")]
     pub v_lim: MinMax,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::SEXS_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///This exciter is based on an IEEE type SCRX solid state exciter. The output field voltage is varied by a control system to maintain the system voltage at Vref. Please note that this exciter model has no initialization capabilities - this means that it will respond to whatever inputs it receives regardless of the state of the machine model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -5294,8 +5292,8 @@ pub struct SCRX {
     ///Field current capability. Set = 0 for negative current capability. Typical value 10
     pub rc_rfd: f64,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::SCRX_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///Supplemental attribute defining which existing generators mapped to a supply technology are eligible for retrofit.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -5306,8 +5304,8 @@ pub struct RetrofitPotential {
     ///Names of individual generation units mapped to this technology that can be retrofitted.
     pub eligible_generators: Vec<String>,
     ///Fraction of existing capacity that is eligible for retrofits. Units: 1.
-    #[serde(default = "defaults::RetrofitPotential_retrofit_fraction")]
-    pub retrofit_fraction: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub retrofit_fraction: Option<f64>,
     pub retrofit_cost: ValueCurve,
 }
 ///Supplemental attribute defining which existing generators mapped to a supply technology are eligible for retirement, optionally with the year each was built and the year each is already scheduled to retire.
@@ -5420,11 +5418,8 @@ pub struct RenewableEnergyVoltageConverterTypeA {
     #[serde(rename = "Lvpl_sw")]
     pub lvpl_sw: i64,
     ///Initial condition of reactive power from power flow.
-    #[serde(
-        rename = "Q_ref",
-        default = "defaults::RenewableEnergyVoltageConverterTypeA_q_ref"
-    )]
-    pub q_ref: f64,
+    #[serde(rename = "Q_ref", skip_serializing_if = "Option::is_none")]
+    pub q_ref: Option<f64>,
 }
 ///Parameters of a renewable energy generator/converter model, this model corresponds to REGCA1 in PSSE.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -5468,23 +5463,14 @@ pub struct RenewableEnergyConverterTypeA {
     #[serde(rename = "Lvpl_sw")]
     pub lvpl_sw: i64,
     ///Initial condition of reactive power from power flow.
-    #[serde(
-        rename = "Q_ref",
-        default = "defaults::RenewableEnergyConverterTypeA_q_ref"
-    )]
-    pub q_ref: f64,
+    #[serde(rename = "Q_ref", skip_serializing_if = "Option::is_none")]
+    pub q_ref: Option<f64>,
     ///Output resistor used for the Thevenin Equivalent.
-    #[serde(
-        rename = "R_source",
-        default = "defaults::RenewableEnergyConverterTypeA_r_source"
-    )]
-    pub r_source: f64,
+    #[serde(rename = "R_source", skip_serializing_if = "Option::is_none")]
+    pub r_source: Option<f64>,
     ///Output reactance used for the Thevenin Equivalent.
-    #[serde(
-        rename = "X_source",
-        default = "defaults::RenewableEnergyConverterTypeA_x_source"
-    )]
-    pub x_source: f64,
+    #[serde(rename = "X_source", skip_serializing_if = "Option::is_none")]
+    pub x_source: Option<f64>,
 }
 /**A renewable (e.g., wind or solar) generator whose output can be curtailed to satisfy power system constraints.
 
@@ -6087,17 +6073,11 @@ pub struct ReactiveRenewableControllerAB {
     #[serde(rename = "K_qi")]
     pub k_qi: f64,
     ///Reference Reactive Power Set-point.
-    #[serde(
-        rename = "Q_ref",
-        default = "defaults::ReactiveRenewableControllerAB_q_ref"
-    )]
-    pub q_ref: f64,
+    #[serde(rename = "Q_ref", skip_serializing_if = "Option::is_none")]
+    pub q_ref: Option<f64>,
     ///Reference Voltage Set-point.
-    #[serde(
-        rename = "V_ref",
-        default = "defaults::ReactiveRenewableControllerAB_v_ref"
-    )]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -6174,8 +6154,8 @@ pub struct Probabilistic {
     pub unit_system: Option<UnitSystem>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
-    #[serde(default = "defaults::Probabilistic_interval_alignment")]
-    pub interval_alignment: IntervalAlignment,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub interval_alignment: Option<IntervalAlignment>,
     ///The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component_field: Option<String>,
@@ -6243,8 +6223,8 @@ pub struct PowerLoad {
     pub max_active_power: f64,
     ///Maximum reactive power that this load can demand. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
     pub max_reactive_power: f64,
-    #[serde(default = "defaults::PowerLoad_conformity")]
-    pub conformity: LoadConformity,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conformity: Option<LoadConformity>,
     ///ID of the corresponding dynamic injection device, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -6523,8 +6503,8 @@ pub struct PIDGOV {
     #[serde(rename = "V_lim")]
     pub v_lim: MinMax,
     ///Reference load set-point
-    #[serde(rename = "P_ref", default = "defaults::PIDGOV_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 ///A reserve product provided by devices already synchronized with the system. The procurement requirement is static unless a `requirement` time series is attached, in which case `requirement` is the scaling factor. Attach an Operating Reserve Demand Curve through `variable` to price the requirement rather than enforce it; omit `variable` when the reserve has no demand curve.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -6539,22 +6519,22 @@ pub struct OnlineReserve {
     ///The saturation time frame to provide reserve contribution. Units: min.
     pub time_frame: f64,
     ///The value of required reserves. Units: MW.
-    #[serde(default = "defaults::OnlineReserve_requirement")]
-    pub requirement: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub requirement: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub variable: Option<CostCurve>,
     ///The time reserve contribution must be sustained at a specified level. Units: min.
-    #[serde(default = "defaults::OnlineReserve_sustained_time")]
-    pub sustained_time: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sustained_time: Option<f64>,
     ///The maximum fraction of each device's output that can be assigned to the service.
-    #[serde(default = "defaults::OnlineReserve_max_output_fraction")]
-    pub max_output_fraction: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_output_fraction: Option<f64>,
     ///The maximum portion [0, 1.0] of the reserve that can be contributed per device.
-    #[serde(default = "defaults::OnlineReserve_max_participation_factor")]
-    pub max_participation_factor: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_participation_factor: Option<f64>,
     ///Fraction of service procurement that is assumed to be actually deployed. Most commonly, this is assumed to be either 0.0 or 1.0.
-    #[serde(default = "defaults::OnlineReserve_deployed_fraction")]
-    pub deployed_fraction: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deployed_fraction: Option<f64>,
     pub reserve_direction: ReserveDirection,
 }
 ///A non-spinning reserve product from devices not currently synchronized with the system but able to come online quickly after an unexpected contingency. Upward only, so unlike `OnlineReserve` there is no reserve direction. The procurement requirement is static unless a `requirement` time series is attached, in which case `requirement` is the scaling factor.
@@ -6570,22 +6550,22 @@ pub struct OfflineReserve {
     ///The saturation time frame to provide reserve contribution. Units: min.
     pub time_frame: f64,
     ///The value of required reserves. Units: MW.
-    #[serde(default = "defaults::OfflineReserve_requirement")]
-    pub requirement: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub requirement: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub variable: Option<CostCurve>,
     ///The time reserve contribution must be sustained at a specified level. Units: min.
-    #[serde(default = "defaults::OfflineReserve_sustained_time")]
-    pub sustained_time: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sustained_time: Option<f64>,
     ///The maximum fraction of each device's output that can be assigned to the service.
-    #[serde(default = "defaults::OfflineReserve_max_output_fraction")]
-    pub max_output_fraction: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_output_fraction: Option<f64>,
     ///The maximum portion [0, 1.0] of the reserve that can be contributed per device.
-    #[serde(default = "defaults::OfflineReserve_max_participation_factor")]
-    pub max_participation_factor: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_participation_factor: Option<f64>,
     ///Fraction of service procurement that is assumed to be actually deployed. Most commonly, this is assumed to be either 0.0 or 1.0.
-    #[serde(default = "defaults::OfflineReserve_deployed_fraction")]
-    pub deployed_fraction: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deployed_fraction: Option<f64>,
 }
 ///An irregular static time series, sampled at explicit timestamps rather than on a grid. Deliberately carries neither `initial_timestamp` nor `resolution`: an irregular series has no fixed cadence and its key holds no timestamp. The timestamp vector itself lives in the store rather than here, content-addressed so that many irregular series sharing one time axis store it once; `timestamps_uri` names which axis this series sits on, so a document plus the store's arrays describe the series completely.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -6711,17 +6691,17 @@ pub struct NodalACTransportTechnology {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub capital_costs: Option<CapitalCost>,
     ///Technology resistance in Ohms. Units: ohm.
-    #[serde(default = "defaults::NodalACTransportTechnology_resistance")]
-    pub resistance: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resistance: Option<f64>,
     ///Voltage rating of transmission line. Units: kV.
-    #[serde(default = "defaults::NodalACTransportTechnology_voltage")]
-    pub voltage: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub voltage: Option<f64>,
     ///Used for integer investment decisions. Represents the rating capacity of individual new lines. Units: MW.
-    #[serde(default = "defaults::NodalACTransportTechnology_unit_size")]
-    pub unit_size: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unit_size: Option<f64>,
     ///Series reactance for a line. Units: ohm.
-    #[serde(default = "defaults::NodalACTransportTechnology_reactance")]
-    pub reactance: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactance: Option<f64>,
     pub financial_data: TechnologyFinancialData,
 }
 /**An induction-motor static load, representing the steady-state power draw of motor-driven demand.
@@ -6752,8 +6732,8 @@ pub struct MotorLoad {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reactive_power_limits: Option<MinMax>,
     ///AC Motor type.
-    #[serde(default = "defaults::MotorLoad_motor_technology")]
-    pub motor_technology: MotorLoadMotorTechnology,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub motor_technology: Option<MotorLoadMotorTechnology>,
     ///ID of the corresponding dynamic injection device, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -6765,11 +6745,11 @@ pub struct MotorLoad {
 ///AC Motor type.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum MotorLoadMotorTechnology {
+    #[default]
     #[serde(rename = "INDUCTION")]
     Induction,
     #[serde(rename = "SYNCHRONOUS")]
     Synchronous,
-    #[default]
     #[serde(rename = "UNDETERMINED")]
     Undetermined,
 }
@@ -6804,9 +6784,7 @@ pub struct MinMaxByKey {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct LossCurve {
-    #[serde(default = "defaults::LossCurve_power_units")]
     pub power_units: UnitSystem,
-    #[serde(default = "defaults::LossCurve_value_curve")]
     pub value_curve: LossValueCurve,
 }
 ///A load zone for electricity price analysis. The load zone can be specified when defining each `ACBus` or `DCBus` in the zone.
@@ -6848,8 +6826,8 @@ pub struct Line {
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
-    #[serde(default = "defaults::Line_parameter_units")]
-    pub parameter_units: ImpedanceUnitBasis,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parameter_units: Option<ImpedanceUnitBasis>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub b: Option<FromTo>,
     ///Thermal rating. Flow on the line must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
@@ -6863,8 +6841,8 @@ pub struct Line {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub operational_flow_limit: Option<OperationalFlowLimit>,
     pub angle_limits: MinMax,
-    #[serde(default = "defaults::Line_g")]
-    pub g: FromTo,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub g: Option<FromTo>,
 }
 ///A pair of values, one at the `from` end and one at the `to` end of a directed edge.
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
@@ -6896,44 +6874,44 @@ pub struct InterruptibleStandardLoad {
     pub power_units: UnitSystem,
     ///Operational cost of interrupting load. or MarketBidCost
     pub operation_cost: InterruptibleStandardLoadOperationCost,
-    #[serde(default = "defaults::InterruptibleStandardLoad_conformity")]
-    pub conformity: LoadConformity,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conformity: Option<LoadConformity>,
     ///Constant active power demand (P_P). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::InterruptibleStandardLoad_constant_active_power")]
-    pub constant_active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub constant_active_power: Option<f64>,
     ///Constant reactive power demand (Q_P). Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::InterruptibleStandardLoad_constant_reactive_power")]
-    pub constant_reactive_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub constant_reactive_power: Option<f64>,
     ///Active power coefficient for constant impedance load (P_Z). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::InterruptibleStandardLoad_impedance_active_power")]
-    pub impedance_active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub impedance_active_power: Option<f64>,
     ///Reactive power coefficient for constant impedance load (Q_Z). Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::InterruptibleStandardLoad_impedance_reactive_power")]
-    pub impedance_reactive_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub impedance_reactive_power: Option<f64>,
     ///Active power coefficient for constant current load (P_I). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::InterruptibleStandardLoad_current_active_power")]
-    pub current_active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub current_active_power: Option<f64>,
     ///Reactive power coefficient for constant current load (Q_I). Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::InterruptibleStandardLoad_current_reactive_power")]
-    pub current_reactive_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub current_reactive_power: Option<f64>,
     ///Maximum active power drawn by constant power load. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::InterruptibleStandardLoad_max_constant_active_power")]
-    pub max_constant_active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_constant_active_power: Option<f64>,
     ///Maximum reactive power drawn by constant power load. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::InterruptibleStandardLoad_max_constant_reactive_power")]
-    pub max_constant_reactive_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_constant_reactive_power: Option<f64>,
     ///Maximum active power drawn by constant impedance load. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::InterruptibleStandardLoad_max_impedance_active_power")]
-    pub max_impedance_active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_impedance_active_power: Option<f64>,
     ///Maximum reactive power drawn by constant impedance load. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::InterruptibleStandardLoad_max_impedance_reactive_power")]
-    pub max_impedance_reactive_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_impedance_reactive_power: Option<f64>,
     ///Maximum active power drawn by constant current load. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::InterruptibleStandardLoad_max_current_active_power")]
-    pub max_current_active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_current_active_power: Option<f64>,
     ///Maximum reactive power drawn by constant current load. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::InterruptibleStandardLoad_max_current_reactive_power")]
-    pub max_current_reactive_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_current_reactive_power: Option<f64>,
     ///ID of the corresponding dynamic injection device, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -7435,8 +7413,8 @@ pub struct InterruptiblePowerLoad {
     pub power_units: UnitSystem,
     ///Operational cost of interrupting load. or MarketBidCost
     pub operation_cost: InterruptiblePowerLoadOperationCost,
-    #[serde(default = "defaults::InterruptiblePowerLoad_conformity")]
-    pub conformity: LoadConformity,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conformity: Option<LoadConformity>,
     ///ID of the corresponding dynamic injection device, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -7451,8 +7429,8 @@ pub struct InterruptiblePowerLoad {
 pub struct LoadCost {
     #[serde(default = "defaults::LoadCost_cost_type")]
     pub cost_type: LoadCostCostType,
-    #[serde(default = "defaults::LoadCost_fixed")]
-    pub fixed: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fixed: Option<f64>,
     pub variable_operation_cost: CostCurve,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -7969,11 +7947,11 @@ pub struct InterconnectingConverter {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reactive_power_limits: Option<MinMax>,
     ///DC current on the converter. Units: kA.
-    #[serde(default = "defaults::InterconnectingConverter_dc_current")]
-    pub dc_current: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dc_current: Option<f64>,
     ///Maximum stable dc current limits. 9999 means no limit. Units: kA.
-    #[serde(default = "defaults::InterconnectingConverter_max_dc_current")]
-    pub max_dc_current: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_dc_current: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub loss_function: Option<CurrentLossCurve>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -7995,8 +7973,8 @@ pub struct InterconnectingConverter {
     )]
     pub dc_voltage_setpoint: Option<Option<f64>>,
     ///Rated DC voltage of the converter, the base for `dc_voltage_setpoint` and `voltage_limits`; 0.0 means unspecified. Units: kV.
-    #[serde(default = "defaults::InterconnectingConverter_rated_dc_voltage")]
-    pub rated_dc_voltage: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rated_dc_voltage: Option<f64>,
     ///Power-factor setpoint of the converter, used when `ac_control` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.
     ///Constraint: minimum=-1, maximum=1
     #[serde(
@@ -8013,11 +7991,11 @@ pub struct InterconnectingConverter {
     )]
     pub ac_voltage_setpoint: Option<Option<f64>>,
     ///Rated AC voltage at the converter's AC terminal, the base for `ac_voltage_setpoint`; 0.0 means unspecified. Units: kV.
-    #[serde(default = "defaults::InterconnectingConverter_rated_ac_voltage")]
-    pub rated_ac_voltage: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rated_ac_voltage: Option<f64>,
     ///DC-voltage droop gain on the converter, used when `dc_control` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint - dc_voltage_droop * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.
-    #[serde(default = "defaults::InterconnectingConverter_dc_voltage_droop")]
-    pub dc_voltage_droop: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dc_voltage_droop: Option<f64>,
     ///Number of the AC bus whose voltage the converter regulates when `ac_control` is `AC_VOLTAGE`; null regulates its own terminal bus.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -8026,10 +8004,10 @@ pub struct InterconnectingConverter {
     )]
     pub remote_bus_control: Option<Option<i64>>,
     ///Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.
-    #[serde(default = "defaults::InterconnectingConverter_power_factor_weighting_fraction")]
-    pub power_factor_weighting_fraction: f64,
-    #[serde(default = "defaults::InterconnectingConverter_voltage_limits")]
-    pub voltage_limits: MinMax,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub power_factor_weighting_fraction: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub voltage_limits: Option<MinMax>,
     ///ID of the corresponding dynamic injection device, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -8266,8 +8244,8 @@ pub struct IEEETurbineGov1 {
     #[serde(rename = "K8")]
     pub k8: f64,
     ///Reference power set-point
-    #[serde(rename = "P_ref", default = "defaults::IEEETurbineGov1_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 ///1968 IEEE type 1 excitation system model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -8309,8 +8287,8 @@ pub struct IEEET1 {
     #[serde(rename = "Se")]
     pub se: Vec<f64>,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::IEEET1_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///Hydro turbine-governor
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -8349,8 +8327,8 @@ pub struct HydroTurbineGov {
     ///No power flow
     pub q_nl: f64,
     ///Reference load set-point
-    #[serde(rename = "P_ref", default = "defaults::HydroTurbineGov_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 ///A hydropower generator that must have a `HydroReservoir` attached, suitable for modeling independent turbines and reservoirs.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -8376,18 +8354,18 @@ pub struct HydroTurbine {
     ///Base power of the unit for per unitization. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
-    #[serde(default = "defaults::HydroTurbine_status")]
-    pub status: OperationalStates,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<OperationalStates>,
     ///Time the generator has been in its current `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.
-    #[serde(default = "defaults::HydroTurbine_time_at_status")]
-    pub time_at_status: f64,
-    #[serde(default = "defaults::HydroTurbine_commitment_mode")]
-    pub commitment_mode: CommitmentModes,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time_at_status: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub commitment_mode: Option<CommitmentModes>,
     ///Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)
     pub operation_cost: HydroTurbineOperationCost,
     ///Height level above the sea level of the powerhouse on which the turbine is installed. Units: m.
-    #[serde(default = "defaults::HydroTurbine_powerhouse_elevation")]
-    pub powerhouse_elevation: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub powerhouse_elevation: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ramp_limits: Option<UpDown>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -8395,16 +8373,16 @@ pub struct HydroTurbine {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub outflow_limits: Option<MinMax>,
     ///Turbine efficiency [0, 1.0]. Units: 1.
-    #[serde(default = "defaults::HydroTurbine_efficiency")]
-    pub efficiency: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub efficiency: Option<f64>,
     ///Type of the turbine.
-    #[serde(default = "defaults::HydroTurbine_turbine_type")]
-    pub turbine_type: HydroTurbineTurbineType,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub turbine_type: Option<HydroTurbineTurbineType>,
     ///Conversion factor from flow/volume to energy: m^3 -> p.u-hr. Units: 1.
-    #[serde(default = "defaults::HydroTurbine_conversion_factor")]
-    pub conversion_factor: f64,
-    #[serde(default = "defaults::HydroTurbine_prime_mover_type")]
-    pub prime_mover_type: PrimeMovers,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conversion_factor: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prime_mover_type: Option<PrimeMovers>,
     ///Downstream (from reservoir into turbine) travel time. Set to `null` if not applicable. Units: min.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -9192,10 +9170,10 @@ pub struct HydroReservoir {
     pub upstream_reservoirs: Option<Vec<i64>>,
     pub operation_cost: HydroReservoirOperationCost,
     ///Standing loss from evaporation as a fraction of the reservoir's stored volume/energy lost per hour. Units: 1.
-    #[serde(default = "defaults::HydroReservoir_evaporative_loss")]
-    pub evaporative_loss: f64,
-    #[serde(default = "defaults::HydroReservoir_level_data_type")]
-    pub level_data_type: HydroReservoirLevelDataType,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub evaporative_loss: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub level_data_type: Option<HydroReservoirLevelDataType>,
 }
 #[derive(Debug, Clone, PartialEq)]
 pub enum HydroReservoirOperationCost {
@@ -9558,12 +9536,12 @@ impl AsRef<str> for HydroReservoirLevelDataType {
 pub struct HydroReservoirCost {
     #[serde(default = "defaults::HydroReservoirCost_cost_type")]
     pub cost_type: HydroReservoirCostCostType,
-    #[serde(default = "defaults::HydroReservoirCost_level_shortage_cost")]
-    pub level_shortage_cost: f64,
-    #[serde(default = "defaults::HydroReservoirCost_level_surplus_cost")]
-    pub level_surplus_cost: f64,
-    #[serde(default = "defaults::HydroReservoirCost_spillage_cost")]
-    pub spillage_cost: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub level_shortage_cost: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub level_surplus_cost: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub spillage_cost: Option<f64>,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum HydroReservoirCostCostType {
@@ -9622,24 +9600,24 @@ pub struct HydroPumpTurbine {
     pub base_power: f64,
     pub power_units: UnitSystem,
     ///Which mode the pumped-storage unit is operating in at the start of a simulation: pumping, generating, or idle.
-    #[serde(default = "defaults::HydroPumpTurbine_operating_mode")]
-    pub operating_mode: HydroPumpTurbineOperatingMode,
-    #[serde(default = "defaults::HydroPumpTurbine_status")]
-    pub status: OperationalStates,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operating_mode: Option<HydroPumpTurbineOperatingMode>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<OperationalStates>,
     ///Time the generator has been in its current `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.
-    #[serde(default = "defaults::HydroPumpTurbine_time_at_status")]
-    pub time_at_status: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time_at_status: Option<f64>,
     ///Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)
     pub operation_cost: HydroPumpTurbineOperationCost,
     ///Initial active power set point of the pump unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::HydroPumpTurbine_active_power_pump")]
-    pub active_power_pump: f64,
-    #[serde(default = "defaults::HydroPumpTurbine_efficiency")]
-    pub efficiency: TurbinePump,
-    #[serde(default = "defaults::HydroPumpTurbine_transition_time")]
-    pub transition_time: TurbinePump,
-    #[serde(default = "defaults::HydroPumpTurbine_minimum_time")]
-    pub minimum_time: TurbinePump,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub active_power_pump: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub efficiency: Option<TurbinePump>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transition_time: Option<TurbinePump>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub minimum_time: Option<TurbinePump>,
     ///Downstream (from reservoir into turbine) travel time. Set to `null` if not applicable. Units: min.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -9648,12 +9626,12 @@ pub struct HydroPumpTurbine {
     )]
     pub travel_time: Option<Option<f64>>,
     ///Conversion factor from flow/volume to energy: m^3 -> p.u-hr. Units: 1.
-    #[serde(default = "defaults::HydroPumpTurbine_conversion_factor")]
-    pub conversion_factor: f64,
-    #[serde(default = "defaults::HydroPumpTurbine_commitment_mode")]
-    pub commitment_mode: CommitmentModes,
-    #[serde(default = "defaults::HydroPumpTurbine_prime_mover_type")]
-    pub prime_mover_type: PrimeMovers,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conversion_factor: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub commitment_mode: Option<CommitmentModes>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prime_mover_type: Option<PrimeMovers>,
     ///ID of the corresponding dynamic injection device, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -10160,11 +10138,11 @@ impl<'de> serde::Deserialize<'de> for HydroPumpTurbineOperationCost {
 ///Which mode the pumped-storage unit is operating in at the start of a simulation: pumping, generating, or idle.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum HydroPumpTurbineOperatingMode {
+    #[default]
     #[serde(rename = "PUMP")]
     Pump,
     #[serde(rename = "GEN")]
     Gen,
-    #[default]
     #[serde(rename = "OFF")]
     Off,
 }
@@ -10254,11 +10232,11 @@ pub struct HydroDispatch {
     ///Base power of the unit for per unitization. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
-    #[serde(default = "defaults::HydroDispatch_status")]
-    pub status: OperationalStates,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<OperationalStates>,
     ///Time the generator has been in its current `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.
-    #[serde(default = "defaults::HydroDispatch_time_at_status")]
-    pub time_at_status: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time_at_status: Option<f64>,
     ///Operating cost of generation. or MarketBidCost; default PSY.HydroGenerationCost(nothing)
     pub operation_cost: HydroDispatchOperationCost,
     ///ID of the corresponding dynamic injection device, if any.
@@ -11329,11 +11307,11 @@ impl AsRef<str> for ThermalGenerationCostCostType {
 pub struct RenewableGenerationCost {
     #[serde(default = "defaults::RenewableGenerationCost_cost_type")]
     pub cost_type: RenewableGenerationCostCostType,
-    #[serde(default = "defaults::RenewableGenerationCost_curtailment_cost")]
-    pub curtailment_cost: CostCurve,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub curtailment_cost: Option<CostCurve>,
     pub variable_operation_cost: CostCurve,
-    #[serde(default = "defaults::RenewableGenerationCost_fixed")]
-    pub fixed: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fixed: Option<f64>,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum RenewableGenerationCostCostType {
@@ -11364,8 +11342,8 @@ impl AsRef<str> for RenewableGenerationCostCostType {
 pub struct HydroGenerationCost {
     #[serde(default = "defaults::HydroGenerationCost_cost_type")]
     pub cost_type: HydroGenerationCostCostType,
-    #[serde(default = "defaults::HydroGenerationCost_fixed")]
-    pub fixed: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fixed: Option<f64>,
     pub variable_operation_cost: ProductionVariableCostCurve,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -11412,8 +11390,8 @@ pub struct GenericArcImpedance {
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
-    #[serde(default = "defaults::GenericArcImpedance_parameter_units")]
-    pub parameter_units: ImpedanceUnitBasis,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parameter_units: Option<ImpedanceUnitBasis>,
     ///Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
     pub r: f64,
     ///Reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
@@ -11542,8 +11520,8 @@ pub struct GeneralGovModel {
     #[serde(rename = "R_lim")]
     pub r_lim: UpDown,
     ///Reference power set-point
-    #[serde(rename = "P_ref", default = "defaults::GeneralGovModel_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 /**A fixed admittance.
 
@@ -11559,8 +11537,8 @@ pub struct FixedAdmittance {
     pub available: bool,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
-    #[serde(default = "defaults::FixedAdmittance_admittance_units")]
-    pub admittance_units: ShuntAdmittanceUnitBasis,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub admittance_units: Option<ShuntAdmittanceUnitBasis>,
     #[serde(rename = "Y")]
     pub y: ComplexNumber,
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
@@ -11625,8 +11603,8 @@ pub struct FACTSControlDevice {
     pub bus: i64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub control_mode: Option<FACTSControlDeviceControlMode>,
-    #[serde(default = "defaults::FACTSControlDevice_voltage_setpoint_units")]
-    pub voltage_setpoint_units: VoltageUnitBasis,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub voltage_setpoint_units: Option<VoltageUnitBasis>,
     ///Voltage setpoint at the sending end bus in kV, it has to be a `PV` bus. Units: kV. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .
     pub voltage_setpoint: f64,
     ///Maximum shunt current at the sending end bus; entered at unity voltage. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
@@ -11634,14 +11612,14 @@ pub struct FACTSControlDevice {
     ///Total reactive power required to hold voltage at sending bus, as a fraction in the range 0-1. Units: 1.
     pub reactive_power_required: f64,
     ///Independent maximum reactive power ceiling; the device reactive limit is min(the current/susceptance law on max_shunt_current, this value). Non-binding at the 9999.0 default. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::FACTSControlDevice_max_reactive_power")]
-    pub max_reactive_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_reactive_power: Option<f64>,
     ///Device class selecting the reactive-limit law (SVC vs STATCOM).
-    #[serde(default = "defaults::FACTSControlDevice_shunt_control_type")]
-    pub shunt_control_type: FACTSControlDeviceShuntControlType,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub shunt_control_type: Option<FACTSControlDeviceShuntControlType>,
     ///Bus whose voltage this device regulates; 0 means local (sending) bus (PSS/E FCREG). Units: 1.
-    #[serde(default = "defaults::FACTSControlDevice_regulated_bus_number")]
-    pub regulated_bus_number: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub regulated_bus_number: Option<i64>,
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
@@ -11683,9 +11661,9 @@ impl AsRef<str> for VoltageUnitBasis {
 ///Device class selecting the reactive-limit law (SVC vs STATCOM).
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum FACTSControlDeviceShuntControlType {
+    #[default]
     #[serde(rename = "SVC")]
     Svc,
-    #[default]
     #[serde(rename = "STATCOM")]
     Statcom,
 }
@@ -11766,8 +11744,8 @@ pub struct ExponentialLoad {
     pub max_active_power: f64,
     ///Maximum reactive power that this load can demand. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
     pub max_reactive_power: f64,
-    #[serde(default = "defaults::ExponentialLoad_conformity")]
-    pub conformity: LoadConformity,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conformity: Option<LoadConformity>,
     ///ID of the corresponding dynamic injection device, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -11824,8 +11802,8 @@ pub struct EnergyReservoirStorage {
     pub storage_technology_type: StorageTech,
     ///Maximum storage capacity (can be in units of, e.g., MWh for batteries or liters for hydrogen). Divided by base_power this gives an approximate duration, assuming unity power factor: in hours under MWH, in minutes under MWMIN. Units: per energy_units — MWH: MWh, MWMIN: MWmin .
     pub storage_capacity: f64,
-    #[serde(default = "defaults::EnergyReservoirStorage_energy_units")]
-    pub energy_units: EnergyUnitBasis,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub energy_units: Option<EnergyUnitBasis>,
     pub storage_level_limits: MinMax,
     ///Initial storage capacity level as a ratio [0, 1.0] of `storage_capacity`. Units: 1.
     pub initial_storage_capacity_level: f64,
@@ -11846,22 +11824,22 @@ pub struct EnergyReservoirStorage {
     ///Operating cost of storage. or MarketBidCost
     pub operation_cost: EnergyReservoirStorageOperationCost,
     ///Conversion factor of `storage_capacity` to MWh, if different than 1.0. For example, X MWh/liter hydrogen. Units: 1.
-    #[serde(default = "defaults::EnergyReservoirStorage_conversion_factor")]
-    pub conversion_factor: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conversion_factor: Option<f64>,
     ///Storage target at the end of simulation as ratio of storage capacity. Units: 1.
-    #[serde(default = "defaults::EnergyReservoirStorage_storage_target")]
-    pub storage_target: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub storage_target: Option<f64>,
     ///Storage Maximum number of cycles per year. Units: 1.
-    #[serde(default = "defaults::EnergyReservoirStorage_cycle_limits")]
-    pub cycle_limits: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cycle_limits: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ramp_limits: Option<UpDown>,
     ///Self-discharge (leakage loss) as a fraction of the stored energy lost per minute (pu/min of storage_capacity), modeled as E[t] = (1 - self_discharge * dt) * E[t-1]; dt must be on the same minutes basis. Units: 1/min.
-    #[serde(default = "defaults::EnergyReservoirStorage_self_discharge")]
-    pub self_discharge: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub self_discharge: Option<f64>,
     ///Constant standing-loss power drawn by the storage system. Reduces the effective charging power (p_in - standing_loss) and increases the power drawn from the storage when discharging (p_out + standing_loss). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::EnergyReservoirStorage_standing_loss")]
-    pub standing_loss: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub standing_loss: Option<f64>,
     ///ID of the corresponding dynamic injection device, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -11941,16 +11919,13 @@ pub struct StorageCost {
     pub charge_variable_cost: Option<CostCurve>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub discharge_variable_cost: Option<CostCurve>,
-    #[serde(default = "defaults::StorageCost_fixed")]
     pub fixed: f64,
-    #[serde(default = "defaults::StorageCost_shut_down")]
     pub shut_down: f64,
-    #[serde(default = "defaults::StorageCost_start_up")]
     pub start_up: StorageCostStartUp,
-    #[serde(default = "defaults::StorageCost_energy_shortage_cost")]
-    pub energy_shortage_cost: f64,
-    #[serde(default = "defaults::StorageCost_energy_surplus_cost")]
-    pub energy_surplus_cost: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub energy_shortage_cost: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub energy_surplus_cost: Option<f64>,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(untagged)]
@@ -12093,15 +12068,15 @@ pub struct MarketBidTimeSeriesCost {
     ///IDs of the ancillary service components that this bid offers into.
     pub ancillary_service_offers: Vec<i64>,
     ///Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.
-    #[serde(default = "defaults::MarketBidTimeSeriesCost_incremental_slope")]
-    pub incremental_slope: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub incremental_slope: Option<bool>,
     ///Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.
-    #[serde(default = "defaults::MarketBidTimeSeriesCost_decremental_slope")]
-    pub decremental_slope: bool,
-    #[serde(default = "defaults::MarketBidTimeSeriesCost_curve_style")]
-    pub curve_style: CurveStyles,
-    #[serde(default = "defaults::MarketBidTimeSeriesCost_curve_multistep")]
-    pub curve_multistep: CurveMultiStep,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub decremental_slope: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub curve_style: Option<CurveStyles>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub curve_multistep: Option<CurveMultiStep>,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum MarketBidTimeSeriesCostCostType {
@@ -12132,25 +12107,23 @@ impl AsRef<str> for MarketBidTimeSeriesCostCostType {
 pub struct MarketBidCost {
     #[serde(default = "defaults::MarketBidCost_cost_type")]
     pub cost_type: MarketBidCostCostType,
-    #[serde(default = "defaults::MarketBidCost_minimum_energy_offer")]
     pub minimum_energy_offer: InputOutputCurve,
     pub start_up: StartUpStages,
-    #[serde(default = "defaults::MarketBidCost_shut_down")]
     pub shut_down: InputOutputCurve,
     pub incremental_offer_curves: CostCurve,
     pub decremental_offer_curves: CostCurve,
     ///IDs of the ancillary service components that this market bid offers into.
     pub ancillary_service_offers: Vec<i64>,
     ///Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.
-    #[serde(default = "defaults::MarketBidCost_incremental_slope")]
-    pub incremental_slope: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub incremental_slope: Option<bool>,
     ///Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.
-    #[serde(default = "defaults::MarketBidCost_decremental_slope")]
-    pub decremental_slope: bool,
-    #[serde(default = "defaults::MarketBidCost_curve_style")]
-    pub curve_style: CurveStyles,
-    #[serde(default = "defaults::MarketBidCost_curve_multistep")]
-    pub curve_multistep: CurveMultiStep,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub decremental_slope: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub curve_style: Option<CurveStyles>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub curve_multistep: Option<CurveMultiStep>,
 }
 ///A triple of values, one for each stage of a thermal unit's start-up: `hot`, `warm`, and `cold`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -12811,17 +12784,17 @@ pub struct EmissionsData {
     pub emission_rate: ValueCurve,
     pub basis: EmissionBasis,
     ///Per-start emission pulse, in mass_unit. Must be finite and non-negative. Units: per mass_unit — KG: kg, LB: lb, SHORT_TON: ston, METRIC_TON: t .
-    #[serde(default = "defaults::EmissionsData_start_up_adder")]
-    pub start_up_adder: f64,
-    #[serde(default = "defaults::EmissionsData_mass_unit")]
-    pub mass_unit: MassUnit,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start_up_adder: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mass_unit: Option<MassUnit>,
     pub energy_unit: EnergyUnit,
     ///GWP100 multiplier for CO2-equivalent reporting. Must be finite and non-negative. Units: 1.
-    #[serde(default = "defaults::EmissionsData_gwp")]
-    pub gwp: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gwp: Option<f64>,
     ///Whether this attribute is active
-    #[serde(default = "defaults::EmissionsData_available")]
-    pub available: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub available: Option<bool>,
 }
 ///Pollutant an emission rate is reported for, spanning greenhouse gases (`CO2`, `CO2E`, `CH4`, `N2O`), criteria pollutants (`NOX`, `SO2`, `CO`, `VOC`, `PM25`, `PM10`), and toxics (`HG`, `HAP`), with `CUSTOM` for a user-defined pollutant.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -13008,8 +12981,8 @@ pub struct EXST1 {
     #[serde(rename = "Tf")]
     pub tf: f64,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::EXST1_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///Generic Proportional/Integral Excitation System
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13074,8 +13047,8 @@ pub struct EXPIC1 {
     #[serde(rename = "Kc")]
     pub kc: f64,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::EXPIC1_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///Modified AC2. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC2A Excitacion System. The alternator main exciter is used, feeding its output via non-controlled rectifiers. The Type AC2C model is similar to that of Type AC1C except for the inclusion of exciter time constant compensation and exciter field current limiting elements. EXAC2 in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13141,8 +13114,8 @@ pub struct EXAC2 {
     #[serde(rename = "Se")]
     pub se: Vec<f64>,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::EXAC2_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///Modified ESAC1A. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A Excitacion System. EXAC1A in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13196,8 +13169,8 @@ pub struct EXAC1A {
     #[serde(rename = "Vr_lim")]
     pub vr_lim: MinMax,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::EXAC1A_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///Modified ESAC1A. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A. EXAC1 in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13249,8 +13222,8 @@ pub struct EXAC1 {
     #[serde(rename = "Se")]
     pub se: Vec<f64>,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::EXAC1_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///IEEE Excitation System for Voltage Security Assesment
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13291,8 +13264,8 @@ pub struct EX4VSA {
     #[serde(rename = "E_lim")]
     pub e_lim: MinMax,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::EX4VSA_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///In these excitation systems, voltage (and also current in compounded systems) is transformed to an appropriate level. Rectifiers, either controlled or non-controlled, provide the necessary direct current for the generator field. Parameters of IEEE Std 421.5 Type ST4B Excitacion System. ESST4B in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13343,8 +13316,8 @@ pub struct ESST4B {
     ///Potential circuit phase angle (degrees)
     pub thetap: f64,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::ESST4B_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///This excitation system supplies power through a transformer from the generator terminals and its regulated by a controlled rectifier (via thyristors). Parameters of IEEE Std 421.5 Type ST1A Excitacion System. ESST1A in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13403,8 +13376,8 @@ pub struct ESST1A {
     #[serde(rename = "I_lr")]
     pub i_lr: f64,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::ESST1A_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///Used to represent field-controlled dc commutator exciters with continuously acting voltage regulators having power supplies derived from the generator or auxiliaries bus. Parameters of IEEE Std 421.5 Type DC2A Excitacion System. This model corresponds to ESDC2A in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13452,8 +13425,8 @@ pub struct ESDC2A {
     #[serde(rename = "Se")]
     pub se: Vec<f64>,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::ESDC2A_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///Self-excited shunt fields with the voltage regulator operating in a mode commonly termed buck-boost. Parameters of IEEE Std 421.5 Type DC1A Excitacion System. This model corresponds to ESDC1A in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13501,8 +13474,8 @@ pub struct ESDC1A {
     #[serde(rename = "Se")]
     pub se: Vec<f64>,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::ESDC1A_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///Excitation System AC8B. Used to represent the Basler Digital Excitation Control System (DECS) with PID controller in PSSE
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13548,8 +13521,8 @@ pub struct ESAC8B {
     #[serde(rename = "Se")]
     pub se: Vec<f64>,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::ESAC8B_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC6A Excitacion System. ESAC6A in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13615,8 +13588,8 @@ pub struct ESAC6A {
     #[serde(rename = "Se")]
     pub se: Vec<f64>,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::ESAC6A_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A Excitacion System. This model corresponds to ESAC1A in PSSE and PSLF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13670,8 +13643,8 @@ pub struct ESAC1A {
     #[serde(rename = "Vr_lim")]
     pub vr_lim: MinMax,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::ESAC1A_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///Used to represent switches and breakers connecting AC Buses.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13701,14 +13674,14 @@ pub struct DiscreteControlledACBranch {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub operational_flow_limit: Option<OperationalFlowLimit>,
     ///Type of discrete control.
-    #[serde(default = "defaults::DiscreteControlledACBranch_discrete_branch_type")]
-    pub discrete_branch_type: DiscreteControlledACBranchDiscreteBranchType,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub discrete_branch_type: Option<DiscreteControlledACBranchDiscreteBranchType>,
     ///Open or Close status.
-    #[serde(default = "defaults::DiscreteControlledACBranch_branch_status")]
-    pub branch_status: DiscreteControlledACBranchBranchStatus,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub branch_status: Option<DiscreteControlledACBranchBranchStatus>,
     ///Normal (as-designed) open or close status of the device.
-    #[serde(default = "defaults::DiscreteControlledACBranch_normal_branch_status")]
-    pub normal_branch_status: DiscreteControlledACBranchNormalBranchStatus,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub normal_branch_status: Option<DiscreteControlledACBranchNormalBranchStatus>,
 }
 ///Operator-set flow limits on a directed branch: a minimum and a maximum flow in each direction, applied in addition to the branch's thermal rating.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -13726,9 +13699,9 @@ pub struct OperationalFlowLimit {
 ///Normal (as-designed) open or close status of the device.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum DiscreteControlledACBranchNormalBranchStatus {
+    #[default]
     #[serde(rename = "OPEN")]
     Open,
-    #[default]
     #[serde(rename = "CLOSED")]
     Closed,
 }
@@ -13753,11 +13726,11 @@ impl AsRef<str> for DiscreteControlledACBranchNormalBranchStatus {
 ///Type of discrete control.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum DiscreteControlledACBranchDiscreteBranchType {
+    #[default]
     #[serde(rename = "SWITCH")]
     Switch,
     #[serde(rename = "BREAKER")]
     Breaker,
-    #[default]
     #[serde(rename = "OTHER")]
     Other,
 }
@@ -13783,9 +13756,9 @@ impl AsRef<str> for DiscreteControlledACBranchDiscreteBranchType {
 ///Open or Close status.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum DiscreteControlledACBranchBranchStatus {
+    #[default]
     #[serde(rename = "OPEN")]
     Open,
-    #[default]
     #[serde(rename = "CLOSED")]
     Closed,
 }
@@ -13846,8 +13819,8 @@ pub struct DeterministicSingleTimeSeries {
     pub unit_system: Option<UnitSystem>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
-    #[serde(default = "defaults::DeterministicSingleTimeSeries_interval_alignment")]
-    pub interval_alignment: IntervalAlignment,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub interval_alignment: Option<IntervalAlignment>,
     ///The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component_field: Option<String>,
@@ -13926,8 +13899,8 @@ pub struct Deterministic {
     pub unit_system: Option<UnitSystem>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
-    #[serde(default = "defaults::Deterministic_interval_alignment")]
-    pub interval_alignment: IntervalAlignment,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub interval_alignment: Option<IntervalAlignment>,
     ///The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component_field: Option<String>,
@@ -14063,16 +14036,16 @@ pub struct DemandSideTechnology {
     ///Corresponding type to be used in PCM modeling.
     pub power_systems_type: String,
     ///MWh of electricity per unit of output. Ex: MWh per ton of hydrogen for electrolyzers. Units: 1.
-    #[serde(default = "defaults::DemandSideTechnology_technology_efficiency")]
-    pub technology_efficiency: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub technology_efficiency: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub price_per_unit: Option<ValueCurve>,
     ///Minimum operation of demandside unit as a fraction of peak demand. Units: 1.
-    #[serde(default = "defaults::DemandSideTechnology_min_power")]
-    pub min_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_power: Option<f64>,
     ///Peak demand value in MW. Units: MW.
-    #[serde(default = "defaults::DemandSideTechnology_peak_demand_mw")]
-    pub peak_demand_mw: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub peak_demand_mw: Option<f64>,
     ///Maximum number of minutes that demand can be deferred or delayed (minutes). Units: min.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_demand_delay: Option<f64>,
@@ -14099,22 +14072,22 @@ pub struct DemandRequirement {
     ///Name of the component.
     pub name: String,
     ///Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`).
-    #[serde(default = "defaults::DemandRequirement_available")]
-    pub available: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub available: Option<bool>,
     ///Corresponding type to be used in PCM modeling.
     pub power_systems_type: String,
     ///Indicator of how the demand requirement should conform to the load profile of existing technologies in the system. Should only be used for new demand requirements.
-    #[serde(default = "defaults::DemandRequirement_conformity")]
-    pub conformity: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conformity: Option<String>,
     ///The annual growth rate of the demand requirement, used to scale present-day loads into future projections. Should only be used for conforming loads. Units: 1.
-    #[serde(default = "defaults::DemandRequirement_growth_rate")]
-    pub growth_rate: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub growth_rate: Option<f64>,
     ///The value of the peak demand to be used for new DemandRequirements. Units: MW.
-    #[serde(default = "defaults::DemandRequirement_new_demand_mw")]
-    pub new_demand_mw: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub new_demand_mw: Option<f64>,
     ///The year in which the new demand requirement will be installed. Should only be used for new demand requirements.
-    #[serde(default = "defaults::DemandRequirement_new_construction_year")]
-    pub new_construction_year: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub new_construction_year: Option<i64>,
     ///Location where the component applies. Can be a zone or node.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub region: Option<Vec<i64>>,
@@ -14208,9 +14181,7 @@ pub struct DCBus {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct CurrentLossCurve {
-    #[serde(default = "defaults::CurrentLossCurve_power_units")]
     pub power_units: UnitSystem,
-    #[serde(default = "defaults::CurrentLossCurve_value_curve")]
     pub value_curve: LossValueCurve,
 }
 ///The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.
@@ -14406,8 +14377,8 @@ pub struct CombinedCycleBlock {
     pub name: String,
     pub configuration: CombinedCycleConfiguration,
     ///Factor for heat recovery to steam conversion
-    #[serde(default = "defaults::CombinedCycleBlock_heat_recovery_to_steam_factor")]
-    pub heat_recovery_to_steam_factor: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub heat_recovery_to_steam_factor: Option<f64>,
 }
 ///Shaft and turbine arrangement of a combined cycle plant: a single shaft carrying one combustion and one steam turbine, separate shafts for the two, two or three combustion turbines feeding one steam turbine, or `Other` for any arrangement outside these.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -14705,7 +14676,6 @@ pub struct FuelCurve {
     pub value_curve: ValueCurve,
     #[serde(default = "defaults::FuelCurve_variable_cost_type")]
     pub variable_cost_type: FuelCurveVariableCostType,
-    #[serde(default = "defaults::FuelCurve_vom_cost")]
     pub vom_cost: InputOutputCurve,
 }
 ///Fuel quantity a `FuelCurve` is expressed in: `MMBTU` (million British thermal units) or `GJ` (gigajoules) of heat content.
@@ -14762,12 +14732,10 @@ impl AsRef<str> for FuelCurveVariableCostType {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct CostCurve {
-    #[serde(default = "defaults::CostCurve_power_units")]
     pub power_units: UnitSystem,
     pub value_curve: ValueCurve,
     #[serde(default = "defaults::CostCurve_variable_cost_type")]
     pub variable_cost_type: CostCurveVariableCostType,
-    #[serde(default = "defaults::CostCurve_vom_cost")]
     pub vom_cost: InputOutputCurve,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -14962,14 +14930,14 @@ pub struct Area {
     ///Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.
     pub name: String,
     ///Peak active power in the area. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::Area_peak_active_power")]
-    pub peak_active_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub peak_active_power: Option<f64>,
     ///Peak reactive power in the area. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
-    #[serde(default = "defaults::Area_peak_reactive_power")]
-    pub peak_reactive_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub peak_reactive_power: Option<f64>,
     ///Load-frequency damping parameter modeling how much the load in the area changes due to changes in frequency. Units: MW/Hz.
-    #[serde(default = "defaults::Area_load_response")]
-    pub load_response: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub load_response: Option<f64>,
     ///Scheduled net active power interchange of the area (PSS/E PDES): the area's total export minus its total import that area interchange control holds. Positive means the area exports power. `null` when the area has no scheduled interchange; `0.0` is a valid schedule. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -14979,8 +14947,8 @@ pub struct Area {
     pub scheduled_net_interchange: Option<Option<f64>>,
     ///IDs of the loads that belong to this area but connect to a bus in another area (PSS/E off-area loads). When area interchange control includes these loads (PSS/E AREAIN=2), their demand counts in the net interchange of this area, not of the area of their bus.
     ///Constraint: uniqueItems=true
-    #[serde(default = "defaults::Area_out_of_area_load_ids")]
-    pub out_of_area_load_ids: Vec<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub out_of_area_load_ids: Option<Vec<i64>>,
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
@@ -15062,8 +15030,8 @@ pub struct TechnologyFinancialData {
 #[serde(deny_unknown_fields)]
 pub struct CapitalCost {
     pub capital_cost: ValueCurve,
-    #[serde(default = "defaults::CapitalCost_interconnection_cost")]
-    pub interconnection_cost: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub interconnection_cost: Option<f64>,
 }
 ///A cost or fuel curve: function data plus a declaration of how to read its y axis. `INPUT_OUTPUT` reads y as the total `f(x)`, `INCREMENTAL` as the marginal rate `f'(x)`, and `AVERAGE_RATE` as the average `f(x)/x`; the three can express the same underlying function and are inter-convertible given `initial_input`. The `TIME_SERIES_*` variants are the time-varying equivalents. Which form to use follows the data source: bid stacks are incremental, total cost tables input-output, efficiency tables average rate.
 #[derive(Debug, Clone, PartialEq)]
@@ -18639,11 +18607,8 @@ pub struct ActiveRenewableControllerAB {
     #[serde(rename = "T_pord", skip_serializing_if = "Option::is_none")]
     pub t_pord: Option<f64>,
     ///Reference Power Set-point.
-    #[serde(
-        rename = "P_ref",
-        default = "defaults::ActiveRenewableControllerAB_p_ref"
-    )]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 ///A pair of deadband thresholds `(fdbd1, fdbd2)` on a frequency error signal, inside which the controller does not act.
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
@@ -18690,8 +18655,8 @@ pub struct AVRTypeII {
     #[serde(rename = "Be")]
     pub be: f64,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::AVRTypeII_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///Parameters of an Automatic Voltage Regulator Type I - Resembles IEEE Type DC1
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -18729,8 +18694,8 @@ pub struct AVRTypeI {
     #[serde(rename = "Be")]
     pub be: f64,
     ///Reference voltage set-point
-    #[serde(rename = "V_ref", default = "defaults::AVRTypeI_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///An AC bus.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -18836,8 +18801,8 @@ pub struct AGC {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub area: Option<i64>,
     ///Initial condition for ACE.
-    #[serde(default = "defaults::AGC_initial_ace")]
-    pub initial_ace: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub initial_ace: Option<f64>,
 }
 ///Parameters of a AVR that returns a fixed voltage to the rotor winding
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -18849,8 +18814,8 @@ pub struct AVRFixed {
     #[serde(rename = "Vf")]
     pub vf: f64,
     ///Reference Voltage Set-point
-    #[serde(rename = "V_ref", default = "defaults::AVRFixed_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 ///Parameters of a simple proportional AVR in the derivative of EMF i.e. an integrator controller on EMF
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -18862,8 +18827,8 @@ pub struct AVRSimple {
     #[serde(rename = "Kv")]
     pub kv: f64,
     ///Reference Voltage Set-point
-    #[serde(rename = "V_ref", default = "defaults::AVRSimple_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -18871,8 +18836,8 @@ pub struct ActivePowerDroop {
     #[serde(rename = "Rp")]
     pub rp: f64,
     pub omegaz: f64,
-    #[serde(rename = "P_ref", default = "defaults::ActivePowerDroop_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -18882,16 +18847,16 @@ pub struct ActivePowerPI {
     #[serde(rename = "Ki_p")]
     pub ki_p: f64,
     pub omegaz: f64,
-    #[serde(rename = "P_ref", default = "defaults::ActivePowerPI_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ActiveVirtualOscillator {
     pub k1: f64,
     pub psi: f64,
-    #[serde(rename = "P_ref", default = "defaults::ActiveVirtualOscillator_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 ///Parameters of 6-states synchronous machine: Anderson-Fouad model
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -18982,8 +18947,8 @@ pub struct CapacityReserveMargin {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub target_year: Option<i64>,
     ///Capacity reserve requirements, represented as a fraction of peak demand in a region. Units: 1.
-    #[serde(default = "defaults::CapacityReserveMargin_capacity_reserve_fraction")]
-    pub capacity_reserve_fraction: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub capacity_reserve_fraction: Option<f64>,
 }
 ///Policy requirement limiting the amount of carbon produced in the target year. The limit can be given either as a total mass of CO2 or as the carbon intensity of the portfolio, in mass of CO2 per MWh of electricity.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -18999,8 +18964,8 @@ pub struct CarbonCaps {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub target_year: Option<i64>,
     ///Emission limit in terms of rate. Units: Mt/MWh.
-    #[serde(default = "defaults::CarbonCaps_max_tons_mwh")]
-    pub max_tons_mwh: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_tons_mwh: Option<f64>,
     ///Emission limit in absolute values (million tonnes). Units: Mt.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_mtons: Option<f64>,
@@ -19019,8 +18984,8 @@ pub struct CarbonTax {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub target_year: Option<i64>,
     ///Cost penalty per ton of CO2 emitted by technologies in the eligible regions during the target year. Units: USD/t.
-    #[serde(default = "defaults::CarbonTax_tax_dollars_per_ton")]
-    pub tax_dollars_per_ton: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tax_dollars_per_ton: Option<f64>,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -19060,8 +19025,8 @@ pub struct DEGOV {
     #[serde(rename = "Td")]
     pub td: f64,
     ///Reference power set-point
-    #[serde(rename = "P_ref", default = "defaults::DEGOV_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 ///Parameters Woodward Diesel Governor Model. DEGOV1 in PSSE
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -19107,8 +19072,8 @@ pub struct DEGOV1 {
     #[serde(rename = "Te")]
     pub te: f64,
     ///Reference power set-point
-    #[serde(rename = "P_ref", default = "defaults::DEGOV1_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 ///Policy requirement that the total generation of the eligible technologies be at least a pre-determined fraction of the total annual demand across the eligible zones in the target year.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -19124,8 +19089,8 @@ pub struct EnergyShareRequirements {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub target_year: Option<i64>,
     ///Fraction of total annual demand across all eligible zones that needs to be met by eligible resources. Units: 1.
-    #[serde(default = "defaults::EnergyShareRequirements_generation_fraction_requirement")]
-    pub generation_fraction_requirement: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub generation_fraction_requirement: Option<f64>,
 }
 ///Supplemental attribute mapping a technology in the portfolio to the existing system — for example, the list of existing generators that correspond to one supply technology.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -19213,8 +19178,8 @@ pub struct FixedForcedOutage {
     pub outage_status: f64,
     ///IDs of devices whose post-contingency state should be modeled when this outage occurs. Empty by default; semantics of an empty list are decided by the downstream consumer.
     ///Constraint: uniqueItems=true
-    #[serde(default = "defaults::FixedForcedOutage_monitored_components")]
-    pub monitored_components: Vec<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub monitored_components: Option<Vec<i64>>,
     ///Optional user-supplied identifier for the outage, such as a name or a block id. Null when not set.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -19228,8 +19193,8 @@ pub struct FixedForcedOutage {
 #[serde(deny_unknown_fields)]
 pub struct FixedFrequency {
     ///Reference frequency
-    #[serde(default = "defaults::FixedFrequency_frequency")]
-    pub frequency: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub frequency: Option<f64>,
 }
 ///Parameter of a full order flux stator-rotor model without zero sequence flux in the stator. The derivative of stator fluxes (ψd and ψq) is NOT neglected. Only one q-axis damping circuit is considered. All parameters are in machine per unit. Refer to Chapter 3 of Power System Stability and Control by P. Kundur or Chapter 11 of Power System Dynamics: Stability and Control, by J. Machowski, J. Bialek and J. Bumby, for more details. Note that the models are somewhat different (but equivalent) due to the different Park Transformation used in both books
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -19306,8 +19271,8 @@ pub struct GasTG {
     #[serde(rename = "D_turb")]
     pub d_turb: f64,
     ///Reference load set-point
-    #[serde(rename = "P_ref", default = "defaults::GasTG_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 ///Supplemental attribute describing forced outages whose transitions follow geometric distributions, parameterized by the probability of entering an outage and the mean time to recovery. Both the outage and recovery probabilities can be backed by time series.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -19315,15 +19280,15 @@ pub struct GasTG {
 pub struct GeometricDistributionForcedOutage {
     pub id: i64,
     ///Mean time elapsed between a failure and the return to service, in minutes. Units: min.
-    #[serde(default = "defaults::GeometricDistributionForcedOutage_mean_time_to_recovery")]
-    pub mean_time_to_recovery: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mean_time_to_recovery: Option<f64>,
     ///Probability of transitioning into a forced outage in one minute, the same time step `mean_time_to_recovery` is stated in.
-    #[serde(default = "defaults::GeometricDistributionForcedOutage_outage_transition_probability")]
-    pub outage_transition_probability: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub outage_transition_probability: Option<f64>,
     ///IDs of devices whose post-contingency state should be modeled when this outage occurs. Empty by default; semantics of an empty list are decided by the downstream consumer.
     ///Constraint: uniqueItems=true
-    #[serde(default = "defaults::GeometricDistributionForcedOutage_monitored_components")]
-    pub monitored_components: Vec<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub monitored_components: Option<Vec<i64>>,
     ///Optional user-supplied identifier for the outage, such as a name or a block id. Null when not set.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -19838,8 +19803,8 @@ pub struct PSS2C {
     #[serde(rename = "Tcomp")]
     pub tcomp: f64,
     ///Hysteresis memory variable
-    #[serde(default = "defaults::PSS2C_hysteresis_binary_logic")]
-    pub hysteresis_binary_logic: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hysteresis_binary_logic: Option<i64>,
 }
 ///Parameters of a PSS that returns a fixed voltage to add to the reference for the AVR
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -19872,8 +19837,8 @@ pub struct PlannedOutage {
     pub outage_schedule: String,
     ///IDs of devices whose post-contingency state should be modeled when this outage occurs. Empty by default; semantics of an empty list are decided by the downstream consumer.
     ///Constraint: uniqueItems=true
-    #[serde(default = "defaults::PlannedOutage_monitored_components")]
-    pub monitored_components: Vec<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub monitored_components: Option<Vec<i64>>,
     ///Optional user-supplied identifier for the outage, such as a name or a block id. Null when not set.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -19900,13 +19865,10 @@ pub struct PortfolioFinancialData {
     ///ID for individual component.
     pub id: i64,
     ///Discount rate for financial calculations. Units: 1.
-    #[serde(default = "defaults::PortfolioFinancialData_discount_rate")]
     pub discount_rate: f64,
     ///Inflation rate for cost adjustments. Units: 1.
-    #[serde(default = "defaults::PortfolioFinancialData_inflation_rate")]
     pub inflation_rate: f64,
     ///Interest rate for financing calculations. Units: 1.
-    #[serde(default = "defaults::PortfolioFinancialData_interest_rate")]
     pub interest_rate: f64,
     ///Base economic year. All costs will be converted to a net present value in this year.
     pub base_year: i64,
@@ -19936,8 +19898,8 @@ pub struct RLFilter {
 pub struct ReactivePowerDroop {
     pub kq: f64,
     pub omegaf: f64,
-    #[serde(rename = "V_ref", default = "defaults::ReactivePowerDroop_v_ref")]
-    pub v_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -19947,10 +19909,10 @@ pub struct ReactivePowerPI {
     #[serde(rename = "Ki_q")]
     pub ki_q: f64,
     pub omegaf: f64,
-    #[serde(rename = "V_ref", default = "defaults::ReactivePowerPI_v_ref")]
-    pub v_ref: f64,
-    #[serde(rename = "Q_ref", default = "defaults::ReactivePowerPI_q_ref")]
-    pub q_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
+    #[serde(rename = "Q_ref", skip_serializing_if = "Option::is_none")]
+    pub q_ref: Option<f64>,
 }
 ///Supplemental attribute grouping the setpoint voltage regulating devices that hold the voltage at one bus, so the reactive power required there can be split between them. The members' shares are their VoltageControlAssociation weights, each divided by the sum over the members in service (PSS/E RMPCT). The regulated bus is not stored: every member already resolves to the same bus. A bus regulated by two or more setpoint devices has exactly one sharing group containing all of them; a lone device has none.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -19965,16 +19927,10 @@ pub struct ReactivePowerSharing {
 #[serde(deny_unknown_fields)]
 pub struct ReactiveVirtualOscillator {
     pub k2: f64,
-    #[serde(
-        rename = "V_ref",
-        default = "defaults::ReactiveVirtualOscillator_v_ref"
-    )]
-    pub v_ref: f64,
-    #[serde(
-        rename = "Q_ref",
-        default = "defaults::ReactiveVirtualOscillator_q_ref"
-    )]
-    pub q_ref: f64,
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
+    #[serde(rename = "Q_ref", skip_serializing_if = "Option::is_none")]
+    pub q_ref: Option<f64>,
 }
 ///Parameters of a Phase-Locked Loop (PLL) based on 'Reduced-order Structure-preserving Model for Parallel-connected Three-phase Grid-tied Inverters'
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -20400,7 +20356,6 @@ pub struct Substation {
     ///Substation number in the source power flow data
     pub number: i64,
     ///Substation grounding DC resistance. Units: ohm.
-    #[serde(default = "defaults::Substation_grounding_resistance")]
     pub grounding_resistance: f64,
 }
 ///Links a supplemental attribute to the component it describes — the JSON form of a row in the store's `supplemental_attribute_associations` catalog table, field-for-field. `component_type` and `attribute_type` are denormalized labels carried for filtering and reporting, not identity: identity is the `(component_id, attribute_id)` pair. Lives in Core because either side may be a Core or an Operations type. Unlike `components`, `supplemental_attributes` is a flat, untyped array, so `attribute_type` is this record's only per-row type discriminator.
@@ -20425,8 +20380,8 @@ pub struct TGFixed {
     ///Efficiency factor that multiplies P_ref
     pub efficiency: f64,
     ///Reference power set-point
-    #[serde(rename = "P_ref", default = "defaults::TGFixed_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 ///Parameters of a Simple one-state Turbine Governor
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -20440,8 +20395,8 @@ pub struct TGSimple {
     #[serde(rename = "Tm")]
     pub tm: f64,
     ///Reference power set-point
-    #[serde(rename = "P_ref", default = "defaults::TGSimple_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 ///Attribute to represent ThermalGen power plants with synchronous generation. Shared shafts between units are recorded as PlantAssociation rows with role='shaft'.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -20476,8 +20431,8 @@ pub struct VirtualInertia {
     pub ta: f64,
     pub kd: f64,
     pub komega: f64,
-    #[serde(rename = "P_ref", default = "defaults::VirtualInertia_p_ref")]
-    pub p_ref: f64,
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -20520,489 +20475,23 @@ pub struct ZeroOrderBESS {
     ///Current controller integral gain
     pub kii: f64,
     ///Reference DC-voltage set-point
-    #[serde(rename = "Vdc_ref", default = "defaults::ZeroOrderBESS_vdc_ref")]
-    pub vdc_ref: f64,
+    #[serde(rename = "Vdc_ref", skip_serializing_if = "Option::is_none")]
+    pub vdc_ref: Option<f64>,
 }
 #[allow(non_snake_case)]
 pub mod defaults {
     use super::*;
-    pub fn WPIDHY_p_ref() -> f64 {
-        1f64
-    }
-    pub fn VoltageDroopControl_available() -> bool {
-        true
-    }
-    pub fn VoltageDroopControl_voltage_units() -> VoltageUnitBasis {
-        ::serde_json::from_str::<VoltageUnitBasis>("\"COMPONENT_BASE\"")
-            .expect("schema default for VoltageDroopControl.voltage_units")
-    }
-    pub fn VoltageControlAssociation_terminal() -> VoltageControlTerminal {
-        ::serde_json::from_str::<VoltageControlTerminal>("\"UNDEFINED\"")
-            .expect("schema default for VoltageControlAssociation.terminal")
-    }
-    pub fn VoltageControlAssociation_weight() -> f64 {
-        1f64
-    }
-    pub fn TwoWindingTransformer_admittance_units() -> AdmittanceUnitBasis {
-        ::serde_json::from_str::<AdmittanceUnitBasis>("\"COMPONENT_BASE\"")
-            .expect("schema default for TwoWindingTransformer.admittance_units")
-    }
-    pub fn TwoWindingTransformer_magnetizing_shunt() -> ComplexNumber {
-        ::serde_json::from_str::<ComplexNumber>("{\"real\":0.0,\"imag\":0.0}")
-            .expect("schema default for TwoWindingTransformer.magnetizing_shunt")
-    }
-    pub fn TwoWindingTransformer_shunt_location() -> TwoWindingTransformerShuntLocation {
-        ::serde_json::from_str::<TwoWindingTransformerShuntLocation>("\"PRIMARY\"")
-            .expect("schema default for TwoWindingTransformer.shunt_location")
-    }
-    pub fn TwoTerminalVSCLine_converter_loss_from() -> LossCurve {
-        ::serde_json::from_str::<
-            LossCurve,
-        >(
-                "{\"power_units\":\"NATURAL_UNITS\",\"value_curve\":{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}}",
-            )
-            .expect("schema default for TwoTerminalVSCLine.converter_loss_from")
-    }
-    pub fn TwoTerminalVSCLine_converter_loss_to() -> LossCurve {
-        ::serde_json::from_str::<
-            LossCurve,
-        >(
-                "{\"power_units\":\"NATURAL_UNITS\",\"value_curve\":{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}}",
-            )
-            .expect("schema default for TwoTerminalVSCLine.converter_loss_to")
-    }
-    pub fn TwoTerminalVSCLine_dc_current() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalVSCLine_dc_voltage_droop_from() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalVSCLine_dc_voltage_droop_to() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalVSCLine_g() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalVSCLine_max_dc_current_from() -> f64 {
-        9999f64
-    }
-    pub fn TwoTerminalVSCLine_max_dc_current_to() -> f64 {
-        9999f64
-    }
-    pub fn TwoTerminalVSCLine_power_factor_weighting_fraction_from() -> f64 {
-        1f64
-    }
-    pub fn TwoTerminalVSCLine_power_factor_weighting_fraction_to() -> f64 {
-        1f64
-    }
-    pub fn TwoTerminalVSCLine_rated_ac_voltage_from() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalVSCLine_rated_ac_voltage_to() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalVSCLine_rated_dc_voltage() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalVSCLine_reactive_power_from() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalVSCLine_reactive_power_limits_from() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":0.0}")
-            .expect("schema default for TwoTerminalVSCLine.reactive_power_limits_from")
-    }
-    pub fn TwoTerminalVSCLine_reactive_power_limits_to() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":0.0}")
-            .expect("schema default for TwoTerminalVSCLine.reactive_power_limits_to")
-    }
-    pub fn TwoTerminalVSCLine_reactive_power_to() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalVSCLine_voltage_limits_from() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":999.9}")
-            .expect("schema default for TwoTerminalVSCLine.voltage_limits_from")
-    }
-    pub fn TwoTerminalVSCLine_voltage_limits_to() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":999.9}")
-            .expect("schema default for TwoTerminalVSCLine.voltage_limits_to")
-    }
-    pub fn TwoTerminalLCCLine_compounding_resistance() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalLCCLine_control_mode() -> LCCControlMode {
-        ::serde_json::from_str::<LCCControlMode>("\"BLOCKED\"")
-            .expect("schema default for TwoTerminalLCCLine.control_mode")
-    }
-    pub fn TwoTerminalLCCLine_inverter_capacitor_reactance() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalLCCLine_inverter_extinction_angle() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalLCCLine_inverter_tap_limits() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.51,\"max\":1.5}")
-            .expect("schema default for TwoTerminalLCCLine.inverter_tap_limits")
-    }
-    pub fn TwoTerminalLCCLine_inverter_tap_setting() -> f64 {
-        1f64
-    }
-    pub fn TwoTerminalLCCLine_inverter_tap_step() -> f64 {
-        0.00625f64
-    }
-    pub fn TwoTerminalLCCLine_inverter_transformer_ratio() -> f64 {
-        1f64
-    }
-    pub fn TwoTerminalLCCLine_loss() -> LossCurve {
-        ::serde_json::from_str::<
-            LossCurve,
-        >(
-                "{\"power_units\":\"NATURAL_UNITS\",\"value_curve\":{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}}",
-            )
-            .expect("schema default for TwoTerminalLCCLine.loss")
-    }
-    pub fn TwoTerminalLCCLine_min_compounding_voltage() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalLCCLine_reactive_power_limits_from() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":0.0}")
-            .expect("schema default for TwoTerminalLCCLine.reactive_power_limits_from")
-    }
-    pub fn TwoTerminalLCCLine_reactive_power_limits_to() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":0.0}")
-            .expect("schema default for TwoTerminalLCCLine.reactive_power_limits_to")
-    }
-    pub fn TwoTerminalLCCLine_rectifier_capacitor_reactance() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalLCCLine_rectifier_delay_angle() -> f64 {
-        0f64
-    }
-    pub fn TwoTerminalLCCLine_rectifier_tap_limits() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.51,\"max\":1.5}")
-            .expect("schema default for TwoTerminalLCCLine.rectifier_tap_limits")
-    }
-    pub fn TwoTerminalLCCLine_rectifier_tap_setting() -> f64 {
-        1f64
-    }
-    pub fn TwoTerminalLCCLine_rectifier_tap_step() -> f64 {
-        0.00625f64
-    }
-    pub fn TwoTerminalLCCLine_rectifier_transformer_ratio() -> f64 {
-        1f64
-    }
-    pub fn TwoTerminalLCCLine_switch_mode_voltage() -> f64 {
-        0f64
-    }
-    pub fn TransformerCircuit_active_power_flow() -> f64 {
-        0f64
-    }
-    pub fn TransformerCircuit_alpha() -> f64 {
-        0f64
-    }
-    pub fn TransformerCircuit_base_power() -> f64 {
-        100f64
-    }
-    pub fn TransformerCircuit_control_objective() -> TransformerControlObjective {
-        ::serde_json::from_str::<TransformerControlObjective>("\"UNDEFINED\"")
-            .expect("schema default for TransformerCircuit.control_objective")
-    }
-    pub fn TransformerCircuit_number_of_tap_positions() -> i64 {
-        33i64
-    }
-    pub fn TransformerCircuit_parameter_units() -> ImpedanceUnitBasis {
-        ::serde_json::from_str::<ImpedanceUnitBasis>("\"COMPONENT_BASE\"")
-            .expect("schema default for TransformerCircuit.parameter_units")
-    }
-    pub fn TransformerCircuit_r() -> f64 {
-        0f64
-    }
-    pub fn TransformerCircuit_reactive_power_flow() -> f64 {
-        0f64
-    }
-    pub fn TransformerCircuit_regulated_bus_number() -> i64 {
-        0i64
-    }
-    pub fn TransformerCircuit_tap() -> f64 {
-        1f64
-    }
-    pub fn TransformerCircuit_x() -> f64 {
-        0f64
-    }
-    pub fn ThreeWindingTransformer_admittance_units() -> AdmittanceUnitBasis {
-        ::serde_json::from_str::<AdmittanceUnitBasis>("\"COMPONENT_BASE\"")
-            .expect("schema default for ThreeWindingTransformer.admittance_units")
-    }
-    pub fn ThreeWindingTransformer_magnetizing_shunt() -> ComplexNumber {
-        ::serde_json::from_str::<ComplexNumber>("{\"real\":0.0,\"imag\":0.0}")
-            .expect("schema default for ThreeWindingTransformer.magnetizing_shunt")
-    }
-    pub fn ThreeWindingTransformer_parameter_units() -> ImpedanceUnitBasis {
-        ::serde_json::from_str::<ImpedanceUnitBasis>("\"COMPONENT_BASE\"")
-            .expect("schema default for ThreeWindingTransformer.parameter_units")
-    }
-    pub fn ThreeWindingTransformer_shunt_location() -> ThreeWindingTransformerShuntLocation {
-        ::serde_json::from_str::<ThreeWindingTransformerShuntLocation>("\"PRIMARY\"")
-            .expect("schema default for ThreeWindingTransformer.shunt_location")
-    }
-    pub fn ThermalStandard_commitment_mode() -> CommitmentModes {
-        ::serde_json::from_str::<CommitmentModes>("\"COMMITTED\"")
-            .expect("schema default for ThermalStandard.commitment_mode")
-    }
-    pub fn ThermalStandard_fuel() -> ThermalFuels {
-        ::serde_json::from_str::<ThermalFuels>("\"OTHER\"")
-            .expect("schema default for ThermalStandard.fuel")
-    }
-    pub fn ThermalStandard_prime_mover_type() -> PrimeMovers {
-        ::serde_json::from_str::<PrimeMovers>("\"OT\"")
-            .expect("schema default for ThermalStandard.prime_mover_type")
-    }
-    pub fn ThermalStandard_time_at_status() -> f64 {
-        600000f64
-    }
-    pub fn ThermalMultiStart_commitment_mode() -> CommitmentModes {
-        ::serde_json::from_str::<CommitmentModes>("\"COMMITTED\"")
-            .expect("schema default for ThermalMultiStart.commitment_mode")
-    }
-    pub fn ThermalMultiStart_time_at_status() -> f64 {
-        600000f64
-    }
-    pub fn SynchronousCondenser_active_power_losses() -> f64 {
-        0f64
-    }
-    pub fn SwitchedAdmittance_admittance_units() -> ShuntAdmittanceUnitBasis {
-        ::serde_json::from_str::<ShuntAdmittanceUnitBasis>("\"COMPONENT_MVAR\"")
-            .expect("schema default for SwitchedAdmittance.admittance_units")
-    }
-    pub fn SwitchedAdmittance_control_mode() -> SwitchedAdmittanceControlMode {
-        ::serde_json::from_str::<SwitchedAdmittanceControlMode>("\"FIXED\"")
-            .expect("schema default for SwitchedAdmittance.control_mode")
-    }
-    pub fn SwitchedAdmittance_regulated_bus_number() -> i64 {
-        0i64
-    }
-    pub fn SupplyTechnology_lifetime() -> i64 {
-        100i64
-    }
-    pub fn SupplyTechnology_min_generation_fraction() -> f64 {
-        0f64
-    }
-    pub fn SupplyTechnology_prime_mover_type() -> PrimeMovers {
-        ::serde_json::from_str::<PrimeMovers>("\"OT\"")
-            .expect("schema default for SupplyTechnology.prime_mover_type")
-    }
-    pub fn SupplyTechnology_start_fuel_mmbtu_per_mw() -> f64 {
-        0f64
-    }
-    pub fn SupplyTechnology_unit_size() -> f64 {
-        0f64
-    }
-    pub fn StorageTechnology_lifetime() -> i64 {
-        100i64
-    }
-    pub fn StorageTechnology_losses() -> f64 {
-        1f64
-    }
-    pub fn StorageTechnology_min_discharge_fraction() -> f64 {
-        0f64
-    }
-    pub fn StorageTechnology_prime_mover_type() -> PrimeMovers {
-        ::serde_json::from_str::<PrimeMovers>("\"OT\"")
-            .expect("schema default for StorageTechnology.prime_mover_type")
-    }
-    pub fn StorageTechnology_unit_size_discharge() -> f64 {
-        0f64
-    }
-    pub fn StorageTechnology_unit_size_energy() -> f64 {
-        0f64
-    }
-    pub fn StorageCapitalCost_interconnection_cost() -> f64 {
-        0f64
-    }
-    pub fn StandardLoad_conformity() -> LoadConformity {
-        ::serde_json::from_str::<LoadConformity>("\"UNDEFINED\"")
-            .expect("schema default for StandardLoad.conformity")
-    }
-    pub fn StandardLoad_constant_active_power() -> f64 {
-        0f64
-    }
-    pub fn StandardLoad_constant_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn StandardLoad_current_active_power() -> f64 {
-        0f64
-    }
-    pub fn StandardLoad_current_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn StandardLoad_impedance_active_power() -> f64 {
-        0f64
-    }
-    pub fn StandardLoad_impedance_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn StandardLoad_max_constant_active_power() -> f64 {
-        0f64
-    }
-    pub fn StandardLoad_max_constant_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn StandardLoad_max_current_active_power() -> f64 {
-        0f64
-    }
-    pub fn StandardLoad_max_current_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn StandardLoad_max_impedance_active_power() -> f64 {
-        0f64
-    }
-    pub fn StandardLoad_max_impedance_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn Source_r_th() -> f64 {
-        0f64
-    }
-    pub fn Source_x_th() -> f64 {
-        0f64
-    }
-    pub fn Source_active_power() -> f64 {
-        0f64
-    }
-    pub fn Source_active_power_limits() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":0.0}")
-            .expect("schema default for Source.active_power_limits")
-    }
-    pub fn Source_base_power() -> f64 {
-        100f64
-    }
-    pub fn Source_internal_angle() -> f64 {
-        0f64
-    }
-    pub fn Source_internal_voltage() -> f64 {
-        1f64
-    }
-    pub fn Source_operation_cost() -> SourceOperationCost {
-        ::serde_json::from_str::<
-            SourceOperationCost,
-        >(
-                "{\"cost_type\":\"IMPORTEXPORT\",\"import_offer_curves\":{\"variable_cost_type\":\"COST\",\"value_curve\":{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}},\"vom_cost\":{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}},\"export_offer_curves\":{\"variable_cost_type\":\"COST\",\"value_curve\":{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}},\"vom_cost\":{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}},\"energy_import_weekly_limit\":1000000.0,\"energy_export_weekly_limit\":1000000.0}",
-            )
-            .expect("schema default for Source.operation_cost")
-    }
-    pub fn Source_parameter_units() -> ImpedanceUnitBasis {
-        ::serde_json::from_str::<ImpedanceUnitBasis>("\"COMPONENT_BASE\"")
-            .expect("schema default for Source.parameter_units")
-    }
-    pub fn Source_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn Source_reactive_power_limits() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":0.0}")
-            .expect("schema default for Source.reactive_power_limits")
-    }
-    pub fn SingleTimeSeries_interval_alignment() -> IntervalAlignment {
-        ::serde_json::from_str::<IntervalAlignment>("\"PERIOD_ENDING\"")
-            .expect("schema default for SingleTimeSeries.interval_alignment")
-    }
     pub fn SingleTimeSeries_time_series_type() -> SingleTimeSeriesTimeSeriesType {
         ::serde_json::from_str::<SingleTimeSeriesTimeSeriesType>("\"SingleTimeSeries\"")
             .expect("schema default for SingleTimeSeries.time_series_type")
-    }
-    pub fn SeriesCompensator_control_mode() -> SeriesCompensatorControlMode {
-        ::serde_json::from_str::<SeriesCompensatorControlMode>("\"FIXED\"")
-            .expect("schema default for SeriesCompensator.control_mode")
-    }
-    pub fn SeriesCompensator_parameter_units() -> ImpedanceUnitBasis {
-        ::serde_json::from_str::<ImpedanceUnitBasis>("\"COMPONENT_BASE\"")
-            .expect("schema default for SeriesCompensator.parameter_units")
-    }
-    pub fn Scenarios_interval_alignment() -> IntervalAlignment {
-        ::serde_json::from_str::<IntervalAlignment>("\"PERIOD_ENDING\"")
-            .expect("schema default for Scenarios.interval_alignment")
     }
     pub fn Scenarios_time_series_type() -> ScenariosTimeSeriesType {
         ::serde_json::from_str::<ScenariosTimeSeriesType>("\"Scenarios\"")
             .expect("schema default for Scenarios.time_series_type")
     }
-    pub fn ST8C_ifd_ref() -> f64 {
-        1f64
-    }
-    pub fn ST8C_v_ref() -> f64 {
-        1f64
-    }
-    pub fn ST6B_v_ref() -> f64 {
-        1f64
-    }
-    pub fn SEXS_v_ref() -> f64 {
-        1f64
-    }
-    pub fn SCRX_v_ref() -> f64 {
-        1f64
-    }
-    pub fn RetrofitPotential_retrofit_fraction() -> f64 {
-        1f64
-    }
-    pub fn RenewableEnergyVoltageConverterTypeA_q_ref() -> f64 {
-        1f64
-    }
-    pub fn RenewableEnergyConverterTypeA_q_ref() -> f64 {
-        1f64
-    }
-    pub fn RenewableEnergyConverterTypeA_r_source() -> f64 {
-        0f64
-    }
-    pub fn RenewableEnergyConverterTypeA_x_source() -> f64 {
-        100000f64
-    }
-    pub fn ReactiveRenewableControllerAB_q_ref() -> f64 {
-        1f64
-    }
-    pub fn ReactiveRenewableControllerAB_v_ref() -> f64 {
-        1f64
-    }
-    pub fn Probabilistic_interval_alignment() -> IntervalAlignment {
-        ::serde_json::from_str::<IntervalAlignment>("\"PERIOD_ENDING\"")
-            .expect("schema default for Probabilistic.interval_alignment")
-    }
     pub fn Probabilistic_time_series_type() -> ProbabilisticTimeSeriesType {
         ::serde_json::from_str::<ProbabilisticTimeSeriesType>("\"Probabilistic\"")
             .expect("schema default for Probabilistic.time_series_type")
-    }
-    pub fn PowerLoad_conformity() -> LoadConformity {
-        ::serde_json::from_str::<LoadConformity>("\"UNDEFINED\"")
-            .expect("schema default for PowerLoad.conformity")
-    }
-    pub fn PIDGOV_p_ref() -> f64 {
-        1f64
-    }
-    pub fn OnlineReserve_deployed_fraction() -> f64 {
-        0f64
-    }
-    pub fn OnlineReserve_max_output_fraction() -> f64 {
-        1f64
-    }
-    pub fn OnlineReserve_max_participation_factor() -> f64 {
-        1f64
-    }
-    pub fn OnlineReserve_requirement() -> f64 {
-        0f64
-    }
-    pub fn OnlineReserve_sustained_time() -> f64 {
-        60f64
-    }
-    pub fn OfflineReserve_deployed_fraction() -> f64 {
-        0f64
-    }
-    pub fn OfflineReserve_max_output_fraction() -> f64 {
-        1f64
-    }
-    pub fn OfflineReserve_max_participation_factor() -> f64 {
-        1f64
-    }
-    pub fn OfflineReserve_requirement() -> f64 {
-        0f64
-    }
-    pub fn OfflineReserve_sustained_time() -> f64 {
-        60f64
     }
     pub fn NonSequentialTimeSeries_time_series_type() -> NonSequentialTimeSeriesTimeSeriesType {
         ::serde_json::from_str::<NonSequentialTimeSeriesTimeSeriesType>(
@@ -21010,219 +20499,17 @@ pub mod defaults {
         )
         .expect("schema default for NonSequentialTimeSeries.time_series_type")
     }
-    pub fn NodalACTransportTechnology_reactance() -> f64 {
-        0f64
-    }
-    pub fn NodalACTransportTechnology_resistance() -> f64 {
-        0f64
-    }
-    pub fn NodalACTransportTechnology_unit_size() -> f64 {
-        0f64
-    }
-    pub fn NodalACTransportTechnology_voltage() -> f64 {
-        0f64
-    }
-    pub fn MotorLoad_motor_technology() -> MotorLoadMotorTechnology {
-        ::serde_json::from_str::<MotorLoadMotorTechnology>("\"UNDETERMINED\"")
-            .expect("schema default for MotorLoad.motor_technology")
-    }
-    pub fn LossCurve_power_units() -> UnitSystem {
-        ::serde_json::from_str::<UnitSystem>("\"NATURAL_UNITS\"")
-            .expect("schema default for LossCurve.power_units")
-    }
-    pub fn LossCurve_value_curve() -> LossValueCurve {
-        ::serde_json::from_str::<
-            LossValueCurve,
-        >(
-                "{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}",
-            )
-            .expect("schema default for LossCurve.value_curve")
-    }
-    pub fn Line_g() -> FromTo {
-        ::serde_json::from_str::<FromTo>("{\"from\":0.0,\"to\":0.0}")
-            .expect("schema default for Line.g")
-    }
-    pub fn Line_parameter_units() -> ImpedanceUnitBasis {
-        ::serde_json::from_str::<ImpedanceUnitBasis>("\"COMPONENT_BASE\"")
-            .expect("schema default for Line.parameter_units")
-    }
-    pub fn InterruptibleStandardLoad_conformity() -> LoadConformity {
-        ::serde_json::from_str::<LoadConformity>("\"UNDEFINED\"")
-            .expect("schema default for InterruptibleStandardLoad.conformity")
-    }
-    pub fn InterruptibleStandardLoad_constant_active_power() -> f64 {
-        0f64
-    }
-    pub fn InterruptibleStandardLoad_constant_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn InterruptibleStandardLoad_current_active_power() -> f64 {
-        0f64
-    }
-    pub fn InterruptibleStandardLoad_current_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn InterruptibleStandardLoad_impedance_active_power() -> f64 {
-        0f64
-    }
-    pub fn InterruptibleStandardLoad_impedance_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn InterruptibleStandardLoad_max_constant_active_power() -> f64 {
-        0f64
-    }
-    pub fn InterruptibleStandardLoad_max_constant_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn InterruptibleStandardLoad_max_current_active_power() -> f64 {
-        0f64
-    }
-    pub fn InterruptibleStandardLoad_max_current_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn InterruptibleStandardLoad_max_impedance_active_power() -> f64 {
-        0f64
-    }
-    pub fn InterruptibleStandardLoad_max_impedance_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn InterruptiblePowerLoad_conformity() -> LoadConformity {
-        ::serde_json::from_str::<LoadConformity>("\"UNDEFINED\"")
-            .expect("schema default for InterruptiblePowerLoad.conformity")
-    }
     pub fn LoadCost_cost_type() -> LoadCostCostType {
         ::serde_json::from_str::<LoadCostCostType>("\"LOAD\"")
             .expect("schema default for LoadCost.cost_type")
-    }
-    pub fn LoadCost_fixed() -> f64 {
-        0f64
-    }
-    pub fn InterconnectingConverter_dc_current() -> f64 {
-        0f64
-    }
-    pub fn InterconnectingConverter_dc_voltage_droop() -> f64 {
-        0f64
-    }
-    pub fn InterconnectingConverter_max_dc_current() -> f64 {
-        9999f64
-    }
-    pub fn InterconnectingConverter_power_factor_weighting_fraction() -> f64 {
-        1f64
-    }
-    pub fn InterconnectingConverter_rated_ac_voltage() -> f64 {
-        0f64
-    }
-    pub fn InterconnectingConverter_rated_dc_voltage() -> f64 {
-        0f64
-    }
-    pub fn InterconnectingConverter_voltage_limits() -> MinMax {
-        ::serde_json::from_str::<MinMax>("{\"min\":0.0,\"max\":999.9}")
-            .expect("schema default for InterconnectingConverter.voltage_limits")
     }
     pub fn ImportExportCost_cost_type() -> ImportExportCostCostType {
         ::serde_json::from_str::<ImportExportCostCostType>("\"IMPORTEXPORT\"")
             .expect("schema default for ImportExportCost.cost_type")
     }
-    pub fn IEEETurbineGov1_p_ref() -> f64 {
-        1f64
-    }
-    pub fn IEEET1_v_ref() -> f64 {
-        1f64
-    }
-    pub fn HydroTurbineGov_p_ref() -> f64 {
-        1f64
-    }
-    pub fn HydroTurbine_commitment_mode() -> CommitmentModes {
-        ::serde_json::from_str::<CommitmentModes>("\"COMMITTED\"")
-            .expect("schema default for HydroTurbine.commitment_mode")
-    }
-    pub fn HydroTurbine_conversion_factor() -> f64 {
-        1f64
-    }
-    pub fn HydroTurbine_efficiency() -> f64 {
-        1f64
-    }
-    pub fn HydroTurbine_powerhouse_elevation() -> f64 {
-        0f64
-    }
-    pub fn HydroTurbine_prime_mover_type() -> PrimeMovers {
-        ::serde_json::from_str::<PrimeMovers>("\"HY\"")
-            .expect("schema default for HydroTurbine.prime_mover_type")
-    }
-    pub fn HydroTurbine_status() -> OperationalStates {
-        ::serde_json::from_str::<OperationalStates>("\"OFFLINE\"")
-            .expect("schema default for HydroTurbine.status")
-    }
-    pub fn HydroTurbine_time_at_status() -> f64 {
-        600000f64
-    }
-    pub fn HydroTurbine_turbine_type() -> HydroTurbineTurbineType {
-        ::serde_json::from_str::<HydroTurbineTurbineType>("\"UNKNOWN\"")
-            .expect("schema default for HydroTurbine.turbine_type")
-    }
-    pub fn HydroReservoir_evaporative_loss() -> f64 {
-        0f64
-    }
-    pub fn HydroReservoir_level_data_type() -> HydroReservoirLevelDataType {
-        ::serde_json::from_str::<HydroReservoirLevelDataType>("\"USABLE_VOLUME\"")
-            .expect("schema default for HydroReservoir.level_data_type")
-    }
     pub fn HydroReservoirCost_cost_type() -> HydroReservoirCostCostType {
         ::serde_json::from_str::<HydroReservoirCostCostType>("\"HYDRO_RES\"")
             .expect("schema default for HydroReservoirCost.cost_type")
-    }
-    pub fn HydroReservoirCost_level_shortage_cost() -> f64 {
-        0f64
-    }
-    pub fn HydroReservoirCost_level_surplus_cost() -> f64 {
-        0f64
-    }
-    pub fn HydroReservoirCost_spillage_cost() -> f64 {
-        0f64
-    }
-    pub fn HydroPumpTurbine_active_power_pump() -> f64 {
-        0f64
-    }
-    pub fn HydroPumpTurbine_commitment_mode() -> CommitmentModes {
-        ::serde_json::from_str::<CommitmentModes>("\"COMMITTED\"")
-            .expect("schema default for HydroPumpTurbine.commitment_mode")
-    }
-    pub fn HydroPumpTurbine_conversion_factor() -> f64 {
-        1f64
-    }
-    pub fn HydroPumpTurbine_efficiency() -> TurbinePump {
-        ::serde_json::from_str::<TurbinePump>("{\"turbine\":1.0,\"pump\":1.0}")
-            .expect("schema default for HydroPumpTurbine.efficiency")
-    }
-    pub fn HydroPumpTurbine_minimum_time() -> TurbinePump {
-        ::serde_json::from_str::<TurbinePump>("{\"turbine\":0.0,\"pump\":0.0}")
-            .expect("schema default for HydroPumpTurbine.minimum_time")
-    }
-    pub fn HydroPumpTurbine_operating_mode() -> HydroPumpTurbineOperatingMode {
-        ::serde_json::from_str::<HydroPumpTurbineOperatingMode>("\"OFF\"")
-            .expect("schema default for HydroPumpTurbine.operating_mode")
-    }
-    pub fn HydroPumpTurbine_prime_mover_type() -> PrimeMovers {
-        ::serde_json::from_str::<PrimeMovers>("\"PS\"")
-            .expect("schema default for HydroPumpTurbine.prime_mover_type")
-    }
-    pub fn HydroPumpTurbine_status() -> OperationalStates {
-        ::serde_json::from_str::<OperationalStates>("\"OFFLINE\"")
-            .expect("schema default for HydroPumpTurbine.status")
-    }
-    pub fn HydroPumpTurbine_time_at_status() -> f64 {
-        600000f64
-    }
-    pub fn HydroPumpTurbine_transition_time() -> TurbinePump {
-        ::serde_json::from_str::<TurbinePump>("{\"turbine\":0.0,\"pump\":0.0}")
-            .expect("schema default for HydroPumpTurbine.transition_time")
-    }
-    pub fn HydroDispatch_status() -> OperationalStates {
-        ::serde_json::from_str::<OperationalStates>("\"OFFLINE\"")
-            .expect("schema default for HydroDispatch.status")
-    }
-    pub fn HydroDispatch_time_at_status() -> f64 {
-        600000f64
     }
     pub fn ThermalGenerationCost_cost_type() -> ThermalGenerationCostCostType {
         ::serde_json::from_str::<ThermalGenerationCostCostType>("\"THERMAL\"")
@@ -21232,143 +20519,21 @@ pub mod defaults {
         ::serde_json::from_str::<RenewableGenerationCostCostType>("\"RENEWABLE\"")
             .expect("schema default for RenewableGenerationCost.cost_type")
     }
-    pub fn RenewableGenerationCost_curtailment_cost() -> CostCurve {
-        ::serde_json::from_str::<
-            CostCurve,
-        >(
-                "{\"variable_cost_type\":\"COST\",\"value_curve\":{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}},\"vom_cost\":{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}}",
-            )
-            .expect("schema default for RenewableGenerationCost.curtailment_cost")
-    }
-    pub fn RenewableGenerationCost_fixed() -> f64 {
-        0f64
-    }
     pub fn HydroGenerationCost_cost_type() -> HydroGenerationCostCostType {
         ::serde_json::from_str::<HydroGenerationCostCostType>("\"HYDRO_GEN\"")
             .expect("schema default for HydroGenerationCost.cost_type")
-    }
-    pub fn HydroGenerationCost_fixed() -> f64 {
-        0f64
-    }
-    pub fn GenericArcImpedance_parameter_units() -> ImpedanceUnitBasis {
-        ::serde_json::from_str::<ImpedanceUnitBasis>("\"COMPONENT_BASE\"")
-            .expect("schema default for GenericArcImpedance.parameter_units")
-    }
-    pub fn GeneralGovModel_p_ref() -> f64 {
-        1f64
-    }
-    pub fn FixedAdmittance_admittance_units() -> ShuntAdmittanceUnitBasis {
-        ::serde_json::from_str::<ShuntAdmittanceUnitBasis>("\"COMPONENT_MVAR\"")
-            .expect("schema default for FixedAdmittance.admittance_units")
-    }
-    pub fn FACTSControlDevice_max_reactive_power() -> f64 {
-        9999f64
-    }
-    pub fn FACTSControlDevice_regulated_bus_number() -> i64 {
-        0i64
-    }
-    pub fn FACTSControlDevice_shunt_control_type() -> FACTSControlDeviceShuntControlType {
-        ::serde_json::from_str::<FACTSControlDeviceShuntControlType>("\"STATCOM\"")
-            .expect("schema default for FACTSControlDevice.shunt_control_type")
-    }
-    pub fn FACTSControlDevice_voltage_setpoint_units() -> VoltageUnitBasis {
-        ::serde_json::from_str::<VoltageUnitBasis>("\"COMPONENT_BASE\"")
-            .expect("schema default for FACTSControlDevice.voltage_setpoint_units")
-    }
-    pub fn ExponentialLoad_conformity() -> LoadConformity {
-        ::serde_json::from_str::<LoadConformity>("\"UNDEFINED\"")
-            .expect("schema default for ExponentialLoad.conformity")
-    }
-    pub fn EnergyReservoirStorage_conversion_factor() -> f64 {
-        1f64
-    }
-    pub fn EnergyReservoirStorage_cycle_limits() -> i64 {
-        10000i64
-    }
-    pub fn EnergyReservoirStorage_energy_units() -> EnergyUnitBasis {
-        ::serde_json::from_str::<EnergyUnitBasis>("\"MWH\"")
-            .expect("schema default for EnergyReservoirStorage.energy_units")
-    }
-    pub fn EnergyReservoirStorage_self_discharge() -> f64 {
-        0f64
-    }
-    pub fn EnergyReservoirStorage_standing_loss() -> f64 {
-        0f64
-    }
-    pub fn EnergyReservoirStorage_storage_target() -> f64 {
-        0f64
     }
     pub fn StorageCost_cost_type() -> StorageCostCostType {
         ::serde_json::from_str::<StorageCostCostType>("\"STORAGE\"")
             .expect("schema default for StorageCost.cost_type")
     }
-    pub fn StorageCost_energy_shortage_cost() -> f64 {
-        0f64
-    }
-    pub fn StorageCost_energy_surplus_cost() -> f64 {
-        0f64
-    }
-    pub fn StorageCost_fixed() -> f64 {
-        0f64
-    }
-    pub fn StorageCost_shut_down() -> f64 {
-        0f64
-    }
-    pub fn StorageCost_start_up() -> StorageCostStartUp {
-        ::serde_json::from_str::<StorageCostStartUp>("0.0")
-            .expect("schema default for StorageCost.start_up")
-    }
     pub fn MarketBidTimeSeriesCost_cost_type() -> MarketBidTimeSeriesCostCostType {
         ::serde_json::from_str::<MarketBidTimeSeriesCostCostType>("\"MARKET_BID_TIME_SERIES\"")
             .expect("schema default for MarketBidTimeSeriesCost.cost_type")
     }
-    pub fn MarketBidTimeSeriesCost_curve_multistep() -> CurveMultiStep {
-        ::serde_json::from_str::<CurveMultiStep>("0")
-            .expect("schema default for MarketBidTimeSeriesCost.curve_multistep")
-    }
-    pub fn MarketBidTimeSeriesCost_curve_style() -> CurveStyles {
-        ::serde_json::from_str::<CurveStyles>("0")
-            .expect("schema default for MarketBidTimeSeriesCost.curve_style")
-    }
-    pub fn MarketBidTimeSeriesCost_decremental_slope() -> bool {
-        false
-    }
-    pub fn MarketBidTimeSeriesCost_incremental_slope() -> bool {
-        false
-    }
     pub fn MarketBidCost_cost_type() -> MarketBidCostCostType {
         ::serde_json::from_str::<MarketBidCostCostType>("\"MARKET_BID\"")
             .expect("schema default for MarketBidCost.cost_type")
-    }
-    pub fn MarketBidCost_curve_multistep() -> CurveMultiStep {
-        ::serde_json::from_str::<CurveMultiStep>("0")
-            .expect("schema default for MarketBidCost.curve_multistep")
-    }
-    pub fn MarketBidCost_curve_style() -> CurveStyles {
-        ::serde_json::from_str::<CurveStyles>("0")
-            .expect("schema default for MarketBidCost.curve_style")
-    }
-    pub fn MarketBidCost_decremental_slope() -> bool {
-        false
-    }
-    pub fn MarketBidCost_incremental_slope() -> bool {
-        false
-    }
-    pub fn MarketBidCost_minimum_energy_offer() -> InputOutputCurve {
-        ::serde_json::from_str::<
-            InputOutputCurve,
-        >(
-                "{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}",
-            )
-            .expect("schema default for MarketBidCost.minimum_energy_offer")
-    }
-    pub fn MarketBidCost_shut_down() -> InputOutputCurve {
-        ::serde_json::from_str::<
-            InputOutputCurve,
-        >(
-                "{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}",
-            )
-            .expect("schema default for MarketBidCost.shut_down")
     }
     pub fn StartUpStages_startup_stages_type() -> StartUpStagesStartupStagesType {
         ::serde_json::from_str::<StartUpStagesStartupStagesType>("\"STAGES\"")
@@ -21380,76 +20545,6 @@ pub mod defaults {
         )
         .expect("schema default for ImportExportTimeSeriesCost.cost_type")
     }
-    pub fn EmissionsData_available() -> bool {
-        true
-    }
-    pub fn EmissionsData_gwp() -> f64 {
-        1f64
-    }
-    pub fn EmissionsData_mass_unit() -> MassUnit {
-        ::serde_json::from_str::<MassUnit>("\"KG\"")
-            .expect("schema default for EmissionsData.mass_unit")
-    }
-    pub fn EmissionsData_start_up_adder() -> f64 {
-        0f64
-    }
-    pub fn EXST1_v_ref() -> f64 {
-        1f64
-    }
-    pub fn EXPIC1_v_ref() -> f64 {
-        1f64
-    }
-    pub fn EXAC2_v_ref() -> f64 {
-        1f64
-    }
-    pub fn EXAC1A_v_ref() -> f64 {
-        1f64
-    }
-    pub fn EXAC1_v_ref() -> f64 {
-        1f64
-    }
-    pub fn EX4VSA_v_ref() -> f64 {
-        1f64
-    }
-    pub fn ESST4B_v_ref() -> f64 {
-        1f64
-    }
-    pub fn ESST1A_v_ref() -> f64 {
-        1f64
-    }
-    pub fn ESDC2A_v_ref() -> f64 {
-        1f64
-    }
-    pub fn ESDC1A_v_ref() -> f64 {
-        1f64
-    }
-    pub fn ESAC8B_v_ref() -> f64 {
-        1f64
-    }
-    pub fn ESAC6A_v_ref() -> f64 {
-        1f64
-    }
-    pub fn ESAC1A_v_ref() -> f64 {
-        1f64
-    }
-    pub fn DiscreteControlledACBranch_branch_status() -> DiscreteControlledACBranchBranchStatus {
-        ::serde_json::from_str::<DiscreteControlledACBranchBranchStatus>("\"CLOSED\"")
-            .expect("schema default for DiscreteControlledACBranch.branch_status")
-    }
-    pub fn DiscreteControlledACBranch_discrete_branch_type(
-    ) -> DiscreteControlledACBranchDiscreteBranchType {
-        ::serde_json::from_str::<DiscreteControlledACBranchDiscreteBranchType>("\"OTHER\"")
-            .expect("schema default for DiscreteControlledACBranch.discrete_branch_type")
-    }
-    pub fn DiscreteControlledACBranch_normal_branch_status(
-    ) -> DiscreteControlledACBranchNormalBranchStatus {
-        ::serde_json::from_str::<DiscreteControlledACBranchNormalBranchStatus>("\"CLOSED\"")
-            .expect("schema default for DiscreteControlledACBranch.normal_branch_status")
-    }
-    pub fn DeterministicSingleTimeSeries_interval_alignment() -> IntervalAlignment {
-        ::serde_json::from_str::<IntervalAlignment>("\"PERIOD_ENDING\"")
-            .expect("schema default for DeterministicSingleTimeSeries.interval_alignment")
-    }
     pub fn DeterministicSingleTimeSeries_time_series_type(
     ) -> DeterministicSingleTimeSeriesTimeSeriesType {
         ::serde_json::from_str::<DeterministicSingleTimeSeriesTimeSeriesType>(
@@ -21457,97 +20552,17 @@ pub mod defaults {
         )
         .expect("schema default for DeterministicSingleTimeSeries.time_series_type")
     }
-    pub fn Deterministic_interval_alignment() -> IntervalAlignment {
-        ::serde_json::from_str::<IntervalAlignment>("\"PERIOD_ENDING\"")
-            .expect("schema default for Deterministic.interval_alignment")
-    }
     pub fn Deterministic_time_series_type() -> DeterministicTimeSeriesType {
         ::serde_json::from_str::<DeterministicTimeSeriesType>("\"Deterministic\"")
             .expect("schema default for Deterministic.time_series_type")
-    }
-    pub fn DemandSideTechnology_min_power() -> f64 {
-        0f64
-    }
-    pub fn DemandSideTechnology_peak_demand_mw() -> f64 {
-        0f64
-    }
-    pub fn DemandSideTechnology_technology_efficiency() -> f64 {
-        0f64
-    }
-    pub fn DemandRequirement_available() -> bool {
-        true
-    }
-    pub fn DemandRequirement_conformity() -> String {
-        ::serde_json::from_str::<String>("\"UNDEFINED\"")
-            .expect("schema default for DemandRequirement.conformity")
-    }
-    pub fn DemandRequirement_growth_rate() -> f64 {
-        0f64
-    }
-    pub fn DemandRequirement_new_construction_year() -> i64 {
-        2020i64
-    }
-    pub fn DemandRequirement_new_demand_mw() -> f64 {
-        0f64
-    }
-    pub fn CurrentLossCurve_power_units() -> UnitSystem {
-        ::serde_json::from_str::<UnitSystem>("\"NATURAL_UNITS\"")
-            .expect("schema default for CurrentLossCurve.power_units")
-    }
-    pub fn CurrentLossCurve_value_curve() -> LossValueCurve {
-        ::serde_json::from_str::<
-            LossValueCurve,
-        >(
-                "{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}",
-            )
-            .expect("schema default for CurrentLossCurve.value_curve")
-    }
-    pub fn CombinedCycleBlock_heat_recovery_to_steam_factor() -> f64 {
-        0f64
     }
     pub fn FuelCurve_variable_cost_type() -> FuelCurveVariableCostType {
         ::serde_json::from_str::<FuelCurveVariableCostType>("\"FUEL\"")
             .expect("schema default for FuelCurve.variable_cost_type")
     }
-    pub fn FuelCurve_vom_cost() -> InputOutputCurve {
-        ::serde_json::from_str::<
-            InputOutputCurve,
-        >(
-                "{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}",
-            )
-            .expect("schema default for FuelCurve.vom_cost")
-    }
-    pub fn CostCurve_power_units() -> UnitSystem {
-        ::serde_json::from_str::<UnitSystem>("\"NATURAL_UNITS\"")
-            .expect("schema default for CostCurve.power_units")
-    }
     pub fn CostCurve_variable_cost_type() -> CostCurveVariableCostType {
         ::serde_json::from_str::<CostCurveVariableCostType>("\"COST\"")
             .expect("schema default for CostCurve.variable_cost_type")
-    }
-    pub fn CostCurve_vom_cost() -> InputOutputCurve {
-        ::serde_json::from_str::<
-            InputOutputCurve,
-        >(
-                "{\"curve_type\":\"INPUT_OUTPUT\",\"function_data\":{\"function_type\":\"LINEAR\",\"constant_term\":0,\"proportional_term\":0}}",
-            )
-            .expect("schema default for CostCurve.vom_cost")
-    }
-    pub fn Area_load_response() -> f64 {
-        0f64
-    }
-    pub fn Area_out_of_area_load_ids() -> Vec<i64> {
-        ::serde_json::from_str::<Vec<i64>>("[]")
-            .expect("schema default for Area.out_of_area_load_ids")
-    }
-    pub fn Area_peak_active_power() -> f64 {
-        0f64
-    }
-    pub fn Area_peak_reactive_power() -> f64 {
-        0f64
-    }
-    pub fn CapitalCost_interconnection_cost() -> f64 {
-        0f64
     }
     pub fn TimeSeriesInputOutputCurve_curve_type() -> TimeSeriesInputOutputCurveCurveType {
         ::serde_json::from_str::<TimeSeriesInputOutputCurveCurveType>(
@@ -21618,410 +20633,31 @@ pub mod defaults {
         ::serde_json::from_str::<LinearFunctionDataFunctionType>("\"LINEAR\"")
             .expect("schema default for LinearFunctionData.function_type")
     }
-    pub fn ActiveRenewableControllerAB_p_ref() -> f64 {
-        1f64
-    }
-    pub fn AVRTypeII_v_ref() -> f64 {
-        1f64
-    }
-    pub fn AVRTypeI_v_ref() -> f64 {
-        1f64
-    }
-    pub fn AGC_initial_ace() -> f64 {
-        0f64
-    }
-    pub fn AVRFixed_v_ref() -> f64 {
-        1f64
-    }
-    pub fn AVRSimple_v_ref() -> f64 {
-        1f64
-    }
-    pub fn ActivePowerDroop_p_ref() -> f64 {
-        1f64
-    }
-    pub fn ActivePowerPI_p_ref() -> f64 {
-        1f64
-    }
-    pub fn ActiveVirtualOscillator_p_ref() -> f64 {
-        1f64
-    }
-    pub fn CapacityReserveMargin_capacity_reserve_fraction() -> f64 {
-        0f64
-    }
-    pub fn CarbonCaps_max_tons_mwh() -> f64 {
-        100000000f64
-    }
-    pub fn CarbonTax_tax_dollars_per_ton() -> f64 {
-        0f64
-    }
-    pub fn DEGOV_p_ref() -> f64 {
-        1f64
-    }
-    pub fn DEGOV1_p_ref() -> f64 {
-        1f64
-    }
-    pub fn EnergyShareRequirements_generation_fraction_requirement() -> f64 {
-        0f64
-    }
-    pub fn FixedForcedOutage_monitored_components() -> Vec<i64> {
-        ::serde_json::from_str::<Vec<i64>>("[]")
-            .expect("schema default for FixedForcedOutage.monitored_components")
-    }
-    pub fn FixedFrequency_frequency() -> f64 {
-        1f64
-    }
-    pub fn GasTG_p_ref() -> f64 {
-        1f64
-    }
-    pub fn GeometricDistributionForcedOutage_mean_time_to_recovery() -> f64 {
-        0f64
-    }
-    pub fn GeometricDistributionForcedOutage_monitored_components() -> Vec<i64> {
-        ::serde_json::from_str::<Vec<i64>>("[]")
-            .expect("schema default for GeometricDistributionForcedOutage.monitored_components")
-    }
-    pub fn GeometricDistributionForcedOutage_outage_transition_probability() -> f64 {
-        0f64
-    }
-    pub fn PSS2C_hysteresis_binary_logic() -> i64 {
-        1i64
-    }
-    pub fn PlannedOutage_monitored_components() -> Vec<i64> {
-        ::serde_json::from_str::<Vec<i64>>("[]")
-            .expect("schema default for PlannedOutage.monitored_components")
-    }
-    pub fn PortfolioFinancialData_discount_rate() -> f64 {
-        0f64
-    }
-    pub fn PortfolioFinancialData_inflation_rate() -> f64 {
-        0f64
-    }
-    pub fn PortfolioFinancialData_interest_rate() -> f64 {
-        0f64
-    }
-    pub fn ReactivePowerDroop_v_ref() -> f64 {
-        1f64
-    }
-    pub fn ReactivePowerPI_q_ref() -> f64 {
-        1f64
-    }
-    pub fn ReactivePowerPI_v_ref() -> f64 {
-        1f64
-    }
-    pub fn ReactiveVirtualOscillator_q_ref() -> f64 {
-        1f64
-    }
-    pub fn ReactiveVirtualOscillator_v_ref() -> f64 {
-        1f64
-    }
-    pub fn Substation_grounding_resistance() -> f64 {
-        0.1f64
-    }
-    pub fn TGFixed_p_ref() -> f64 {
-        1f64
-    }
-    pub fn TGSimple_p_ref() -> f64 {
-        1f64
-    }
-    pub fn VirtualInertia_p_ref() -> f64 {
-        1f64
-    }
-    pub fn ZeroOrderBESS_vdc_ref() -> f64 {
-        1.1f64
-    }
 }
 #[cfg(test)]
 mod default_tests {
     use super::*;
     #[test]
     fn every_schema_default_deserializes() {
-        let _ = defaults::WPIDHY_p_ref();
-        let _ = defaults::VoltageDroopControl_available();
-        let _ = defaults::VoltageDroopControl_voltage_units();
-        let _ = defaults::VoltageControlAssociation_terminal();
-        let _ = defaults::VoltageControlAssociation_weight();
-        let _ = defaults::TwoWindingTransformer_admittance_units();
-        let _ = defaults::TwoWindingTransformer_magnetizing_shunt();
-        let _ = defaults::TwoWindingTransformer_shunt_location();
-        let _ = defaults::TwoTerminalVSCLine_converter_loss_from();
-        let _ = defaults::TwoTerminalVSCLine_converter_loss_to();
-        let _ = defaults::TwoTerminalVSCLine_dc_current();
-        let _ = defaults::TwoTerminalVSCLine_dc_voltage_droop_from();
-        let _ = defaults::TwoTerminalVSCLine_dc_voltage_droop_to();
-        let _ = defaults::TwoTerminalVSCLine_g();
-        let _ = defaults::TwoTerminalVSCLine_max_dc_current_from();
-        let _ = defaults::TwoTerminalVSCLine_max_dc_current_to();
-        let _ = defaults::TwoTerminalVSCLine_power_factor_weighting_fraction_from();
-        let _ = defaults::TwoTerminalVSCLine_power_factor_weighting_fraction_to();
-        let _ = defaults::TwoTerminalVSCLine_rated_ac_voltage_from();
-        let _ = defaults::TwoTerminalVSCLine_rated_ac_voltage_to();
-        let _ = defaults::TwoTerminalVSCLine_rated_dc_voltage();
-        let _ = defaults::TwoTerminalVSCLine_reactive_power_from();
-        let _ = defaults::TwoTerminalVSCLine_reactive_power_limits_from();
-        let _ = defaults::TwoTerminalVSCLine_reactive_power_limits_to();
-        let _ = defaults::TwoTerminalVSCLine_reactive_power_to();
-        let _ = defaults::TwoTerminalVSCLine_voltage_limits_from();
-        let _ = defaults::TwoTerminalVSCLine_voltage_limits_to();
-        let _ = defaults::TwoTerminalLCCLine_compounding_resistance();
-        let _ = defaults::TwoTerminalLCCLine_control_mode();
-        let _ = defaults::TwoTerminalLCCLine_inverter_capacitor_reactance();
-        let _ = defaults::TwoTerminalLCCLine_inverter_extinction_angle();
-        let _ = defaults::TwoTerminalLCCLine_inverter_tap_limits();
-        let _ = defaults::TwoTerminalLCCLine_inverter_tap_setting();
-        let _ = defaults::TwoTerminalLCCLine_inverter_tap_step();
-        let _ = defaults::TwoTerminalLCCLine_inverter_transformer_ratio();
-        let _ = defaults::TwoTerminalLCCLine_loss();
-        let _ = defaults::TwoTerminalLCCLine_min_compounding_voltage();
-        let _ = defaults::TwoTerminalLCCLine_reactive_power_limits_from();
-        let _ = defaults::TwoTerminalLCCLine_reactive_power_limits_to();
-        let _ = defaults::TwoTerminalLCCLine_rectifier_capacitor_reactance();
-        let _ = defaults::TwoTerminalLCCLine_rectifier_delay_angle();
-        let _ = defaults::TwoTerminalLCCLine_rectifier_tap_limits();
-        let _ = defaults::TwoTerminalLCCLine_rectifier_tap_setting();
-        let _ = defaults::TwoTerminalLCCLine_rectifier_tap_step();
-        let _ = defaults::TwoTerminalLCCLine_rectifier_transformer_ratio();
-        let _ = defaults::TwoTerminalLCCLine_switch_mode_voltage();
-        let _ = defaults::TransformerCircuit_active_power_flow();
-        let _ = defaults::TransformerCircuit_alpha();
-        let _ = defaults::TransformerCircuit_base_power();
-        let _ = defaults::TransformerCircuit_control_objective();
-        let _ = defaults::TransformerCircuit_number_of_tap_positions();
-        let _ = defaults::TransformerCircuit_parameter_units();
-        let _ = defaults::TransformerCircuit_r();
-        let _ = defaults::TransformerCircuit_reactive_power_flow();
-        let _ = defaults::TransformerCircuit_regulated_bus_number();
-        let _ = defaults::TransformerCircuit_tap();
-        let _ = defaults::TransformerCircuit_x();
-        let _ = defaults::ThreeWindingTransformer_admittance_units();
-        let _ = defaults::ThreeWindingTransformer_magnetizing_shunt();
-        let _ = defaults::ThreeWindingTransformer_parameter_units();
-        let _ = defaults::ThreeWindingTransformer_shunt_location();
-        let _ = defaults::ThermalStandard_commitment_mode();
-        let _ = defaults::ThermalStandard_fuel();
-        let _ = defaults::ThermalStandard_prime_mover_type();
-        let _ = defaults::ThermalStandard_time_at_status();
-        let _ = defaults::ThermalMultiStart_commitment_mode();
-        let _ = defaults::ThermalMultiStart_time_at_status();
-        let _ = defaults::SynchronousCondenser_active_power_losses();
-        let _ = defaults::SwitchedAdmittance_admittance_units();
-        let _ = defaults::SwitchedAdmittance_control_mode();
-        let _ = defaults::SwitchedAdmittance_regulated_bus_number();
-        let _ = defaults::SupplyTechnology_lifetime();
-        let _ = defaults::SupplyTechnology_min_generation_fraction();
-        let _ = defaults::SupplyTechnology_prime_mover_type();
-        let _ = defaults::SupplyTechnology_start_fuel_mmbtu_per_mw();
-        let _ = defaults::SupplyTechnology_unit_size();
-        let _ = defaults::StorageTechnology_lifetime();
-        let _ = defaults::StorageTechnology_losses();
-        let _ = defaults::StorageTechnology_min_discharge_fraction();
-        let _ = defaults::StorageTechnology_prime_mover_type();
-        let _ = defaults::StorageTechnology_unit_size_discharge();
-        let _ = defaults::StorageTechnology_unit_size_energy();
-        let _ = defaults::StorageCapitalCost_interconnection_cost();
-        let _ = defaults::StandardLoad_conformity();
-        let _ = defaults::StandardLoad_constant_active_power();
-        let _ = defaults::StandardLoad_constant_reactive_power();
-        let _ = defaults::StandardLoad_current_active_power();
-        let _ = defaults::StandardLoad_current_reactive_power();
-        let _ = defaults::StandardLoad_impedance_active_power();
-        let _ = defaults::StandardLoad_impedance_reactive_power();
-        let _ = defaults::StandardLoad_max_constant_active_power();
-        let _ = defaults::StandardLoad_max_constant_reactive_power();
-        let _ = defaults::StandardLoad_max_current_active_power();
-        let _ = defaults::StandardLoad_max_current_reactive_power();
-        let _ = defaults::StandardLoad_max_impedance_active_power();
-        let _ = defaults::StandardLoad_max_impedance_reactive_power();
-        let _ = defaults::Source_r_th();
-        let _ = defaults::Source_x_th();
-        let _ = defaults::Source_active_power();
-        let _ = defaults::Source_active_power_limits();
-        let _ = defaults::Source_base_power();
-        let _ = defaults::Source_internal_angle();
-        let _ = defaults::Source_internal_voltage();
-        let _ = defaults::Source_operation_cost();
-        let _ = defaults::Source_parameter_units();
-        let _ = defaults::Source_reactive_power();
-        let _ = defaults::Source_reactive_power_limits();
-        let _ = defaults::SingleTimeSeries_interval_alignment();
         let _ = defaults::SingleTimeSeries_time_series_type();
-        let _ = defaults::SeriesCompensator_control_mode();
-        let _ = defaults::SeriesCompensator_parameter_units();
-        let _ = defaults::Scenarios_interval_alignment();
         let _ = defaults::Scenarios_time_series_type();
-        let _ = defaults::ST8C_ifd_ref();
-        let _ = defaults::ST8C_v_ref();
-        let _ = defaults::ST6B_v_ref();
-        let _ = defaults::SEXS_v_ref();
-        let _ = defaults::SCRX_v_ref();
-        let _ = defaults::RetrofitPotential_retrofit_fraction();
-        let _ = defaults::RenewableEnergyVoltageConverterTypeA_q_ref();
-        let _ = defaults::RenewableEnergyConverterTypeA_q_ref();
-        let _ = defaults::RenewableEnergyConverterTypeA_r_source();
-        let _ = defaults::RenewableEnergyConverterTypeA_x_source();
-        let _ = defaults::ReactiveRenewableControllerAB_q_ref();
-        let _ = defaults::ReactiveRenewableControllerAB_v_ref();
-        let _ = defaults::Probabilistic_interval_alignment();
         let _ = defaults::Probabilistic_time_series_type();
-        let _ = defaults::PowerLoad_conformity();
-        let _ = defaults::PIDGOV_p_ref();
-        let _ = defaults::OnlineReserve_deployed_fraction();
-        let _ = defaults::OnlineReserve_max_output_fraction();
-        let _ = defaults::OnlineReserve_max_participation_factor();
-        let _ = defaults::OnlineReserve_requirement();
-        let _ = defaults::OnlineReserve_sustained_time();
-        let _ = defaults::OfflineReserve_deployed_fraction();
-        let _ = defaults::OfflineReserve_max_output_fraction();
-        let _ = defaults::OfflineReserve_max_participation_factor();
-        let _ = defaults::OfflineReserve_requirement();
-        let _ = defaults::OfflineReserve_sustained_time();
         let _ = defaults::NonSequentialTimeSeries_time_series_type();
-        let _ = defaults::NodalACTransportTechnology_reactance();
-        let _ = defaults::NodalACTransportTechnology_resistance();
-        let _ = defaults::NodalACTransportTechnology_unit_size();
-        let _ = defaults::NodalACTransportTechnology_voltage();
-        let _ = defaults::MotorLoad_motor_technology();
-        let _ = defaults::LossCurve_power_units();
-        let _ = defaults::LossCurve_value_curve();
-        let _ = defaults::Line_g();
-        let _ = defaults::Line_parameter_units();
-        let _ = defaults::InterruptibleStandardLoad_conformity();
-        let _ = defaults::InterruptibleStandardLoad_constant_active_power();
-        let _ = defaults::InterruptibleStandardLoad_constant_reactive_power();
-        let _ = defaults::InterruptibleStandardLoad_current_active_power();
-        let _ = defaults::InterruptibleStandardLoad_current_reactive_power();
-        let _ = defaults::InterruptibleStandardLoad_impedance_active_power();
-        let _ = defaults::InterruptibleStandardLoad_impedance_reactive_power();
-        let _ = defaults::InterruptibleStandardLoad_max_constant_active_power();
-        let _ = defaults::InterruptibleStandardLoad_max_constant_reactive_power();
-        let _ = defaults::InterruptibleStandardLoad_max_current_active_power();
-        let _ = defaults::InterruptibleStandardLoad_max_current_reactive_power();
-        let _ = defaults::InterruptibleStandardLoad_max_impedance_active_power();
-        let _ = defaults::InterruptibleStandardLoad_max_impedance_reactive_power();
-        let _ = defaults::InterruptiblePowerLoad_conformity();
         let _ = defaults::LoadCost_cost_type();
-        let _ = defaults::LoadCost_fixed();
-        let _ = defaults::InterconnectingConverter_dc_current();
-        let _ = defaults::InterconnectingConverter_dc_voltage_droop();
-        let _ = defaults::InterconnectingConverter_max_dc_current();
-        let _ = defaults::InterconnectingConverter_power_factor_weighting_fraction();
-        let _ = defaults::InterconnectingConverter_rated_ac_voltage();
-        let _ = defaults::InterconnectingConverter_rated_dc_voltage();
-        let _ = defaults::InterconnectingConverter_voltage_limits();
         let _ = defaults::ImportExportCost_cost_type();
-        let _ = defaults::IEEETurbineGov1_p_ref();
-        let _ = defaults::IEEET1_v_ref();
-        let _ = defaults::HydroTurbineGov_p_ref();
-        let _ = defaults::HydroTurbine_commitment_mode();
-        let _ = defaults::HydroTurbine_conversion_factor();
-        let _ = defaults::HydroTurbine_efficiency();
-        let _ = defaults::HydroTurbine_powerhouse_elevation();
-        let _ = defaults::HydroTurbine_prime_mover_type();
-        let _ = defaults::HydroTurbine_status();
-        let _ = defaults::HydroTurbine_time_at_status();
-        let _ = defaults::HydroTurbine_turbine_type();
-        let _ = defaults::HydroReservoir_evaporative_loss();
-        let _ = defaults::HydroReservoir_level_data_type();
         let _ = defaults::HydroReservoirCost_cost_type();
-        let _ = defaults::HydroReservoirCost_level_shortage_cost();
-        let _ = defaults::HydroReservoirCost_level_surplus_cost();
-        let _ = defaults::HydroReservoirCost_spillage_cost();
-        let _ = defaults::HydroPumpTurbine_active_power_pump();
-        let _ = defaults::HydroPumpTurbine_commitment_mode();
-        let _ = defaults::HydroPumpTurbine_conversion_factor();
-        let _ = defaults::HydroPumpTurbine_efficiency();
-        let _ = defaults::HydroPumpTurbine_minimum_time();
-        let _ = defaults::HydroPumpTurbine_operating_mode();
-        let _ = defaults::HydroPumpTurbine_prime_mover_type();
-        let _ = defaults::HydroPumpTurbine_status();
-        let _ = defaults::HydroPumpTurbine_time_at_status();
-        let _ = defaults::HydroPumpTurbine_transition_time();
-        let _ = defaults::HydroDispatch_status();
-        let _ = defaults::HydroDispatch_time_at_status();
         let _ = defaults::ThermalGenerationCost_cost_type();
         let _ = defaults::RenewableGenerationCost_cost_type();
-        let _ = defaults::RenewableGenerationCost_curtailment_cost();
-        let _ = defaults::RenewableGenerationCost_fixed();
         let _ = defaults::HydroGenerationCost_cost_type();
-        let _ = defaults::HydroGenerationCost_fixed();
-        let _ = defaults::GenericArcImpedance_parameter_units();
-        let _ = defaults::GeneralGovModel_p_ref();
-        let _ = defaults::FixedAdmittance_admittance_units();
-        let _ = defaults::FACTSControlDevice_max_reactive_power();
-        let _ = defaults::FACTSControlDevice_regulated_bus_number();
-        let _ = defaults::FACTSControlDevice_shunt_control_type();
-        let _ = defaults::FACTSControlDevice_voltage_setpoint_units();
-        let _ = defaults::ExponentialLoad_conformity();
-        let _ = defaults::EnergyReservoirStorage_conversion_factor();
-        let _ = defaults::EnergyReservoirStorage_cycle_limits();
-        let _ = defaults::EnergyReservoirStorage_energy_units();
-        let _ = defaults::EnergyReservoirStorage_self_discharge();
-        let _ = defaults::EnergyReservoirStorage_standing_loss();
-        let _ = defaults::EnergyReservoirStorage_storage_target();
         let _ = defaults::StorageCost_cost_type();
-        let _ = defaults::StorageCost_energy_shortage_cost();
-        let _ = defaults::StorageCost_energy_surplus_cost();
-        let _ = defaults::StorageCost_fixed();
-        let _ = defaults::StorageCost_shut_down();
-        let _ = defaults::StorageCost_start_up();
         let _ = defaults::MarketBidTimeSeriesCost_cost_type();
-        let _ = defaults::MarketBidTimeSeriesCost_curve_multistep();
-        let _ = defaults::MarketBidTimeSeriesCost_curve_style();
-        let _ = defaults::MarketBidTimeSeriesCost_decremental_slope();
-        let _ = defaults::MarketBidTimeSeriesCost_incremental_slope();
         let _ = defaults::MarketBidCost_cost_type();
-        let _ = defaults::MarketBidCost_curve_multistep();
-        let _ = defaults::MarketBidCost_curve_style();
-        let _ = defaults::MarketBidCost_decremental_slope();
-        let _ = defaults::MarketBidCost_incremental_slope();
-        let _ = defaults::MarketBidCost_minimum_energy_offer();
-        let _ = defaults::MarketBidCost_shut_down();
         let _ = defaults::StartUpStages_startup_stages_type();
         let _ = defaults::ImportExportTimeSeriesCost_cost_type();
-        let _ = defaults::EmissionsData_available();
-        let _ = defaults::EmissionsData_gwp();
-        let _ = defaults::EmissionsData_mass_unit();
-        let _ = defaults::EmissionsData_start_up_adder();
-        let _ = defaults::EXST1_v_ref();
-        let _ = defaults::EXPIC1_v_ref();
-        let _ = defaults::EXAC2_v_ref();
-        let _ = defaults::EXAC1A_v_ref();
-        let _ = defaults::EXAC1_v_ref();
-        let _ = defaults::EX4VSA_v_ref();
-        let _ = defaults::ESST4B_v_ref();
-        let _ = defaults::ESST1A_v_ref();
-        let _ = defaults::ESDC2A_v_ref();
-        let _ = defaults::ESDC1A_v_ref();
-        let _ = defaults::ESAC8B_v_ref();
-        let _ = defaults::ESAC6A_v_ref();
-        let _ = defaults::ESAC1A_v_ref();
-        let _ = defaults::DiscreteControlledACBranch_branch_status();
-        let _ = defaults::DiscreteControlledACBranch_discrete_branch_type();
-        let _ = defaults::DiscreteControlledACBranch_normal_branch_status();
-        let _ = defaults::DeterministicSingleTimeSeries_interval_alignment();
         let _ = defaults::DeterministicSingleTimeSeries_time_series_type();
-        let _ = defaults::Deterministic_interval_alignment();
         let _ = defaults::Deterministic_time_series_type();
-        let _ = defaults::DemandSideTechnology_min_power();
-        let _ = defaults::DemandSideTechnology_peak_demand_mw();
-        let _ = defaults::DemandSideTechnology_technology_efficiency();
-        let _ = defaults::DemandRequirement_available();
-        let _ = defaults::DemandRequirement_conformity();
-        let _ = defaults::DemandRequirement_growth_rate();
-        let _ = defaults::DemandRequirement_new_construction_year();
-        let _ = defaults::DemandRequirement_new_demand_mw();
-        let _ = defaults::CurrentLossCurve_power_units();
-        let _ = defaults::CurrentLossCurve_value_curve();
-        let _ = defaults::CombinedCycleBlock_heat_recovery_to_steam_factor();
         let _ = defaults::FuelCurve_variable_cost_type();
-        let _ = defaults::FuelCurve_vom_cost();
-        let _ = defaults::CostCurve_power_units();
         let _ = defaults::CostCurve_variable_cost_type();
-        let _ = defaults::CostCurve_vom_cost();
-        let _ = defaults::Area_load_response();
-        let _ = defaults::Area_out_of_area_load_ids();
-        let _ = defaults::Area_peak_active_power();
-        let _ = defaults::Area_peak_reactive_power();
-        let _ = defaults::CapitalCost_interconnection_cost();
         let _ = defaults::TimeSeriesInputOutputCurve_curve_type();
         let _ = defaults::TimeSeriesIncrementalCurve_curve_type();
         let _ = defaults::TimeSeriesAverageRateCurve_curve_type();
@@ -22036,41 +20672,5 @@ mod default_tests {
         let _ = defaults::AverageRateCurve_curve_type();
         let _ = defaults::PiecewiseStepData_function_type();
         let _ = defaults::LinearFunctionData_function_type();
-        let _ = defaults::ActiveRenewableControllerAB_p_ref();
-        let _ = defaults::AVRTypeII_v_ref();
-        let _ = defaults::AVRTypeI_v_ref();
-        let _ = defaults::AGC_initial_ace();
-        let _ = defaults::AVRFixed_v_ref();
-        let _ = defaults::AVRSimple_v_ref();
-        let _ = defaults::ActivePowerDroop_p_ref();
-        let _ = defaults::ActivePowerPI_p_ref();
-        let _ = defaults::ActiveVirtualOscillator_p_ref();
-        let _ = defaults::CapacityReserveMargin_capacity_reserve_fraction();
-        let _ = defaults::CarbonCaps_max_tons_mwh();
-        let _ = defaults::CarbonTax_tax_dollars_per_ton();
-        let _ = defaults::DEGOV_p_ref();
-        let _ = defaults::DEGOV1_p_ref();
-        let _ = defaults::EnergyShareRequirements_generation_fraction_requirement();
-        let _ = defaults::FixedForcedOutage_monitored_components();
-        let _ = defaults::FixedFrequency_frequency();
-        let _ = defaults::GasTG_p_ref();
-        let _ = defaults::GeometricDistributionForcedOutage_mean_time_to_recovery();
-        let _ = defaults::GeometricDistributionForcedOutage_monitored_components();
-        let _ = defaults::GeometricDistributionForcedOutage_outage_transition_probability();
-        let _ = defaults::PSS2C_hysteresis_binary_logic();
-        let _ = defaults::PlannedOutage_monitored_components();
-        let _ = defaults::PortfolioFinancialData_discount_rate();
-        let _ = defaults::PortfolioFinancialData_inflation_rate();
-        let _ = defaults::PortfolioFinancialData_interest_rate();
-        let _ = defaults::ReactivePowerDroop_v_ref();
-        let _ = defaults::ReactivePowerPI_q_ref();
-        let _ = defaults::ReactivePowerPI_v_ref();
-        let _ = defaults::ReactiveVirtualOscillator_q_ref();
-        let _ = defaults::ReactiveVirtualOscillator_v_ref();
-        let _ = defaults::Substation_grounding_resistance();
-        let _ = defaults::TGFixed_p_ref();
-        let _ = defaults::TGSimple_p_ref();
-        let _ = defaults::VirtualInertia_p_ref();
-        let _ = defaults::ZeroOrderBESS_vdc_ref();
     }
 }

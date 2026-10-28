@@ -487,8 +487,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-const FINANCIAL_RATES = ["discount_rate", "inflation_rate", "interest_rate"];
-
 function isCanonicalOmitted(
   kind: DocumentKind,
   key: string,
@@ -552,14 +550,6 @@ function write(
     if (!isCanonicalOmitted(kind, key, value)) {
       kept[key] = value;
     }
-  }
-  if (isRecord(kept.financial_data) && isRecord(parsed.financial_data)) {
-    // Required in the schema though the model defaults them: write them always.
-    const filled = { ...kept.financial_data };
-    for (const rate of FINANCIAL_RATES) {
-      filled[rate] ??= parsed.financial_data[rate];
-    }
-    kept.financial_data = filled;
   }
   const sortedComponents = sortKeys(kept.components as Record<string, unknown>);
   const data = {

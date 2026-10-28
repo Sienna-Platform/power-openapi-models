@@ -471,58 +471,11 @@ def fix_rfc3339_timestamps(content: str) -> tuple[str, bool]:
     return content, True
 
 
-def _enum_members() -> dict[str, dict[str, str]]:
-    """Every generated enum, across all modules: name -> {member value as source: member}."""
-    members: dict[str, dict[str, str]] = {}
-    for path in PKG_DIR.glob("*/models.py"):
-        for name, block in _class_blocks(path.read_text()).items():
-            if not re.match(rf"class {name}\((Int)?Enum\):", block):
-                continue
-            values = re.findall(r"^    (\w+) = (\"[^\"]*\"|-?\d+)$", block, re.MULTILINE)
-            members[name] = {value: member for member, value in values}
-    return members
-
-
-def fix_imported_enum_defaults(content: str) -> tuple[str, bool]:
-    """Turn a literal default on an imported-enum field into the enum member.
-
-    `--set-default-enum-member` makes datamodel-codegen write `IntervalAlignment.PERIOD_ENDING`
-    for an enum the module defines, but it leaves the literal (`"OT"`, `0`) for one it imports
-    (`PrimeMovers` and `ImpedanceUnitBasis` live in `core`). pydantic does not validate a
-    default, so the field held a `str` where its type is an enum, and `model_dump(mode=
-    "json")` warned. Fails loudly on a literal that names no member.
-    """
-    members = _enum_members()
-    changed = False
-
-    def member_of(enum: str):
-        def replace(match: re.Match) -> str:
-            nonlocal changed
-            literal = match.group(2)
-            member = members[enum].get(literal)
-            if member is None:
-                raise RuntimeError(f"fix_imported_enum_defaults: {enum} has no member {literal}")
-            changed = True
-            return f"{match.group(1)}{enum}.{member}"
-
-        return replace
-
-    for enum in members:
-        if not re.search(rf"\b{enum}\b", content):
-            continue
-        field = re.compile(
-            rf"(:\s*{enum}(?:\s*\|\s*None)?\s*=\s*(?:Field\(\s*)?)(\"[^\"]*\"|-?\d+)(?=[,)\n])"
-        )
-        content = field.sub(member_of(enum), content)
-    return content, changed
-
-
 FIXES = [
     fix_thermal_generation_cost_start_up,
     fix_required_fields_with_schema_defaults,
     fix_feature_property_count,
     drop_redundant_root_aliases,
-    fix_imported_enum_defaults,
     fix_rfc3339_timestamps,
 ]
 
