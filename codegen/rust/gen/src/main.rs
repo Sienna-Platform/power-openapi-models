@@ -278,11 +278,10 @@ fn timestamp_type(property: &Value) -> Option<&'static str> {
 /// serde impl accepts more than RFC 3339 and drops the offset, and maps
 /// `format: date-time-local`, and an `anyOf` of both forms, to `String`. Each such field
 /// becomes the hand-written `crate::timestamp` type, which parses the same forms as the
-/// schema `pattern`; the `String` alias emitted for an `anyOf` is removed. Each type has
-/// its own serde impls, so `Option` and tri-state fields need no extra attribute. Fails
-/// loudly when a timestamp property has no struct field or a `chrono::DateTime` survives.
+/// schema `pattern`. Each type has its own serde impls, so `Option` and tri-state fields
+/// need no extra attribute. Fails loudly when a timestamp property has no struct field or
+/// a `chrono::DateTime` survives.
 fn rfc3339_timestamps(file: &mut syn::File, schemas: &Schemas) {
-    let mut aliases = BTreeSet::new();
     let (mut expected, mut handled) = (0, 0);
     for item in &mut file.items {
         let Item::Struct(item_struct) = item else { continue };
@@ -303,17 +302,12 @@ fn rfc3339_timestamps(file: &mut syn::File, schemas: &Schemas) {
             let ty = &field.ty;
             let leaf = unwrap_option(&unwrap_option(ty));
             let leaf = quote!(#leaf).to_string();
-            if target == "Timestamp" {
-                aliases.insert(leaf.clone());
-            }
             let retyped = quote!(#ty).to_string().replace(&leaf, &format!("crate :: timestamp :: {target}"));
             field.ty = syn::parse_str(&retyped)
                 .unwrap_or_else(|e| die(format!("{name}.{wire}: retyped `{retyped}`: {e}")));
             handled += 1;
         }
     }
-    file.items
-        .retain(|item| !matches!(item, Item::Type(alias) if aliases.contains(&alias.ident.to_string())));
     if handled != expected {
         die(format!("{expected} timestamp properties in the schemas but {handled} struct fields retyped"));
     }

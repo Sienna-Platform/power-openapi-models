@@ -126,8 +126,8 @@ release. Four stages:
 1. `codegen/rust/bundle.py` resolves the six specs and every external `$ref` into
    one OpenAPI 3.1 document. A definition reached from several specs is emitted
    once, and two different definitions wanting one name is an error.
-2. `openapi-to-rust`, installed at the exact version in the `Makefile` into
-   `codegen/rust/.tools/`, generates the types. It reads a single document, so it
+2. `openapi-to-rust`, installed at the exact commit in the `Makefile` into
+   `codegen/rust/.tools/<commit>/`, generates the types. It reads a single document, so it
    is never given the specs directly.
 3. `codegen/rust/gen` (a small `syn` program) fixes what the generator gets
    wrong and writes the per-domain modules. Each fix is one function whose

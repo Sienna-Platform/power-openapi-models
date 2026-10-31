@@ -68,9 +68,9 @@ regenerates with it. Against schema 0.3.0, every timestamp field is now strict `
 - **openapi-to-rust 0.19 reads a validation-only `allOf` as composition.** An object
   schema whose `allOf` holds only `if`/`then` rules became `serde_json::Value`, and a
   tagged union of such objects (`TimeSeriesAssociation`, from schema 0.4.0) turned
-  untagged. `codegen/rust/bundle.py` (`drop_validation_rules`) removes such an `allOf`
-  before generation; the strict bundles behind `validate` still check the rules.
-  Upstream: gpu-cli/openapi-to-rust#111.
+  untagged. The `Makefile` pins openapi-to-rust to commit `d5ff348` on its `main`, which
+  fixes this (gpu-cli/openapi-to-rust#111); no release has the fix yet. The strict bundles
+  behind `validate` check the rules.
 
 ## [0.3.0] — 2026-10-26
 

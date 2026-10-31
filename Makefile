@@ -2,9 +2,13 @@ SCHEMA_DIR ?= ../SiennaSchemas
 CODEGEN_IMAGE ?= ghcr.io/sienna-platform/power-openapi-models/codegen:latest
 PKG_DIR := python/src/power_openapi_models
 # openapi-to-rust is pinned exactly: its output (names, derives, serde attributes)
-# is the product, so an upgrade must be a deliberate, reviewed regeneration.
-O2R_VERSION := 0.19.0
-O2R_ROOT := codegen/rust/.tools
+# is the product, so an upgrade must be a deliberate, reviewed regeneration. The pin
+# is a commit on main: the fix for gpu-cli/openapi-to-rust#111 (an allOf of if/then
+# rules) is not in a release yet (0.23.0). The root names the pin, so a new pin
+# installs again.
+O2R_REPO := https://github.com/gpu-cli/openapi-to-rust
+O2R_REV := d5ff3485f875cf9025643b2248b6972e2c3e06fe
+O2R_ROOT := codegen/rust/.tools/$(O2R_REV)
 O2R := $(O2R_ROOT)/bin/openapi-to-rust
 RUST_BUILD := codegen/rust/.build
 # `--allow-remote-refs` (previously passed to the infrastructure_core and core
@@ -107,7 +111,7 @@ generate-typescript:
 	$(MAKE) stamp-fixtures
 
 $(O2R):
-	cargo install --locked openapi-to-rust --version =$(O2R_VERSION) --root $(O2R_ROOT)
+	cargo install --locked openapi-to-rust --git $(O2R_REPO) --rev $(O2R_REV) --root $(O2R_ROOT)
 
 generate-rust: $(O2R)
 	python3 codegen/strip_defaults.py $(SCHEMA_DIR) $(GEN_SCHEMA_DIR)
