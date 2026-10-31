@@ -2,9 +2,13 @@ SCHEMA_DIR ?= ../SiennaSchemas
 CODEGEN_IMAGE ?= ghcr.io/sienna-platform/power-openapi-models/codegen:latest
 PKG_DIR := python/src/power_openapi_models
 # openapi-to-rust is pinned exactly: its output (names, derives, serde attributes)
-# is the product, so an upgrade must be a deliberate, reviewed regeneration.
-O2R_VERSION := 0.19.0
-O2R_ROOT := codegen/rust/.tools
+# is the product, so an upgrade must be a deliberate, reviewed regeneration. The pin
+# is a commit on main: the fix for gpu-cli/openapi-to-rust#111 (an allOf of if/then
+# rules) is not in a release yet (0.23.0). The root names the pin, so a new pin
+# installs again.
+O2R_REPO := https://github.com/gpu-cli/openapi-to-rust
+O2R_REV := d5ff3485f875cf9025643b2248b6972e2c3e06fe
+O2R_ROOT := codegen/rust/.tools/$(O2R_REV)
 O2R := $(O2R_ROOT)/bin/openapi-to-rust
 RUST_BUILD := codegen/rust/.build
 # `--allow-remote-refs` (previously passed to the infrastructure_core and core
@@ -16,23 +20,27 @@ CODEGEN := datamodel-codegen --input-file-type openapi \
 	--output-model-type pydantic_v2.BaseModel \
 	--formatters ruff-format \
 	--use-enum-values-in-discriminator \
-	--set-default-enum-member \
 	--extra-fields forbid \
 	--disable-timestamp
 CORE_REF := --external-ref-mapping "Core/common.json=power_openapi_models.core.models"
+# The SDK contract: a schema `default` documents the value a consumer assumes for an
+# absent field; no SDK inserts it, as the Julia package does not. Every generator reads
+# this copy of $(SCHEMA_DIR) without `default` (codegen/strip_defaults.py).
+GEN_SCHEMA_DIR := codegen/.build/schemas
 
 .PHONY: generate generate-python generate-typescript generate-rust stamp-fixtures sync-bundles generate-docker clean validate lint typecheck check
 
 generate: generate-python
 
 generate-python:
+	python3 codegen/strip_defaults.py $(SCHEMA_DIR) $(GEN_SCHEMA_DIR)
 	@# infrastructure_core is its own subpackage, generated straight from
 	@# openapi-infrastructure-core.json -- see SiennaSchemas' six-package
 	@# contract (openapi-infrastructure-core.json, scripts/check_layering.py
 	@# there). It has no dependencies of its own, so no ref mapping is needed.
 	@echo "==> Generating infrastructure_core"
 	$(CODEGEN) \
-	  --input $(SCHEMA_DIR)/openapi-infrastructure-core.json \
+	  --input $(GEN_SCHEMA_DIR)/openapi-infrastructure-core.json \
 	  --output $(PKG_DIR)/infrastructure_core/models.py
 
 	@# core is generated with no ref mapping: --external-ref-mapping keys on a
@@ -42,31 +50,31 @@ generate-python:
 	@# resulting duplicates into imports -- see its docstring for why.
 	@echo "==> Generating core"
 	$(CODEGEN) \
-	  --input $(SCHEMA_DIR)/openapi-core.json \
+	  --input $(GEN_SCHEMA_DIR)/openapi-core.json \
 	  --output $(PKG_DIR)/core/models.py
 
 	@echo "==> Generating operations"
 	$(CODEGEN) $(CORE_REF) \
-	  --input $(SCHEMA_DIR)/openapi-operations.json \
+	  --input $(GEN_SCHEMA_DIR)/openapi-operations.json \
 	  --output $(PKG_DIR)/operations/models.py
 
 	@echo "==> Generating investments"
 	$(CODEGEN) $(CORE_REF) \
-	  --input $(SCHEMA_DIR)/openapi-investments.json \
+	  --input $(GEN_SCHEMA_DIR)/openapi-investments.json \
 	  --output $(PKG_DIR)/investments/models.py
 
 	@echo "==> Generating dynamics"
 	$(CODEGEN) $(CORE_REF) \
-	  --input $(SCHEMA_DIR)/openapi-dynamics.json \
+	  --input $(GEN_SCHEMA_DIR)/openapi-dynamics.json \
 	  --output $(PKG_DIR)/dynamics/models.py
 
 	@echo "==> Generating timeseries"
 	$(CODEGEN) $(CORE_REF) \
-	  --input $(SCHEMA_DIR)/openapi-timeseries.json \
+	  --input $(GEN_SCHEMA_DIR)/openapi-timeseries.json \
 	  --output $(PKG_DIR)/timeseries/models.py
 
 	@echo "==> Post-processing"
-	SCHEMA_DIR=$(SCHEMA_DIR) python3 codegen/python/postprocess.py
+	SCHEMA_DIR=$(GEN_SCHEMA_DIR) python3 codegen/python/postprocess.py
 
 	@# Keep the packaged copy of .schema-version in sync so
 	@# power_openapi_models.__schema_version__ never goes stale after a regen.
@@ -74,27 +82,28 @@ generate-python:
 	$(MAKE) stamp-fixtures
 
 generate-typescript:
-	@# gen-orval-config.ts walks $(SCHEMA_DIR) itself (Core/ Operations/
+	python3 codegen/strip_defaults.py $(SCHEMA_DIR) $(GEN_SCHEMA_DIR)
+	@# gen-orval-config.ts walks $(GEN_SCHEMA_DIR) itself (Core/ Operations/
 	@# Dynamics/ Investments/ TimeSeries/) to build orval's required
 	@# external-$ref allowlist -- orval rejects globs, unlike datamodel-codegen
 	@# -- and to emit the six per-domain projects. Regenerated every run so a
 	@# non-default SCHEMA_DIR is always reflected, even though the result is
 	@# also committed (see typescript/orval.config.ts).
 	@echo "==> Generating typescript/orval.config.ts"
-	SCHEMA_DIR=$(SCHEMA_DIR) npx tsx codegen/typescript/gen-orval-config.ts
+	SCHEMA_DIR=$(GEN_SCHEMA_DIR) npx tsx codegen/typescript/gen-orval-config.ts
 
 	@echo "==> Running orval"
-	SCHEMA_DIR=$(SCHEMA_DIR) npx orval --config typescript/orval.config.ts
+	SCHEMA_DIR=$(GEN_SCHEMA_DIR) npx orval --config typescript/orval.config.ts
 
 	@# Rewrites cross-domain duplicate schemas (orval has no ref-to-module
 	@# mapping, unlike datamodel-codegen's --external-ref-mapping the Python
 	@# side relies on) into re-exports of their canonical owner -- failing
 	@# loudly, never guessing, if a "duplicate" isn't actually identical. Also
-	@# reads $(SCHEMA_DIR) directly (same as gen-orval-config.ts above) to
+	@# reads $(GEN_SCHEMA_DIR) directly (same as gen-orval-config.ts above) to
 	@# restore schema defaults orval drops and to rename an orval-mangled
 	@# acronym export back to its schema title. See codegen/typescript/postprocess.ts.
 	@echo "==> Post-processing"
-	SCHEMA_DIR=$(SCHEMA_DIR) npx tsx codegen/typescript/postprocess.ts
+	SCHEMA_DIR=$(GEN_SCHEMA_DIR) npx tsx codegen/typescript/postprocess.ts
 
 	@echo "==> Formatting"
 	npx prettier --write "typescript/orval.config.ts" "typescript/src/**/*.ts"
@@ -102,14 +111,15 @@ generate-typescript:
 	$(MAKE) stamp-fixtures
 
 $(O2R):
-	cargo install --locked openapi-to-rust --version =$(O2R_VERSION) --root $(O2R_ROOT)
+	cargo install --locked openapi-to-rust --git $(O2R_REPO) --rev $(O2R_REV) --root $(O2R_ROOT)
 
 generate-rust: $(O2R)
+	python3 codegen/strip_defaults.py $(SCHEMA_DIR) $(GEN_SCHEMA_DIR)
 	@# bundle.py resolves SiennaSchemas' many files into one OpenAPI 3.1 document;
 	@# openapi-to-rust reads a single document and does not follow external $refs.
 	@echo "==> Bundling"
 	mkdir -p $(RUST_BUILD)
-	SCHEMA_DIR=$(SCHEMA_DIR) python3 codegen/rust/bundle.py $(RUST_BUILD)/bundle.json
+	SCHEMA_DIR=$(GEN_SCHEMA_DIR) python3 codegen/rust/bundle.py $(RUST_BUILD)/bundle.json
 
 	@echo "==> Generating types"
 	rm -rf $(RUST_BUILD)/o2r
@@ -121,7 +131,7 @@ generate-rust: $(O2R)
 	@echo "==> Post-processing"
 	cargo run --quiet --release --manifest-path codegen/rust/gen/Cargo.toml \
 	  --bin power-openapi-models-postprocess -- \
-	  $(RUST_BUILD)/bundle.json $(RUST_BUILD)/o2r/types.rs rust/src $(SCHEMA_DIR)/Core/units.json
+	  $(RUST_BUILD)/bundle.json $(RUST_BUILD)/o2r/types.rs rust/src $(GEN_SCHEMA_DIR)/Core/units.json
 
 	@echo "==> Formatting"
 	cd rust && cargo fmt

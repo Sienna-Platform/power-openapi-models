@@ -17,9 +17,6 @@ export const AverageConverter = zod
 export type AverageConverter = zod.input<typeof AverageConverter>;
 export type AverageConverterOutput = zod.output<typeof AverageConverter>;
 
-const renewableEnergyConverterTypeAQRefDefault = 1;
-const renewableEnergyConverterTypeARSourceDefault = 0;
-const renewableEnergyConverterTypeAXSourceDefault = 100000;
 export const RenewableEnergyConverterTypeA = zod
   .strictObject({
     T_g: zod.number().describe("Converter time constant. Units: s."),
@@ -71,15 +68,15 @@ export const RenewableEnergyConverterTypeA = zod
       ),
     Q_ref: zod
       .number()
-      .default(renewableEnergyConverterTypeAQRefDefault)
+      .optional()
       .describe("Initial condition of reactive power from power flow."),
     R_source: zod
       .number()
-      .default(renewableEnergyConverterTypeARSourceDefault)
+      .optional()
       .describe("Output resistor used for the Thevenin Equivalent."),
     X_source: zod
       .number()
-      .default(renewableEnergyConverterTypeAXSourceDefault)
+      .optional()
       .describe("Output reactance used for the Thevenin Equivalent."),
   })
   .describe(
@@ -93,7 +90,6 @@ export type RenewableEnergyConverterTypeAOutput = zod.output<
   typeof RenewableEnergyConverterTypeA
 >;
 
-const renewableEnergyVoltageConverterTypeAQRefDefault = 1;
 export const RenewableEnergyVoltageConverterTypeA = zod
   .strictObject({
     T_g: zod.number().describe("Converter time constant. Units: s."),
@@ -145,7 +141,7 @@ export const RenewableEnergyVoltageConverterTypeA = zod
       ),
     Q_ref: zod
       .number()
-      .default(renewableEnergyVoltageConverterTypeAQRefDefault)
+      .optional()
       .describe("Initial condition of reactive power from power flow."),
   })
   .describe(
@@ -168,7 +164,6 @@ export const FixedDCSource = zod
 export type FixedDCSource = zod.input<typeof FixedDCSource>;
 export type FixedDCSourceOutput = zod.output<typeof FixedDCSource>;
 
-const zeroOrderBESSVdcRefDefault = 1.1;
 export const ZeroOrderBESS = zod
   .strictObject({
     rated_voltage: zod.number().describe("Rated voltage (V)"),
@@ -182,10 +177,7 @@ export const ZeroOrderBESS = zod
     kiv: zod.number().describe("Voltage controller integral gain"),
     kpi: zod.number().describe("Current controller proportional gain"),
     kii: zod.number().describe("Current controller integral gain"),
-    Vdc_ref: zod
-      .number()
-      .default(zeroOrderBESSVdcRefDefault)
-      .describe("Reference DC-voltage set-point"),
+    Vdc_ref: zod.number().optional().describe("Reference DC-voltage set-point"),
   })
   .describe(
     "Parameters for the DC-side with a Battery Energy Storage System from 'Grid-Coupled Dynamic Response of Battery-Driven Voltage Source Converters'",
@@ -238,13 +230,9 @@ export const RLFilter = zod
 export type RLFilter = zod.input<typeof RLFilter>;
 export type RLFilterOutput = zod.output<typeof RLFilter>;
 
-const fixedFrequencyFrequencyDefault = 1;
 export const FixedFrequency = zod
   .strictObject({
-    frequency: zod
-      .number()
-      .default(fixedFrequencyFrequencyDefault)
-      .describe("Reference frequency"),
+    frequency: zod.number().optional().describe("Reference frequency"),
   })
   .describe("Parameters of a Fixed Frequency Estimator (i.e. no PLL)");
 
@@ -341,28 +329,25 @@ export const VoltageModeControl = zod.strictObject({
 export type VoltageModeControl = zod.input<typeof VoltageModeControl>;
 export type VoltageModeControlOutput = zod.output<typeof VoltageModeControl>;
 
-const activePowerDroopPRefDefault = 1;
 export const ActivePowerDroop = zod.strictObject({
   Rp: zod.number(),
   omegaz: zod.number(),
-  P_ref: zod.number().default(activePowerDroopPRefDefault),
+  P_ref: zod.number().optional(),
 });
 
 export type ActivePowerDroop = zod.input<typeof ActivePowerDroop>;
 export type ActivePowerDroopOutput = zod.output<typeof ActivePowerDroop>;
 
-const activePowerPIPRefDefault = 1;
 export const ActivePowerPI = zod.strictObject({
   Kp_p: zod.number(),
   Ki_p: zod.number(),
   omegaz: zod.number(),
-  P_ref: zod.number().default(activePowerPIPRefDefault),
+  P_ref: zod.number().optional(),
 });
 
 export type ActivePowerPI = zod.input<typeof ActivePowerPI>;
 export type ActivePowerPIOutput = zod.output<typeof ActivePowerPI>;
 
-const activeRenewableControllerABPRefDefault = 1;
 export const ActiveRenewableControllerAB = zod
   .strictObject({
     bus_control: zod
@@ -440,10 +425,7 @@ export const ActiveRenewableControllerAB = zod
       .number()
       .optional()
       .describe("Power filter time constant REECB time constant. Units: s."),
-    P_ref: zod
-      .number()
-      .default(activeRenewableControllerABPRefDefault)
-      .describe("Reference Power Set-point."),
+    P_ref: zod.number().optional().describe("Reference Power Set-point."),
   })
   .describe(
     "Parameters of Active Power Controller including REPCA1 and REECB1.",
@@ -456,11 +438,10 @@ export type ActiveRenewableControllerABOutput = zod.output<
   typeof ActiveRenewableControllerAB
 >;
 
-const activeVirtualOscillatorPRefDefault = 1;
 export const ActiveVirtualOscillator = zod.strictObject({
   k1: zod.number(),
   psi: zod.number(),
-  P_ref: zod.number().default(activeVirtualOscillatorPRefDefault),
+  P_ref: zod.number().optional(),
 });
 
 export type ActiveVirtualOscillator = zod.input<typeof ActiveVirtualOscillator>;
@@ -468,31 +449,26 @@ export type ActiveVirtualOscillatorOutput = zod.output<
   typeof ActiveVirtualOscillator
 >;
 
-const reactivePowerDroopVRefDefault = 1;
 export const ReactivePowerDroop = zod.strictObject({
   kq: zod.number(),
   omegaf: zod.number(),
-  V_ref: zod.number().default(reactivePowerDroopVRefDefault),
+  V_ref: zod.number().optional(),
 });
 
 export type ReactivePowerDroop = zod.input<typeof ReactivePowerDroop>;
 export type ReactivePowerDroopOutput = zod.output<typeof ReactivePowerDroop>;
 
-const reactivePowerPIVRefDefault = 1;
-const reactivePowerPIQRefDefault = 1;
 export const ReactivePowerPI = zod.strictObject({
   Kp_q: zod.number(),
   Ki_q: zod.number(),
   omegaf: zod.number(),
-  V_ref: zod.number().default(reactivePowerPIVRefDefault),
-  Q_ref: zod.number().default(reactivePowerPIQRefDefault),
+  V_ref: zod.number().optional(),
+  Q_ref: zod.number().optional(),
 });
 
 export type ReactivePowerPI = zod.input<typeof ReactivePowerPI>;
 export type ReactivePowerPIOutput = zod.output<typeof ReactivePowerPI>;
 
-const reactiveRenewableControllerABQRefDefault = 1;
-const reactiveRenewableControllerABVRefDefault = 1;
 export const ReactiveRenewableControllerAB = zod
   .strictObject({
     bus_control: zod
@@ -609,12 +585,9 @@ export const ReactiveRenewableControllerAB = zod
       ),
     Q_ref: zod
       .number()
-      .default(reactiveRenewableControllerABQRefDefault)
+      .optional()
       .describe("Reference Reactive Power Set-point."),
-    V_ref: zod
-      .number()
-      .default(reactiveRenewableControllerABVRefDefault)
-      .describe("Reference Voltage Set-point."),
+    V_ref: zod.number().optional().describe("Reference Voltage Set-point."),
   })
   .describe(
     "Parameters of Reactive Power Controller including REPCA1 and REECB1.",
@@ -627,12 +600,10 @@ export type ReactiveRenewableControllerABOutput = zod.output<
   typeof ReactiveRenewableControllerAB
 >;
 
-const reactiveVirtualOscillatorVRefDefault = 1;
-const reactiveVirtualOscillatorQRefDefault = 1;
 export const ReactiveVirtualOscillator = zod.strictObject({
   k2: zod.number(),
-  V_ref: zod.number().default(reactiveVirtualOscillatorVRefDefault),
-  Q_ref: zod.number().default(reactiveVirtualOscillatorQRefDefault),
+  V_ref: zod.number().optional(),
+  Q_ref: zod.number().optional(),
 });
 
 export type ReactiveVirtualOscillator = zod.input<
@@ -642,12 +613,11 @@ export type ReactiveVirtualOscillatorOutput = zod.output<
   typeof ReactiveVirtualOscillator
 >;
 
-const virtualInertiaPRefDefault = 1;
 export const VirtualInertia = zod.strictObject({
   Ta: zod.number(),
   kd: zod.number(),
   komega: zod.number(),
-  P_ref: zod.number().default(virtualInertiaPRefDefault),
+  P_ref: zod.number().optional(),
 });
 
 export type VirtualInertia = zod.input<typeof VirtualInertia>;
@@ -749,17 +719,13 @@ export type SaturationOutputCurrentLimiterOutput = zod.output<
   typeof SaturationOutputCurrentLimiter
 >;
 
-const aVRFixedVRefDefault = 1;
 export const AVRFixed = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Vf: zod
       .number()
       .describe("Fixed voltage field applied to the rotor winding"),
-    V_ref: zod
-      .number()
-      .default(aVRFixedVRefDefault)
-      .describe("Reference Voltage Set-point"),
+    V_ref: zod.number().optional().describe("Reference Voltage Set-point"),
   })
   .describe(
     "Parameters of a AVR that returns a fixed voltage to the rotor winding",
@@ -768,15 +734,11 @@ export const AVRFixed = zod
 export type AVRFixed = zod.input<typeof AVRFixed>;
 export type AVRFixedOutput = zod.output<typeof AVRFixed>;
 
-const aVRSimpleVRefDefault = 1;
 export const AVRSimple = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     Kv: zod.number().describe("Proportional Gain"),
-    V_ref: zod
-      .number()
-      .default(aVRSimpleVRefDefault)
-      .describe("Reference Voltage Set-point"),
+    V_ref: zod.number().optional().describe("Reference Voltage Set-point"),
   })
   .describe(
     "Parameters of a simple proportional AVR in the derivative of EMF i.e. an integrator controller on EMF",
@@ -785,7 +747,6 @@ export const AVRSimple = zod
 export type AVRSimple = zod.input<typeof AVRSimple>;
 export type AVRSimpleOutput = zod.output<typeof AVRSimple>;
 
-const aVRTypeIVRefDefault = 1;
 export const AVRTypeI = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -806,10 +767,7 @@ export const AVRTypeI = zod
       ),
     Ae: zod.number().describe("1st ceiling coefficient"),
     Be: zod.number().describe("2nd ceiling coefficient"),
-    V_ref: zod
-      .number()
-      .default(aVRTypeIVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "Parameters of an Automatic Voltage Regulator Type I - Resembles IEEE Type DC1",
@@ -818,7 +776,6 @@ export const AVRTypeI = zod
 export type AVRTypeI = zod.input<typeof AVRTypeI>;
 export type AVRTypeIOutput = zod.output<typeof AVRTypeI>;
 
-const aVRTypeIIVRefDefault = 1;
 export const AVRTypeII = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -839,10 +796,7 @@ export const AVRTypeII = zod
       ),
     Ae: zod.number().describe("1st ceiling coefficient"),
     Be: zod.number().describe("2nd ceiling coefficient"),
-    V_ref: zod
-      .number()
-      .default(aVRTypeIIVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "Parameters of an Automatic Voltage Regulator Type II - Typical static exciter model",
@@ -857,7 +811,6 @@ export const eSAC1AESatMax = 2;
 export const eSAC1ASeMin = 2;
 export const eSAC1ASeMax = 2;
 
-const eSAC1AVRefDefault = 1;
 export const ESAC1A = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -908,10 +861,7 @@ export const ESAC1A = zod
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
-    V_ref: zod
-      .number()
-      .default(eSAC1AVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A Excitacion System. This model corresponds to ESAC1A in PSSE and PSLF",
@@ -926,7 +876,6 @@ export const eSAC6AESatMax = 2;
 export const eSAC6ASeMin = 2;
 export const eSAC6ASeMax = 2;
 
-const eSAC6AVRefDefault = 1;
 export const ESAC6A = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -987,10 +936,7 @@ export const ESAC6A = zod
       .min(eSAC6ASeMin)
       .max(eSAC6ASeMax)
       .describe("Exciter saturation factor at exciter output voltage"),
-    V_ref: zod
-      .number()
-      .default(eSAC6AVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC6A Excitacion System. ESAC6A in PSSE and PSLF",
@@ -1005,7 +951,6 @@ export const eSAC8BESatMax = 2;
 export const eSAC8BSeMin = 2;
 export const eSAC8BSeMax = 2;
 
-const eSAC8BVRefDefault = 1;
 export const ESAC8B = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1036,10 +981,7 @@ export const ESAC8B = zod
       .min(eSAC8BSeMin)
       .max(eSAC8BSeMax)
       .describe("Exciter saturation factor at exciter output voltage"),
-    V_ref: zod
-      .number()
-      .default(eSAC8BVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "Excitation System AC8B. Used to represent the Basler Digital Excitation Control System (DECS) with PID controller in PSSE",
@@ -1054,7 +996,6 @@ export const eSDC1AESatMax = 2;
 export const eSDC1ASeMin = 2;
 export const eSDC1ASeMax = 2;
 
-const eSDC1AVRefDefault = 1;
 export const ESDC1A = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1092,10 +1033,7 @@ export const ESDC1A = zod
       .min(eSDC1ASeMin)
       .max(eSDC1ASeMax)
       .describe("Exciter saturation factor at exciter output voltage"),
-    V_ref: zod
-      .number()
-      .default(eSDC1AVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "Self-excited shunt fields with the voltage regulator operating in a mode commonly termed buck-boost. Parameters of IEEE Std 421.5 Type DC1A Excitacion System. This model corresponds to ESDC1A in PSSE and PSLF",
@@ -1110,7 +1048,6 @@ export const eSDC2AESatMax = 2;
 export const eSDC2ASeMin = 2;
 export const eSDC2ASeMax = 2;
 
-const eSDC2AVRefDefault = 1;
 export const ESDC2A = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1148,10 +1085,7 @@ export const ESDC2A = zod
       .min(eSDC2ASeMin)
       .max(eSDC2ASeMax)
       .describe("Exciter saturation factor at exciter output voltage"),
-    V_ref: zod
-      .number()
-      .default(eSDC2AVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "Used to represent field-controlled dc commutator exciters with continuously acting voltage regulators having power supplies derived from the generator or auxiliaries bus. Parameters of IEEE Std 421.5 Type DC2A Excitacion System. This model corresponds to ESDC2A in PSSE and PSLF",
@@ -1163,7 +1097,6 @@ export type ESDC2AOutput = zod.output<typeof ESDC2A>;
 export const eSST1AViLimMin = 2;
 export const eSST1AViLimMax = 2;
 
-const eSST1AVRefDefault = 1;
 export const ESST1A = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1216,10 +1149,7 @@ export const ESST1A = zod
     Tf: zod.number().describe("Rate feedback time constant"),
     K_lr: zod.number().describe("Exciter output current limiter gain"),
     I_lr: zod.number().describe("Exciter output current limit reference"),
-    V_ref: zod
-      .number()
-      .default(eSST1AVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "This excitation system supplies power through a transformer from the generator terminals and its regulated by a controlled rectifier (via thyristors). Parameters of IEEE Std 421.5 Type ST1A Excitacion System. ESST1A in PSSE and PSLF",
@@ -1228,7 +1158,6 @@ export const ESST1A = zod
 export type ESST1A = zod.input<typeof ESST1A>;
 export type ESST1AOutput = zod.output<typeof ESST1A>;
 
-const eSST4BVRefDefault = 1;
 export const ESST4B = zod
   .strictObject({
     Tr: zod.number().describe("Regulator input filter time constant"),
@@ -1267,10 +1196,7 @@ export const ESST4B = zod
       ),
     Xl: zod.number().describe("Reactance associated with potential source"),
     thetap: zod.number().describe("Potential circuit phase angle (degrees)"),
-    V_ref: zod
-      .number()
-      .default(eSST4BVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "In these excitation systems, voltage (and also current in compounded systems) is transformed to an appropriate level. Rectifiers, either controlled or non-controlled, provide the necessary direct current for the generator field. Parameters of IEEE Std 421.5 Type ST4B Excitacion System. ESST4B in PSSE and PSLF",
@@ -1279,7 +1205,6 @@ export const ESST4B = zod
 export type ESST4B = zod.input<typeof ESST4B>;
 export type ESST4BOutput = zod.output<typeof ESST4B>;
 
-const eX4VSAVRefDefault = 1;
 export const EX4VSA = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1309,10 +1234,7 @@ export const EX4VSA = zod
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
-    V_ref: zod
-      .number()
-      .default(eX4VSAVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe("IEEE Excitation System for Voltage Security Assesment");
 
@@ -1325,7 +1247,6 @@ export const eXAC1ESatMax = 2;
 export const eXAC1SeMin = 2;
 export const eXAC1SeMax = 2;
 
-const eXAC1VRefDefault = 1;
 export const EXAC1 = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1368,10 +1289,7 @@ export const EXAC1 = zod
       .min(eXAC1SeMin)
       .max(eXAC1SeMax)
       .describe("Exciter saturation factor at exciter output voltage"),
-    V_ref: zod
-      .number()
-      .default(eXAC1VRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "Modified ESAC1A. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A. EXAC1 in PSSE and PSLF",
@@ -1386,7 +1304,6 @@ export const eXAC1AESatMax = 2;
 export const eXAC1ASeMin = 2;
 export const eXAC1ASeMax = 2;
 
-const eXAC1AVRefDefault = 1;
 export const EXAC1A = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1437,10 +1354,7 @@ export const EXAC1A = zod
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
-    V_ref: zod
-      .number()
-      .default(eXAC1AVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "Modified ESAC1A. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC1A Excitacion System. EXAC1A in PSSE and PSLF",
@@ -1455,7 +1369,6 @@ export const eXAC2ESatMax = 2;
 export const eXAC2SeMin = 2;
 export const eXAC2SeMax = 2;
 
-const eXAC2VRefDefault = 1;
 export const EXAC2 = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1510,10 +1423,7 @@ export const EXAC2 = zod
       .min(eXAC2SeMin)
       .max(eXAC2SeMax)
       .describe("Exciter saturation factor at exciter output voltage"),
-    V_ref: zod
-      .number()
-      .default(eXAC2VRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "Modified AC2. This excitation systems consists of an alternator main exciter feeding its output via non-controlled rectifiers. The exciter does not employ self-excitation, and the voltage regulator power is taken from a source that is not affected by external transients. Parameters of IEEE Std 421.5 Type AC2A Excitacion System. The alternator main exciter is used, feeding its output via non-controlled rectifiers. The Type AC2C model is similar to that of Type AC1C except for the inclusion of exciter time constant compensation and exciter field current limiting elements. EXAC2 in PSSE and PSLF",
@@ -1528,7 +1438,6 @@ export const eXPIC1ESatMax = 2;
 export const eXPIC1SeMin = 2;
 export const eXPIC1SeMax = 2;
 
-const eXPIC1VRefDefault = 1;
 export const EXPIC1 = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1582,17 +1491,13 @@ export const EXPIC1 = zod
     Kp: zod.number().describe("Potential source gain"),
     Ki: zod.number().describe("Current source gain"),
     Kc: zod.number().describe("Exciter regulator factor"),
-    V_ref: zod
-      .number()
-      .default(eXPIC1VRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe("Generic Proportional/Integral Excitation System");
 
 export type EXPIC1 = zod.input<typeof EXPIC1>;
 export type EXPIC1Output = zod.output<typeof EXPIC1>;
 
-const eXST1VRefDefault = 1;
 export const EXST1 = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1622,10 +1527,7 @@ export const EXST1 = zod
     Tf: zod
       .number()
       .describe("Excitation control system stabilizer time constant"),
-    V_ref: zod
-      .number()
-      .default(eXST1VRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe("IEEE Type ST1 Excitation System (PTI version)");
 
@@ -1638,7 +1540,6 @@ export const iEEET1ESatMax = 2;
 export const iEEET1SeMin = 2;
 export const iEEET1SeMax = 2;
 
-const iEEET1VRefDefault = 1;
 export const IEEET1 = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1674,17 +1575,13 @@ export const IEEET1 = zod
       .min(iEEET1SeMin)
       .max(iEEET1SeMax)
       .describe("Exciter saturation factor at exciter output voltage"),
-    V_ref: zod
-      .number()
-      .default(iEEET1VRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe("1968 IEEE type 1 excitation system model");
 
 export type IEEET1 = zod.input<typeof IEEET1>;
 export type IEEET1Output = zod.output<typeof IEEET1>;
 
-const sCRXVRefDefault = 1;
 export const SCRX = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1706,10 +1603,7 @@ export const SCRX = zod
       .describe(
         "Field current capability. Set = 0 for negative current capability. Typical value 10",
       ),
-    V_ref: zod
-      .number()
-      .default(sCRXVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "This exciter is based on an IEEE type SCRX solid state exciter. The output field voltage is varied by a control system to maintain the system voltage at Vref. Please note that this exciter model has no initialization capabilities - this means that it will respond to whatever inputs it receives regardless of the state of the machine model",
@@ -1718,7 +1612,6 @@ export const SCRX = zod
 export type SCRX = zod.input<typeof SCRX>;
 export type SCRXOutput = zod.output<typeof SCRX>;
 
-const sEXSVRefDefault = 1;
 export const SEXS = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1734,17 +1627,13 @@ export const SEXS = zod
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
-    V_ref: zod
-      .number()
-      .default(sEXSVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe("Parameters of Simplified Excitation System Model - SEXS in PSSE");
 
 export type SEXS = zod.input<typeof SEXS>;
 export type SEXSOutput = zod.output<typeof SEXS>;
 
-const sT6BVRefDefault = 1;
 export const ST6B = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1791,10 +1680,7 @@ export const ST6B = zod
       .describe(
         "Feedback time constant of the inner loop field voltage regulator",
       ),
-    V_ref: zod
-      .number()
-      .default(sT6BVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
   })
   .describe(
     "In these excitation systems, voltage (and also current in compounded systems) is transformed to an appropriate level. Rectifiers, either controlled or non-controlled, provide the necessary direct current for the generator field. Parameters of IEEE Std 421.5 Type ST6B Excitacion System. ST6B in PSSE and PSLF",
@@ -1803,8 +1689,6 @@ export const ST6B = zod
 export type ST6B = zod.input<typeof ST6B>;
 export type ST6BOutput = zod.output<typeof ST6B>;
 
-const sT8CVRefDefault = 1;
-const sT8CIfdRefDefault = 1;
 export const ST8C = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -1880,13 +1764,10 @@ export const ST8C = zod
       ),
     K_i2: zod.number().describe("Potential circuit (current) gain coefficient"),
     VB2_max: zod.number().describe("Maximum available exciter voltage"),
-    V_ref: zod
-      .number()
-      .default(sT8CVRefDefault)
-      .describe("Reference voltage set-point"),
+    V_ref: zod.number().optional().describe("Reference voltage set-point"),
     Ifd_ref: zod
       .number()
-      .default(sT8CIfdRefDefault)
+      .optional()
       .describe("Reference field current set-point"),
   })
   .describe(
@@ -2541,7 +2422,6 @@ export const pSS2CVstLimMax = 2;
 export const pSS2CPSSHysteresisParamMin = 2;
 export const pSS2CPSSHysteresisParamMax = 2;
 
-const pSS2CHysteresisBinaryLogicDefault = 1;
 export const PSS2C = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -2614,7 +2494,7 @@ export const PSS2C = zod
     Tcomp: zod.number().describe("Time measured with compensated frequency"),
     hysteresis_binary_logic: zod
       .int()
-      .default(pSS2CHysteresisBinaryLogicDefault)
+      .optional()
       .describe("Hysteresis memory variable"),
   })
   .describe("IEEE 421.5 2016 PSS2C IEEE Dual-Input Stabilizer Model");
@@ -2715,7 +2595,6 @@ export const SingleMass = zod
 export type SingleMass = zod.input<typeof SingleMass>;
 export type SingleMassOutput = zod.output<typeof SingleMass>;
 
-const dEGOVPRefDefault = 1;
 export const DEGOV = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -2727,10 +2606,7 @@ export const DEGOV = zod
     T5: zod.number().describe("Governor lag time constant"),
     T6: zod.number().describe("Actuator time constant"),
     Td: zod.number().describe("Engine time delay"),
-    P_ref: zod
-      .number()
-      .default(dEGOVPRefDefault)
-      .describe("Reference power set-point"),
+    P_ref: zod.number().optional().describe("Reference power set-point"),
   })
   .describe("Parameters Woodward Diesel Governor Model. DEGOV in PowerWorld");
 
@@ -2740,7 +2616,6 @@ export type DEGOVOutput = zod.output<typeof DEGOV>;
 export const dEGOV1TLimMin = 2;
 export const dEGOV1TLimMax = 2;
 
-const dEGOV1PRefDefault = 1;
 export const DEGOV1 = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -2765,10 +2640,7 @@ export const DEGOV1 = zod
       .describe("Operational control limits on actuator (Tmin, Tmax)"),
     R: zod.number().describe("Steady state droop parameter"),
     Te: zod.number().describe("Power transducer time constant"),
-    P_ref: zod
-      .number()
-      .default(dEGOV1PRefDefault)
-      .describe("Reference power set-point"),
+    P_ref: zod.number().optional().describe("Reference power set-point"),
   })
   .describe("Parameters Woodward Diesel Governor Model. DEGOV1 in PSSE");
 
@@ -2778,7 +2650,6 @@ export type DEGOV1Output = zod.output<typeof DEGOV1>;
 export const gasTGVLimMin = 2;
 export const gasTGVLimMax = 2;
 
-const gasTGPRefDefault = 1;
 export const GasTG = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -2800,10 +2671,7 @@ export const GasTG = zod
     D_turb: zod
       .number()
       .describe("Speed damping coefficient of gas turbine rotor"),
-    P_ref: zod
-      .number()
-      .default(gasTGPRefDefault)
-      .describe("Reference load set-point"),
+    P_ref: zod.number().optional().describe("Reference load set-point"),
   })
   .describe(
     "Parameters of Gas Turbine-Governor. GAST in PSSE and GAST_PTI in PowerWorld",
@@ -2812,7 +2680,6 @@ export const GasTG = zod
 export type GasTG = zod.input<typeof GasTG>;
 export type GasTGOutput = zod.output<typeof GasTG>;
 
-const generalGovModelPRefDefault = 1;
 export const GeneralGovModel = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -2875,10 +2742,7 @@ export const GeneralGovModel = zod
       .describe(
         "A pair of values, one for the upward (`up`) and one for the downward (`down`) direction of a quantity.",
       ),
-    P_ref: zod
-      .number()
-      .default(generalGovModelPRefDefault)
-      .describe("Reference power set-point"),
+    P_ref: zod.number().optional().describe("Reference power set-point"),
   })
   .describe(
     "GE General Governor/Turbine Model. The GeneralGovModel (GGOV1) model is a general purpose governor model used for a variety of prime movers controlled by proportional-integral-derivative (PID) governors including gas turbines",
@@ -2887,7 +2751,6 @@ export const GeneralGovModel = zod
 export type GeneralGovModel = zod.input<typeof GeneralGovModel>;
 export type GeneralGovModelOutput = zod.output<typeof GeneralGovModel>;
 
-const hydroTurbineGovPRefDefault = 1;
 export const HydroTurbineGov = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -2909,17 +2772,13 @@ export const HydroTurbineGov = zod
     At: zod.number().describe("Turbine gain"),
     D_T: zod.number().describe("Turbine damping"),
     q_nl: zod.number().describe("No power flow"),
-    P_ref: zod
-      .number()
-      .default(hydroTurbineGovPRefDefault)
-      .describe("Reference load set-point"),
+    P_ref: zod.number().optional().describe("Reference load set-point"),
   })
   .describe("Hydro turbine-governor");
 
 export type HydroTurbineGov = zod.input<typeof HydroTurbineGov>;
 export type HydroTurbineGovOutput = zod.output<typeof HydroTurbineGov>;
 
-const iEEETurbineGov1PRefDefault = 1;
 export const IEEETurbineGov1 = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -2961,10 +2820,7 @@ export const IEEETurbineGov1 = zod
     K8: zod
       .number()
       .describe("Fraction of low pressure shaft power fourth boiler pass"),
-    P_ref: zod
-      .number()
-      .default(iEEETurbineGov1PRefDefault)
-      .describe("Reference power set-point"),
+    P_ref: zod.number().optional().describe("Reference power set-point"),
   })
   .describe("IEEE Type 1 Speed-Governing Model");
 
@@ -2977,7 +2833,6 @@ export const pIDGOVGateOpeningsMax = 3;
 export const pIDGOVPowerGateOpeningsMin = 3;
 export const pIDGOVPowerGateOpeningsMax = 3;
 
-const pIDGOVPRefDefault = 1;
 export const PIDGOV = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -3022,10 +2877,7 @@ export const PIDGOV = zod
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
-    P_ref: zod
-      .number()
-      .default(pIDGOVPRefDefault)
-      .describe("Reference load set-point"),
+    P_ref: zod.number().optional().describe("Reference load set-point"),
   })
   .describe("Hydro Turbine-Governor with PID controller");
 
@@ -3062,17 +2914,13 @@ export const SteamTurbineGov1 = zod
 export type SteamTurbineGov1 = zod.input<typeof SteamTurbineGov1>;
 export type SteamTurbineGov1Output = zod.output<typeof SteamTurbineGov1>;
 
-const tGFixedPRefDefault = 1;
 export const TGFixed = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     efficiency: zod
       .number()
       .describe("Efficiency factor that multiplies P_ref"),
-    P_ref: zod
-      .number()
-      .default(tGFixedPRefDefault)
-      .describe("Reference power set-point"),
+    P_ref: zod.number().optional().describe("Reference power set-point"),
   })
   .describe(
     "Parameters of a fixed Turbine Governor that returns a fixed mechanical torque given by the product of P_ref*efficiency",
@@ -3081,16 +2929,12 @@ export const TGFixed = zod
 export type TGFixed = zod.input<typeof TGFixed>;
 export type TGFixedOutput = zod.output<typeof TGFixed>;
 
-const tGSimplePRefDefault = 1;
 export const TGSimple = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
     d_t: zod.number().describe("Inverse droop parameter"),
     Tm: zod.number().describe("Turbine governor low-pass time constant"),
-    P_ref: zod
-      .number()
-      .default(tGSimplePRefDefault)
-      .describe("Reference power set-point"),
+    P_ref: zod.number().optional().describe("Reference power set-point"),
   })
   .describe("Parameters of a Simple one-state Turbine Governor");
 
@@ -3148,7 +2992,6 @@ export const wPIDHYGateOpeningsMax = 3;
 export const wPIDHYPowerGateOpeningsMin = 3;
 export const wPIDHYPowerGateOpeningsMax = 3;
 
-const wPIDHYPRefDefault = 1;
 export const WPIDHY = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component"),
@@ -3197,10 +3040,7 @@ export const WPIDHY = zod
       .min(wPIDHYPowerGateOpeningsMin)
       .max(wPIDHYPowerGateOpeningsMax)
       .describe("Power at gate_openings"),
-    P_ref: zod
-      .number()
-      .default(wPIDHYPRefDefault)
-      .describe("Reference load set-point"),
+    P_ref: zod.number().optional().describe("Reference load set-point"),
   })
   .describe("Woodward PID Hydro Governor");
 

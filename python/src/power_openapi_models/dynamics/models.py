@@ -51,13 +51,13 @@ class RenewableEnergyConverterTypeA(BaseModel):
         description="Low voltage power logic (LVPL) switch. (0: LVPL not present, 1: LVPL present).",
     )
     Q_ref: float | None = Field(
-        1.0, description="Initial condition of reactive power from power flow."
+        None, description="Initial condition of reactive power from power flow."
     )
     R_source: float | None = Field(
-        0.0, description="Output resistor used for the Thevenin Equivalent."
+        None, description="Output resistor used for the Thevenin Equivalent."
     )
     X_source: float | None = Field(
-        100000.0, description="Output reactance used for the Thevenin Equivalent."
+        None, description="Output reactance used for the Thevenin Equivalent."
     )
 
 
@@ -95,7 +95,7 @@ class RenewableEnergyVoltageConverterTypeA(BaseModel):
         description="Low voltage power logic (LVPL) switch. (0: LVPL not present, 1: LVPL present).",
     )
     Q_ref: float | None = Field(
-        1.0, description="Initial condition of reactive power from power flow."
+        None, description="Initial condition of reactive power from power flow."
     )
 
 
@@ -121,7 +121,7 @@ class ZeroOrderBESS(BaseModel):
     kiv: float = Field(..., description="Voltage controller integral gain")
     kpi: float = Field(..., description="Current controller proportional gain")
     kii: float = Field(..., description="Current controller integral gain")
-    Vdc_ref: float | None = Field(1.1, description="Reference DC-voltage set-point")
+    Vdc_ref: float | None = Field(None, description="Reference DC-voltage set-point")
 
 
 class LCFilter(BaseModel):
@@ -156,7 +156,7 @@ class FixedFrequency(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    frequency: float | None = Field(1.0, description="Reference frequency")
+    frequency: float | None = Field(None, description="Reference frequency")
 
 
 class KauraPLL(BaseModel):
@@ -226,7 +226,7 @@ class ActivePowerDroop(BaseModel):
     )
     Rp: float
     omegaz: float
-    P_ref: float | None = 1.0
+    P_ref: float | None = None
 
 
 class ActivePowerPI(BaseModel):
@@ -236,7 +236,7 @@ class ActivePowerPI(BaseModel):
     Kp_p: float
     Ki_p: float
     omegaz: float
-    P_ref: float | None = 1.0
+    P_ref: float | None = None
 
 
 class ActiveRenewableControllerAB(BaseModel):
@@ -285,7 +285,7 @@ class ActiveRenewableControllerAB(BaseModel):
     T_pord: float | None = Field(
         None, description="Power filter time constant REECB time constant. Units: s."
     )
-    P_ref: float | None = Field(1.0, description="Reference Power Set-point.")
+    P_ref: float | None = Field(None, description="Reference Power Set-point.")
 
 
 class ActiveVirtualOscillator(BaseModel):
@@ -294,7 +294,7 @@ class ActiveVirtualOscillator(BaseModel):
     )
     k1: float
     psi: float
-    P_ref: float | None = 1.0
+    P_ref: float | None = None
 
 
 class ReactivePowerDroop(BaseModel):
@@ -303,7 +303,7 @@ class ReactivePowerDroop(BaseModel):
     )
     kq: float
     omegaf: float
-    V_ref: float | None = 1.0
+    V_ref: float | None = None
 
 
 class ReactivePowerPI(BaseModel):
@@ -313,8 +313,8 @@ class ReactivePowerPI(BaseModel):
     Kp_q: float
     Ki_q: float
     omegaf: float
-    V_ref: float | None = 1.0
-    Q_ref: float | None = 1.0
+    V_ref: float | None = None
+    Q_ref: float | None = None
 
 
 class ReactiveRenewableControllerAB(BaseModel):
@@ -395,8 +395,8 @@ class ReactiveRenewableControllerAB(BaseModel):
     K_qi: float = Field(
         ..., description="Reactive power regulator integral gain (used when V_Flag = 1)."
     )
-    Q_ref: float | None = Field(1.0, description="Reference Reactive Power Set-point.")
-    V_ref: float | None = Field(1.0, description="Reference Voltage Set-point.")
+    Q_ref: float | None = Field(None, description="Reference Reactive Power Set-point.")
+    V_ref: float | None = Field(None, description="Reference Voltage Set-point.")
 
 
 class ReactiveVirtualOscillator(BaseModel):
@@ -404,8 +404,8 @@ class ReactiveVirtualOscillator(BaseModel):
         extra="forbid",
     )
     k2: float
-    V_ref: float | None = 1.0
-    Q_ref: float | None = 1.0
+    V_ref: float | None = None
+    Q_ref: float | None = None
 
 
 class VirtualInertia(BaseModel):
@@ -415,7 +415,7 @@ class VirtualInertia(BaseModel):
     Ta: float
     kd: float
     komega: float
-    P_ref: float | None = 1.0
+    P_ref: float | None = None
 
 
 class HybridOutputCurrentLimiter(BaseModel):
@@ -471,7 +471,7 @@ class AVRFixed(BaseModel):
     )
     id: int = Field(..., description="Unique integer identifier for this component")
     Vf: float = Field(..., description="Fixed voltage field applied to the rotor winding")
-    V_ref: float | None = Field(1.0, description="Reference Voltage Set-point")
+    V_ref: float | None = Field(None, description="Reference Voltage Set-point")
 
 
 class AVRSimple(BaseModel):
@@ -480,7 +480,7 @@ class AVRSimple(BaseModel):
     )
     id: int = Field(..., description="Unique integer identifier for this component")
     Kv: float = Field(..., description="Proportional Gain")
-    V_ref: float | None = Field(1.0, description="Reference Voltage Set-point")
+    V_ref: float | None = Field(None, description="Reference Voltage Set-point")
 
 
 class AVRTypeI(BaseModel):
@@ -498,7 +498,7 @@ class AVRTypeI(BaseModel):
     Va_lim: MinMax = Field(..., description="Limits for pi controller")
     Ae: float = Field(..., description="1st ceiling coefficient")
     Be: float = Field(..., description="2nd ceiling coefficient")
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class AVRTypeII(BaseModel):
@@ -516,7 +516,7 @@ class AVRTypeII(BaseModel):
     Va_lim: MinMax = Field(..., description="Limits for pi controller")
     Ae: float = Field(..., description="1st ceiling coefficient")
     Be: float = Field(..., description="2nd ceiling coefficient")
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class ESAC1A(BaseModel):
@@ -550,7 +550,7 @@ class ESAC1A(BaseModel):
         min_length=2,
     )
     Vr_lim: MinMax = Field(..., description="Limits for excitor field voltage")
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class ESAC6A(BaseModel):
@@ -590,7 +590,7 @@ class ESAC6A(BaseModel):
         max_length=2,
         min_length=2,
     )
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class ESAC8B(BaseModel):
@@ -617,7 +617,7 @@ class ESAC8B(BaseModel):
         max_length=2,
         min_length=2,
     )
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class ESDC1A(BaseModel):
@@ -647,7 +647,7 @@ class ESDC1A(BaseModel):
         max_length=2,
         min_length=2,
     )
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class ESDC2A(BaseModel):
@@ -677,7 +677,7 @@ class ESDC2A(BaseModel):
         max_length=2,
         min_length=2,
     )
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class ESST1A(BaseModel):
@@ -708,7 +708,7 @@ class ESST1A(BaseModel):
     Tf: float = Field(..., description="Rate feedback time constant")
     K_lr: float = Field(..., description="Exciter output current limiter gain")
     I_lr: float = Field(..., description="Exciter output current limit reference")
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class ESST4B(BaseModel):
@@ -733,7 +733,7 @@ class ESST4B(BaseModel):
     )
     Xl: float = Field(..., description="Reactance associated with potential source")
     thetap: float = Field(..., description="Potential circuit phase angle (degrees)")
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class EX4VSA(BaseModel):
@@ -753,7 +753,7 @@ class EX4VSA(BaseModel):
     Tb: float = Field(..., description="Denominator lead-lag (lag) time constant")
     Te: float = Field(..., description="Exciter time constant")
     E_lim: MinMax = Field(..., description="Voltage regulator limits (regulator output)")
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class EXAC1(BaseModel):
@@ -786,7 +786,7 @@ class EXAC1(BaseModel):
         max_length=2,
         min_length=2,
     )
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class EXAC1A(BaseModel):
@@ -820,7 +820,7 @@ class EXAC1A(BaseModel):
         min_length=2,
     )
     Vr_lim: MinMax = Field(..., description="Limits for exciter field voltage")
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class EXAC2(BaseModel):
@@ -858,7 +858,7 @@ class EXAC2(BaseModel):
         max_length=2,
         min_length=2,
     )
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class EXPIC1(BaseModel):
@@ -892,7 +892,7 @@ class EXPIC1(BaseModel):
     Kp: float = Field(..., description="Potential source gain")
     Ki: float = Field(..., description="Current source gain")
     Kc: float = Field(..., description="Exciter regulator factor")
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class EXST1(BaseModel):
@@ -910,7 +910,7 @@ class EXST1(BaseModel):
     Kc: float = Field(..., description="Current field constant limiter multiplier")
     Kf: float = Field(..., description="Excitation control system stabilizer gain")
     Tf: float = Field(..., description="Excitation control system stabilizer time constant")
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class IEEET1(BaseModel):
@@ -938,7 +938,7 @@ class IEEET1(BaseModel):
         max_length=2,
         min_length=2,
     )
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class SCRX(BaseModel):
@@ -956,7 +956,7 @@ class SCRX(BaseModel):
         ...,
         description="Field current capability. Set = 0 for negative current capability. Typical value 10",
     )
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class SEXS(BaseModel):
@@ -969,7 +969,7 @@ class SEXS(BaseModel):
     K: float = Field(..., description="Gain")
     Te: float = Field(..., description="Field circuit time constant. Units: s.")
     V_lim: MinMax = Field(..., description="Field voltage limits")
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class ST6B(BaseModel):
@@ -994,7 +994,7 @@ class ST6B(BaseModel):
     Tg: float = Field(
         ..., description="Feedback time constant of the inner loop field voltage regulator"
     )
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
 class ST8C(BaseModel):
@@ -1043,8 +1043,8 @@ class ST8C(BaseModel):
     )
     K_i2: float = Field(..., description="Potential circuit (current) gain coefficient")
     VB2_max: float = Field(..., description="Maximum available exciter voltage")
-    V_ref: float | None = Field(1.0, description="Reference voltage set-point")
-    Ifd_ref: float | None = Field(1.0, description="Reference field current set-point")
+    V_ref: float | None = Field(None, description="Reference voltage set-point")
+    Ifd_ref: float | None = Field(None, description="Reference field current set-point")
 
 
 class AndersonFouadMachine(BaseModel):
@@ -1542,7 +1542,7 @@ class PSS2C(BaseModel):
     )
     Xcomp: float = Field(..., description="Stator leakage reactance")
     Tcomp: float = Field(..., description="Time measured with compensated frequency")
-    hysteresis_binary_logic: int | None = Field(1, description="Hysteresis memory variable")
+    hysteresis_binary_logic: int | None = Field(None, description="Hysteresis memory variable")
 
 
 class PSSFixed(BaseModel):
@@ -1625,7 +1625,7 @@ class DEGOV(BaseModel):
     T5: float = Field(..., description="Governor lag time constant")
     T6: float = Field(..., description="Actuator time constant")
     Td: float = Field(..., description="Engine time delay")
-    P_ref: float | None = Field(1.0, description="Reference power set-point")
+    P_ref: float | None = Field(None, description="Reference power set-point")
 
 
 class DEGOV1(BaseModel):
@@ -1653,7 +1653,7 @@ class DEGOV1(BaseModel):
     )
     R: float = Field(..., description="Steady state droop parameter")
     Te: float = Field(..., description="Power transducer time constant")
-    P_ref: float | None = Field(1.0, description="Reference power set-point")
+    P_ref: float | None = Field(None, description="Reference power set-point")
 
 
 class GasTG(BaseModel):
@@ -1674,7 +1674,7 @@ class GasTG(BaseModel):
         min_length=2,
     )
     D_turb: float = Field(..., description="Speed damping coefficient of gas turbine rotor")
-    P_ref: float | None = Field(1.0, description="Reference load set-point")
+    P_ref: float | None = Field(None, description="Reference load set-point")
 
 
 class GeneralGovModel(BaseModel):
@@ -1714,7 +1714,7 @@ class GeneralGovModel(BaseModel):
     Tsa: float = Field(..., description="Temperature detection lead time constant")
     Tsb: float = Field(..., description="Temperature detection lag time constant")
     R_lim: UpDown = Field(..., description="Maximum rate of load increase")
-    P_ref: float | None = Field(1.0, description="Reference power set-point")
+    P_ref: float | None = Field(None, description="Reference power set-point")
 
 
 class HydroTurbineGov(BaseModel):
@@ -1733,7 +1733,7 @@ class HydroTurbineGov(BaseModel):
     At: float = Field(..., description="Turbine gain")
     D_T: float = Field(..., description="Turbine damping")
     q_nl: float = Field(..., description="No power flow")
-    P_ref: float | None = Field(1.0, description="Reference load set-point")
+    P_ref: float | None = Field(None, description="Reference load set-point")
 
 
 class IEEETurbineGov1(BaseModel):
@@ -1760,7 +1760,7 @@ class IEEETurbineGov1(BaseModel):
     T7: float = Field(..., description="Time constant for fourth boiler pass")
     K7: float = Field(..., description="Fraction of high pressure shaft power fourth boiler pass")
     K8: float = Field(..., description="Fraction of low pressure shaft power fourth boiler pass")
-    P_ref: float | None = Field(1.0, description="Reference power set-point")
+    P_ref: float | None = Field(None, description="Reference power set-point")
 
 
 class PIDGOV(BaseModel):
@@ -1790,7 +1790,7 @@ class PIDGOV(BaseModel):
     A_tw: float = Field(..., description="Factor multiplying Tw")
     Tw: float = Field(..., description="Water inertia time constant")
     V_lim: MinMax = Field(..., description="Gate opening velocity limits")
-    P_ref: float | None = Field(1.0, description="Reference load set-point")
+    P_ref: float | None = Field(None, description="Reference load set-point")
 
 
 class SteamTurbineGov1(BaseModel):
@@ -1818,7 +1818,7 @@ class TGFixed(BaseModel):
     )
     id: int = Field(..., description="Unique integer identifier for this component")
     efficiency: float = Field(..., description="Efficiency factor that multiplies P_ref")
-    P_ref: float | None = Field(1.0, description="Reference power set-point")
+    P_ref: float | None = Field(None, description="Reference power set-point")
 
 
 class TGSimple(BaseModel):
@@ -1828,7 +1828,7 @@ class TGSimple(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component")
     d_t: float = Field(..., description="Inverse droop parameter")
     Tm: float = Field(..., description="Turbine governor low-pass time constant")
-    P_ref: float | None = Field(1.0, description="Reference power set-point")
+    P_ref: float | None = Field(None, description="Reference power set-point")
 
 
 class TGTypeI(BaseModel):
@@ -1881,4 +1881,4 @@ class WPIDHY(BaseModel):
     power_gate_openings: list[float] = Field(
         ..., description="Power at gate_openings", max_length=3, min_length=3
     )
-    P_ref: float | None = Field(1.0, description="Reference load set-point")
+    P_ref: float | None = Field(None, description="Reference load set-point")

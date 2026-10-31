@@ -377,24 +377,35 @@ describe("canonical encoding", () => {
     time_series_storage_file: null,
   });
 
-  it("always writes the three required financial rates", () => {
+  // Schema-required with a schema default: required, as in the Julia package. No SDK
+  // fills a schema default (see the README).
+  it("requires the three financial rates and writes them as given", () => {
     const out = join(tmp, "canonical-rates.json");
+    const rates = { discount_rate: 0, inflation_rate: 0, interest_rate: 0.123 };
     writePortfolioDocument(
       portfolioWithRates({
         id: 5,
         base_year: 2020,
-        discount_rate: 0,
-        interest_rate: 0.123,
+        ...rates,
       } as PortfolioFinancialData),
       out,
     );
     expect(loadJson(out).financial_data).toEqual({
       id: 5,
       base_year: 2020,
-      discount_rate: 0,
-      inflation_rate: 0,
-      interest_rate: 0.123,
+      ...rates,
     });
+    expect(() =>
+      writePortfolioDocument(
+        portfolioWithRates({
+          id: 5,
+          base_year: 2020,
+          discount_rate: 0,
+          interest_rate: 0.123,
+        } as PortfolioFinancialData),
+        join(tmp, "missing-rate.json"),
+      ),
+    ).toThrow();
   });
 
   it("writes a current stamp over a junk one", () => {
