@@ -4,7 +4,7 @@
 from __future__ import annotations
 from power_openapi_models.core.models import UnitSystem
 from pydantic import BaseModel, ConfigDict, Field, RootModel, conint
-from power_openapi_models.timestamps import OffsetDatetime
+from power_openapi_models.timestamps import OffsetDatetime, LocalDatetime
 from enum import Enum
 from typing import Literal
 
@@ -229,8 +229,9 @@ class Deterministic(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: OffsetDatetime = Field(
-        ..., description="Start of the first forecast window."
+    initial_timestamp: OffsetDatetime | LocalDatetime = Field(
+        ...,
+        description="Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
     )
     resolution: Period = Field(
         ...,
@@ -329,8 +330,9 @@ class DeterministicSingleTimeSeries(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: OffsetDatetime = Field(
-        ..., description="Start of the first forecast window."
+    initial_timestamp: OffsetDatetime | LocalDatetime = Field(
+        ...,
+        description="Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
     )
     resolution: Period = Field(
         ...,
@@ -429,8 +431,9 @@ class Probabilistic(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: OffsetDatetime = Field(
-        ..., description="Start of the first forecast window."
+    initial_timestamp: OffsetDatetime | LocalDatetime = Field(
+        ...,
+        description="Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
     )
     resolution: Period = Field(
         ...,
@@ -534,8 +537,9 @@ class Scenarios(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: OffsetDatetime = Field(
-        ..., description="Start of the first forecast window."
+    initial_timestamp: OffsetDatetime | LocalDatetime = Field(
+        ...,
+        description="Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
     )
     resolution: Period = Field(
         ...,
@@ -638,9 +642,9 @@ class SingleTimeSeries(BaseModel):
         None,
         description="Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
     )
-    initial_timestamp: OffsetDatetime = Field(
+    initial_timestamp: OffsetDatetime | LocalDatetime = Field(
         ...,
-        description="First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. An RFC3339 string with at most 3 fractional-second digits: the store's floor is one millisecond, matching Julia's millisecond-precision DateTime.",
+        description="First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. The store's floor is one millisecond, matching Julia's millisecond-precision DateTime. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
     )
     resolution: Period = Field(
         ...,

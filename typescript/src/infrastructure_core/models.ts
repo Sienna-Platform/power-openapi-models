@@ -3,7 +3,7 @@
  * Do not edit manually.
  * InfrastructureCoreOpenAPIModels
  * Domain-neutral shared types: the unit convention, the function-data family, and the value shapes and supplemental attributes that carry no power semantics. Consumed by the data layer and the time series store, neither of which should inherit power-specific definitions.
- * OpenAPI spec version: 0.3.0
+ * OpenAPI spec version: 0.4.0
  */
 import * as zod from "zod";
 
@@ -448,6 +448,13 @@ export const GeographicInfo = zod
 export type GeographicInfo = zod.input<typeof GeographicInfo>;
 export type GeographicInfoOutput = zod.output<typeof GeographicInfo>;
 
+export const dataSourceRetrievedAtRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+);
+export const dataSourcePublishedAtRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+);
+
 export const DataSource = zod
   .strictObject({
     id: zod.int(),
@@ -459,6 +466,7 @@ export const DataSource = zod
       ),
     retrieved_at: zod.iso
       .datetime({ offset: true })
+      .regex(dataSourceRetrievedAtRegExp)
       .describe("When the data was obtained."),
     dataset: zod
       .string()
@@ -479,6 +487,7 @@ export const DataSource = zod
       ),
     published_at: zod.iso
       .datetime({ offset: true })
+      .regex(dataSourcePublishedAtRegExp)
       .nullish()
       .describe("When the source published the data; null if unknown."),
     confidence: zod

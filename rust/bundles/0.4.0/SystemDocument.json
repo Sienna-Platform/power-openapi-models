@@ -1,5 +1,5 @@
 {
-  "$comment": "Strict validation bundle for schema release 0.3.0.",
+  "$comment": "Strict validation bundle for schema release 0.4.0.",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "definitions": {
@@ -717,6 +717,7 @@
         "published_at": {
           "description": "When the source published the data; null if unknown.",
           "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
           "type": [
             "string",
             "null"
@@ -732,6 +733,7 @@
         "retrieved_at": {
           "description": "When the data was obtained.",
           "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
           "type": "string"
         },
         "url": {
@@ -753,6 +755,70 @@
     },
     "Deterministic": {
       "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "const": "zoneless"
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "const": "utc"
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "(Z|\\+00:00)$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "not": {
+                  "enum": [
+                    "utc",
+                    "zoneless"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$"
+              }
+            }
+          }
+        }
+      ],
       "description": "A deterministic forecast: one horizon-length array per window, windows stepping by `interval`. One of a closed set of six canonical time series types owned by the data layer. This schema records the association and its metadata; the dense values live in the store named by `uri`.",
       "properties": {
         "application_data": {
@@ -807,9 +873,19 @@
           "description": "Length of one forecast window. Descriptive, not part of the series' identity."
         },
         "initial_timestamp": {
-          "description": "Start of the first forecast window.",
-          "format": "date-time",
-          "type": "string"
+          "anyOf": [
+            {
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+              "type": "string"
+            },
+            {
+              "format": "date-time-local",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$",
+              "type": "string"
+            }
+          ],
+          "description": "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed."
         },
         "interval": {
           "$ref": "#/definitions/Period",
@@ -889,6 +965,70 @@
     },
     "DeterministicSingleTimeSeries": {
       "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "const": "zoneless"
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "const": "utc"
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "(Z|\\+00:00)$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "not": {
+                  "enum": [
+                    "utc",
+                    "zoneless"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$"
+              }
+            }
+          }
+        }
+      ],
       "description": "A synthetic deterministic forecast derived from a SingleTimeSeries by `transform_single_time_series`. Field-identical to Deterministic, and it reads back as one; it stays a distinct type because the catalog records which rows are synthetic, and a request for Deterministic matches both while a request for this type narrows to the synthetic ones alone.",
       "properties": {
         "application_data": {
@@ -943,9 +1083,19 @@
           "description": "Length of one forecast window. Descriptive, not part of the series' identity."
         },
         "initial_timestamp": {
-          "description": "Start of the first forecast window.",
-          "format": "date-time",
-          "type": "string"
+          "anyOf": [
+            {
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+              "type": "string"
+            },
+            {
+              "format": "date-time-local",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$",
+              "type": "string"
+            }
+          ],
+          "description": "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed."
         },
         "interval": {
           "$ref": "#/definitions/Period",
@@ -4588,6 +4738,70 @@
     },
     "Probabilistic": {
       "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "const": "zoneless"
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "const": "utc"
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "(Z|\\+00:00)$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "not": {
+                  "enum": [
+                    "utc",
+                    "zoneless"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$"
+              }
+            }
+          }
+        }
+      ],
       "description": "A probabilistic forecast: per-percentile, per-window horizon arrays. Adds a percentile axis in front of the deterministic layout.",
       "properties": {
         "application_data": {
@@ -4642,9 +4856,19 @@
           "description": "Length of one forecast window. Descriptive, not part of the series' identity."
         },
         "initial_timestamp": {
-          "description": "Start of the first forecast window.",
-          "format": "date-time",
-          "type": "string"
+          "anyOf": [
+            {
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+              "type": "string"
+            },
+            {
+              "format": "date-time-local",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$",
+              "type": "string"
+            }
+          ],
+          "description": "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed."
         },
         "interval": {
           "$ref": "#/definitions/Period",
@@ -5037,6 +5261,70 @@
     },
     "Scenarios": {
       "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "const": "zoneless"
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "const": "utc"
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "(Z|\\+00:00)$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "not": {
+                  "enum": [
+                    "utc",
+                    "zoneless"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$"
+              }
+            }
+          }
+        }
+      ],
       "description": "A scenarios forecast: per-scenario, per-window horizon arrays. Adds a scenario axis in front of the deterministic layout.",
       "properties": {
         "application_data": {
@@ -5091,9 +5379,19 @@
           "description": "Length of one forecast window. Descriptive, not part of the series' identity."
         },
         "initial_timestamp": {
-          "description": "Start of the first forecast window.",
-          "format": "date-time",
-          "type": "string"
+          "anyOf": [
+            {
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+              "type": "string"
+            },
+            {
+              "format": "date-time-local",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$",
+              "type": "string"
+            }
+          ],
+          "description": "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed."
         },
         "interval": {
           "$ref": "#/definitions/Period",
@@ -5460,6 +5758,70 @@
     },
     "SingleTimeSeries": {
       "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "const": "zoneless"
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "const": "utc"
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "(Z|\\+00:00)$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "time_reference": {
+                "not": {
+                  "enum": [
+                    "utc",
+                    "zoneless"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "time_reference"
+            ]
+          },
+          "then": {
+            "properties": {
+              "initial_timestamp": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$"
+              }
+            }
+          }
+        }
+      ],
       "description": "A static time series on a regular grid: values at `initial_timestamp + k * resolution`. One of a closed set of six canonical time series types owned by the data layer. This schema records the association and its metadata; the dense values live in the store named by `uri`.",
       "properties": {
         "application_data": {
@@ -5505,9 +5867,19 @@
           "description": "User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected."
         },
         "initial_timestamp": {
-          "description": "First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. An RFC3339 string with at most 3 fractional-second digits: the store's floor is one millisecond, matching Julia's millisecond-precision DateTime.",
-          "format": "date-time",
-          "type": "string"
+          "anyOf": [
+            {
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+              "type": "string"
+            },
+            {
+              "format": "date-time-local",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$",
+              "type": "string"
+            }
+          ],
+          "description": "First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. The store's floor is one millisecond, matching Julia's millisecond-precision DateTime. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed."
         },
         "interval_alignment": {
           "$ref": "#/definitions/IntervalAlignment",

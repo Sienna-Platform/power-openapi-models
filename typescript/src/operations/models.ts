@@ -3,7 +3,7 @@
  * Do not edit manually.
  * PowerOperationsOpenAPIModels
  * Power system operations models: Branch, StaticInjection, and Service components
- * OpenAPI spec version: 0.3.0
+ * OpenAPI spec version: 0.4.0
  */
 import * as zod from "zod";
 

@@ -3,7 +3,7 @@
  * Do not edit manually.
  * PowerInvestmentsOpenAPIModels
  * Power system investments models: Technologies, Financials, Requirements, SupplementalAttributes, and Portfolio components
- * OpenAPI spec version: 0.3.0
+ * OpenAPI spec version: 0.4.0
  */
 import * as zod from "zod";
 
