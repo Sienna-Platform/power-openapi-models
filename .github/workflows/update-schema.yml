@@ -79,6 +79,10 @@ jobs:
             -v /tmp/schemas:/schemas:ro \
             -v ${{ github.workspace }}:/output \
             $CODEGEN_IMAGE
+          # The container runs as root, so the stripped schema copy it leaves in
+          # codegen/.build is root-owned and the runner cannot replace it. The
+          # TypeScript and Rust steps rebuild that copy on the runner.
+          sudo rm -rf codegen/.build
           echo "${{ steps.schema.outputs.latest }}" > .schema-version
           python3 scripts/stamp_fixtures.py
       - uses: actions/setup-python@v5
