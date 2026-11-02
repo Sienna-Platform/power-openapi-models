@@ -4412,8 +4412,8 @@ pub struct SingleTimeSeries {
     ///Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub application_data: Option<String>,
-    ///First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. An RFC3339 string with at most 3 fractional-second digits: the store's floor is one millisecond, matching Julia's millisecond-precision DateTime.
-    pub initial_timestamp: crate::timestamp::OffsetDateTime,
+    ///First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. The store's floor is one millisecond, matching Julia's millisecond-precision DateTime. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.
+    pub initial_timestamp: crate::timestamp::Timestamp,
     pub resolution: Period,
     ///Number of timesteps.
     ///Constraint: minimum=0
@@ -5070,8 +5070,8 @@ pub struct Scenarios {
     ///Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub application_data: Option<String>,
-    ///Start of the first forecast window.
-    pub initial_timestamp: crate::timestamp::OffsetDateTime,
+    ///Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.
+    pub initial_timestamp: crate::timestamp::Timestamp,
     pub resolution: Period,
     pub horizon: Period,
     pub interval: Period,
@@ -6162,8 +6162,8 @@ pub struct Probabilistic {
     ///Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub application_data: Option<String>,
-    ///Start of the first forecast window.
-    pub initial_timestamp: crate::timestamp::OffsetDateTime,
+    ///Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.
+    pub initial_timestamp: crate::timestamp::Timestamp,
     pub resolution: Period,
     pub horizon: Period,
     pub interval: Period,
@@ -13827,8 +13827,8 @@ pub struct DeterministicSingleTimeSeries {
     ///Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub application_data: Option<String>,
-    ///Start of the first forecast window.
-    pub initial_timestamp: crate::timestamp::OffsetDateTime,
+    ///Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.
+    pub initial_timestamp: crate::timestamp::Timestamp,
     pub resolution: Period,
     pub horizon: Period,
     pub interval: Period,
@@ -13907,8 +13907,8 @@ pub struct Deterministic {
     ///Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub application_data: Option<String>,
-    ///Start of the first forecast window.
-    pub initial_timestamp: crate::timestamp::OffsetDateTime,
+    ///Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.
+    pub initial_timestamp: crate::timestamp::Timestamp,
     pub resolution: Period,
     pub horizon: Period,
     pub interval: Period,
@@ -14106,6 +14106,7 @@ pub struct DataSource {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub organization: Option<String>,
     ///When the data was obtained.
+    ///Constraint: pattern=`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?(Z|[+-]\d{2}:\d{2})$`
     pub retrieved_at: crate::timestamp::OffsetDateTime,
     ///Dataset identifier within the publishing organization, e.g. 'EIA-860 2023, Schedule 3'.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -14120,6 +14121,7 @@ pub struct DataSource {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub license: Option<String>,
     ///When the source published the data; null if unknown.
+    ///Constraint: pattern=`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?(Z|[+-]\d{2}:\d{2})$`
     #[serde(
         skip_serializing_if = "Option::is_none",
         default,

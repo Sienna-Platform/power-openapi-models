@@ -3,16 +3,22 @@
  * Do not edit manually.
  * InfrastructureTimeSeriesOpenAPIModels
  * Time series associations: the six canonical time series types defined by the upstream data layer and their metadata, without the dense values
- * OpenAPI spec version: 0.3.0
+ * OpenAPI spec version: 0.4.0
  */
 import * as zod from "zod";
 
-const timeSeriesAssociationOneTimeSeriesTypeDefault = `SingleTimeSeries`;
-export const timeSeriesAssociationOneElementShapeItemMin = 0;
+const timeSeriesAssociationOneFourTimeSeriesTypeDefault = `SingleTimeSeries`;
+export const timeSeriesAssociationOneFourElementShapeItemMin = 0;
 
-export const timeSeriesAssociationOneArrayShapeItemMin = 0;
+export const timeSeriesAssociationOneFourArrayShapeItemMin = 0;
 
-export const timeSeriesAssociationOneLengthMin = 0;
+export const timeSeriesAssociationOneFourInitialTimestampOneRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+);
+export const timeSeriesAssociationOneFourInitialTimestampTwoRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$",
+);
+export const timeSeriesAssociationOneFourLengthMin = 0;
 
 const timeSeriesAssociationTwoTimeSeriesTypeDefault = `NonSequentialTimeSeries`;
 export const timeSeriesAssociationTwoElementShapeItemMin = 0;
@@ -21,33 +27,57 @@ export const timeSeriesAssociationTwoArrayShapeItemMin = 0;
 
 export const timeSeriesAssociationTwoLengthMin = 0;
 
-const timeSeriesAssociationThreeTimeSeriesTypeDefault = `Deterministic`;
-export const timeSeriesAssociationThreeElementShapeItemMin = 0;
+const timeSeriesAssociationThreeFourTimeSeriesTypeDefault = `Deterministic`;
+export const timeSeriesAssociationThreeFourElementShapeItemMin = 0;
 
-export const timeSeriesAssociationThreeArrayShapeItemMin = 0;
+export const timeSeriesAssociationThreeFourArrayShapeItemMin = 0;
 
-export const timeSeriesAssociationThreeCountMin = 0;
+export const timeSeriesAssociationThreeFourInitialTimestampOneRegExp =
+  new RegExp(
+    "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+  );
+export const timeSeriesAssociationThreeFourInitialTimestampTwoRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$");
+export const timeSeriesAssociationThreeFourCountMin = 0;
 
-const timeSeriesAssociationFourTimeSeriesTypeDefault = `DeterministicSingleTimeSeries`;
-export const timeSeriesAssociationFourElementShapeItemMin = 0;
+const timeSeriesAssociationFourFourTimeSeriesTypeDefault = `DeterministicSingleTimeSeries`;
+export const timeSeriesAssociationFourFourElementShapeItemMin = 0;
 
-export const timeSeriesAssociationFourArrayShapeItemMin = 0;
+export const timeSeriesAssociationFourFourArrayShapeItemMin = 0;
 
-export const timeSeriesAssociationFourCountMin = 0;
+export const timeSeriesAssociationFourFourInitialTimestampOneRegExp =
+  new RegExp(
+    "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+  );
+export const timeSeriesAssociationFourFourInitialTimestampTwoRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$");
+export const timeSeriesAssociationFourFourCountMin = 0;
 
-const timeSeriesAssociationFiveTimeSeriesTypeDefault = `Probabilistic`;
-export const timeSeriesAssociationFiveElementShapeItemMin = 0;
+const timeSeriesAssociationFiveFourTimeSeriesTypeDefault = `Probabilistic`;
+export const timeSeriesAssociationFiveFourElementShapeItemMin = 0;
 
-export const timeSeriesAssociationFiveArrayShapeItemMin = 0;
+export const timeSeriesAssociationFiveFourArrayShapeItemMin = 0;
 
-export const timeSeriesAssociationFiveCountMin = 0;
+export const timeSeriesAssociationFiveFourInitialTimestampOneRegExp =
+  new RegExp(
+    "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+  );
+export const timeSeriesAssociationFiveFourInitialTimestampTwoRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$");
+export const timeSeriesAssociationFiveFourCountMin = 0;
 
-const timeSeriesAssociationSixTimeSeriesTypeDefault = `Scenarios`;
-export const timeSeriesAssociationSixElementShapeItemMin = 0;
+const timeSeriesAssociationSixFourTimeSeriesTypeDefault = `Scenarios`;
+export const timeSeriesAssociationSixFourElementShapeItemMin = 0;
 
-export const timeSeriesAssociationSixArrayShapeItemMin = 0;
+export const timeSeriesAssociationSixFourArrayShapeItemMin = 0;
 
-export const timeSeriesAssociationSixCountMin = 0;
+export const timeSeriesAssociationSixFourInitialTimestampOneRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+);
+export const timeSeriesAssociationSixFourInitialTimestampTwoRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$",
+);
+export const timeSeriesAssociationSixFourCountMin = 0;
 
 export const TimeSeriesAssociation = zod
   .union([
@@ -75,7 +105,7 @@ export const TimeSeriesAssociation = zod
           ),
         time_series_type: zod
           .literal("SingleTimeSeries")
-          .default(timeSeriesAssociationOneTimeSeriesTypeDefault)
+          .default(timeSeriesAssociationOneFourTimeSeriesTypeDefault)
           .describe(
             "Discriminator. Fixed to SingleTimeSeries for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
           ),
@@ -113,12 +143,12 @@ export const TimeSeriesAssociation = zod
             "Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `u32`, `u16`, `u8`, `i16`, `i8`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value means and how it is laid out; the physical dtype of the bytes derives from it rather than being recorded separately. `linear_function` occupies 2 slots, `quadratic_function` 3; the two piecewise kinds are ragged, with the used count in the row's leading element.",
           ),
         element_shape: zod
-          .array(zod.int().min(timeSeriesAssociationOneElementShapeItemMin))
+          .array(zod.int().min(timeSeriesAssociationOneFourElementShapeItemMin))
           .describe(
             "Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
           ),
         array_shape: zod
-          .array(zod.int().min(timeSeriesAssociationOneArrayShapeItemMin))
+          .array(zod.int().min(timeSeriesAssociationOneFourArrayShapeItemMin))
           .min(1)
           .optional()
           .describe(
@@ -166,10 +196,17 @@ export const TimeSeriesAssociation = zod
           .describe(
             "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
           ),
-        initial_timestamp: zod.iso
-          .datetime({ offset: true })
+        initial_timestamp: zod
+          .union([
+            zod.iso
+              .datetime({ offset: true })
+              .regex(timeSeriesAssociationOneFourInitialTimestampOneRegExp),
+            zod.iso
+              .datetime({ local: true })
+              .regex(timeSeriesAssociationOneFourInitialTimestampTwoRegExp),
+          ])
           .describe(
-            "First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. An RFC3339 string with at most 3 fractional-second digits: the store's floor is one millisecond, matching Julia's millisecond-precision DateTime.",
+            "First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. The store's floor is one millisecond, matching Julia's millisecond-precision DateTime. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
           ),
         resolution: zod
           .string()
@@ -178,7 +215,7 @@ export const TimeSeriesAssociation = zod
           ),
         length: zod
           .int()
-          .min(timeSeriesAssociationOneLengthMin)
+          .min(timeSeriesAssociationOneFourLengthMin)
           .describe("Number of timesteps."),
       })
       .describe(
@@ -333,7 +370,7 @@ export const TimeSeriesAssociation = zod
           ),
         time_series_type: zod
           .literal("Deterministic")
-          .default(timeSeriesAssociationThreeTimeSeriesTypeDefault)
+          .default(timeSeriesAssociationThreeFourTimeSeriesTypeDefault)
           .describe(
             "Discriminator. Fixed to Deterministic for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
           ),
@@ -371,12 +408,14 @@ export const TimeSeriesAssociation = zod
             "Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `u32`, `u16`, `u8`, `i16`, `i8`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value means and how it is laid out; the physical dtype of the bytes derives from it rather than being recorded separately. `linear_function` occupies 2 slots, `quadratic_function` 3; the two piecewise kinds are ragged, with the used count in the row's leading element.",
           ),
         element_shape: zod
-          .array(zod.int().min(timeSeriesAssociationThreeElementShapeItemMin))
+          .array(
+            zod.int().min(timeSeriesAssociationThreeFourElementShapeItemMin),
+          )
           .describe(
             "Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
           ),
         array_shape: zod
-          .array(zod.int().min(timeSeriesAssociationThreeArrayShapeItemMin))
+          .array(zod.int().min(timeSeriesAssociationThreeFourArrayShapeItemMin))
           .min(1)
           .optional()
           .describe(
@@ -424,9 +463,18 @@ export const TimeSeriesAssociation = zod
           .describe(
             "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
           ),
-        initial_timestamp: zod.iso
-          .datetime({ offset: true })
-          .describe("Start of the first forecast window."),
+        initial_timestamp: zod
+          .union([
+            zod.iso
+              .datetime({ offset: true })
+              .regex(timeSeriesAssociationThreeFourInitialTimestampOneRegExp),
+            zod.iso
+              .datetime({ local: true })
+              .regex(timeSeriesAssociationThreeFourInitialTimestampTwoRegExp),
+          ])
+          .describe(
+            "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
+          ),
         resolution: zod
           .string()
           .describe(
@@ -444,7 +492,7 @@ export const TimeSeriesAssociation = zod
           ),
         count: zod
           .int()
-          .min(timeSeriesAssociationThreeCountMin)
+          .min(timeSeriesAssociationThreeFourCountMin)
           .describe(
             "Number of forecast windows. Descriptive, not part of the series' identity.",
           ),
@@ -476,7 +524,7 @@ export const TimeSeriesAssociation = zod
           ),
         time_series_type: zod
           .literal("DeterministicSingleTimeSeries")
-          .default(timeSeriesAssociationFourTimeSeriesTypeDefault)
+          .default(timeSeriesAssociationFourFourTimeSeriesTypeDefault)
           .describe(
             "Discriminator. Fixed to DeterministicSingleTimeSeries for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
           ),
@@ -514,12 +562,14 @@ export const TimeSeriesAssociation = zod
             "Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `u32`, `u16`, `u8`, `i16`, `i8`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value means and how it is laid out; the physical dtype of the bytes derives from it rather than being recorded separately. `linear_function` occupies 2 slots, `quadratic_function` 3; the two piecewise kinds are ragged, with the used count in the row's leading element.",
           ),
         element_shape: zod
-          .array(zod.int().min(timeSeriesAssociationFourElementShapeItemMin))
+          .array(
+            zod.int().min(timeSeriesAssociationFourFourElementShapeItemMin),
+          )
           .describe(
             "Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
           ),
         array_shape: zod
-          .array(zod.int().min(timeSeriesAssociationFourArrayShapeItemMin))
+          .array(zod.int().min(timeSeriesAssociationFourFourArrayShapeItemMin))
           .min(1)
           .optional()
           .describe(
@@ -567,9 +617,18 @@ export const TimeSeriesAssociation = zod
           .describe(
             "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
           ),
-        initial_timestamp: zod.iso
-          .datetime({ offset: true })
-          .describe("Start of the first forecast window."),
+        initial_timestamp: zod
+          .union([
+            zod.iso
+              .datetime({ offset: true })
+              .regex(timeSeriesAssociationFourFourInitialTimestampOneRegExp),
+            zod.iso
+              .datetime({ local: true })
+              .regex(timeSeriesAssociationFourFourInitialTimestampTwoRegExp),
+          ])
+          .describe(
+            "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
+          ),
         resolution: zod
           .string()
           .describe(
@@ -587,7 +646,7 @@ export const TimeSeriesAssociation = zod
           ),
         count: zod
           .int()
-          .min(timeSeriesAssociationFourCountMin)
+          .min(timeSeriesAssociationFourFourCountMin)
           .describe(
             "Number of forecast windows. Descriptive, not part of the series' identity.",
           ),
@@ -619,7 +678,7 @@ export const TimeSeriesAssociation = zod
           ),
         time_series_type: zod
           .literal("Probabilistic")
-          .default(timeSeriesAssociationFiveTimeSeriesTypeDefault)
+          .default(timeSeriesAssociationFiveFourTimeSeriesTypeDefault)
           .describe(
             "Discriminator. Fixed to Probabilistic for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
           ),
@@ -657,12 +716,14 @@ export const TimeSeriesAssociation = zod
             "Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `u32`, `u16`, `u8`, `i16`, `i8`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value means and how it is laid out; the physical dtype of the bytes derives from it rather than being recorded separately. `linear_function` occupies 2 slots, `quadratic_function` 3; the two piecewise kinds are ragged, with the used count in the row's leading element.",
           ),
         element_shape: zod
-          .array(zod.int().min(timeSeriesAssociationFiveElementShapeItemMin))
+          .array(
+            zod.int().min(timeSeriesAssociationFiveFourElementShapeItemMin),
+          )
           .describe(
             "Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
           ),
         array_shape: zod
-          .array(zod.int().min(timeSeriesAssociationFiveArrayShapeItemMin))
+          .array(zod.int().min(timeSeriesAssociationFiveFourArrayShapeItemMin))
           .min(1)
           .optional()
           .describe(
@@ -710,9 +771,18 @@ export const TimeSeriesAssociation = zod
           .describe(
             "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
           ),
-        initial_timestamp: zod.iso
-          .datetime({ offset: true })
-          .describe("Start of the first forecast window."),
+        initial_timestamp: zod
+          .union([
+            zod.iso
+              .datetime({ offset: true })
+              .regex(timeSeriesAssociationFiveFourInitialTimestampOneRegExp),
+            zod.iso
+              .datetime({ local: true })
+              .regex(timeSeriesAssociationFiveFourInitialTimestampTwoRegExp),
+          ])
+          .describe(
+            "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
+          ),
         resolution: zod
           .string()
           .describe(
@@ -730,7 +800,7 @@ export const TimeSeriesAssociation = zod
           ),
         count: zod
           .int()
-          .min(timeSeriesAssociationFiveCountMin)
+          .min(timeSeriesAssociationFiveFourCountMin)
           .describe(
             "Number of forecast windows. Descriptive, not part of the series' identity.",
           ),
@@ -768,7 +838,7 @@ export const TimeSeriesAssociation = zod
           ),
         time_series_type: zod
           .literal("Scenarios")
-          .default(timeSeriesAssociationSixTimeSeriesTypeDefault)
+          .default(timeSeriesAssociationSixFourTimeSeriesTypeDefault)
           .describe(
             "Discriminator. Fixed to Scenarios for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
           ),
@@ -806,12 +876,12 @@ export const TimeSeriesAssociation = zod
             "Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `u32`, `u16`, `u8`, `i16`, `i8`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value means and how it is laid out; the physical dtype of the bytes derives from it rather than being recorded separately. `linear_function` occupies 2 slots, `quadratic_function` 3; the two piecewise kinds are ragged, with the used count in the row's leading element.",
           ),
         element_shape: zod
-          .array(zod.int().min(timeSeriesAssociationSixElementShapeItemMin))
+          .array(zod.int().min(timeSeriesAssociationSixFourElementShapeItemMin))
           .describe(
             "Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
           ),
         array_shape: zod
-          .array(zod.int().min(timeSeriesAssociationSixArrayShapeItemMin))
+          .array(zod.int().min(timeSeriesAssociationSixFourArrayShapeItemMin))
           .min(1)
           .optional()
           .describe(
@@ -859,9 +929,18 @@ export const TimeSeriesAssociation = zod
           .describe(
             "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
           ),
-        initial_timestamp: zod.iso
-          .datetime({ offset: true })
-          .describe("Start of the first forecast window."),
+        initial_timestamp: zod
+          .union([
+            zod.iso
+              .datetime({ offset: true })
+              .regex(timeSeriesAssociationSixFourInitialTimestampOneRegExp),
+            zod.iso
+              .datetime({ local: true })
+              .regex(timeSeriesAssociationSixFourInitialTimestampTwoRegExp),
+          ])
+          .describe(
+            "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
+          ),
         resolution: zod
           .string()
           .describe(
@@ -879,7 +958,7 @@ export const TimeSeriesAssociation = zod
           ),
         count: zod
           .int()
-          .min(timeSeriesAssociationSixCountMin)
+          .min(timeSeriesAssociationSixFourCountMin)
           .describe(
             "Number of forecast windows. Descriptive, not part of the series' identity.",
           ),
@@ -903,12 +982,18 @@ export type TimeSeriesAssociationOutput = zod.output<
   typeof TimeSeriesAssociation
 >;
 
-const singleTimeSeriesTimeSeriesTypeDefault = `SingleTimeSeries`;
-export const singleTimeSeriesElementShapeItemMin = 0;
+const singleTimeSeriesFourTimeSeriesTypeDefault = `SingleTimeSeries`;
+export const singleTimeSeriesFourElementShapeItemMin = 0;
 
-export const singleTimeSeriesArrayShapeItemMin = 0;
+export const singleTimeSeriesFourArrayShapeItemMin = 0;
 
-export const singleTimeSeriesLengthMin = 0;
+export const singleTimeSeriesFourInitialTimestampOneRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+);
+export const singleTimeSeriesFourInitialTimestampTwoRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$",
+);
+export const singleTimeSeriesFourLengthMin = 0;
 
 export const SingleTimeSeries = zod
   .strictObject({
@@ -934,7 +1019,7 @@ export const SingleTimeSeries = zod
       ),
     time_series_type: zod
       .enum(["SingleTimeSeries"])
-      .default(singleTimeSeriesTimeSeriesTypeDefault)
+      .default(singleTimeSeriesFourTimeSeriesTypeDefault)
       .describe(
         "Discriminator. Fixed to SingleTimeSeries for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
       ),
@@ -972,12 +1057,12 @@ export const SingleTimeSeries = zod
         "Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `u32`, `u16`, `u8`, `i16`, `i8`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value means and how it is laid out; the physical dtype of the bytes derives from it rather than being recorded separately. `linear_function` occupies 2 slots, `quadratic_function` 3; the two piecewise kinds are ragged, with the used count in the row's leading element.",
       ),
     element_shape: zod
-      .array(zod.int().min(singleTimeSeriesElementShapeItemMin))
+      .array(zod.int().min(singleTimeSeriesFourElementShapeItemMin))
       .describe(
         "Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
       ),
     array_shape: zod
-      .array(zod.int().min(singleTimeSeriesArrayShapeItemMin))
+      .array(zod.int().min(singleTimeSeriesFourArrayShapeItemMin))
       .min(1)
       .optional()
       .describe(
@@ -1025,10 +1110,17 @@ export const SingleTimeSeries = zod
       .describe(
         "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
       ),
-    initial_timestamp: zod.iso
-      .datetime({ offset: true })
+    initial_timestamp: zod
+      .union([
+        zod.iso
+          .datetime({ offset: true })
+          .regex(singleTimeSeriesFourInitialTimestampOneRegExp),
+        zod.iso
+          .datetime({ local: true })
+          .regex(singleTimeSeriesFourInitialTimestampTwoRegExp),
+      ])
       .describe(
-        "First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. An RFC3339 string with at most 3 fractional-second digits: the store's floor is one millisecond, matching Julia's millisecond-precision DateTime.",
+        "First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. The store's floor is one millisecond, matching Julia's millisecond-precision DateTime. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
       ),
     resolution: zod
       .string()
@@ -1037,7 +1129,7 @@ export const SingleTimeSeries = zod
       ),
     length: zod
       .int()
-      .min(singleTimeSeriesLengthMin)
+      .min(singleTimeSeriesFourLengthMin)
       .describe("Number of timesteps."),
   })
   .describe(
@@ -1185,12 +1277,18 @@ export type NonSequentialTimeSeriesOutput = zod.output<
   typeof NonSequentialTimeSeries
 >;
 
-const deterministicTimeSeriesTypeDefault = `Deterministic`;
-export const deterministicElementShapeItemMin = 0;
+const deterministicFourTimeSeriesTypeDefault = `Deterministic`;
+export const deterministicFourElementShapeItemMin = 0;
 
-export const deterministicArrayShapeItemMin = 0;
+export const deterministicFourArrayShapeItemMin = 0;
 
-export const deterministicCountMin = 0;
+export const deterministicFourInitialTimestampOneRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+);
+export const deterministicFourInitialTimestampTwoRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$",
+);
+export const deterministicFourCountMin = 0;
 
 export const Deterministic = zod
   .strictObject({
@@ -1216,7 +1314,7 @@ export const Deterministic = zod
       ),
     time_series_type: zod
       .enum(["Deterministic"])
-      .default(deterministicTimeSeriesTypeDefault)
+      .default(deterministicFourTimeSeriesTypeDefault)
       .describe(
         "Discriminator. Fixed to Deterministic for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
       ),
@@ -1254,12 +1352,12 @@ export const Deterministic = zod
         "Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `u32`, `u16`, `u8`, `i16`, `i8`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value means and how it is laid out; the physical dtype of the bytes derives from it rather than being recorded separately. `linear_function` occupies 2 slots, `quadratic_function` 3; the two piecewise kinds are ragged, with the used count in the row's leading element.",
       ),
     element_shape: zod
-      .array(zod.int().min(deterministicElementShapeItemMin))
+      .array(zod.int().min(deterministicFourElementShapeItemMin))
       .describe(
         "Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
       ),
     array_shape: zod
-      .array(zod.int().min(deterministicArrayShapeItemMin))
+      .array(zod.int().min(deterministicFourArrayShapeItemMin))
       .min(1)
       .optional()
       .describe(
@@ -1307,9 +1405,18 @@ export const Deterministic = zod
       .describe(
         "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
       ),
-    initial_timestamp: zod.iso
-      .datetime({ offset: true })
-      .describe("Start of the first forecast window."),
+    initial_timestamp: zod
+      .union([
+        zod.iso
+          .datetime({ offset: true })
+          .regex(deterministicFourInitialTimestampOneRegExp),
+        zod.iso
+          .datetime({ local: true })
+          .regex(deterministicFourInitialTimestampTwoRegExp),
+      ])
+      .describe(
+        "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
+      ),
     resolution: zod
       .string()
       .describe(
@@ -1327,7 +1434,7 @@ export const Deterministic = zod
       ),
     count: zod
       .int()
-      .min(deterministicCountMin)
+      .min(deterministicFourCountMin)
       .describe(
         "Number of forecast windows. Descriptive, not part of the series' identity.",
       ),
@@ -1339,12 +1446,18 @@ export const Deterministic = zod
 export type Deterministic = zod.input<typeof Deterministic>;
 export type DeterministicOutput = zod.output<typeof Deterministic>;
 
-const deterministicSingleTimeSeriesTimeSeriesTypeDefault = `DeterministicSingleTimeSeries`;
-export const deterministicSingleTimeSeriesElementShapeItemMin = 0;
+const deterministicSingleTimeSeriesFourTimeSeriesTypeDefault = `DeterministicSingleTimeSeries`;
+export const deterministicSingleTimeSeriesFourElementShapeItemMin = 0;
 
-export const deterministicSingleTimeSeriesArrayShapeItemMin = 0;
+export const deterministicSingleTimeSeriesFourArrayShapeItemMin = 0;
 
-export const deterministicSingleTimeSeriesCountMin = 0;
+export const deterministicSingleTimeSeriesFourInitialTimestampOneRegExp =
+  new RegExp(
+    "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+  );
+export const deterministicSingleTimeSeriesFourInitialTimestampTwoRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$");
+export const deterministicSingleTimeSeriesFourCountMin = 0;
 
 export const DeterministicSingleTimeSeries = zod
   .strictObject({
@@ -1370,7 +1483,7 @@ export const DeterministicSingleTimeSeries = zod
       ),
     time_series_type: zod
       .enum(["DeterministicSingleTimeSeries"])
-      .default(deterministicSingleTimeSeriesTimeSeriesTypeDefault)
+      .default(deterministicSingleTimeSeriesFourTimeSeriesTypeDefault)
       .describe(
         "Discriminator. Fixed to DeterministicSingleTimeSeries for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
       ),
@@ -1408,12 +1521,14 @@ export const DeterministicSingleTimeSeries = zod
         "Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `u32`, `u16`, `u8`, `i16`, `i8`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value means and how it is laid out; the physical dtype of the bytes derives from it rather than being recorded separately. `linear_function` occupies 2 slots, `quadratic_function` 3; the two piecewise kinds are ragged, with the used count in the row's leading element.",
       ),
     element_shape: zod
-      .array(zod.int().min(deterministicSingleTimeSeriesElementShapeItemMin))
+      .array(
+        zod.int().min(deterministicSingleTimeSeriesFourElementShapeItemMin),
+      )
       .describe(
         "Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
       ),
     array_shape: zod
-      .array(zod.int().min(deterministicSingleTimeSeriesArrayShapeItemMin))
+      .array(zod.int().min(deterministicSingleTimeSeriesFourArrayShapeItemMin))
       .min(1)
       .optional()
       .describe(
@@ -1461,9 +1576,18 @@ export const DeterministicSingleTimeSeries = zod
       .describe(
         "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
       ),
-    initial_timestamp: zod.iso
-      .datetime({ offset: true })
-      .describe("Start of the first forecast window."),
+    initial_timestamp: zod
+      .union([
+        zod.iso
+          .datetime({ offset: true })
+          .regex(deterministicSingleTimeSeriesFourInitialTimestampOneRegExp),
+        zod.iso
+          .datetime({ local: true })
+          .regex(deterministicSingleTimeSeriesFourInitialTimestampTwoRegExp),
+      ])
+      .describe(
+        "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
+      ),
     resolution: zod
       .string()
       .describe(
@@ -1481,7 +1605,7 @@ export const DeterministicSingleTimeSeries = zod
       ),
     count: zod
       .int()
-      .min(deterministicSingleTimeSeriesCountMin)
+      .min(deterministicSingleTimeSeriesFourCountMin)
       .describe(
         "Number of forecast windows. Descriptive, not part of the series' identity.",
       ),
@@ -1497,12 +1621,18 @@ export type DeterministicSingleTimeSeriesOutput = zod.output<
   typeof DeterministicSingleTimeSeries
 >;
 
-const probabilisticTimeSeriesTypeDefault = `Probabilistic`;
-export const probabilisticElementShapeItemMin = 0;
+const probabilisticFourTimeSeriesTypeDefault = `Probabilistic`;
+export const probabilisticFourElementShapeItemMin = 0;
 
-export const probabilisticArrayShapeItemMin = 0;
+export const probabilisticFourArrayShapeItemMin = 0;
 
-export const probabilisticCountMin = 0;
+export const probabilisticFourInitialTimestampOneRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+);
+export const probabilisticFourInitialTimestampTwoRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$",
+);
+export const probabilisticFourCountMin = 0;
 
 export const Probabilistic = zod
   .strictObject({
@@ -1528,7 +1658,7 @@ export const Probabilistic = zod
       ),
     time_series_type: zod
       .enum(["Probabilistic"])
-      .default(probabilisticTimeSeriesTypeDefault)
+      .default(probabilisticFourTimeSeriesTypeDefault)
       .describe(
         "Discriminator. Fixed to Probabilistic for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
       ),
@@ -1566,12 +1696,12 @@ export const Probabilistic = zod
         "Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `u32`, `u16`, `u8`, `i16`, `i8`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value means and how it is laid out; the physical dtype of the bytes derives from it rather than being recorded separately. `linear_function` occupies 2 slots, `quadratic_function` 3; the two piecewise kinds are ragged, with the used count in the row's leading element.",
       ),
     element_shape: zod
-      .array(zod.int().min(probabilisticElementShapeItemMin))
+      .array(zod.int().min(probabilisticFourElementShapeItemMin))
       .describe(
         "Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
       ),
     array_shape: zod
-      .array(zod.int().min(probabilisticArrayShapeItemMin))
+      .array(zod.int().min(probabilisticFourArrayShapeItemMin))
       .min(1)
       .optional()
       .describe(
@@ -1619,9 +1749,18 @@ export const Probabilistic = zod
       .describe(
         "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
       ),
-    initial_timestamp: zod.iso
-      .datetime({ offset: true })
-      .describe("Start of the first forecast window."),
+    initial_timestamp: zod
+      .union([
+        zod.iso
+          .datetime({ offset: true })
+          .regex(probabilisticFourInitialTimestampOneRegExp),
+        zod.iso
+          .datetime({ local: true })
+          .regex(probabilisticFourInitialTimestampTwoRegExp),
+      ])
+      .describe(
+        "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
+      ),
     resolution: zod
       .string()
       .describe(
@@ -1639,7 +1778,7 @@ export const Probabilistic = zod
       ),
     count: zod
       .int()
-      .min(probabilisticCountMin)
+      .min(probabilisticFourCountMin)
       .describe(
         "Number of forecast windows. Descriptive, not part of the series' identity.",
       ),
@@ -1657,12 +1796,18 @@ export const Probabilistic = zod
 export type Probabilistic = zod.input<typeof Probabilistic>;
 export type ProbabilisticOutput = zod.output<typeof Probabilistic>;
 
-const scenariosTimeSeriesTypeDefault = `Scenarios`;
-export const scenariosElementShapeItemMin = 0;
+const scenariosFourTimeSeriesTypeDefault = `Scenarios`;
+export const scenariosFourElementShapeItemMin = 0;
 
-export const scenariosArrayShapeItemMin = 0;
+export const scenariosFourArrayShapeItemMin = 0;
 
-export const scenariosCountMin = 0;
+export const scenariosFourInitialTimestampOneRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+);
+export const scenariosFourInitialTimestampTwoRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$",
+);
+export const scenariosFourCountMin = 0;
 
 export const Scenarios = zod
   .strictObject({
@@ -1688,7 +1833,7 @@ export const Scenarios = zod
       ),
     time_series_type: zod
       .enum(["Scenarios"])
-      .default(scenariosTimeSeriesTypeDefault)
+      .default(scenariosFourTimeSeriesTypeDefault)
       .describe(
         "Discriminator. Fixed to Scenarios for this schema, pinned with `const` to match this repo's existing discriminators (Core/common.json's `curve_type`), which generate a plain string literal in both toolchains.",
       ),
@@ -1726,12 +1871,12 @@ export const Scenarios = zod
         "Canonical element type of the stored array: a dtype spelling (`f64`, `f32`, `i64`, `i32`, `u64`, `u32`, `u16`, `u8`, `i16`, `i8`, `bool`) for plain scalars, else `tuple(N,dtype)` or a function-data kind (`linear_function`, `quadratic_function`, `piecewise_linear`, `piecewise_step`). It says what one timestep's value means and how it is laid out; the physical dtype of the bytes derives from it rather than being recorded separately. `linear_function` occupies 2 slots, `quadratic_function` 3; the two piecewise kinds are ragged, with the used count in the row's leading element.",
       ),
     element_shape: zod
-      .array(zod.int().min(scenariosElementShapeItemMin))
+      .array(zod.int().min(scenariosFourElementShapeItemMin))
       .describe(
         "Per-step element shape: the trailing dims after time. An empty array means a scalar element.",
       ),
     array_shape: zod
-      .array(zod.int().min(scenariosArrayShapeItemMin))
+      .array(zod.int().min(scenariosFourArrayShapeItemMin))
       .min(1)
       .optional()
       .describe(
@@ -1779,9 +1924,18 @@ export const Scenarios = zod
       .describe(
         "Opaque, package-owned payload (typically JSON) carried verbatim for an application to reconstruct its own domain objects. Never parsed or interpreted here, and end users are not expected to set it. Element typing does not belong here — that is `element_type`.",
       ),
-    initial_timestamp: zod.iso
-      .datetime({ offset: true })
-      .describe("Start of the first forecast window."),
+    initial_timestamp: zod
+      .union([
+        zod.iso
+          .datetime({ offset: true })
+          .regex(scenariosFourInitialTimestampOneRegExp),
+        zod.iso
+          .datetime({ local: true })
+          .regex(scenariosFourInitialTimestampTwoRegExp),
+      ])
+      .describe(
+        "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed.",
+      ),
     resolution: zod
       .string()
       .describe(
@@ -1799,7 +1953,7 @@ export const Scenarios = zod
       ),
     count: zod
       .int()
-      .min(scenariosCountMin)
+      .min(scenariosFourCountMin)
       .describe(
         "Number of forecast windows. Descriptive, not part of the series' identity.",
       ),

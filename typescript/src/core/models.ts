@@ -3,7 +3,7 @@
  * Do not edit manually.
  * PowerCoreOpenAPIModels
  * Shared types for the Sienna power systems ecosystem: curves, enums, helpers (MinMax, UpDown, CostCurve, etc.)
- * OpenAPI spec version: 0.3.0
+ * OpenAPI spec version: 0.4.0
  */
 import * as zod from "zod";
 
