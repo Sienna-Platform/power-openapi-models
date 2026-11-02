@@ -209,21 +209,22 @@ def test_canonical_encoding_keeps_set_values(tmp_path):
     assert written["ext"] == {"1": {"k": "v"}}
 
 
-def test_financial_rates_are_always_written(tmp_path):
+RATES = {"discount_rate": 0.0, "inflation_rate": 0.0, "interest_rate": 0.123}
+
+
+def test_financial_rates_are_required(tmp_path):
+    # Schema-required with a schema default: required, as in the Julia package. No SDK
+    # fills a schema default (see the README).
+    with pytest.raises(ValidationError):
+        PortfolioDocument(
+            **{**PORTFOLIO, "financial_data": {"id": 5, "base_year": 2020, "discount_rate": 0.0}},
+        )
     doc = PortfolioDocument(
-        **{**PORTFOLIO, "financial_data": {"id": 5, "base_year": 2020, "discount_rate": 0.0}},
+        **{**PORTFOLIO, "financial_data": {"id": 5, "base_year": 2020, **RATES}}
     )
-    doc.financial_data.interest_rate = 0.123
     path = tmp_path / "doc.json"
     document.write_portfolio_document(doc, path)
-    data = json.loads(path.read_text())["financial_data"]
-    assert data == {
-        "id": 5,
-        "base_year": 2020,
-        "discount_rate": 0.0,
-        "inflation_rate": 0.0,
-        "interest_rate": 0.123,
-    }
+    assert json.loads(path.read_text())["financial_data"] == {"id": 5, "base_year": 2020, **RATES}
 
 
 def test_financial_data_rewrite_is_byte_stable(tmp_path):
@@ -233,12 +234,7 @@ def test_financial_data_rewrite_is_byte_stable(tmp_path):
             {
                 **PORTFOLIO,
                 "schema_version": R,
-                "financial_data": {
-                    "id": 5,
-                    "base_year": 2020,
-                    "discount_rate": 0.0,
-                    "interest_rate": 0.123,
-                },
+                "financial_data": {"id": 5, "base_year": 2020, **RATES},
             }
         )
     )

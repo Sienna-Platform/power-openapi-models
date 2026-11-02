@@ -232,9 +232,9 @@ class HydroReservoirCost(BaseModel):
         extra="forbid",
     )
     cost_type: Literal["HYDRO_RES"] = "HYDRO_RES"
-    level_shortage_cost: float | None = 0.0
-    level_surplus_cost: float | None = 0.0
-    spillage_cost: float | None = 0.0
+    level_shortage_cost: float | None = None
+    level_surplus_cost: float | None = None
+    spillage_cost: float | None = None
 
 
 class LoadZone(BaseModel):
@@ -427,15 +427,15 @@ class Area(BaseModel):
         description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
     )
     peak_active_power: float | None = Field(
-        0.0,
+        None,
         description="Peak active power in the area. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
     peak_reactive_power: float | None = Field(
-        0.0,
+        None,
         description="Peak reactive power in the area. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
     load_response: float | None = Field(
-        0.0,
+        None,
         description="Load-frequency damping parameter modeling how much the load in the area changes due to changes in frequency. Units: MW/Hz.",
     )
     scheduled_net_interchange: float | None = Field(
@@ -443,7 +443,7 @@ class Area(BaseModel):
         description="Scheduled net active power interchange of the area (PSS/E PDES): the area's total export minus its total import that area interchange control holds. Positive means the area exports power. `null` when the area has no scheduled interchange; `0.0` is a valid schedule. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
     out_of_area_load_ids: list[int] | None = Field(
-        [],
+        None,
         description="IDs of the loads that belong to this area but connect to a bus in another area (PSS/E off-area loads). When area interchange control includes these loads (PSS/E AREAIN=2), their demand counts in the net interchange of this area, not of the area of their bus.",
     )
     base_power: float = Field(
@@ -469,16 +469,7 @@ class InputOutputCurve(BaseModel):
 
 class LossValueCurve(RootModel[InputOutputCurve | IncrementalCurve]):
     root: InputOutputCurve | IncrementalCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-            }
-        ),
+        ...,
         description="The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
         discriminator="curve_type",
         title="LossValueCurve",
@@ -489,18 +480,8 @@ class LossCurve(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    power_units: UnitSystem = UnitSystem.NATURAL_UNITS
-    value_curve: LossValueCurve = Field(
-        {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
-            },
-        },
-        validate_default=True,
-    )
+    power_units: UnitSystem
+    value_curve: LossValueCurve
 
 
 class TimeSeriesAverageRateCurve(BaseModel):
@@ -560,18 +541,8 @@ class CurrentLossCurve(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    power_units: UnitSystem = UnitSystem.NATURAL_UNITS
-    value_curve: LossValueCurve = Field(
-        {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
-            },
-        },
-        validate_default=True,
-    )
+    power_units: UnitSystem
+    value_curve: LossValueCurve
 
 
 class ValueCurve(
@@ -606,28 +577,17 @@ class StorageCapitalCost(BaseModel):
     charge_capital_cost: ValueCurve
     discharge_capital_cost: ValueCurve
     energy_capital_cost: ValueCurve
-    interconnection_cost: float = 0.0
+    interconnection_cost: float
 
 
 class CostCurve(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    power_units: UnitSystem = UnitSystem.NATURAL_UNITS
+    power_units: UnitSystem
     value_curve: ValueCurve
     variable_cost_type: Literal["COST"] = "COST"
-    vom_cost: InputOutputCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-            }
-        )
-    )
+    vom_cost: InputOutputCurve
 
 
 class EmissionsData(BaseModel):
@@ -649,21 +609,19 @@ class EmissionsData(BaseModel):
         description="FUEL_INPUT (mass per unit of heat input) or POWER_OUTPUT (mass per unit of electrical output)",
     )
     start_up_adder: float | None = Field(
-        0.0,
+        None,
         description="Per-start emission pulse, in mass_unit. Must be finite and non-negative. Units: per mass_unit — KG: kg, LB: lb, SHORT_TON: ston, METRIC_TON: t .",
     )
-    mass_unit: MassUnit | None = Field(
-        MassUnit.KG, description="Mass unit of the emission rate numerator"
-    )
+    mass_unit: MassUnit | None = Field(None, description="Mass unit of the emission rate numerator")
     energy_unit: EnergyUnit = Field(
         ...,
         description="Energy unit for the rate denominator. Must be MMBTU or GJ when basis is FUEL_INPUT, and MWH when basis is POWER_OUTPUT.",
     )
     gwp: float | None = Field(
-        1.0,
+        None,
         description="GWP100 multiplier for CO2-equivalent reporting. Must be finite and non-negative. Units: 1.",
     )
-    available: bool | None = Field(True, description="Whether this attribute is active")
+    available: bool | None = Field(None, description="Whether this attribute is active")
 
 
 class FuelCurve(BaseModel):
@@ -688,17 +646,7 @@ class FuelCurve(BaseModel):
     )
     value_curve: ValueCurve
     variable_cost_type: Literal["FUEL"] = "FUEL"
-    vom_cost: InputOutputCurve = Field(
-        {
-            "curve_type": "INPUT_OUTPUT",
-            "function_data": {
-                "function_type": "LINEAR",
-                "constant_term": 0,
-                "proportional_term": 0,
-            },
-        },
-        validate_default=True,
-    )
+    vom_cost: InputOutputCurve
 
 
 class RenewableGenerationCost(BaseModel):
@@ -706,31 +654,9 @@ class RenewableGenerationCost(BaseModel):
         extra="forbid",
     )
     cost_type: Literal["RENEWABLE"] = "RENEWABLE"
-    curtailment_cost: CostCurve | None = Field(
-        default_factory=lambda: CostCurve.model_validate(
-            {
-                "variable_cost_type": "COST",
-                "value_curve": {
-                    "curve_type": "INPUT_OUTPUT",
-                    "function_data": {
-                        "function_type": "LINEAR",
-                        "constant_term": 0,
-                        "proportional_term": 0,
-                    },
-                },
-                "vom_cost": {
-                    "curve_type": "INPUT_OUTPUT",
-                    "function_data": {
-                        "function_type": "LINEAR",
-                        "constant_term": 0,
-                        "proportional_term": 0,
-                    },
-                },
-            }
-        )
-    )
+    curtailment_cost: CostCurve | None = None
     variable_operation_cost: CostCurve
-    fixed: float | None = 0.0
+    fixed: float | None = None
 
 
 class ProductionVariableCostCurve(RootModel[CostCurve | FuelCurve]):
@@ -749,11 +675,11 @@ class StorageCost(BaseModel):
     cost_type: Literal["STORAGE"] = "STORAGE"
     charge_variable_cost: CostCurve | None = None
     discharge_variable_cost: CostCurve | None = None
-    fixed: float = 0.0
-    shut_down: float = 0.0
-    start_up: float | ChargeDischarge = 0.0
-    energy_shortage_cost: float | None = 0.0
-    energy_surplus_cost: float | None = 0.0
+    fixed: float
+    shut_down: float
+    start_up: float | ChargeDischarge
+    energy_shortage_cost: float | None = None
+    energy_surplus_cost: float | None = None
 
 
 class ImportExportCost(BaseModel):
@@ -802,7 +728,7 @@ class LoadCost(BaseModel):
         extra="forbid",
     )
     cost_type: Literal["LOAD"] = "LOAD"
-    fixed: float | None = 0.0
+    fixed: float | None = None
     variable_operation_cost: CostCurve
 
 
@@ -835,19 +761,19 @@ class MarketBidTimeSeriesCost(BaseModel):
         ..., description="IDs of the ancillary service components that this bid offers into."
     )
     incremental_slope: bool | None = Field(
-        False,
+        None,
         description="Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
     )
     decremental_slope: bool | None = Field(
-        False,
+        None,
         description="Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
     )
     curve_style: CurveStyles | None = Field(
-        CurveStyles.integer_0,
+        None,
         description="Curve-clearing style for the bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
     )
     curve_multistep: CurveMultiStep | None = Field(
-        CurveMultiStep.integer_0,
+        None,
         description="Multi-step block indicator for the bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve_style: curve_style is the quantity structure, curve_multistep is the time structure, and they compose.",
     )
 
@@ -857,7 +783,7 @@ class CapitalCost(BaseModel):
         extra="forbid",
     )
     capital_cost: ValueCurve
-    interconnection_cost: float | None = 0.0
+    interconnection_cost: float | None = None
 
 
 class MarketBidCost(BaseModel):
@@ -866,32 +792,14 @@ class MarketBidCost(BaseModel):
     )
     cost_type: Literal["MARKET_BID"] = "MARKET_BID"
     minimum_energy_offer: InputOutputCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-            }
-        ),
+        ...,
         description="Minimum-energy offer: cost to operate at minimum stable level, in $/MWh at the curve's minimum power, stored as submitted. $/h sources convert at parse (MEO = no-load cost / P_min). Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     start_up: StartUpStages = Field(
         ..., description="Start-up cost at different stages of the thermal cycle (hot, warm, cold)."
     )
     shut_down: InputOutputCurve = Field(
-        default_factory=lambda: InputOutputCurve.model_validate(
-            {
-                "curve_type": "INPUT_OUTPUT",
-                "function_data": {
-                    "function_type": "LINEAR",
-                    "constant_term": 0,
-                    "proportional_term": 0,
-                },
-            }
-        ),
+        ...,
         description="Shut-down cost. Legacy scalar promotion: a bare scalar value `s` from a legacy source converts to an `InputOutputCurve` of `LinearFunctionData` with `constant_term = s` and `proportional_term = 0`.",
     )
     incremental_offer_curves: CostCurve = Field(
@@ -904,19 +812,19 @@ class MarketBidCost(BaseModel):
         ..., description="IDs of the ancillary service components that this market bid offers into."
     )
     incremental_slope: bool | None = Field(
-        False,
+        None,
         description="Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
     )
     decremental_slope: bool | None = Field(
-        False,
+        None,
         description="Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
     )
     curve_style: CurveStyles | None = Field(
-        CurveStyles.integer_0,
+        None,
         description="Curve-clearing style for the bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
     )
     curve_multistep: CurveMultiStep | None = Field(
-        CurveMultiStep.integer_0,
+        None,
         description="Multi-step block indicator for the bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve_style: curve_style is the quantity structure, curve_multistep is the time structure, and they compose.",
     )
 
@@ -926,7 +834,7 @@ class HydroGenerationCost(BaseModel):
         extra="forbid",
     )
     cost_type: Literal["HYDRO_GEN"] = "HYDRO_GEN"
-    fixed: float | None = 0.0
+    fixed: float | None = None
     variable_operation_cost: ProductionVariableCostCurve
 
 

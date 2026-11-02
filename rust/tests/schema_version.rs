@@ -312,18 +312,21 @@ fn canonical_encoding_omits_defaulted_and_empty_properties() {
     let written: Value = serde_json::from_str(&text).unwrap();
     assert_eq!(written["trading_hub_associations"], json!([hub]));
 
+    // The financial rates are schema-required with a schema default: required, as in the
+    // Julia package. No SDK fills a schema default.
     let mut doc = portfolio(Some(current_schema_version()));
     doc["financial_data"] =
         json!({"id": 5, "base_year": 2020, "discount_rate": 0.0, "interest_rate": 0.123});
+    assert!(parse_portfolio_document(&doc.to_string()).is_err());
+    let rates = json!({
+        "id": 5, "base_year": 2020,
+        "discount_rate": 0.0, "inflation_rate": 0.0, "interest_rate": 0.123
+    });
+    doc["financial_data"] = rates.clone();
     let doc = parse_portfolio_document(&doc.to_string()).unwrap();
     let written: Value =
         serde_json::from_str(&portfolio_document_to_string(&doc).unwrap()).unwrap();
-    let data = written["financial_data"].as_object().unwrap();
-    for key in ["discount_rate", "inflation_rate"] {
-        assert_eq!(data[key], 0.0, "{key}");
-    }
-    assert_eq!(data["interest_rate"], 0.123);
-    assert_eq!(data["base_year"], 2020);
+    assert_eq!(written["financial_data"], rates);
 }
 
 #[test]

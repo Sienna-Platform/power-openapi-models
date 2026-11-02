@@ -223,4 +223,5 @@ typescript/.readme-tmp/
 
 # Rust codegen scratch and pinned tool install
 codegen/rust/.build/
+codegen/.build/
 codegen/rust/.tools/

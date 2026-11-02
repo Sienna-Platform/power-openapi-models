@@ -126,8 +126,8 @@ release. Four stages:
 1. `codegen/rust/bundle.py` resolves the six specs and every external `$ref` into
    one OpenAPI 3.1 document. A definition reached from several specs is emitted
    once, and two different definitions wanting one name is an error.
-2. `openapi-to-rust`, installed at the exact version in the `Makefile` into
-   `codegen/rust/.tools/`, generates the types. It reads a single document, so it
+2. `openapi-to-rust`, installed at the exact commit in the `Makefile` into
+   `codegen/rust/.tools/<commit>/`, generates the types. It reads a single document, so it
    is never given the specs directly.
 3. `codegen/rust/gen` (a small `syn` program) fixes what the generator gets
    wrong and writes the per-domain modules. Each fix is one function whose
@@ -191,10 +191,11 @@ python3 scripts/check_cross_language.py --no-julia --ts typescript/   # TS and R
 ```
 
 **Python↔TypeScript and Python↔Rust are hard gates** and must stay green. Python↔Julia runs
-report-only: it prints every divergence but does not fail, because ~290 of them
-are a pre-existing bug in `PowerOpenAPIModels` where Julia leaves an omitted
-defaulted field absent while Python materializes the schema default. That is
-filed separately; it is not this repo's to fix, and it is not suppressed.
+report-only: it prints every divergence but does not fail. No SDK fills a schema default
+(see the package READMEs): every generator reads a copy of the schemas without `default`
+(`codegen/strip_defaults.py`), except a `default` beside a `const`. The Julia report then
+shows 18 divergences: Julia leaves an optional `const` field (`cost_type`) absent, and it
+models `MinMaxByKey` and `TimeSeriesFeatures` without a `root`.
 
 `python/tests/test_readme.py` executes every fenced ```` ```python ```` block in
 `python/README.md`. If you change a README example, make sure it still runs — a

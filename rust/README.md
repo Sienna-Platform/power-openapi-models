@@ -170,30 +170,32 @@ snake case; where a property is not (`K_d`), `#[serde(rename)]` keeps the wire k
 
 ## Behaviour worth knowing
 
-**Schema defaults are applied.** An omitted field that the schema defaults takes
-that default, as in the Python and TypeScript packages, and serializing writes it
-out. A required field with a default may be omitted too.
+**Schema defaults are not filled in.** A schema `default` documents the value a consumer assumes when a field is absent.
+No SDK inserts it: the Python, TypeScript, Rust and Julia packages all behave the same
+way. An omitted optional field stays absent, so reading and writing a document never adds
+a value the producer did not write. A field the schema marks `required` stays required,
+even when it has a default. The one exception is a `const` field, such as a discriminator
+(`time_series_type`, `curve_type`): the schema fixes its value, so it is always set. To
+use a default, apply it where you read the field. The schema reference lists every
+default.
 
 ```rust
 use power_openapi_models::generated::CostCurve;
 use serde_json::json;
 
+let linear = |slope: f64| json!({
+    "curve_type": "INPUT_OUTPUT",
+    "function_data": {"function_type": "LINEAR", "constant_term": 0.0, "proportional_term": slope}
+});
+// `vom_cost` and `power_units` are required; their schema defaults are not inserted.
+assert!(serde_json::from_value::<CostCurve>(json!({"value_curve": linear(1.0)})).is_err());
 let curve: CostCurve = serde_json::from_value(json!({
-    "value_curve": {
-        "curve_type": "INPUT_OUTPUT",
-        "function_data": {
-            "function_type": "LINEAR", "constant_term": 0.0, "proportional_term": 1.0
-        }
-    }
+    "value_curve": linear(1.0), "vom_cost": linear(0.0), "power_units": "NATURAL_UNITS"
 }))?;
-assert_eq!(serde_json::to_value(&curve)?["power_units"], "NATURAL_UNITS");
+// `variable_cost_type` is a `const`, so it is always set.
+assert_eq!(serde_json::to_value(&curve)?["variable_cost_type"], "COST");
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
-
-Because serde cannot tell an omitted defaulted field from an explicit one, a typed
-value writes its defaults out. `SystemDocument` avoids the consequence: its own
-optional fields (`trading_hub_associations`, `ext`) are `Option`s, so `None` means
-"the input did not carry it" and stays omitted.
 
 **Unknown properties are rejected.** Every generated struct denies a property
 its schema does not list, as the strict bundles and the two document types do, so

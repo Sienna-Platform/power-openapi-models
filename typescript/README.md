@@ -88,6 +88,17 @@ either form, and its `time_reference` says which. Each field also carries the sc
 `pattern`: uppercase `T` and `Z`, seconds, and at most three fractional digits. zod only
 validates, so a valid string is returned exactly as written.
 
+### Schema defaults are not filled in
+
+A schema `default` documents the value a consumer assumes when a field is absent.
+No SDK inserts it: the Python, TypeScript, Rust and Julia packages all behave the same
+way. An omitted optional field stays absent, so reading and writing a document never adds
+a value the producer did not write. A field the schema marks `required` stays required,
+even when it has a default. The one exception is a `const` field, such as a discriminator
+(`time_series_type`, `curve_type`): the schema fixes its value, so it is always set. To
+use a default, apply it where you read the field. The schema reference lists every
+default.
+
 ### Discriminated unions parse to the variant directly
 
 Several types are one of several shapes, chosen by a discriminator field.

@@ -1186,66 +1186,10 @@ def python_default_value(info):
 # is a hard gate with no exemptions of any kind.
 # --------------------------------------------------------------------------- #
 
-EXEMPTIONS = {
-    ("CostCurve", "vom_cost"): {
-        "reason": (
-            "vom_cost is schema-required with a schema-default. Julia's "
-            "check_required always tests every schema-required $ref/object "
-            "field for `=== nothing`, regardless of whether "
-            "materialize_defaults.jl gave it a real default; datamodel-codegen "
-            "correctly drops `required` once a default is present. Verified no "
-            "runtime divergence: CostCurve(...) omitting vom_cost succeeds and "
-            "passes check_required on both sides (the default is never "
-            "`nothing`); an explicit null is rejected on both sides."
-        ),
-        "remove_when": (
-            "openapi-generator's Julia template stops listing a required field "
-            "with a materialized default in check_required (a template/"
-            "upstream change — cannot be done by hand-editing generated code)."
-        ),
-    },
-    ("CostCurve", "power_units"): {
-        "reason": (
-            "power_units is schema-required with a schema-default "
-            "(NATURAL_UNITS). Same root cause as CostCurve.vom_cost: Julia's "
-            "check_required still tests it for `=== nothing` even though its "
-            "kwdef default is never nothing; datamodel-codegen (once "
-            "postprocess.py's fix_required_fields_with_schema_defaults restores the "
-            "default) correctly drops `required`. Verified no runtime "
-            "divergence: CostCurve(...) "
-            "omitting power_units resolves to NATURAL_UNITS on both sides."
-        ),
-        "remove_when": "same as CostCurve.vom_cost.",
-    },
-    ("MarketBidCost", "shut_down"): {
-        "reason": (
-            "Same required-with-default pattern as CostCurve.vom_cost. "
-            "Verified no runtime divergence: MarketBidCost(...) omitting "
-            "shut_down succeeds and passes check_required on both sides."
-        ),
-        "remove_when": "same as CostCurve.vom_cost.",
-    },
-    ("RenewableGenerationCost", "curtailment_cost"): {
-        "reason": (
-            "The schema's own default for curtailment_cost omits power_units "
-            "(relying on CostCurve.power_units' own default), so Julia's "
-            "rendered constructor call (`CostCurve(; variable_cost_type=..., "
-            "value_curve=..., vom_cost=...)`) never mentions power_units in "
-            "source text either. parse_julia_expr evaluates only the keyword "
-            "arguments written in that source text — it does not re-resolve "
-            "CostCurve's own field default for a key the call omits — so the "
-            "parsed Julia value lacks power_units while Python's model_dump() "
-            "of the constructed instance includes every field. Verified no "
-            "runtime divergence: RenewableGenerationCost().curtailment_cost."
-            "power_units == 'NATURAL_UNITS' on both sides."
-        ),
-        "remove_when": (
-            "parse_julia_expr is taught to resolve a referenced type's own "
-            "field defaults for keys a nested constructor call omits (needs "
-            "the type-surface map threaded into the expression parser)."
-        ),
-    },
-}
+# Empty since no SDK fills a schema default (SDK 0.4.0): the four required-with-default
+# entries this table held (CostCurve.vom_cost and power_units, MarketBidCost.shut_down,
+# RenewableGenerationCost.curtailment_cost) stopped diverging.
+EXEMPTIONS: dict[tuple[str, str], dict[str, str]] = {}
 
 
 # --------------------------------------------------------------------------- #

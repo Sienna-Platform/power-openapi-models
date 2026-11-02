@@ -244,9 +244,6 @@ def _prune(value: object, dumped: object) -> None:
                 del dumped[name]
 
 
-_FINANCIAL_RATES = ("discount_rate", "inflation_rate", "interest_rate")
-
-
 def _encode(doc: _StampedDocument, stamp: str) -> dict:
     """The canonical JSON tree of `doc`, stamped `stamp`.
 
@@ -269,15 +266,6 @@ def _encode(doc: _StampedDocument, stamp: str) -> dict:
         ):
             continue
         _prune(getattr(doc, name), value)
-        if name == "financial_data":
-            # Required in the schema though the model defaults them: write them always,
-            # in field order so a rewrite is byte-stable.
-            fd = getattr(doc, name)
-            value = {
-                k: value[k] if k in value else getattr(fd, k)
-                for k in type(fd).model_fields
-                if k in value or k in _FINANCIAL_RATES
-            }
         data[name] = value
     data["components"] = {key: data["components"][key] for key in sorted(data["components"])}
     # Sort the top level too, not just `components`. Field-declaration order is an

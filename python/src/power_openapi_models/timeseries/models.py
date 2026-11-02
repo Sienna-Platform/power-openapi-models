@@ -219,8 +219,7 @@ class Deterministic(BaseModel):
         description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
     interval_alignment: IntervalAlignment | None = Field(
-        IntervalAlignment.PERIOD_ENDING,
-        description="Position of each timestamp in the period it represents.",
+        None, description="Position of each timestamp in the period it represents."
     )
     component_field: str | None = Field(
         None,
@@ -320,8 +319,7 @@ class DeterministicSingleTimeSeries(BaseModel):
         description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
     interval_alignment: IntervalAlignment | None = Field(
-        IntervalAlignment.PERIOD_ENDING,
-        description="Position of each timestamp in the period it represents.",
+        None, description="Position of each timestamp in the period it represents."
     )
     component_field: str | None = Field(
         None,
@@ -421,8 +419,7 @@ class Probabilistic(BaseModel):
         description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
     interval_alignment: IntervalAlignment | None = Field(
-        IntervalAlignment.PERIOD_ENDING,
-        description="Position of each timestamp in the period it represents.",
+        None, description="Position of each timestamp in the period it represents."
     )
     component_field: str | None = Field(
         None,
@@ -527,8 +524,7 @@ class Scenarios(BaseModel):
         description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
     interval_alignment: IntervalAlignment | None = Field(
-        IntervalAlignment.PERIOD_ENDING,
-        description="Position of each timestamp in the period it represents.",
+        None, description="Position of each timestamp in the period it represents."
     )
     component_field: str | None = Field(
         None,
@@ -632,8 +628,7 @@ class SingleTimeSeries(BaseModel):
         description="How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC.",
     )
     interval_alignment: IntervalAlignment | None = Field(
-        IntervalAlignment.PERIOD_ENDING,
-        description="Position of each timestamp in the period it represents.",
+        None, description="Position of each timestamp in the period it represents."
     )
     component_field: str | None = Field(
         None,

@@ -7,7 +7,6 @@
  */
 import * as zod from "zod";
 
-const aGCInitialAceDefault = 0;
 export const AGC = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -30,10 +29,7 @@ export const AGC = zod
       .int()
       .optional()
       .describe("ID of the area controlled by the AGC."),
-    initial_ace: zod
-      .number()
-      .default(aGCInitialAceDefault)
-      .describe("Initial condition for ACE."),
+    initial_ace: zod.number().optional().describe("Initial condition for ACE."),
   })
   .describe(
     'Automatic generation control (AGC) for the system or a certain `Area` within the system. This model uses a proportional-integral-derivative (PID) control to simulate a "smooth" response of the AGC to the area control error (ACE).',
@@ -185,7 +181,6 @@ export type CombinedCycleAssociationOutput = zod.output<
   typeof CombinedCycleAssociation
 >;
 
-const combinedCycleBlockHeatRecoveryToSteamFactorDefault = 0;
 export const CombinedCycleBlock = zod
   .strictObject({
     id: zod.int(),
@@ -203,7 +198,7 @@ export const CombinedCycleBlock = zod
       ),
     heat_recovery_to_steam_factor: zod
       .number()
-      .default(combinedCycleBlockHeatRecoveryToSteamFactorDefault)
+      .optional()
       .describe("Factor for heat recovery to steam conversion"),
   })
   .describe(
@@ -246,9 +241,6 @@ export const discreteControlledACBranchOperationalFlowLimitToFromMinMin = 0;
 
 export const discreteControlledACBranchOperationalFlowLimitToFromMaxMin = 0;
 
-const discreteControlledACBranchDiscreteBranchTypeDefault = `OTHER`;
-const discreteControlledACBranchBranchStatusDefault = `CLOSED`;
-const discreteControlledACBranchNormalBranchStatusDefault = `CLOSED`;
 export const DiscreteControlledACBranch = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -321,15 +313,15 @@ export const DiscreteControlledACBranch = zod
       ),
     discrete_branch_type: zod
       .enum(["SWITCH", "BREAKER", "OTHER"])
-      .default(discreteControlledACBranchDiscreteBranchTypeDefault)
+      .optional()
       .describe("Type of discrete control."),
     branch_status: zod
       .enum(["OPEN", "CLOSED"])
-      .default(discreteControlledACBranchBranchStatusDefault)
+      .optional()
       .describe("Open or Close status."),
     normal_branch_status: zod
       .enum(["OPEN", "CLOSED"])
-      .default(discreteControlledACBranchNormalBranchStatusDefault)
+      .optional()
       .describe("Normal (as-designed) open or close status of the device."),
   })
   .describe("Used to represent switches and breakers connecting AC Buses.");
@@ -393,7 +385,6 @@ export const SeriesCompensator = zod
     control_mode: zod
       .enum(["FIXED", "BYPASSED", "DISPATCHABLE", "ACTIVE_POWER_FLOW"])
       .optional()
-      .default("FIXED")
       .describe(
         "Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.",
       ),
@@ -456,7 +447,6 @@ export const SeriesCompensator = zod
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
-      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
@@ -473,15 +463,6 @@ const energyReservoirStorageOperationCostOneChargeVariableCostValueCurveOneCurve
 const energyReservoirStorageOperationCostOneChargeVariableCostValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostOneChargeVariableCostValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostOneChargeVariableCostValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostOneChargeVariableCostValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const energyReservoirStorageOperationCostOneChargeVariableCostValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const energyReservoirStorageOperationCostOneChargeVariableCostValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostOneChargeVariableCostValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -520,27 +501,10 @@ const energyReservoirStorageOperationCostOneChargeVariableCostVomCostCurveTypeDe
 const energyReservoirStorageOperationCostOneChargeVariableCostVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostOneChargeVariableCostVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostOneChargeVariableCostVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostOneChargeVariableCostVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const energyReservoirStorageOperationCostOneDischargeVariableCostValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const energyReservoirStorageOperationCostOneDischargeVariableCostValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostOneDischargeVariableCostValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostOneDischargeVariableCostValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostOneDischargeVariableCostValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const energyReservoirStorageOperationCostOneDischargeVariableCostValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const energyReservoirStorageOperationCostOneDischargeVariableCostValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostOneDischargeVariableCostValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -579,59 +543,20 @@ const energyReservoirStorageOperationCostOneDischargeVariableCostVomCostCurveTyp
 const energyReservoirStorageOperationCostOneDischargeVariableCostVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostOneDischargeVariableCostVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostOneDischargeVariableCostVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostOneDischargeVariableCostVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
-const energyReservoirStorageOperationCostOneFixedDefault = 0;
-const energyReservoirStorageOperationCostOneShutDownDefault = 0;
-const energyReservoirStorageOperationCostOneStartUpDefault = 0;
-const energyReservoirStorageOperationCostOneEnergyShortageCostDefault = 0;
-const energyReservoirStorageOperationCostOneEnergySurplusCostDefault = 0;
 const energyReservoirStorageOperationCostTwoCostTypeDefault = `MARKET_BID`;
 const energyReservoirStorageOperationCostTwoMinimumEnergyOfferCurveTypeDefault = `INPUT_OUTPUT`;
 const energyReservoirStorageOperationCostTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostTwoMinimumEnergyOfferFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostTwoMinimumEnergyOfferFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostTwoMinimumEnergyOfferDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const energyReservoirStorageOperationCostTwoStartUpStartupStagesTypeDefault = `STAGES`;
 const energyReservoirStorageOperationCostTwoShutDownCurveTypeDefault = `INPUT_OUTPUT`;
 const energyReservoirStorageOperationCostTwoShutDownFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostTwoShutDownFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostTwoShutDownFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostTwoShutDownDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const energyReservoirStorageOperationCostTwoIncrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const energyReservoirStorageOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const energyReservoirStorageOperationCostTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const energyReservoirStorageOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -670,28 +595,10 @@ const energyReservoirStorageOperationCostTwoIncrementalOfferCurvesVomCostCurveTy
 const energyReservoirStorageOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostTwoIncrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const energyReservoirStorageOperationCostTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const energyReservoirStorageOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const energyReservoirStorageOperationCostTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const energyReservoirStorageOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -730,19 +637,6 @@ const energyReservoirStorageOperationCostTwoDecrementalOfferCurvesVomCostCurveTy
 const energyReservoirStorageOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostTwoDecrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
-const energyReservoirStorageOperationCostTwoIncrementalSlopeDefault = false;
-const energyReservoirStorageOperationCostTwoDecrementalSlopeDefault = false;
-const energyReservoirStorageOperationCostTwoCurveStyleDefault = 0;
-const energyReservoirStorageOperationCostTwoCurveMultistepDefault = 0;
 const energyReservoirStorageOperationCostThreeCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const energyReservoirStorageOperationCostThreeMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const energyReservoirStorageOperationCostThreeMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -766,15 +660,6 @@ const energyReservoirStorageOperationCostThreeIncrementalOfferCurvesValueCurveOn
 const energyReservoirStorageOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const energyReservoirStorageOperationCostThreeIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const energyReservoirStorageOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -813,28 +698,10 @@ const energyReservoirStorageOperationCostThreeIncrementalOfferCurvesVomCostCurve
 const energyReservoirStorageOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostThreeIncrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const energyReservoirStorageOperationCostThreeDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const energyReservoirStorageOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const energyReservoirStorageOperationCostThreeDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const energyReservoirStorageOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -873,33 +740,11 @@ const energyReservoirStorageOperationCostThreeDecrementalOfferCurvesVomCostCurve
 const energyReservoirStorageOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostThreeDecrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
-const energyReservoirStorageOperationCostThreeIncrementalSlopeDefault = false;
-const energyReservoirStorageOperationCostThreeDecrementalSlopeDefault = false;
-const energyReservoirStorageOperationCostThreeCurveStyleDefault = 0;
-const energyReservoirStorageOperationCostThreeCurveMultistepDefault = 0;
 const energyReservoirStorageOperationCostFourCostTypeDefault = `IMPORT_EXPORT_TIME_SERIES`;
 const energyReservoirStorageOperationCostFourImportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const energyReservoirStorageOperationCostFourImportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostFourImportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostFourImportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostFourImportOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const energyReservoirStorageOperationCostFourImportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const energyReservoirStorageOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -938,27 +783,10 @@ const energyReservoirStorageOperationCostFourImportOfferCurvesVomCostCurveTypeDe
 const energyReservoirStorageOperationCostFourImportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostFourImportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostFourImportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostFourImportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const energyReservoirStorageOperationCostFourExportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const energyReservoirStorageOperationCostFourExportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostFourExportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostFourExportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostFourExportOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const energyReservoirStorageOperationCostFourExportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const energyReservoirStorageOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -997,19 +825,6 @@ const energyReservoirStorageOperationCostFourExportOfferCurvesVomCostCurveTypeDe
 const energyReservoirStorageOperationCostFourExportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const energyReservoirStorageOperationCostFourExportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const energyReservoirStorageOperationCostFourExportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const energyReservoirStorageOperationCostFourExportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const energyReservoirStorageConversionFactorDefault = 1;
-const energyReservoirStorageStorageTargetDefault = 0;
-const energyReservoirStorageCycleLimitsDefault = 10000;
-const energyReservoirStorageSelfDischargeDefault = 0;
-const energyReservoirStorageStandingLossDefault = 0;
 export const EnergyReservoirStorage = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -1080,7 +895,6 @@ export const EnergyReservoirStorage = zod
     energy_units: zod
       .enum(["MWH", "MWMIN"])
       .optional()
-      .default("MWH")
       .describe(
         "Unit basis a stored-energy quantity is recorded in (distinct from EnergyUnit, which names fuel energy content). MWH: megawatt-hours, the conventional interchange form. MWMIN: megawatt-minutes, consistent with the minutes basis used for operational durations, so a duration computed as energy over power comes out in minutes with no hidden factor of 60. Defaults to MWH: MWMIN is supported, not preferred.",
       ),
@@ -1259,9 +1073,6 @@ export const EnergyReservoirStorage = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        energyReservoirStorageOperationCostOneChargeVariableCostValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -2074,9 +1885,6 @@ export const EnergyReservoirStorage = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    energyReservoirStorageOperationCostOneChargeVariableCostVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -2184,9 +1992,6 @@ export const EnergyReservoirStorage = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        energyReservoirStorageOperationCostOneDischargeVariableCostValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -2999,9 +2804,6 @@ export const EnergyReservoirStorage = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    energyReservoirStorageOperationCostOneDischargeVariableCostVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -3010,35 +2812,21 @@ export const EnergyReservoirStorage = zod
               .describe(
                 "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
               ),
-            fixed: zod
-              .number()
-              .default(energyReservoirStorageOperationCostOneFixedDefault),
-            shut_down: zod
-              .number()
-              .default(energyReservoirStorageOperationCostOneShutDownDefault),
-            start_up: zod
-              .union([
-                zod.number(),
-                zod
-                  .strictObject({
-                    charge: zod.number(),
-                    discharge: zod.number(),
-                  })
-                  .describe(
-                    "A pair of values, one for the charging (`charge`) and one for the discharging (`discharge`) direction of a quantity.",
-                  ),
-              ])
-              .default(energyReservoirStorageOperationCostOneStartUpDefault),
-            energy_shortage_cost: zod
-              .number()
-              .default(
-                energyReservoirStorageOperationCostOneEnergyShortageCostDefault,
-              ),
-            energy_surplus_cost: zod
-              .number()
-              .default(
-                energyReservoirStorageOperationCostOneEnergySurplusCostDefault,
-              ),
+            fixed: zod.number(),
+            shut_down: zod.number(),
+            start_up: zod.union([
+              zod.number(),
+              zod
+                .strictObject({
+                  charge: zod.number(),
+                  discharge: zod.number(),
+                })
+                .describe(
+                  "A pair of values, one for the charging (`charge`) and one for the discharging (`discharge`) direction of a quantity.",
+                ),
+            ]),
+            energy_shortage_cost: zod.number().optional(),
+            energy_surplus_cost: zod.number().optional(),
           })
           .describe("Cost representation for storage units"),
         zod
@@ -3132,9 +2920,6 @@ export const EnergyReservoirStorage = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(
-                energyReservoirStorageOperationCostTwoMinimumEnergyOfferDefault,
-              )
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -3238,7 +3023,6 @@ export const EnergyReservoirStorage = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(energyReservoirStorageOperationCostTwoShutDownDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -3341,9 +3125,6 @@ export const EnergyReservoirStorage = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        energyReservoirStorageOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -4156,9 +3937,6 @@ export const EnergyReservoirStorage = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    energyReservoirStorageOperationCostTwoIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -4265,9 +4043,6 @@ export const EnergyReservoirStorage = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        energyReservoirStorageOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -5080,9 +4855,6 @@ export const EnergyReservoirStorage = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    energyReservoirStorageOperationCostTwoDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -5097,31 +4869,25 @@ export const EnergyReservoirStorage = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(
-                energyReservoirStorageOperationCostTwoIncrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(
-                energyReservoirStorageOperationCostTwoDecrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(energyReservoirStorageOperationCostTwoCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(
-                energyReservoirStorageOperationCostTwoCurveMultistepDefault,
-              )
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -5614,9 +5380,6 @@ export const EnergyReservoirStorage = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        energyReservoirStorageOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -6429,9 +6192,6 @@ export const EnergyReservoirStorage = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    energyReservoirStorageOperationCostThreeIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -6538,9 +6298,6 @@ export const EnergyReservoirStorage = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        energyReservoirStorageOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -7353,9 +7110,6 @@ export const EnergyReservoirStorage = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    energyReservoirStorageOperationCostThreeDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -7370,33 +7124,25 @@ export const EnergyReservoirStorage = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(
-                energyReservoirStorageOperationCostThreeIncrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(
-                energyReservoirStorageOperationCostThreeDecrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(
-                energyReservoirStorageOperationCostThreeCurveStyleDefault,
-              )
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(
-                energyReservoirStorageOperationCostThreeCurveMultistepDefault,
-              )
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -7508,9 +7254,6 @@ export const EnergyReservoirStorage = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        energyReservoirStorageOperationCostFourImportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -8323,9 +8066,6 @@ export const EnergyReservoirStorage = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    energyReservoirStorageOperationCostFourImportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -8432,9 +8172,6 @@ export const EnergyReservoirStorage = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        energyReservoirStorageOperationCostFourExportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -9247,9 +8984,6 @@ export const EnergyReservoirStorage = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    energyReservoirStorageOperationCostFourExportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -9276,19 +9010,19 @@ export const EnergyReservoirStorage = zod
       .describe("Operating cost of storage. or MarketBidCost"),
     conversion_factor: zod
       .number()
-      .default(energyReservoirStorageConversionFactorDefault)
+      .optional()
       .describe(
         "Conversion factor of `storage_capacity` to MWh, if different than 1.0. For example, X MWh/liter hydrogen. Units: 1.",
       ),
     storage_target: zod
       .number()
-      .default(energyReservoirStorageStorageTargetDefault)
+      .optional()
       .describe(
         "Storage target at the end of simulation as ratio of storage capacity. Units: 1.",
       ),
     cycle_limits: zod
       .int()
-      .default(energyReservoirStorageCycleLimitsDefault)
+      .optional()
       .describe("Storage Maximum number of cycles per year. Units: 1."),
     ramp_limits: zod
       .strictObject({
@@ -9301,13 +9035,13 @@ export const EnergyReservoirStorage = zod
       ),
     self_discharge: zod
       .number()
-      .default(energyReservoirStorageSelfDischargeDefault)
+      .optional()
       .describe(
         "Self-discharge (leakage loss) as a fraction of the stored energy lost per minute (pu/min of storage_capacity), modeled as E[t] = (1 - self_discharge * dt) * E[t-1]; dt must be on the same minutes basis. Units: 1/min.",
       ),
     standing_loss: zod
       .number()
-      .default(energyReservoirStorageStandingLossDefault)
+      .optional()
       .describe(
         "Constant standing-loss power drawn by the storage system. Reduces the effective charging power (p_in - standing_loss) and increases the power drawn from the storage when discharging (p_out + standing_loss). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
@@ -9382,7 +9116,6 @@ export const ExponentialLoad = zod
     conformity: zod
       .enum(["NON_CONFORMING", "CONFORMING", "UNDEFINED"])
       .optional()
-      .default("UNDEFINED")
       .describe(
         "WECC classification of how a load tracks voltage and frequency variation, used in dynamic studies to decide how it is modeled during a disturbance. `CONFORMING` responds predictably and follows standard load modeling practice; `NON_CONFORMING` does not, as with a constant power load or one behind a complex control system; `UNDEFINED` leaves the classification unstated.",
       ),
@@ -9398,9 +9131,6 @@ export const ExponentialLoad = zod
 export type ExponentialLoad = zod.input<typeof ExponentialLoad>;
 export type ExponentialLoadOutput = zod.output<typeof ExponentialLoad>;
 
-const fACTSControlDeviceMaxReactivePowerDefault = 9999;
-const fACTSControlDeviceShuntControlTypeDefault = `STATCOM`;
-const fACTSControlDeviceRegulatedBusNumberDefault = 0;
 export const FACTSControlDevice = zod
   .strictObject({
     name: zod
@@ -9424,7 +9154,6 @@ export const FACTSControlDevice = zod
     voltage_setpoint_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
-      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints — PSS/E RAW native for FACTS VSET — and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.",
       ),
@@ -9445,19 +9174,19 @@ export const FACTSControlDevice = zod
       ),
     max_reactive_power: zod
       .number()
-      .default(fACTSControlDeviceMaxReactivePowerDefault)
+      .optional()
       .describe(
         "Independent maximum reactive power ceiling; the device reactive limit is min(the current/susceptance law on max_shunt_current, this value). Non-binding at the 9999.0 default. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     shunt_control_type: zod
       .enum(["SVC", "STATCOM"])
-      .default(fACTSControlDeviceShuntControlTypeDefault)
+      .optional()
       .describe(
         "Device class selecting the reactive-limit law (SVC vs STATCOM).",
       ),
     regulated_bus_number: zod
       .int()
-      .default(fACTSControlDeviceRegulatedBusNumberDefault)
+      .optional()
       .describe(
         "Bus whose voltage this device regulates; 0 means local (sending) bus (PSS/E FCREG). Units: 1.",
       ),
@@ -9504,7 +9233,6 @@ export const FixedAdmittance = zod
     admittance_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_MVAR"])
       .optional()
-      .default("COMPONENT_MVAR")
       .describe(
         "Subset of AdmittanceUnitBasis for fixed and switched shunts: omits COMPONENT_BASE because a shunt has no device MVA rating to per-unitize against. NATURAL_UNITS: physical siemens. COMPONENT_MVAR: reactive power at unity voltage (Mvar for susceptance, MW for conductance) — PSS/E RAW native for shunts.",
       ),
@@ -9533,22 +9261,19 @@ export const FixedAdmittance = zod
 export type FixedAdmittance = zod.input<typeof FixedAdmittance>;
 export type FixedAdmittanceOutput = zod.output<typeof FixedAdmittance>;
 
-const fixedForcedOutageMonitoredComponentsDefault: never[] = [];
-const fixedForcedOutageIdentifierDefault = null;
 export const FixedForcedOutage = zod
   .strictObject({
     id: zod.int(),
     outage_status: zod.number(),
     monitored_components: zod
       .array(zod.int())
-      .default(fixedForcedOutageMonitoredComponentsDefault)
+      .optional()
       .describe(
         "IDs of devices whose post-contingency state should be modeled when this outage occurs. Empty by default; semantics of an empty list are decided by the downstream consumer.",
       ),
     identifier: zod
       .string()
       .nullish()
-      .default(fixedForcedOutageIdentifierDefault)
       .describe(
         "Optional user-supplied identifier for the outage, such as a name or a block id. Null when not set.",
       ),
@@ -9564,14 +9289,6 @@ const groupReserveVariableValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const groupReserveVariableValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const groupReserveVariableValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const groupReserveVariableValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const groupReserveVariableValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const groupReserveVariableValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const groupReserveVariableValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const groupReserveVariableValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -9610,14 +9327,6 @@ const groupReserveVariableVomCostCurveTypeDefault = `INPUT_OUTPUT`;
 const groupReserveVariableVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const groupReserveVariableVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const groupReserveVariableVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const groupReserveVariableVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 export const GroupReserve = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -9727,7 +9436,6 @@ export const GroupReserve = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(groupReserveVariableValueCurveOneDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -10518,7 +10226,6 @@ export const GroupReserve = zod
               .optional()
               .describe("Units: the curve's y-axis unit."),
           })
-          .default(groupReserveVariableVomCostDefault)
           .describe(
             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
           ),
@@ -10606,7 +10313,6 @@ export const GenericArcImpedance = zod
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
-      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
@@ -10628,37 +10334,30 @@ export const GenericArcImpedance = zod
 export type GenericArcImpedance = zod.input<typeof GenericArcImpedance>;
 export type GenericArcImpedanceOutput = zod.output<typeof GenericArcImpedance>;
 
-const geometricDistributionForcedOutageMeanTimeToRecoveryDefault = 0;
-const geometricDistributionForcedOutageOutageTransitionProbabilityDefault = 0;
-const geometricDistributionForcedOutageMonitoredComponentsDefault: never[] = [];
-const geometricDistributionForcedOutageIdentifierDefault = null;
 export const GeometricDistributionForcedOutage = zod
   .strictObject({
     id: zod.int(),
     mean_time_to_recovery: zod
       .number()
-      .default(geometricDistributionForcedOutageMeanTimeToRecoveryDefault)
+      .optional()
       .describe(
         "Mean time elapsed between a failure and the return to service, in minutes. Units: min.",
       ),
     outage_transition_probability: zod
       .number()
-      .default(
-        geometricDistributionForcedOutageOutageTransitionProbabilityDefault,
-      )
+      .optional()
       .describe(
         "Probability of transitioning into a forced outage in one minute, the same time step `mean_time_to_recovery` is stated in.",
       ),
     monitored_components: zod
       .array(zod.int())
-      .default(geometricDistributionForcedOutageMonitoredComponentsDefault)
+      .optional()
       .describe(
         "IDs of devices whose post-contingency state should be modeled when this outage occurs. Empty by default; semantics of an empty list are decided by the downstream consumer.",
       ),
     identifier: zod
       .string()
       .nullish()
-      .default(geometricDistributionForcedOutageIdentifierDefault)
       .describe(
         "Optional user-supplied identifier for the outage, such as a name or a block id. Null when not set.",
       ),
@@ -10679,39 +10378,15 @@ const hybridSystemOperationCostMinimumEnergyOfferCurveTypeDefault = `INPUT_OUTPU
 const hybridSystemOperationCostMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hybridSystemOperationCostMinimumEnergyOfferFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hybridSystemOperationCostMinimumEnergyOfferFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hybridSystemOperationCostMinimumEnergyOfferDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hybridSystemOperationCostStartUpStartupStagesTypeDefault = `STAGES`;
 const hybridSystemOperationCostShutDownCurveTypeDefault = `INPUT_OUTPUT`;
 const hybridSystemOperationCostShutDownFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hybridSystemOperationCostShutDownFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hybridSystemOperationCostShutDownFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hybridSystemOperationCostShutDownDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hybridSystemOperationCostIncrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hybridSystemOperationCostIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hybridSystemOperationCostIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hybridSystemOperationCostIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hybridSystemOperationCostIncrementalOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hybridSystemOperationCostIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hybridSystemOperationCostIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hybridSystemOperationCostIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -10750,26 +10425,10 @@ const hybridSystemOperationCostIncrementalOfferCurvesVomCostCurveTypeDefault = `
 const hybridSystemOperationCostIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hybridSystemOperationCostIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hybridSystemOperationCostIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hybridSystemOperationCostIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hybridSystemOperationCostDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hybridSystemOperationCostDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hybridSystemOperationCostDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hybridSystemOperationCostDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hybridSystemOperationCostDecrementalOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hybridSystemOperationCostDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hybridSystemOperationCostDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hybridSystemOperationCostDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -10808,18 +10467,6 @@ const hybridSystemOperationCostDecrementalOfferCurvesVomCostCurveTypeDefault = `
 const hybridSystemOperationCostDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hybridSystemOperationCostDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hybridSystemOperationCostDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hybridSystemOperationCostDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const hybridSystemOperationCostIncrementalSlopeDefault = false;
-const hybridSystemOperationCostDecrementalSlopeDefault = false;
-const hybridSystemOperationCostCurveStyleDefault = 0;
-const hybridSystemOperationCostCurveMultistepDefault = 0;
 export const HybridSystem = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -10952,7 +10599,6 @@ export const HybridSystem = zod
               .optional()
               .describe("Units: the curve's y-axis unit."),
           })
-          .default(hybridSystemOperationCostMinimumEnergyOfferDefault)
           .describe(
             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
           ),
@@ -11054,7 +10700,6 @@ export const HybridSystem = zod
               .optional()
               .describe("Units: the curve's y-axis unit."),
           })
-          .default(hybridSystemOperationCostShutDownDefault)
           .describe(
             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
           ),
@@ -11157,9 +10802,6 @@ export const HybridSystem = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hybridSystemOperationCostIncrementalOfferCurvesValueCurveOneDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -11968,9 +11610,6 @@ export const HybridSystem = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(
-                hybridSystemOperationCostIncrementalOfferCurvesVomCostDefault,
-              )
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -12077,9 +11716,6 @@ export const HybridSystem = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hybridSystemOperationCostDecrementalOfferCurvesValueCurveOneDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -12888,9 +12524,6 @@ export const HybridSystem = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(
-                hybridSystemOperationCostDecrementalOfferCurvesVomCostDefault,
-              )
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -12905,25 +12538,25 @@ export const HybridSystem = zod
           ),
         incremental_slope: zod
           .boolean()
-          .default(hybridSystemOperationCostIncrementalSlopeDefault)
+          .optional()
           .describe(
             "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
           ),
         decremental_slope: zod
           .boolean()
-          .default(hybridSystemOperationCostDecrementalSlopeDefault)
+          .optional()
           .describe(
             "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
           ),
         curve_style: zod
           .union([zod.literal(0), zod.literal(1)])
-          .default(hybridSystemOperationCostCurveStyleDefault)
+          .optional()
           .describe(
             "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
           ),
         curve_multistep: zod
           .union([zod.literal(0), zod.literal(1)])
-          .default(hybridSystemOperationCostCurveMultistepDefault)
+          .optional()
           .describe(
             "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
           ),
@@ -13014,22 +12647,11 @@ export const HybridSystem = zod
 export type HybridSystem = zod.input<typeof HybridSystem>;
 export type HybridSystemOutput = zod.output<typeof HybridSystem>;
 
-const hydroDispatchTimeAtStatusDefault = 600000;
 const hydroDispatchOperationCostOneCostTypeDefault = `HYDRO_GEN`;
-const hydroDispatchOperationCostOneFixedDefault = 0;
 const hydroDispatchOperationCostOneVariableOperationCostOneValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroDispatchOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostOneVariableOperationCostOneValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroDispatchOperationCostOneVariableOperationCostOneValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroDispatchOperationCostOneVariableOperationCostOneValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostOneVariableOperationCostOneValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -13068,40 +12690,14 @@ const hydroDispatchOperationCostOneVariableOperationCostOneVomCostCurveTypeDefau
 const hydroDispatchOperationCostOneVariableOperationCostOneVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostOneVariableOperationCostOneVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostOneVariableOperationCostOneVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostOneVariableOperationCostOneVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroDispatchOperationCostOneVariableOperationCostTwoStartupFuelOfftakeCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroDispatchOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostOneVariableOperationCostTwoStartupFuelOfftakeDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroDispatchOperationCostOneVariableOperationCostTwoValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroDispatchOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostOneVariableOperationCostTwoValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroDispatchOperationCostOneVariableOperationCostTwoValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroDispatchOperationCostOneVariableOperationCostTwoValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostOneVariableOperationCostTwoValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -13140,53 +12736,20 @@ const hydroDispatchOperationCostOneVariableOperationCostTwoVomCostCurveTypeDefau
 const hydroDispatchOperationCostOneVariableOperationCostTwoVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostOneVariableOperationCostTwoVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostOneVariableOperationCostTwoVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostOneVariableOperationCostTwoVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroDispatchOperationCostTwoCostTypeDefault = `MARKET_BID`;
 const hydroDispatchOperationCostTwoMinimumEnergyOfferCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroDispatchOperationCostTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostTwoMinimumEnergyOfferFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostTwoMinimumEnergyOfferFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostTwoMinimumEnergyOfferDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroDispatchOperationCostTwoStartUpStartupStagesTypeDefault = `STAGES`;
 const hydroDispatchOperationCostTwoShutDownCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroDispatchOperationCostTwoShutDownFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostTwoShutDownFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostTwoShutDownFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostTwoShutDownDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroDispatchOperationCostTwoIncrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroDispatchOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroDispatchOperationCostTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroDispatchOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -13225,27 +12788,10 @@ const hydroDispatchOperationCostTwoIncrementalOfferCurvesVomCostCurveTypeDefault
 const hydroDispatchOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostTwoIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroDispatchOperationCostTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroDispatchOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroDispatchOperationCostTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroDispatchOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -13284,18 +12830,6 @@ const hydroDispatchOperationCostTwoDecrementalOfferCurvesVomCostCurveTypeDefault
 const hydroDispatchOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostTwoDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const hydroDispatchOperationCostTwoIncrementalSlopeDefault = false;
-const hydroDispatchOperationCostTwoDecrementalSlopeDefault = false;
-const hydroDispatchOperationCostTwoCurveStyleDefault = 0;
-const hydroDispatchOperationCostTwoCurveMultistepDefault = 0;
 const hydroDispatchOperationCostThreeCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const hydroDispatchOperationCostThreeMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const hydroDispatchOperationCostThreeMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -13319,15 +12853,6 @@ const hydroDispatchOperationCostThreeIncrementalOfferCurvesValueCurveOneCurveTyp
 const hydroDispatchOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroDispatchOperationCostThreeIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroDispatchOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -13366,27 +12891,10 @@ const hydroDispatchOperationCostThreeIncrementalOfferCurvesVomCostCurveTypeDefau
 const hydroDispatchOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostThreeIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroDispatchOperationCostThreeDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroDispatchOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroDispatchOperationCostThreeDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroDispatchOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -13425,31 +12933,11 @@ const hydroDispatchOperationCostThreeDecrementalOfferCurvesVomCostCurveTypeDefau
 const hydroDispatchOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostThreeDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const hydroDispatchOperationCostThreeIncrementalSlopeDefault = false;
-const hydroDispatchOperationCostThreeDecrementalSlopeDefault = false;
-const hydroDispatchOperationCostThreeCurveStyleDefault = 0;
-const hydroDispatchOperationCostThreeCurveMultistepDefault = 0;
 const hydroDispatchOperationCostFourCostTypeDefault = `IMPORT_EXPORT_TIME_SERIES`;
 const hydroDispatchOperationCostFourImportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroDispatchOperationCostFourImportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostFourImportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostFourImportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostFourImportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroDispatchOperationCostFourImportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroDispatchOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -13488,26 +12976,10 @@ const hydroDispatchOperationCostFourImportOfferCurvesVomCostCurveTypeDefault = `
 const hydroDispatchOperationCostFourImportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostFourImportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostFourImportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostFourImportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroDispatchOperationCostFourExportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroDispatchOperationCostFourExportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostFourExportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostFourExportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostFourExportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroDispatchOperationCostFourExportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroDispatchOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -13546,14 +13018,6 @@ const hydroDispatchOperationCostFourExportOfferCurvesVomCostCurveTypeDefault = `
 const hydroDispatchOperationCostFourExportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroDispatchOperationCostFourExportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroDispatchOperationCostFourExportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroDispatchOperationCostFourExportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 export const HydroDispatch = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -13660,13 +13124,12 @@ export const HydroDispatch = zod
     status: zod
       .enum(["OFFLINE", "ONLINE", "STARTUP", "SHUTDOWN"])
       .optional()
-      .default("OFFLINE")
       .describe(
         "The running on/off lifecycle of an in-service committable unit, mutually exclusive. OFFLINE: shut down and not synchronized. ONLINE: synchronized and able to produce. STARTUP: in its start-up sequence. SHUTDOWN: in its shut-down sequence. Availability is not one of these values: a unit on outage is `available = false`; an OFFLINE unit with `available = true` is in service and eligible for re-commitment and off-line ancillary services.",
       ),
     time_at_status: zod
       .number()
-      .default(hydroDispatchTimeAtStatusDefault)
+      .optional()
       .describe(
         "Time the generator has been in its current `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
       ),
@@ -13677,9 +13140,7 @@ export const HydroDispatch = zod
             cost_type: zod
               .literal("HYDRO_GEN")
               .default(hydroDispatchOperationCostOneCostTypeDefault),
-            fixed: zod
-              .number()
-              .default(hydroDispatchOperationCostOneFixedDefault),
+            fixed: zod.number().optional(),
             variable_operation_cost: zod
               .union([
                 zod
@@ -13781,9 +13242,6 @@ export const HydroDispatch = zod
                               .optional()
                               .describe("Units: the curve's y-axis unit."),
                           })
-                          .default(
-                            hydroDispatchOperationCostOneVariableOperationCostOneValueCurveOneDefault,
-                          )
                           .describe(
                             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                           ),
@@ -14596,9 +14054,6 @@ export const HydroDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroDispatchOperationCostOneVariableOperationCostOneVomCostDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -14720,9 +14175,7 @@ export const HydroDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroDispatchOperationCostOneVariableOperationCostTwoStartupFuelOfftakeDefault,
-                      )
+                      .optional()
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -14818,9 +14271,6 @@ export const HydroDispatch = zod
                               .optional()
                               .describe("Units: the curve's y-axis unit."),
                           })
-                          .default(
-                            hydroDispatchOperationCostOneVariableOperationCostTwoValueCurveOneDefault,
-                          )
                           .describe(
                             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                           ),
@@ -15633,9 +15083,6 @@ export const HydroDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroDispatchOperationCostOneVariableOperationCostTwoVomCostDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -15740,7 +15187,6 @@ export const HydroDispatch = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(hydroDispatchOperationCostTwoMinimumEnergyOfferDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -15844,7 +15290,6 @@ export const HydroDispatch = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(hydroDispatchOperationCostTwoShutDownDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -15947,9 +15392,6 @@ export const HydroDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroDispatchOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -16762,9 +16204,6 @@ export const HydroDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroDispatchOperationCostTwoIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -16871,9 +16310,6 @@ export const HydroDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroDispatchOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -17686,9 +17122,6 @@ export const HydroDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroDispatchOperationCostTwoDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -17703,25 +17136,25 @@ export const HydroDispatch = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(hydroDispatchOperationCostTwoIncrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(hydroDispatchOperationCostTwoDecrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(hydroDispatchOperationCostTwoCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(hydroDispatchOperationCostTwoCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -18214,9 +17647,6 @@ export const HydroDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroDispatchOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -19029,9 +18459,6 @@ export const HydroDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroDispatchOperationCostThreeIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -19138,9 +18565,6 @@ export const HydroDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroDispatchOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -19953,9 +19377,6 @@ export const HydroDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroDispatchOperationCostThreeDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -19970,25 +19391,25 @@ export const HydroDispatch = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(hydroDispatchOperationCostThreeIncrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(hydroDispatchOperationCostThreeDecrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(hydroDispatchOperationCostThreeCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(hydroDispatchOperationCostThreeCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -20100,9 +19521,6 @@ export const HydroDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroDispatchOperationCostFourImportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -20915,9 +20333,6 @@ export const HydroDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroDispatchOperationCostFourImportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -21024,9 +20439,6 @@ export const HydroDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroDispatchOperationCostFourExportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -21839,9 +21251,6 @@ export const HydroDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroDispatchOperationCostFourExportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -21892,23 +21301,11 @@ export const HydroPowerPlant = zod
 export type HydroPowerPlant = zod.input<typeof HydroPowerPlant>;
 export type HydroPowerPlantOutput = zod.output<typeof HydroPowerPlant>;
 
-const hydroPumpTurbineOperatingModeDefault = `OFF`;
-const hydroPumpTurbineTimeAtStatusDefault = 600000;
 const hydroPumpTurbineOperationCostOneCostTypeDefault = `HYDRO_GEN`;
-const hydroPumpTurbineOperationCostOneFixedDefault = 0;
 const hydroPumpTurbineOperationCostOneVariableOperationCostOneValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostOneVariableOperationCostOneValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroPumpTurbineOperationCostOneVariableOperationCostOneValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostOneValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostOneValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -21947,40 +21344,14 @@ const hydroPumpTurbineOperationCostOneVariableOperationCostOneVomCostCurveTypeDe
 const hydroPumpTurbineOperationCostOneVariableOperationCostOneVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostOneVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostOneVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostOneVariableOperationCostOneVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoStartupFuelOfftakeCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostOneVariableOperationCostTwoStartupFuelOfftakeDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostOneVariableOperationCostTwoValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -22019,53 +21390,20 @@ const hydroPumpTurbineOperationCostOneVariableOperationCostTwoVomCostCurveTypeDe
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostOneVariableOperationCostTwoVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostOneVariableOperationCostTwoVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroPumpTurbineOperationCostTwoCostTypeDefault = `MARKET_BID`;
 const hydroPumpTurbineOperationCostTwoMinimumEnergyOfferCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroPumpTurbineOperationCostTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostTwoMinimumEnergyOfferFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostTwoMinimumEnergyOfferFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostTwoMinimumEnergyOfferDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroPumpTurbineOperationCostTwoStartUpStartupStagesTypeDefault = `STAGES`;
 const hydroPumpTurbineOperationCostTwoShutDownCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroPumpTurbineOperationCostTwoShutDownFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostTwoShutDownFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostTwoShutDownFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostTwoShutDownDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -22104,27 +21442,10 @@ const hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesVomCostCurveTypeDefa
 const hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -22163,18 +21484,6 @@ const hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesVomCostCurveTypeDefa
 const hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const hydroPumpTurbineOperationCostTwoIncrementalSlopeDefault = false;
-const hydroPumpTurbineOperationCostTwoDecrementalSlopeDefault = false;
-const hydroPumpTurbineOperationCostTwoCurveStyleDefault = 0;
-const hydroPumpTurbineOperationCostTwoCurveMultistepDefault = 0;
 const hydroPumpTurbineOperationCostThreeCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const hydroPumpTurbineOperationCostThreeMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const hydroPumpTurbineOperationCostThreeMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -22198,15 +21507,6 @@ const hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesValueCurveOneCurve
 const hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -22245,27 +21545,10 @@ const hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesVomCostCurveTypeDe
 const hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -22304,31 +21587,11 @@ const hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesVomCostCurveTypeDe
 const hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const hydroPumpTurbineOperationCostThreeIncrementalSlopeDefault = false;
-const hydroPumpTurbineOperationCostThreeDecrementalSlopeDefault = false;
-const hydroPumpTurbineOperationCostThreeCurveStyleDefault = 0;
-const hydroPumpTurbineOperationCostThreeCurveMultistepDefault = 0;
 const hydroPumpTurbineOperationCostFourCostTypeDefault = `IMPORT_EXPORT_TIME_SERIES`;
 const hydroPumpTurbineOperationCostFourImportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroPumpTurbineOperationCostFourImportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostFourImportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostFourImportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostFourImportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroPumpTurbineOperationCostFourImportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroPumpTurbineOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -22367,26 +21630,10 @@ const hydroPumpTurbineOperationCostFourImportOfferCurvesVomCostCurveTypeDefault 
 const hydroPumpTurbineOperationCostFourImportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostFourImportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostFourImportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostFourImportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroPumpTurbineOperationCostFourExportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroPumpTurbineOperationCostFourExportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostFourExportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostFourExportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostFourExportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroPumpTurbineOperationCostFourExportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroPumpTurbineOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -22425,17 +21672,6 @@ const hydroPumpTurbineOperationCostFourExportOfferCurvesVomCostCurveTypeDefault 
 const hydroPumpTurbineOperationCostFourExportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroPumpTurbineOperationCostFourExportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroPumpTurbineOperationCostFourExportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroPumpTurbineOperationCostFourExportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const hydroPumpTurbineActivePowerPumpDefault = 0;
-const hydroPumpTurbineTravelTimeDefault = null;
-const hydroPumpTurbineConversionFactorDefault = 1;
 export const HydroPumpTurbine = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -22534,20 +21770,19 @@ export const HydroPumpTurbine = zod
       ),
     operating_mode: zod
       .enum(["PUMP", "GEN", "OFF"])
-      .default(hydroPumpTurbineOperatingModeDefault)
+      .optional()
       .describe(
         "Which mode the pumped-storage unit is operating in at the start of a simulation: pumping, generating, or idle.",
       ),
     status: zod
       .enum(["OFFLINE", "ONLINE", "STARTUP", "SHUTDOWN"])
       .optional()
-      .default("OFFLINE")
       .describe(
         "The running on/off lifecycle of an in-service committable unit, mutually exclusive. OFFLINE: shut down and not synchronized. ONLINE: synchronized and able to produce. STARTUP: in its start-up sequence. SHUTDOWN: in its shut-down sequence. Availability is not one of these values: a unit on outage is `available = false`; an OFFLINE unit with `available = true` is in service and eligible for re-commitment and off-line ancillary services.",
       ),
     time_at_status: zod
       .number()
-      .default(hydroPumpTurbineTimeAtStatusDefault)
+      .optional()
       .describe(
         "Time the generator has been in its current `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
       ),
@@ -22558,9 +21793,7 @@ export const HydroPumpTurbine = zod
             cost_type: zod
               .literal("HYDRO_GEN")
               .default(hydroPumpTurbineOperationCostOneCostTypeDefault),
-            fixed: zod
-              .number()
-              .default(hydroPumpTurbineOperationCostOneFixedDefault),
+            fixed: zod.number().optional(),
             variable_operation_cost: zod
               .union([
                 zod
@@ -22662,9 +21895,6 @@ export const HydroPumpTurbine = zod
                               .optional()
                               .describe("Units: the curve's y-axis unit."),
                           })
-                          .default(
-                            hydroPumpTurbineOperationCostOneVariableOperationCostOneValueCurveOneDefault,
-                          )
                           .describe(
                             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                           ),
@@ -23477,9 +22707,6 @@ export const HydroPumpTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroPumpTurbineOperationCostOneVariableOperationCostOneVomCostDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -23601,9 +22828,7 @@ export const HydroPumpTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroPumpTurbineOperationCostOneVariableOperationCostTwoStartupFuelOfftakeDefault,
-                      )
+                      .optional()
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -23699,9 +22924,6 @@ export const HydroPumpTurbine = zod
                               .optional()
                               .describe("Units: the curve's y-axis unit."),
                           })
-                          .default(
-                            hydroPumpTurbineOperationCostOneVariableOperationCostTwoValueCurveOneDefault,
-                          )
                           .describe(
                             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                           ),
@@ -24514,9 +23736,6 @@ export const HydroPumpTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroPumpTurbineOperationCostOneVariableOperationCostTwoVomCostDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -24621,9 +23840,6 @@ export const HydroPumpTurbine = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(
-                hydroPumpTurbineOperationCostTwoMinimumEnergyOfferDefault,
-              )
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -24727,7 +23943,6 @@ export const HydroPumpTurbine = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(hydroPumpTurbineOperationCostTwoShutDownDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -24830,9 +24045,6 @@ export const HydroPumpTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -25645,9 +24857,6 @@ export const HydroPumpTurbine = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroPumpTurbineOperationCostTwoIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -25754,9 +24963,6 @@ export const HydroPumpTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -26569,9 +25775,6 @@ export const HydroPumpTurbine = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroPumpTurbineOperationCostTwoDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -26586,25 +25789,25 @@ export const HydroPumpTurbine = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(hydroPumpTurbineOperationCostTwoIncrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(hydroPumpTurbineOperationCostTwoDecrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(hydroPumpTurbineOperationCostTwoCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(hydroPumpTurbineOperationCostTwoCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -27097,9 +26300,6 @@ export const HydroPumpTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -27912,9 +27112,6 @@ export const HydroPumpTurbine = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroPumpTurbineOperationCostThreeIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -28021,9 +27218,6 @@ export const HydroPumpTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -28836,9 +28030,6 @@ export const HydroPumpTurbine = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroPumpTurbineOperationCostThreeDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -28853,29 +28044,25 @@ export const HydroPumpTurbine = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(
-                hydroPumpTurbineOperationCostThreeIncrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(
-                hydroPumpTurbineOperationCostThreeDecrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(hydroPumpTurbineOperationCostThreeCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(hydroPumpTurbineOperationCostThreeCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -28987,9 +28174,6 @@ export const HydroPumpTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroPumpTurbineOperationCostFourImportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -29802,9 +28986,6 @@ export const HydroPumpTurbine = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroPumpTurbineOperationCostFourImportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -29911,9 +29092,6 @@ export const HydroPumpTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroPumpTurbineOperationCostFourExportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -30726,9 +29904,6 @@ export const HydroPumpTurbine = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroPumpTurbineOperationCostFourExportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -30757,7 +29932,7 @@ export const HydroPumpTurbine = zod
       ),
     active_power_pump: zod
       .number()
-      .default(hydroPumpTurbineActivePowerPumpDefault)
+      .optional()
       .describe(
         "Initial active power set point of the pump unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
@@ -30767,7 +29942,6 @@ export const HydroPumpTurbine = zod
         pump: zod.number(),
       })
       .optional()
-      .default({ turbine: 1 as const, pump: 1 as const })
       .describe(
         "A pair of values, one for the turbine (generating) mode and one for the pump (charging) mode of a pumped hydro unit.",
       ),
@@ -30777,7 +29951,6 @@ export const HydroPumpTurbine = zod
         pump: zod.number(),
       })
       .optional()
-      .default({ turbine: 0 as const, pump: 0 as const })
       .describe(
         "A pair of values, one for the turbine (generating) mode and one for the pump (charging) mode of a pumped hydro unit.",
       ),
@@ -30787,20 +29960,18 @@ export const HydroPumpTurbine = zod
         pump: zod.number(),
       })
       .optional()
-      .default({ turbine: 0 as const, pump: 0 as const })
       .describe(
         "A pair of values, one for the turbine (generating) mode and one for the pump (charging) mode of a pumped hydro unit.",
       ),
     travel_time: zod
       .number()
       .nullish()
-      .default(hydroPumpTurbineTravelTimeDefault)
       .describe(
         "Downstream (from reservoir into turbine) travel time. Set to `null` if not applicable. Units: min.",
       ),
     conversion_factor: zod
       .number()
-      .default(hydroPumpTurbineConversionFactorDefault)
+      .optional()
       .describe(
         "Conversion factor from flow/volume to energy: m^3 -> p.u-hr. Units: 1.",
       ),
@@ -30813,7 +29984,6 @@ export const HydroPumpTurbine = zod
         "MUST_RUN",
       ])
       .optional()
-      .default("COMMITTED")
       .describe(
         "Why a committable unit is (or would be) committed, orthogonal to its operational state. UNCOMMITTED: not committed, offline but available. COMMITTED: committed by the scheduling process (a planning model's commitment decision or a cleared schedule). SELF_SCHEDULED: scheduled by its owner rather than by the scheduling process. RELIABILITY: committed by the system operator for reliability rather than by the scheduling process. MUST_RUN: required to run by contract or operating constraint.",
       ),
@@ -30844,7 +30014,6 @@ export const HydroPumpTurbine = zod
         "WS",
       ])
       .optional()
-      .default("PS")
       .describe(
         "Prime mover of a generating unit — the engine, turbine, water wheel, or similar machine that drives the generator — using the code set from the EIA Form 923 instructions. `PVe` is photovoltaic, spelled that way so it does not collide with the `PV` bus type.",
       ),
@@ -30869,9 +30038,6 @@ const hydroReservoirHeadToVolumeFactorSixFunctionTypeDefault = `TIME_SERIES_QUAD
 const hydroReservoirHeadToVolumeFactorSevenFunctionTypeDefault = `TIME_SERIES_PIECEWISE_LINEAR`;
 const hydroReservoirHeadToVolumeFactorEightFunctionTypeDefault = `TIME_SERIES_PIECEWISE_STEP`;
 const hydroReservoirOperationCostOneCostTypeDefault = `HYDRO_RES`;
-const hydroReservoirOperationCostOneLevelShortageCostDefault = 0;
-const hydroReservoirOperationCostOneLevelSurplusCostDefault = 0;
-const hydroReservoirOperationCostOneSpillageCostDefault = 0;
 const hydroReservoirOperationCostTwoCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const hydroReservoirOperationCostTwoMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const hydroReservoirOperationCostTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -30895,15 +30061,6 @@ const hydroReservoirOperationCostTwoIncrementalOfferCurvesValueCurveOneCurveType
 const hydroReservoirOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroReservoirOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroReservoirOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroReservoirOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroReservoirOperationCostTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroReservoirOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroReservoirOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -30942,27 +30099,10 @@ const hydroReservoirOperationCostTwoIncrementalOfferCurvesVomCostCurveTypeDefaul
 const hydroReservoirOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroReservoirOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroReservoirOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroReservoirOperationCostTwoIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroReservoirOperationCostTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroReservoirOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroReservoirOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroReservoirOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroReservoirOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroReservoirOperationCostTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroReservoirOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroReservoirOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -31001,31 +30141,11 @@ const hydroReservoirOperationCostTwoDecrementalOfferCurvesVomCostCurveTypeDefaul
 const hydroReservoirOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroReservoirOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroReservoirOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroReservoirOperationCostTwoDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const hydroReservoirOperationCostTwoIncrementalSlopeDefault = false;
-const hydroReservoirOperationCostTwoDecrementalSlopeDefault = false;
-const hydroReservoirOperationCostTwoCurveStyleDefault = 0;
-const hydroReservoirOperationCostTwoCurveMultistepDefault = 0;
 const hydroReservoirOperationCostThreeCostTypeDefault = `IMPORT_EXPORT_TIME_SERIES`;
 const hydroReservoirOperationCostThreeImportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroReservoirOperationCostThreeImportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroReservoirOperationCostThreeImportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroReservoirOperationCostThreeImportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroReservoirOperationCostThreeImportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroReservoirOperationCostThreeImportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroReservoirOperationCostThreeImportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroReservoirOperationCostThreeImportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -31064,26 +30184,10 @@ const hydroReservoirOperationCostThreeImportOfferCurvesVomCostCurveTypeDefault =
 const hydroReservoirOperationCostThreeImportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroReservoirOperationCostThreeImportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroReservoirOperationCostThreeImportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroReservoirOperationCostThreeImportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroReservoirOperationCostThreeExportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroReservoirOperationCostThreeExportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroReservoirOperationCostThreeExportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroReservoirOperationCostThreeExportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroReservoirOperationCostThreeExportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroReservoirOperationCostThreeExportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroReservoirOperationCostThreeExportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroReservoirOperationCostThreeExportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -31122,16 +30226,6 @@ const hydroReservoirOperationCostThreeExportOfferCurvesVomCostCurveTypeDefault =
 const hydroReservoirOperationCostThreeExportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroReservoirOperationCostThreeExportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroReservoirOperationCostThreeExportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroReservoirOperationCostThreeExportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const hydroReservoirEvaporativeLossDefault = 0;
-const hydroReservoirLevelDataTypeDefault = `USABLE_VOLUME`;
 export const HydroReservoir = zod
   .strictObject({
     id: zod.int(),
@@ -31334,15 +30428,9 @@ export const HydroReservoir = zod
           cost_type: zod
             .literal("HYDRO_RES")
             .default(hydroReservoirOperationCostOneCostTypeDefault),
-          level_shortage_cost: zod
-            .number()
-            .default(hydroReservoirOperationCostOneLevelShortageCostDefault),
-          level_surplus_cost: zod
-            .number()
-            .default(hydroReservoirOperationCostOneLevelSurplusCostDefault),
-          spillage_cost: zod
-            .number()
-            .default(hydroReservoirOperationCostOneSpillageCostDefault),
+          level_shortage_cost: zod.number().optional(),
+          level_surplus_cost: zod.number().optional(),
+          spillage_cost: zod.number().optional(),
         })
         .describe("Cost representation for hydro reservoir"),
       zod
@@ -31822,9 +30910,6 @@ export const HydroReservoir = zod
                         .optional()
                         .describe("Units: the curve's y-axis unit."),
                     })
-                    .default(
-                      hydroReservoirOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault,
-                    )
                     .describe(
                       "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                     ),
@@ -32637,9 +31722,6 @@ export const HydroReservoir = zod
                     .optional()
                     .describe("Units: the curve's y-axis unit."),
                 })
-                .default(
-                  hydroReservoirOperationCostTwoIncrementalOfferCurvesVomCostDefault,
-                )
                 .describe(
                   "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                 ),
@@ -32746,9 +31828,6 @@ export const HydroReservoir = zod
                         .optional()
                         .describe("Units: the curve's y-axis unit."),
                     })
-                    .default(
-                      hydroReservoirOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault,
-                    )
                     .describe(
                       "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                     ),
@@ -33561,9 +32640,6 @@ export const HydroReservoir = zod
                     .optional()
                     .describe("Units: the curve's y-axis unit."),
                 })
-                .default(
-                  hydroReservoirOperationCostTwoDecrementalOfferCurvesVomCostDefault,
-                )
                 .describe(
                   "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                 ),
@@ -33578,25 +32654,25 @@ export const HydroReservoir = zod
             ),
           incremental_slope: zod
             .boolean()
-            .default(hydroReservoirOperationCostTwoIncrementalSlopeDefault)
+            .optional()
             .describe(
               "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
             ),
           decremental_slope: zod
             .boolean()
-            .default(hydroReservoirOperationCostTwoDecrementalSlopeDefault)
+            .optional()
             .describe(
               "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
             ),
           curve_style: zod
             .union([zod.literal(0), zod.literal(1)])
-            .default(hydroReservoirOperationCostTwoCurveStyleDefault)
+            .optional()
             .describe(
               "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
             ),
           curve_multistep: zod
             .union([zod.literal(0), zod.literal(1)])
-            .default(hydroReservoirOperationCostTwoCurveMultistepDefault)
+            .optional()
             .describe(
               "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
             ),
@@ -33708,9 +32784,6 @@ export const HydroReservoir = zod
                         .optional()
                         .describe("Units: the curve's y-axis unit."),
                     })
-                    .default(
-                      hydroReservoirOperationCostThreeImportOfferCurvesValueCurveOneDefault,
-                    )
                     .describe(
                       "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                     ),
@@ -34523,9 +33596,6 @@ export const HydroReservoir = zod
                     .optional()
                     .describe("Units: the curve's y-axis unit."),
                 })
-                .default(
-                  hydroReservoirOperationCostThreeImportOfferCurvesVomCostDefault,
-                )
                 .describe(
                   "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                 ),
@@ -34632,9 +33702,6 @@ export const HydroReservoir = zod
                         .optional()
                         .describe("Units: the curve's y-axis unit."),
                     })
-                    .default(
-                      hydroReservoirOperationCostThreeExportOfferCurvesValueCurveOneDefault,
-                    )
                     .describe(
                       "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                     ),
@@ -35447,9 +34514,6 @@ export const HydroReservoir = zod
                     .optional()
                     .describe("Units: the curve's y-axis unit."),
                 })
-                .default(
-                  hydroReservoirOperationCostThreeExportOfferCurvesVomCostDefault,
-                )
                 .describe(
                   "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                 ),
@@ -35475,13 +34539,13 @@ export const HydroReservoir = zod
     ]),
     evaporative_loss: zod
       .number()
-      .default(hydroReservoirEvaporativeLossDefault)
+      .optional()
       .describe(
         "Standing loss from evaporation as a fraction of the reservoir's stored volume/energy lost per hour. Units: 1.",
       ),
     level_data_type: zod
       .enum(["USABLE_VOLUME", "TOTAL_VOLUME", "HEAD", "ENERGY"])
-      .default(hydroReservoirLevelDataTypeDefault),
+      .optional(),
   })
   .describe(
     "A hydropower reservoir feeding, or fed by, the turbines attached to it. Storage level, inflow, outflow, and spillage are recorded in the basis named by `level_data_type` — volume, head, or energy — and the upstream and downstream associations set the reservoir's place in a cascade.",
@@ -35490,22 +34554,11 @@ export const HydroReservoir = zod
 export type HydroReservoir = zod.input<typeof HydroReservoir>;
 export type HydroReservoirOutput = zod.output<typeof HydroReservoir>;
 
-const hydroTurbineTimeAtStatusDefault = 600000;
 const hydroTurbineOperationCostOneCostTypeDefault = `HYDRO_GEN`;
-const hydroTurbineOperationCostOneFixedDefault = 0;
 const hydroTurbineOperationCostOneVariableOperationCostOneValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroTurbineOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostOneVariableOperationCostOneValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroTurbineOperationCostOneVariableOperationCostOneValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroTurbineOperationCostOneVariableOperationCostOneValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostOneVariableOperationCostOneValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -35544,40 +34597,14 @@ const hydroTurbineOperationCostOneVariableOperationCostOneVomCostCurveTypeDefaul
 const hydroTurbineOperationCostOneVariableOperationCostOneVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostOneVariableOperationCostOneVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostOneVariableOperationCostOneVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostOneVariableOperationCostOneVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroTurbineOperationCostOneVariableOperationCostTwoStartupFuelOfftakeCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroTurbineOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostOneVariableOperationCostTwoStartupFuelOfftakeDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroTurbineOperationCostOneVariableOperationCostTwoValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroTurbineOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostOneVariableOperationCostTwoValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroTurbineOperationCostOneVariableOperationCostTwoValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroTurbineOperationCostOneVariableOperationCostTwoValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostOneVariableOperationCostTwoValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -35616,52 +34643,20 @@ const hydroTurbineOperationCostOneVariableOperationCostTwoVomCostCurveTypeDefaul
 const hydroTurbineOperationCostOneVariableOperationCostTwoVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostOneVariableOperationCostTwoVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostOneVariableOperationCostTwoVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostOneVariableOperationCostTwoVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroTurbineOperationCostTwoCostTypeDefault = `MARKET_BID`;
 const hydroTurbineOperationCostTwoMinimumEnergyOfferCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroTurbineOperationCostTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostTwoMinimumEnergyOfferFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostTwoMinimumEnergyOfferFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostTwoMinimumEnergyOfferDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroTurbineOperationCostTwoStartUpStartupStagesTypeDefault = `STAGES`;
 const hydroTurbineOperationCostTwoShutDownCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroTurbineOperationCostTwoShutDownFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostTwoShutDownFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostTwoShutDownFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostTwoShutDownDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroTurbineOperationCostTwoIncrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroTurbineOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroTurbineOperationCostTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroTurbineOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -35700,26 +34695,10 @@ const hydroTurbineOperationCostTwoIncrementalOfferCurvesVomCostCurveTypeDefault 
 const hydroTurbineOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostTwoIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroTurbineOperationCostTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroTurbineOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroTurbineOperationCostTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroTurbineOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -35758,18 +34737,6 @@ const hydroTurbineOperationCostTwoDecrementalOfferCurvesVomCostCurveTypeDefault 
 const hydroTurbineOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostTwoDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const hydroTurbineOperationCostTwoIncrementalSlopeDefault = false;
-const hydroTurbineOperationCostTwoDecrementalSlopeDefault = false;
-const hydroTurbineOperationCostTwoCurveStyleDefault = 0;
-const hydroTurbineOperationCostTwoCurveMultistepDefault = 0;
 const hydroTurbineOperationCostThreeCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const hydroTurbineOperationCostThreeMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const hydroTurbineOperationCostThreeMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -35793,15 +34760,6 @@ const hydroTurbineOperationCostThreeIncrementalOfferCurvesValueCurveOneCurveType
 const hydroTurbineOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroTurbineOperationCostThreeIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroTurbineOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -35840,27 +34798,10 @@ const hydroTurbineOperationCostThreeIncrementalOfferCurvesVomCostCurveTypeDefaul
 const hydroTurbineOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostThreeIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroTurbineOperationCostThreeDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroTurbineOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const hydroTurbineOperationCostThreeDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroTurbineOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -35899,31 +34840,11 @@ const hydroTurbineOperationCostThreeDecrementalOfferCurvesVomCostCurveTypeDefaul
 const hydroTurbineOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostThreeDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const hydroTurbineOperationCostThreeIncrementalSlopeDefault = false;
-const hydroTurbineOperationCostThreeDecrementalSlopeDefault = false;
-const hydroTurbineOperationCostThreeCurveStyleDefault = 0;
-const hydroTurbineOperationCostThreeCurveMultistepDefault = 0;
 const hydroTurbineOperationCostFourCostTypeDefault = `IMPORT_EXPORT_TIME_SERIES`;
 const hydroTurbineOperationCostFourImportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroTurbineOperationCostFourImportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostFourImportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostFourImportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostFourImportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroTurbineOperationCostFourImportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroTurbineOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -35962,26 +34883,10 @@ const hydroTurbineOperationCostFourImportOfferCurvesVomCostCurveTypeDefault = `I
 const hydroTurbineOperationCostFourImportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostFourImportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostFourImportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostFourImportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroTurbineOperationCostFourExportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const hydroTurbineOperationCostFourExportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostFourExportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostFourExportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostFourExportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const hydroTurbineOperationCostFourExportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const hydroTurbineOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -36020,19 +34925,6 @@ const hydroTurbineOperationCostFourExportOfferCurvesVomCostCurveTypeDefault = `I
 const hydroTurbineOperationCostFourExportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const hydroTurbineOperationCostFourExportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const hydroTurbineOperationCostFourExportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const hydroTurbineOperationCostFourExportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const hydroTurbinePowerhouseElevationDefault = 0;
-const hydroTurbineEfficiencyDefault = 1;
-const hydroTurbineTurbineTypeDefault = `UNKNOWN`;
-const hydroTurbineConversionFactorDefault = 1;
-const hydroTurbineTravelTimeDefault = null;
 export const HydroTurbine = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -36092,13 +34984,12 @@ export const HydroTurbine = zod
     status: zod
       .enum(["OFFLINE", "ONLINE", "STARTUP", "SHUTDOWN"])
       .optional()
-      .default("OFFLINE")
       .describe(
         "The running on/off lifecycle of an in-service committable unit, mutually exclusive. OFFLINE: shut down and not synchronized. ONLINE: synchronized and able to produce. STARTUP: in its start-up sequence. SHUTDOWN: in its shut-down sequence. Availability is not one of these values: a unit on outage is `available = false`; an OFFLINE unit with `available = true` is in service and eligible for re-commitment and off-line ancillary services.",
       ),
     time_at_status: zod
       .number()
-      .default(hydroTurbineTimeAtStatusDefault)
+      .optional()
       .describe(
         "Time the generator has been in its current `status`. default is the INFINITE_TIME sentinel (1e4 hours, 600000 minutes). Units: min.",
       ),
@@ -36111,7 +35002,6 @@ export const HydroTurbine = zod
         "MUST_RUN",
       ])
       .optional()
-      .default("COMMITTED")
       .describe(
         "Why a committable unit is (or would be) committed, orthogonal to its operational state. UNCOMMITTED: not committed, offline but available. COMMITTED: committed by the scheduling process (a planning model's commitment decision or a cleared schedule). SELF_SCHEDULED: scheduled by its owner rather than by the scheduling process. RELIABILITY: committed by the system operator for reliability rather than by the scheduling process. MUST_RUN: required to run by contract or operating constraint.",
       ),
@@ -36122,9 +35012,7 @@ export const HydroTurbine = zod
             cost_type: zod
               .literal("HYDRO_GEN")
               .default(hydroTurbineOperationCostOneCostTypeDefault),
-            fixed: zod
-              .number()
-              .default(hydroTurbineOperationCostOneFixedDefault),
+            fixed: zod.number().optional(),
             variable_operation_cost: zod
               .union([
                 zod
@@ -36226,9 +35114,6 @@ export const HydroTurbine = zod
                               .optional()
                               .describe("Units: the curve's y-axis unit."),
                           })
-                          .default(
-                            hydroTurbineOperationCostOneVariableOperationCostOneValueCurveOneDefault,
-                          )
                           .describe(
                             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                           ),
@@ -37041,9 +35926,6 @@ export const HydroTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroTurbineOperationCostOneVariableOperationCostOneVomCostDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -37165,9 +36047,7 @@ export const HydroTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroTurbineOperationCostOneVariableOperationCostTwoStartupFuelOfftakeDefault,
-                      )
+                      .optional()
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -37263,9 +36143,6 @@ export const HydroTurbine = zod
                               .optional()
                               .describe("Units: the curve's y-axis unit."),
                           })
-                          .default(
-                            hydroTurbineOperationCostOneVariableOperationCostTwoValueCurveOneDefault,
-                          )
                           .describe(
                             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                           ),
@@ -38078,9 +36955,6 @@ export const HydroTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroTurbineOperationCostOneVariableOperationCostTwoVomCostDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -38185,7 +37059,6 @@ export const HydroTurbine = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(hydroTurbineOperationCostTwoMinimumEnergyOfferDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -38289,7 +37162,6 @@ export const HydroTurbine = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(hydroTurbineOperationCostTwoShutDownDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -38392,9 +37264,6 @@ export const HydroTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroTurbineOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -39207,9 +38076,6 @@ export const HydroTurbine = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroTurbineOperationCostTwoIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -39316,9 +38182,6 @@ export const HydroTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroTurbineOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -40131,9 +38994,6 @@ export const HydroTurbine = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroTurbineOperationCostTwoDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -40148,25 +39008,25 @@ export const HydroTurbine = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(hydroTurbineOperationCostTwoIncrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(hydroTurbineOperationCostTwoDecrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(hydroTurbineOperationCostTwoCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(hydroTurbineOperationCostTwoCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -40659,9 +39519,6 @@ export const HydroTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroTurbineOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -41474,9 +40331,6 @@ export const HydroTurbine = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroTurbineOperationCostThreeIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -41583,9 +40437,6 @@ export const HydroTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroTurbineOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -42398,9 +41249,6 @@ export const HydroTurbine = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroTurbineOperationCostThreeDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -42415,25 +41263,25 @@ export const HydroTurbine = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(hydroTurbineOperationCostThreeIncrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(hydroTurbineOperationCostThreeDecrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(hydroTurbineOperationCostThreeCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(hydroTurbineOperationCostThreeCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -42545,9 +41393,6 @@ export const HydroTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroTurbineOperationCostFourImportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -43360,9 +42205,6 @@ export const HydroTurbine = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroTurbineOperationCostFourImportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -43469,9 +42311,6 @@ export const HydroTurbine = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        hydroTurbineOperationCostFourExportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -44284,9 +43123,6 @@ export const HydroTurbine = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    hydroTurbineOperationCostFourExportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -44315,7 +43151,7 @@ export const HydroTurbine = zod
       ),
     powerhouse_elevation: zod
       .number()
-      .default(hydroTurbinePowerhouseElevationDefault)
+      .optional()
       .describe(
         "Height level above the sea level of the powerhouse on which the turbine is installed. Units: m.",
       ),
@@ -44348,7 +43184,7 @@ export const HydroTurbine = zod
       ),
     efficiency: zod
       .number()
-      .default(hydroTurbineEfficiencyDefault)
+      .optional()
       .describe("Turbine efficiency [0, 1.0]. Units: 1."),
     turbine_type: zod
       .enum([
@@ -44363,11 +43199,11 @@ export const HydroTurbine = zod
         "PROPELLER",
         "OTHER",
       ])
-      .default(hydroTurbineTurbineTypeDefault)
+      .optional()
       .describe("Type of the turbine."),
     conversion_factor: zod
       .number()
-      .default(hydroTurbineConversionFactorDefault)
+      .optional()
       .describe(
         "Conversion factor from flow/volume to energy: m^3 -> p.u-hr. Units: 1.",
       ),
@@ -44398,14 +43234,12 @@ export const HydroTurbine = zod
         "WS",
       ])
       .optional()
-      .default("HY")
       .describe(
         "Prime mover of a generating unit — the engine, turbine, water wheel, or similar machine that drives the generator — using the code set from the EIA Form 923 instructions. `PVe` is photovoltaic, spelled that way so it does not collide with the `PV` bus type.",
       ),
     travel_time: zod
       .number()
       .nullish()
-      .default(hydroTurbineTravelTimeDefault)
       .describe(
         "Downstream (from reservoir into turbine) travel time. Set to `null` if not applicable. Units: min.",
       ),
@@ -44492,39 +43326,16 @@ export type ImpedanceCorrectionDataOutput = zod.output<
   typeof ImpedanceCorrectionData
 >;
 
-const interconnectingConverterFiveDcCurrentDefault = 0;
-const interconnectingConverterFiveMaxDcCurrentDefault = 9999;
 const interconnectingConverterFiveLossFunctionValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interconnectingConverterFiveLossFunctionValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const interconnectingConverterFiveLossFunctionValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interconnectingConverterFiveLossFunctionValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interconnectingConverterFiveLossFunctionValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
-const interconnectingConverterFiveLossFunctionValueCurveDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const interconnectingConverterFiveRatedDcVoltageDefault = 0;
 export const interconnectingConverterFivePowerFactorSetpointMin = -1;
 export const interconnectingConverterFivePowerFactorSetpointMax = 1;
 
-const interconnectingConverterFiveRatedAcVoltageDefault = 0;
-const interconnectingConverterFiveDcVoltageDroopDefault = 0;
-const interconnectingConverterFiveRemoteBusControlDefault = null;
-const interconnectingConverterFivePowerFactorWeightingFractionDefault = 1;
 export const InterconnectingConverter = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -44579,11 +43390,11 @@ export const InterconnectingConverter = zod
       ),
     dc_current: zod
       .number()
-      .default(interconnectingConverterFiveDcCurrentDefault)
+      .optional()
       .describe("DC current on the converter. Units: kA."),
     max_dc_current: zod
       .number()
-      .default(interconnectingConverterFiveMaxDcCurrentDefault)
+      .optional()
       .describe(
         "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
       ),
@@ -44682,9 +43493,6 @@ export const InterconnectingConverter = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(
-                interconnectingConverterFiveLossFunctionValueCurveOneDefault,
-              )
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -44754,7 +43562,6 @@ export const InterconnectingConverter = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
           ])
-          .default(interconnectingConverterFiveLossFunctionValueCurveDefault)
           .describe(
             "The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
           ),
@@ -44789,7 +43596,7 @@ export const InterconnectingConverter = zod
       ),
     rated_dc_voltage: zod
       .number()
-      .default(interconnectingConverterFiveRatedDcVoltageDefault)
+      .optional()
       .describe(
         "Rated DC voltage of the converter, the base for `dc_voltage_setpoint` and `voltage_limits`; 0.0 means unspecified. Units: kV.",
       ),
@@ -44809,26 +43616,25 @@ export const InterconnectingConverter = zod
       ),
     rated_ac_voltage: zod
       .number()
-      .default(interconnectingConverterFiveRatedAcVoltageDefault)
+      .optional()
       .describe(
         "Rated AC voltage at the converter's AC terminal, the base for `ac_voltage_setpoint`; 0.0 means unspecified. Units: kV.",
       ),
     dc_voltage_droop: zod
       .number()
-      .default(interconnectingConverterFiveDcVoltageDroopDefault)
+      .optional()
       .describe(
         "DC-voltage droop gain on the converter, used when `dc_control` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint - dc_voltage_droop * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.",
       ),
     remote_bus_control: zod
       .int()
       .nullish()
-      .default(interconnectingConverterFiveRemoteBusControlDefault)
       .describe(
         "Number of the AC bus whose voltage the converter regulates when `ac_control` is `AC_VOLTAGE`; null regulates its own terminal bus.",
       ),
     power_factor_weighting_fraction: zod
       .number()
-      .default(interconnectingConverterFivePowerFactorWeightingFractionDefault)
+      .optional()
       .describe(
         "Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.",
       ),
@@ -44838,7 +43644,6 @@ export const InterconnectingConverter = zod
         min: zod.number().optional(),
       })
       .optional()
-      .default({ max: 999.9 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -44859,20 +43664,10 @@ export type InterconnectingConverterOutput = zod.output<
 >;
 
 const interruptiblePowerLoadOperationCostOneCostTypeDefault = `LOAD`;
-const interruptiblePowerLoadOperationCostOneFixedDefault = 0;
 const interruptiblePowerLoadOperationCostOneVariableOperationCostValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptiblePowerLoadOperationCostOneVariableOperationCostValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostOneVariableOperationCostValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostOneVariableOperationCostValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostOneVariableOperationCostValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptiblePowerLoadOperationCostOneVariableOperationCostValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptiblePowerLoadOperationCostOneVariableOperationCostValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostOneVariableOperationCostValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -44911,54 +43706,20 @@ const interruptiblePowerLoadOperationCostOneVariableOperationCostVomCostCurveTyp
 const interruptiblePowerLoadOperationCostOneVariableOperationCostVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostOneVariableOperationCostVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostOneVariableOperationCostVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostOneVariableOperationCostVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptiblePowerLoadOperationCostTwoCostTypeDefault = `MARKET_BID`;
 const interruptiblePowerLoadOperationCostTwoMinimumEnergyOfferCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptiblePowerLoadOperationCostTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostTwoMinimumEnergyOfferFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostTwoMinimumEnergyOfferFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostTwoMinimumEnergyOfferDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const interruptiblePowerLoadOperationCostTwoStartUpStartupStagesTypeDefault = `STAGES`;
 const interruptiblePowerLoadOperationCostTwoShutDownCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptiblePowerLoadOperationCostTwoShutDownFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostTwoShutDownFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostTwoShutDownFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostTwoShutDownDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -44997,28 +43758,10 @@ const interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesVomCostCurveTy
 const interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -45057,19 +43800,6 @@ const interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesVomCostCurveTy
 const interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
-const interruptiblePowerLoadOperationCostTwoIncrementalSlopeDefault = false;
-const interruptiblePowerLoadOperationCostTwoDecrementalSlopeDefault = false;
-const interruptiblePowerLoadOperationCostTwoCurveStyleDefault = 0;
-const interruptiblePowerLoadOperationCostTwoCurveMultistepDefault = 0;
 const interruptiblePowerLoadOperationCostThreeCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const interruptiblePowerLoadOperationCostThreeMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const interruptiblePowerLoadOperationCostThreeMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -45093,15 +43823,6 @@ const interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveOn
 const interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -45140,28 +43861,10 @@ const interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesVomCostCurve
 const interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -45200,33 +43903,11 @@ const interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesVomCostCurve
 const interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
-const interruptiblePowerLoadOperationCostThreeIncrementalSlopeDefault = false;
-const interruptiblePowerLoadOperationCostThreeDecrementalSlopeDefault = false;
-const interruptiblePowerLoadOperationCostThreeCurveStyleDefault = 0;
-const interruptiblePowerLoadOperationCostThreeCurveMultistepDefault = 0;
 const interruptiblePowerLoadOperationCostFourCostTypeDefault = `IMPORT_EXPORT_TIME_SERIES`;
 const interruptiblePowerLoadOperationCostFourImportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptiblePowerLoadOperationCostFourImportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostFourImportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostFourImportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostFourImportOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptiblePowerLoadOperationCostFourImportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptiblePowerLoadOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -45265,27 +43946,10 @@ const interruptiblePowerLoadOperationCostFourImportOfferCurvesVomCostCurveTypeDe
 const interruptiblePowerLoadOperationCostFourImportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostFourImportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostFourImportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostFourImportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const interruptiblePowerLoadOperationCostFourExportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptiblePowerLoadOperationCostFourExportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostFourExportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostFourExportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostFourExportOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptiblePowerLoadOperationCostFourExportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptiblePowerLoadOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -45324,14 +43988,6 @@ const interruptiblePowerLoadOperationCostFourExportOfferCurvesVomCostCurveTypeDe
 const interruptiblePowerLoadOperationCostFourExportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptiblePowerLoadOperationCostFourExportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptiblePowerLoadOperationCostFourExportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptiblePowerLoadOperationCostFourExportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 export const InterruptiblePowerLoad = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -45383,9 +44039,7 @@ export const InterruptiblePowerLoad = zod
             cost_type: zod
               .literal("LOAD")
               .default(interruptiblePowerLoadOperationCostOneCostTypeDefault),
-            fixed: zod
-              .number()
-              .default(interruptiblePowerLoadOperationCostOneFixedDefault),
+            fixed: zod.number().optional(),
             variable_operation_cost: zod
               .strictObject({
                 power_units: zod
@@ -45485,9 +44139,6 @@ export const InterruptiblePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptiblePowerLoadOperationCostOneVariableOperationCostValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -46300,9 +44951,6 @@ export const InterruptiblePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptiblePowerLoadOperationCostOneVariableOperationCostVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -46403,9 +45051,6 @@ export const InterruptiblePowerLoad = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(
-                interruptiblePowerLoadOperationCostTwoMinimumEnergyOfferDefault,
-              )
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -46509,7 +45154,6 @@ export const InterruptiblePowerLoad = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(interruptiblePowerLoadOperationCostTwoShutDownDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -46612,9 +45256,6 @@ export const InterruptiblePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -47427,9 +46068,6 @@ export const InterruptiblePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptiblePowerLoadOperationCostTwoIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -47536,9 +46174,6 @@ export const InterruptiblePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -48351,9 +46986,6 @@ export const InterruptiblePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptiblePowerLoadOperationCostTwoDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -48368,31 +47000,25 @@ export const InterruptiblePowerLoad = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(
-                interruptiblePowerLoadOperationCostTwoIncrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(
-                interruptiblePowerLoadOperationCostTwoDecrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(interruptiblePowerLoadOperationCostTwoCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(
-                interruptiblePowerLoadOperationCostTwoCurveMultistepDefault,
-              )
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -48885,9 +47511,6 @@ export const InterruptiblePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -49700,9 +48323,6 @@ export const InterruptiblePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptiblePowerLoadOperationCostThreeIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -49809,9 +48429,6 @@ export const InterruptiblePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -50624,9 +49241,6 @@ export const InterruptiblePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptiblePowerLoadOperationCostThreeDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -50641,33 +49255,25 @@ export const InterruptiblePowerLoad = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(
-                interruptiblePowerLoadOperationCostThreeIncrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(
-                interruptiblePowerLoadOperationCostThreeDecrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(
-                interruptiblePowerLoadOperationCostThreeCurveStyleDefault,
-              )
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(
-                interruptiblePowerLoadOperationCostThreeCurveMultistepDefault,
-              )
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -50779,9 +49385,6 @@ export const InterruptiblePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptiblePowerLoadOperationCostFourImportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -51594,9 +50197,6 @@ export const InterruptiblePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptiblePowerLoadOperationCostFourImportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -51703,9 +50303,6 @@ export const InterruptiblePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptiblePowerLoadOperationCostFourExportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -52518,9 +51115,6 @@ export const InterruptiblePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptiblePowerLoadOperationCostFourExportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -52548,7 +51142,6 @@ export const InterruptiblePowerLoad = zod
     conformity: zod
       .enum(["NON_CONFORMING", "CONFORMING", "UNDEFINED"])
       .optional()
-      .default("UNDEFINED")
       .describe(
         "WECC classification of how a load tracks voltage and frequency variation, used in dynamic studies to decide how it is modeled during a disturbance. `CONFORMING` responds predictably and follows standard load modeling practice; `NON_CONFORMING` does not, as with a constant power load or one behind a complex control system; `UNDEFINED` leaves the classification unstated.",
       ),
@@ -52567,20 +51160,10 @@ export type InterruptiblePowerLoadOutput = zod.output<
 >;
 
 const interruptibleStandardLoadOperationCostOneCostTypeDefault = `LOAD`;
-const interruptibleStandardLoadOperationCostOneFixedDefault = 0;
 const interruptibleStandardLoadOperationCostOneVariableOperationCostValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptibleStandardLoadOperationCostOneVariableOperationCostValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostOneVariableOperationCostValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostOneVariableOperationCostValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostOneVariableOperationCostValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptibleStandardLoadOperationCostOneVariableOperationCostValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptibleStandardLoadOperationCostOneVariableOperationCostValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostOneVariableOperationCostValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -52619,54 +51202,20 @@ const interruptibleStandardLoadOperationCostOneVariableOperationCostVomCostCurve
 const interruptibleStandardLoadOperationCostOneVariableOperationCostVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostOneVariableOperationCostVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostOneVariableOperationCostVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostOneVariableOperationCostVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptibleStandardLoadOperationCostTwoCostTypeDefault = `MARKET_BID`;
 const interruptibleStandardLoadOperationCostTwoMinimumEnergyOfferCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptibleStandardLoadOperationCostTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostTwoMinimumEnergyOfferFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostTwoMinimumEnergyOfferFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostTwoMinimumEnergyOfferDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const interruptibleStandardLoadOperationCostTwoStartUpStartupStagesTypeDefault = `STAGES`;
 const interruptibleStandardLoadOperationCostTwoShutDownCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptibleStandardLoadOperationCostTwoShutDownFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostTwoShutDownFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostTwoShutDownFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostTwoShutDownDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -52705,28 +51254,10 @@ const interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesVomCostCurv
 const interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -52765,19 +51296,6 @@ const interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesVomCostCurv
 const interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
-const interruptibleStandardLoadOperationCostTwoIncrementalSlopeDefault = false;
-const interruptibleStandardLoadOperationCostTwoDecrementalSlopeDefault = false;
-const interruptibleStandardLoadOperationCostTwoCurveStyleDefault = 0;
-const interruptibleStandardLoadOperationCostTwoCurveMultistepDefault = 0;
 const interruptibleStandardLoadOperationCostThreeCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const interruptibleStandardLoadOperationCostThreeMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const interruptibleStandardLoadOperationCostThreeMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -52801,15 +51319,6 @@ const interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesValueCurv
 const interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -52848,28 +51357,10 @@ const interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesVomCostCu
 const interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -52908,33 +51399,11 @@ const interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesVomCostCu
 const interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
-const interruptibleStandardLoadOperationCostThreeIncrementalSlopeDefault = false;
-const interruptibleStandardLoadOperationCostThreeDecrementalSlopeDefault = false;
-const interruptibleStandardLoadOperationCostThreeCurveStyleDefault = 0;
-const interruptibleStandardLoadOperationCostThreeCurveMultistepDefault = 0;
 const interruptibleStandardLoadOperationCostFourCostTypeDefault = `IMPORT_EXPORT_TIME_SERIES`;
 const interruptibleStandardLoadOperationCostFourImportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptibleStandardLoadOperationCostFourImportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostFourImportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostFourImportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostFourImportOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptibleStandardLoadOperationCostFourImportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptibleStandardLoadOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -52973,28 +51442,10 @@ const interruptibleStandardLoadOperationCostFourImportOfferCurvesVomCostCurveTyp
 const interruptibleStandardLoadOperationCostFourImportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostFourImportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostFourImportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostFourImportOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptibleStandardLoadOperationCostFourExportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const interruptibleStandardLoadOperationCostFourExportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostFourExportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostFourExportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostFourExportOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const interruptibleStandardLoadOperationCostFourExportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const interruptibleStandardLoadOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -53033,27 +51484,6 @@ const interruptibleStandardLoadOperationCostFourExportOfferCurvesVomCostCurveTyp
 const interruptibleStandardLoadOperationCostFourExportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const interruptibleStandardLoadOperationCostFourExportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const interruptibleStandardLoadOperationCostFourExportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interruptibleStandardLoadOperationCostFourExportOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
-const interruptibleStandardLoadConstantActivePowerDefault = 0;
-const interruptibleStandardLoadConstantReactivePowerDefault = 0;
-const interruptibleStandardLoadImpedanceActivePowerDefault = 0;
-const interruptibleStandardLoadImpedanceReactivePowerDefault = 0;
-const interruptibleStandardLoadCurrentActivePowerDefault = 0;
-const interruptibleStandardLoadCurrentReactivePowerDefault = 0;
-const interruptibleStandardLoadMaxConstantActivePowerDefault = 0;
-const interruptibleStandardLoadMaxConstantReactivePowerDefault = 0;
-const interruptibleStandardLoadMaxImpedanceActivePowerDefault = 0;
-const interruptibleStandardLoadMaxImpedanceReactivePowerDefault = 0;
-const interruptibleStandardLoadMaxCurrentActivePowerDefault = 0;
-const interruptibleStandardLoadMaxCurrentReactivePowerDefault = 0;
 export const InterruptibleStandardLoad = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -53087,9 +51517,7 @@ export const InterruptibleStandardLoad = zod
               .default(
                 interruptibleStandardLoadOperationCostOneCostTypeDefault,
               ),
-            fixed: zod
-              .number()
-              .default(interruptibleStandardLoadOperationCostOneFixedDefault),
+            fixed: zod.number().optional(),
             variable_operation_cost: zod
               .strictObject({
                 power_units: zod
@@ -53189,9 +51617,6 @@ export const InterruptibleStandardLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptibleStandardLoadOperationCostOneVariableOperationCostValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -54004,9 +52429,6 @@ export const InterruptibleStandardLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptibleStandardLoadOperationCostOneVariableOperationCostVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -54109,9 +52531,6 @@ export const InterruptibleStandardLoad = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(
-                interruptibleStandardLoadOperationCostTwoMinimumEnergyOfferDefault,
-              )
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -54215,7 +52634,6 @@ export const InterruptibleStandardLoad = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(interruptibleStandardLoadOperationCostTwoShutDownDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -54318,9 +52736,6 @@ export const InterruptibleStandardLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -55133,9 +53548,6 @@ export const InterruptibleStandardLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptibleStandardLoadOperationCostTwoIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -55242,9 +53654,6 @@ export const InterruptibleStandardLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -56057,9 +54466,6 @@ export const InterruptibleStandardLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptibleStandardLoadOperationCostTwoDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -56074,33 +54480,25 @@ export const InterruptibleStandardLoad = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(
-                interruptibleStandardLoadOperationCostTwoIncrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(
-                interruptibleStandardLoadOperationCostTwoDecrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(
-                interruptibleStandardLoadOperationCostTwoCurveStyleDefault,
-              )
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(
-                interruptibleStandardLoadOperationCostTwoCurveMultistepDefault,
-              )
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -56595,9 +54993,6 @@ export const InterruptibleStandardLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -57410,9 +55805,6 @@ export const InterruptibleStandardLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptibleStandardLoadOperationCostThreeIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -57519,9 +55911,6 @@ export const InterruptibleStandardLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -58334,9 +56723,6 @@ export const InterruptibleStandardLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptibleStandardLoadOperationCostThreeDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -58351,33 +56737,25 @@ export const InterruptibleStandardLoad = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(
-                interruptibleStandardLoadOperationCostThreeIncrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(
-                interruptibleStandardLoadOperationCostThreeDecrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(
-                interruptibleStandardLoadOperationCostThreeCurveStyleDefault,
-              )
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(
-                interruptibleStandardLoadOperationCostThreeCurveMultistepDefault,
-              )
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -58491,9 +56869,6 @@ export const InterruptibleStandardLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptibleStandardLoadOperationCostFourImportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -59306,9 +57681,6 @@ export const InterruptibleStandardLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptibleStandardLoadOperationCostFourImportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -59415,9 +57787,6 @@ export const InterruptibleStandardLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        interruptibleStandardLoadOperationCostFourExportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -60230,9 +58599,6 @@ export const InterruptibleStandardLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    interruptibleStandardLoadOperationCostFourExportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -60260,79 +58626,78 @@ export const InterruptibleStandardLoad = zod
     conformity: zod
       .enum(["NON_CONFORMING", "CONFORMING", "UNDEFINED"])
       .optional()
-      .default("UNDEFINED")
       .describe(
         "WECC classification of how a load tracks voltage and frequency variation, used in dynamic studies to decide how it is modeled during a disturbance. `CONFORMING` responds predictably and follows standard load modeling practice; `NON_CONFORMING` does not, as with a constant power load or one behind a complex control system; `UNDEFINED` leaves the classification unstated.",
       ),
     constant_active_power: zod
       .number()
-      .default(interruptibleStandardLoadConstantActivePowerDefault)
+      .optional()
       .describe(
         "Constant active power demand (P_P). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     constant_reactive_power: zod
       .number()
-      .default(interruptibleStandardLoadConstantReactivePowerDefault)
+      .optional()
       .describe(
         "Constant reactive power demand (Q_P). Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     impedance_active_power: zod
       .number()
-      .default(interruptibleStandardLoadImpedanceActivePowerDefault)
+      .optional()
       .describe(
         "Active power coefficient for constant impedance load (P_Z). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     impedance_reactive_power: zod
       .number()
-      .default(interruptibleStandardLoadImpedanceReactivePowerDefault)
+      .optional()
       .describe(
         "Reactive power coefficient for constant impedance load (Q_Z). Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     current_active_power: zod
       .number()
-      .default(interruptibleStandardLoadCurrentActivePowerDefault)
+      .optional()
       .describe(
         "Active power coefficient for constant current load (P_I). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     current_reactive_power: zod
       .number()
-      .default(interruptibleStandardLoadCurrentReactivePowerDefault)
+      .optional()
       .describe(
         "Reactive power coefficient for constant current load (Q_I). Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     max_constant_active_power: zod
       .number()
-      .default(interruptibleStandardLoadMaxConstantActivePowerDefault)
+      .optional()
       .describe(
         "Maximum active power drawn by constant power load. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     max_constant_reactive_power: zod
       .number()
-      .default(interruptibleStandardLoadMaxConstantReactivePowerDefault)
+      .optional()
       .describe(
         "Maximum reactive power drawn by constant power load. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     max_impedance_active_power: zod
       .number()
-      .default(interruptibleStandardLoadMaxImpedanceActivePowerDefault)
+      .optional()
       .describe(
         "Maximum active power drawn by constant impedance load. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     max_impedance_reactive_power: zod
       .number()
-      .default(interruptibleStandardLoadMaxImpedanceReactivePowerDefault)
+      .optional()
       .describe(
         "Maximum reactive power drawn by constant impedance load. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     max_current_active_power: zod
       .number()
-      .default(interruptibleStandardLoadMaxCurrentActivePowerDefault)
+      .optional()
       .describe(
         "Maximum active power drawn by constant current load. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     max_current_reactive_power: zod
       .number()
-      .default(interruptibleStandardLoadMaxCurrentReactivePowerDefault)
+      .optional()
       .describe(
         "Maximum reactive power drawn by constant current load. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
@@ -60409,7 +58774,6 @@ export const Line = zod
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
-      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
@@ -60464,7 +58828,6 @@ export const Line = zod
         to: zod.number().optional(),
       })
       .optional()
-      .default({ from: 0 as const, to: 0 as const })
       .describe(
         "A pair of values, one at the `from` end and one at the `to` end of a directed edge.",
       ),
@@ -60474,7 +58837,6 @@ export const Line = zod
 export type Line = zod.input<typeof Line>;
 export type LineOutput = zod.output<typeof Line>;
 
-const motorLoadMotorTechnologyDefault = `UNDETERMINED`;
 export const MotorLoad = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -60530,7 +58892,7 @@ export const MotorLoad = zod
       ),
     motor_technology: zod
       .enum(["INDUCTION", "SYNCHRONOUS", "UNDETERMINED"])
-      .default(motorLoadMotorTechnologyDefault)
+      .optional()
       .describe("AC Motor type."),
     dynamic_injector: zod
       .int()
@@ -60544,19 +58906,10 @@ export const MotorLoad = zod
 export type MotorLoad = zod.input<typeof MotorLoad>;
 export type MotorLoadOutput = zod.output<typeof MotorLoad>;
 
-const offlineReserveRequirementDefault = 0;
 const offlineReserveVariableValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const offlineReserveVariableValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const offlineReserveVariableValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const offlineReserveVariableValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const offlineReserveVariableValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const offlineReserveVariableValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const offlineReserveVariableValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const offlineReserveVariableValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -60595,18 +58948,6 @@ const offlineReserveVariableVomCostCurveTypeDefault = `INPUT_OUTPUT`;
 const offlineReserveVariableVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const offlineReserveVariableVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const offlineReserveVariableVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const offlineReserveVariableVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const offlineReserveSustainedTimeDefault = 60;
-const offlineReserveMaxOutputFractionDefault = 1;
-const offlineReserveMaxParticipationFactorDefault = 1;
-const offlineReserveDeployedFractionDefault = 0;
 export const OfflineReserve = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -60627,7 +58968,7 @@ export const OfflineReserve = zod
       ),
     requirement: zod
       .number()
-      .default(offlineReserveRequirementDefault)
+      .optional()
       .describe("The value of required reserves. Units: MW."),
     variable: zod
       .strictObject({
@@ -60722,7 +59063,6 @@ export const OfflineReserve = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(offlineReserveVariableValueCurveOneDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -61519,7 +59859,6 @@ export const OfflineReserve = zod
               .optional()
               .describe("Units: the curve's y-axis unit."),
           })
-          .default(offlineReserveVariableVomCostDefault)
           .describe(
             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
           ),
@@ -61530,25 +59869,25 @@ export const OfflineReserve = zod
       ),
     sustained_time: zod
       .number()
-      .default(offlineReserveSustainedTimeDefault)
+      .optional()
       .describe(
         "The time reserve contribution must be sustained at a specified level. Units: min.",
       ),
     max_output_fraction: zod
       .number()
-      .default(offlineReserveMaxOutputFractionDefault)
+      .optional()
       .describe(
         "The maximum fraction of each device's output that can be assigned to the service.",
       ),
     max_participation_factor: zod
       .number()
-      .default(offlineReserveMaxParticipationFactorDefault)
+      .optional()
       .describe(
         "The maximum portion [0, 1.0] of the reserve that can be contributed per device.",
       ),
     deployed_fraction: zod
       .number()
-      .default(offlineReserveDeployedFractionDefault)
+      .optional()
       .describe(
         "Fraction of service procurement that is assumed to be actually deployed. Most commonly, this is assumed to be either 0.0 or 1.0.",
       ),
@@ -61560,19 +59899,10 @@ export const OfflineReserve = zod
 export type OfflineReserve = zod.input<typeof OfflineReserve>;
 export type OfflineReserveOutput = zod.output<typeof OfflineReserve>;
 
-const onlineReserveRequirementDefault = 0;
 const onlineReserveVariableValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const onlineReserveVariableValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const onlineReserveVariableValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const onlineReserveVariableValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const onlineReserveVariableValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const onlineReserveVariableValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const onlineReserveVariableValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const onlineReserveVariableValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -61611,18 +59941,6 @@ const onlineReserveVariableVomCostCurveTypeDefault = `INPUT_OUTPUT`;
 const onlineReserveVariableVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const onlineReserveVariableVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const onlineReserveVariableVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const onlineReserveVariableVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const onlineReserveSustainedTimeDefault = 60;
-const onlineReserveMaxOutputFractionDefault = 1;
-const onlineReserveMaxParticipationFactorDefault = 1;
-const onlineReserveDeployedFractionDefault = 0;
 export const OnlineReserve = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -61643,7 +59961,7 @@ export const OnlineReserve = zod
       ),
     requirement: zod
       .number()
-      .default(onlineReserveRequirementDefault)
+      .optional()
       .describe("The value of required reserves. Units: MW."),
     variable: zod
       .strictObject({
@@ -61738,7 +60056,6 @@ export const OnlineReserve = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(onlineReserveVariableValueCurveOneDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -62531,7 +60848,6 @@ export const OnlineReserve = zod
               .optional()
               .describe("Units: the curve's y-axis unit."),
           })
-          .default(onlineReserveVariableVomCostDefault)
           .describe(
             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
           ),
@@ -62542,25 +60858,25 @@ export const OnlineReserve = zod
       ),
     sustained_time: zod
       .number()
-      .default(onlineReserveSustainedTimeDefault)
+      .optional()
       .describe(
         "The time reserve contribution must be sustained at a specified level. Units: min.",
       ),
     max_output_fraction: zod
       .number()
-      .default(onlineReserveMaxOutputFractionDefault)
+      .optional()
       .describe(
         "The maximum fraction of each device's output that can be assigned to the service.",
       ),
     max_participation_factor: zod
       .number()
-      .default(onlineReserveMaxParticipationFactorDefault)
+      .optional()
       .describe(
         "The maximum portion [0, 1.0] of the reserve that can be contributed per device.",
       ),
     deployed_fraction: zod
       .number()
-      .default(onlineReserveDeployedFractionDefault)
+      .optional()
       .describe(
         "Fraction of service procurement that is assumed to be actually deployed. Most commonly, this is assumed to be either 0.0 or 1.0.",
       ),
@@ -62579,22 +60895,19 @@ export type OnlineReserveOutput = zod.output<typeof OnlineReserve>;
 export { OperationalFlowLimit } from "../core/models";
 export type { OperationalFlowLimitOutput } from "../core/models";
 
-const plannedOutageMonitoredComponentsDefault: never[] = [];
-const plannedOutageIdentifierDefault = null;
 export const PlannedOutage = zod
   .strictObject({
     id: zod.int(),
     outage_schedule: zod.string(),
     monitored_components: zod
       .array(zod.int())
-      .default(plannedOutageMonitoredComponentsDefault)
+      .optional()
       .describe(
         "IDs of devices whose post-contingency state should be modeled when this outage occurs. Empty by default; semantics of an empty list are decided by the downstream consumer.",
       ),
     identifier: zod
       .string()
       .nullish()
-      .default(plannedOutageIdentifierDefault)
       .describe(
         "Optional user-supplied identifier for the outage, such as a name or a block id. Null when not set.",
       ),
@@ -62650,39 +60963,15 @@ const pointToPointBidSpreadBidOneMinimumEnergyOfferCurveTypeDefault = `INPUT_OUT
 const pointToPointBidSpreadBidOneMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const pointToPointBidSpreadBidOneMinimumEnergyOfferFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidOneMinimumEnergyOfferFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const pointToPointBidSpreadBidOneMinimumEnergyOfferDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const pointToPointBidSpreadBidOneStartUpStartupStagesTypeDefault = `STAGES`;
 const pointToPointBidSpreadBidOneShutDownCurveTypeDefault = `INPUT_OUTPUT`;
 const pointToPointBidSpreadBidOneShutDownFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const pointToPointBidSpreadBidOneShutDownFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidOneShutDownFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const pointToPointBidSpreadBidOneShutDownDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const pointToPointBidSpreadBidOneIncrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const pointToPointBidSpreadBidOneIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const pointToPointBidSpreadBidOneIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidOneIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const pointToPointBidSpreadBidOneIncrementalOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const pointToPointBidSpreadBidOneIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const pointToPointBidSpreadBidOneIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidOneIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -62721,26 +61010,10 @@ const pointToPointBidSpreadBidOneIncrementalOfferCurvesVomCostCurveTypeDefault =
 const pointToPointBidSpreadBidOneIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const pointToPointBidSpreadBidOneIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidOneIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const pointToPointBidSpreadBidOneIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const pointToPointBidSpreadBidOneDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const pointToPointBidSpreadBidOneDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const pointToPointBidSpreadBidOneDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidOneDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const pointToPointBidSpreadBidOneDecrementalOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const pointToPointBidSpreadBidOneDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const pointToPointBidSpreadBidOneDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidOneDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -62779,18 +61052,6 @@ const pointToPointBidSpreadBidOneDecrementalOfferCurvesVomCostCurveTypeDefault =
 const pointToPointBidSpreadBidOneDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const pointToPointBidSpreadBidOneDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidOneDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const pointToPointBidSpreadBidOneDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const pointToPointBidSpreadBidOneIncrementalSlopeDefault = false;
-const pointToPointBidSpreadBidOneDecrementalSlopeDefault = false;
-const pointToPointBidSpreadBidOneCurveStyleDefault = 0;
-const pointToPointBidSpreadBidOneCurveMultistepDefault = 0;
 const pointToPointBidSpreadBidTwoCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const pointToPointBidSpreadBidTwoMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const pointToPointBidSpreadBidTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -62814,14 +61075,6 @@ const pointToPointBidSpreadBidTwoIncrementalOfferCurvesValueCurveOneCurveTypeDef
 const pointToPointBidSpreadBidTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const pointToPointBidSpreadBidTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const pointToPointBidSpreadBidTwoIncrementalOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const pointToPointBidSpreadBidTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const pointToPointBidSpreadBidTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -62860,26 +61113,10 @@ const pointToPointBidSpreadBidTwoIncrementalOfferCurvesVomCostCurveTypeDefault =
 const pointToPointBidSpreadBidTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const pointToPointBidSpreadBidTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const pointToPointBidSpreadBidTwoIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const pointToPointBidSpreadBidTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const pointToPointBidSpreadBidTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const pointToPointBidSpreadBidTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const pointToPointBidSpreadBidTwoDecrementalOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const pointToPointBidSpreadBidTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const pointToPointBidSpreadBidTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -62918,18 +61155,6 @@ const pointToPointBidSpreadBidTwoDecrementalOfferCurvesVomCostCurveTypeDefault =
 const pointToPointBidSpreadBidTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const pointToPointBidSpreadBidTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const pointToPointBidSpreadBidTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const pointToPointBidSpreadBidTwoDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const pointToPointBidSpreadBidTwoIncrementalSlopeDefault = false;
-const pointToPointBidSpreadBidTwoDecrementalSlopeDefault = false;
-const pointToPointBidSpreadBidTwoCurveStyleDefault = 0;
-const pointToPointBidSpreadBidTwoCurveMultistepDefault = 0;
 export const PointToPointBid = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -63049,7 +61274,6 @@ export const PointToPointBid = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(pointToPointBidSpreadBidOneMinimumEnergyOfferDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -63151,7 +61375,6 @@ export const PointToPointBid = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(pointToPointBidSpreadBidOneShutDownDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -63254,9 +61477,6 @@ export const PointToPointBid = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        pointToPointBidSpreadBidOneIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -64069,9 +62289,6 @@ export const PointToPointBid = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    pointToPointBidSpreadBidOneIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -64178,9 +62395,6 @@ export const PointToPointBid = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        pointToPointBidSpreadBidOneDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -64993,9 +63207,6 @@ export const PointToPointBid = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    pointToPointBidSpreadBidOneDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -65010,25 +63221,25 @@ export const PointToPointBid = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(pointToPointBidSpreadBidOneIncrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(pointToPointBidSpreadBidOneDecrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(pointToPointBidSpreadBidOneCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(pointToPointBidSpreadBidOneCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -65519,9 +63730,6 @@ export const PointToPointBid = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        pointToPointBidSpreadBidTwoIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -66334,9 +64542,6 @@ export const PointToPointBid = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    pointToPointBidSpreadBidTwoIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -66443,9 +64648,6 @@ export const PointToPointBid = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        pointToPointBidSpreadBidTwoDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -67258,9 +65460,6 @@ export const PointToPointBid = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    pointToPointBidSpreadBidTwoDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -67275,25 +65474,25 @@ export const PointToPointBid = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(pointToPointBidSpreadBidTwoIncrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(pointToPointBidSpreadBidTwoDecrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(pointToPointBidSpreadBidTwoCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(pointToPointBidSpreadBidTwoCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -67374,7 +65573,6 @@ export const PowerLoad = zod
     conformity: zod
       .enum(["NON_CONFORMING", "CONFORMING", "UNDEFINED"])
       .optional()
-      .default("UNDEFINED")
       .describe(
         "WECC classification of how a load tracks voltage and frequency variation, used in dynamic studies to decide how it is modeled during a disturbance. `CONFORMING` responds predictably and follows standard load modeling practice; `NON_CONFORMING` does not, as with a constant power load or one behind a complex control system; `UNDEFINED` leaves the classification unstated.",
       ),
@@ -67395,14 +65593,6 @@ const renewableDispatchOperationCostOneCurtailmentCostValueCurveOneCurveTypeDefa
 const renewableDispatchOperationCostOneCurtailmentCostValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostOneCurtailmentCostValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostOneCurtailmentCostValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostOneCurtailmentCostValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const renewableDispatchOperationCostOneCurtailmentCostValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const renewableDispatchOperationCostOneCurtailmentCostValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostOneCurtailmentCostValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -67441,27 +65631,10 @@ const renewableDispatchOperationCostOneCurtailmentCostVomCostCurveTypeDefault = 
 const renewableDispatchOperationCostOneCurtailmentCostVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostOneCurtailmentCostVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostOneCurtailmentCostVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostOneCurtailmentCostVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const renewableDispatchOperationCostOneVariableOperationCostValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const renewableDispatchOperationCostOneVariableOperationCostValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostOneVariableOperationCostValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostOneVariableOperationCostValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostOneVariableOperationCostValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const renewableDispatchOperationCostOneVariableOperationCostValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const renewableDispatchOperationCostOneVariableOperationCostValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostOneVariableOperationCostValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -67500,54 +65673,20 @@ const renewableDispatchOperationCostOneVariableOperationCostVomCostCurveTypeDefa
 const renewableDispatchOperationCostOneVariableOperationCostVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostOneVariableOperationCostVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostOneVariableOperationCostVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostOneVariableOperationCostVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const renewableDispatchOperationCostOneFixedDefault = 0;
 const renewableDispatchOperationCostTwoCostTypeDefault = `MARKET_BID`;
 const renewableDispatchOperationCostTwoMinimumEnergyOfferCurveTypeDefault = `INPUT_OUTPUT`;
 const renewableDispatchOperationCostTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostTwoMinimumEnergyOfferFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostTwoMinimumEnergyOfferFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostTwoMinimumEnergyOfferDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const renewableDispatchOperationCostTwoStartUpStartupStagesTypeDefault = `STAGES`;
 const renewableDispatchOperationCostTwoShutDownCurveTypeDefault = `INPUT_OUTPUT`;
 const renewableDispatchOperationCostTwoShutDownFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostTwoShutDownFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostTwoShutDownFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostTwoShutDownDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const renewableDispatchOperationCostTwoIncrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const renewableDispatchOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const renewableDispatchOperationCostTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const renewableDispatchOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -67586,27 +65725,10 @@ const renewableDispatchOperationCostTwoIncrementalOfferCurvesVomCostCurveTypeDef
 const renewableDispatchOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostTwoIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const renewableDispatchOperationCostTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const renewableDispatchOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const renewableDispatchOperationCostTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const renewableDispatchOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -67645,18 +65767,6 @@ const renewableDispatchOperationCostTwoDecrementalOfferCurvesVomCostCurveTypeDef
 const renewableDispatchOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostTwoDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const renewableDispatchOperationCostTwoIncrementalSlopeDefault = false;
-const renewableDispatchOperationCostTwoDecrementalSlopeDefault = false;
-const renewableDispatchOperationCostTwoCurveStyleDefault = 0;
-const renewableDispatchOperationCostTwoCurveMultistepDefault = 0;
 const renewableDispatchOperationCostThreeCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const renewableDispatchOperationCostThreeMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const renewableDispatchOperationCostThreeMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -67680,15 +65790,6 @@ const renewableDispatchOperationCostThreeIncrementalOfferCurvesValueCurveOneCurv
 const renewableDispatchOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const renewableDispatchOperationCostThreeIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const renewableDispatchOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -67727,28 +65828,10 @@ const renewableDispatchOperationCostThreeIncrementalOfferCurvesVomCostCurveTypeD
 const renewableDispatchOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostThreeIncrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const renewableDispatchOperationCostThreeDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const renewableDispatchOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const renewableDispatchOperationCostThreeDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const renewableDispatchOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -67787,33 +65870,11 @@ const renewableDispatchOperationCostThreeDecrementalOfferCurvesVomCostCurveTypeD
 const renewableDispatchOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostThreeDecrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
-const renewableDispatchOperationCostThreeIncrementalSlopeDefault = false;
-const renewableDispatchOperationCostThreeDecrementalSlopeDefault = false;
-const renewableDispatchOperationCostThreeCurveStyleDefault = 0;
-const renewableDispatchOperationCostThreeCurveMultistepDefault = 0;
 const renewableDispatchOperationCostFourCostTypeDefault = `IMPORT_EXPORT_TIME_SERIES`;
 const renewableDispatchOperationCostFourImportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const renewableDispatchOperationCostFourImportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostFourImportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostFourImportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostFourImportOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const renewableDispatchOperationCostFourImportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const renewableDispatchOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -67852,27 +65913,10 @@ const renewableDispatchOperationCostFourImportOfferCurvesVomCostCurveTypeDefault
 const renewableDispatchOperationCostFourImportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostFourImportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostFourImportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostFourImportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const renewableDispatchOperationCostFourExportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const renewableDispatchOperationCostFourExportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostFourExportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostFourExportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostFourExportOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const renewableDispatchOperationCostFourExportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const renewableDispatchOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -67911,14 +65955,6 @@ const renewableDispatchOperationCostFourExportOfferCurvesVomCostCurveTypeDefault
 const renewableDispatchOperationCostFourExportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const renewableDispatchOperationCostFourExportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const renewableDispatchOperationCostFourExportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const renewableDispatchOperationCostFourExportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 export const RenewableDispatch = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -68099,9 +66135,6 @@ export const RenewableDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        renewableDispatchOperationCostOneCurtailmentCostValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -68914,9 +66947,6 @@ export const RenewableDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    renewableDispatchOperationCostOneCurtailmentCostVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -69024,9 +67054,6 @@ export const RenewableDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        renewableDispatchOperationCostOneVariableOperationCostValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -69839,9 +67866,6 @@ export const RenewableDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    renewableDispatchOperationCostOneVariableOperationCostVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -69849,9 +67873,7 @@ export const RenewableDispatch = zod
               .describe(
                 "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
               ),
-            fixed: zod
-              .number()
-              .default(renewableDispatchOperationCostOneFixedDefault),
+            fixed: zod.number().optional(),
           })
           .describe("Cost representation for renewable generation units"),
         zod
@@ -69945,9 +67967,6 @@ export const RenewableDispatch = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(
-                renewableDispatchOperationCostTwoMinimumEnergyOfferDefault,
-              )
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -70051,7 +68070,6 @@ export const RenewableDispatch = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(renewableDispatchOperationCostTwoShutDownDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -70154,9 +68172,6 @@ export const RenewableDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        renewableDispatchOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -70969,9 +68984,6 @@ export const RenewableDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    renewableDispatchOperationCostTwoIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -71078,9 +69090,6 @@ export const RenewableDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        renewableDispatchOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -71893,9 +69902,6 @@ export const RenewableDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    renewableDispatchOperationCostTwoDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -71910,25 +69916,25 @@ export const RenewableDispatch = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(renewableDispatchOperationCostTwoIncrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(renewableDispatchOperationCostTwoDecrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(renewableDispatchOperationCostTwoCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(renewableDispatchOperationCostTwoCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -72421,9 +70427,6 @@ export const RenewableDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        renewableDispatchOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -73236,9 +71239,6 @@ export const RenewableDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    renewableDispatchOperationCostThreeIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -73345,9 +71345,6 @@ export const RenewableDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        renewableDispatchOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -74160,9 +72157,6 @@ export const RenewableDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    renewableDispatchOperationCostThreeDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -74177,29 +72171,25 @@ export const RenewableDispatch = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(
-                renewableDispatchOperationCostThreeIncrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(
-                renewableDispatchOperationCostThreeDecrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(renewableDispatchOperationCostThreeCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(renewableDispatchOperationCostThreeCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -74311,9 +72301,6 @@ export const RenewableDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        renewableDispatchOperationCostFourImportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -75126,9 +73113,6 @@ export const RenewableDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    renewableDispatchOperationCostFourImportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -75235,9 +73219,6 @@ export const RenewableDispatch = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        renewableDispatchOperationCostFourExportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -76050,9 +74031,6 @@ export const RenewableDispatch = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    renewableDispatchOperationCostFourExportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -76215,20 +74193,10 @@ export type ServiceAssociation = zod.input<typeof ServiceAssociation>;
 export type ServiceAssociationOutput = zod.output<typeof ServiceAssociation>;
 
 const shiftablePowerLoadOperationCostOneCostTypeDefault = `LOAD`;
-const shiftablePowerLoadOperationCostOneFixedDefault = 0;
 const shiftablePowerLoadOperationCostOneVariableOperationCostValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const shiftablePowerLoadOperationCostOneVariableOperationCostValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostOneVariableOperationCostValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostOneVariableOperationCostValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostOneVariableOperationCostValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const shiftablePowerLoadOperationCostOneVariableOperationCostValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const shiftablePowerLoadOperationCostOneVariableOperationCostValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostOneVariableOperationCostValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -76267,53 +74235,20 @@ const shiftablePowerLoadOperationCostOneVariableOperationCostVomCostCurveTypeDef
 const shiftablePowerLoadOperationCostOneVariableOperationCostVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostOneVariableOperationCostVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostOneVariableOperationCostVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostOneVariableOperationCostVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const shiftablePowerLoadOperationCostTwoCostTypeDefault = `MARKET_BID`;
 const shiftablePowerLoadOperationCostTwoMinimumEnergyOfferCurveTypeDefault = `INPUT_OUTPUT`;
 const shiftablePowerLoadOperationCostTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostTwoMinimumEnergyOfferFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostTwoMinimumEnergyOfferFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostTwoMinimumEnergyOfferDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const shiftablePowerLoadOperationCostTwoStartUpStartupStagesTypeDefault = `STAGES`;
 const shiftablePowerLoadOperationCostTwoShutDownCurveTypeDefault = `INPUT_OUTPUT`;
 const shiftablePowerLoadOperationCostTwoShutDownFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostTwoShutDownFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostTwoShutDownFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostTwoShutDownDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -76352,27 +74287,10 @@ const shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesVomCostCurveTypeDe
 const shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -76411,18 +74329,6 @@ const shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesVomCostCurveTypeDe
 const shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const shiftablePowerLoadOperationCostTwoIncrementalSlopeDefault = false;
-const shiftablePowerLoadOperationCostTwoDecrementalSlopeDefault = false;
-const shiftablePowerLoadOperationCostTwoCurveStyleDefault = 0;
-const shiftablePowerLoadOperationCostTwoCurveMultistepDefault = 0;
 const shiftablePowerLoadOperationCostThreeCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const shiftablePowerLoadOperationCostThreeMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const shiftablePowerLoadOperationCostThreeMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -76446,15 +74352,6 @@ const shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneCur
 const shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -76493,28 +74390,10 @@ const shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesVomCostCurveType
 const shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -76553,33 +74432,11 @@ const shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesVomCostCurveType
 const shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
-const shiftablePowerLoadOperationCostThreeIncrementalSlopeDefault = false;
-const shiftablePowerLoadOperationCostThreeDecrementalSlopeDefault = false;
-const shiftablePowerLoadOperationCostThreeCurveStyleDefault = 0;
-const shiftablePowerLoadOperationCostThreeCurveMultistepDefault = 0;
 const shiftablePowerLoadOperationCostFourCostTypeDefault = `IMPORT_EXPORT_TIME_SERIES`;
 const shiftablePowerLoadOperationCostFourImportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const shiftablePowerLoadOperationCostFourImportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostFourImportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostFourImportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostFourImportOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const shiftablePowerLoadOperationCostFourImportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const shiftablePowerLoadOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -76618,27 +74475,10 @@ const shiftablePowerLoadOperationCostFourImportOfferCurvesVomCostCurveTypeDefaul
 const shiftablePowerLoadOperationCostFourImportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostFourImportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostFourImportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostFourImportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const shiftablePowerLoadOperationCostFourExportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const shiftablePowerLoadOperationCostFourExportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostFourExportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostFourExportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostFourExportOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const shiftablePowerLoadOperationCostFourExportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const shiftablePowerLoadOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -76677,14 +74517,6 @@ const shiftablePowerLoadOperationCostFourExportOfferCurvesVomCostCurveTypeDefaul
 const shiftablePowerLoadOperationCostFourExportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const shiftablePowerLoadOperationCostFourExportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const shiftablePowerLoadOperationCostFourExportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const shiftablePowerLoadOperationCostFourExportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 export const ShiftablePowerLoad = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -76747,9 +74579,7 @@ export const ShiftablePowerLoad = zod
             cost_type: zod
               .literal("LOAD")
               .default(shiftablePowerLoadOperationCostOneCostTypeDefault),
-            fixed: zod
-              .number()
-              .default(shiftablePowerLoadOperationCostOneFixedDefault),
+            fixed: zod.number().optional(),
             variable_operation_cost: zod
               .strictObject({
                 power_units: zod
@@ -76849,9 +74679,6 @@ export const ShiftablePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        shiftablePowerLoadOperationCostOneVariableOperationCostValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -77664,9 +75491,6 @@ export const ShiftablePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    shiftablePowerLoadOperationCostOneVariableOperationCostVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -77767,9 +75591,6 @@ export const ShiftablePowerLoad = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(
-                shiftablePowerLoadOperationCostTwoMinimumEnergyOfferDefault,
-              )
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -77873,7 +75694,6 @@ export const ShiftablePowerLoad = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(shiftablePowerLoadOperationCostTwoShutDownDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -77976,9 +75796,6 @@ export const ShiftablePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -78791,9 +76608,6 @@ export const ShiftablePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    shiftablePowerLoadOperationCostTwoIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -78900,9 +76714,6 @@ export const ShiftablePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -79715,9 +77526,6 @@ export const ShiftablePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    shiftablePowerLoadOperationCostTwoDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -79732,29 +77540,25 @@ export const ShiftablePowerLoad = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(
-                shiftablePowerLoadOperationCostTwoIncrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(
-                shiftablePowerLoadOperationCostTwoDecrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(shiftablePowerLoadOperationCostTwoCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(shiftablePowerLoadOperationCostTwoCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -80247,9 +78051,6 @@ export const ShiftablePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -81062,9 +78863,6 @@ export const ShiftablePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    shiftablePowerLoadOperationCostThreeIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -81171,9 +78969,6 @@ export const ShiftablePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -81986,9 +79781,6 @@ export const ShiftablePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    shiftablePowerLoadOperationCostThreeDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -82003,31 +79795,25 @@ export const ShiftablePowerLoad = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(
-                shiftablePowerLoadOperationCostThreeIncrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(
-                shiftablePowerLoadOperationCostThreeDecrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(shiftablePowerLoadOperationCostThreeCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(
-                shiftablePowerLoadOperationCostThreeCurveMultistepDefault,
-              )
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -82139,9 +79925,6 @@ export const ShiftablePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        shiftablePowerLoadOperationCostFourImportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -82954,9 +80737,6 @@ export const ShiftablePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    shiftablePowerLoadOperationCostFourImportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -83063,9 +80843,6 @@ export const ShiftablePowerLoad = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        shiftablePowerLoadOperationCostFourExportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -83878,9 +81655,6 @@ export const ShiftablePowerLoad = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    shiftablePowerLoadOperationCostFourExportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -83917,26 +81691,11 @@ export const ShiftablePowerLoad = zod
 export type ShiftablePowerLoad = zod.input<typeof ShiftablePowerLoad>;
 export type ShiftablePowerLoadOutput = zod.output<typeof ShiftablePowerLoad>;
 
-const sourceActivePowerDefault = 0;
-const sourceReactivePowerDefault = 0;
-const sourceRThDefault = 0;
-const sourceXThDefault = 0;
-const sourceInternalVoltageDefault = 1;
-const sourceInternalAngleDefault = 0;
-const sourceBasePowerDefault = 100;
 const sourceOperationCostOneCostTypeDefault = `IMPORTEXPORT`;
 const sourceOperationCostOneImportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const sourceOperationCostOneImportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const sourceOperationCostOneImportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostOneImportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const sourceOperationCostOneImportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const sourceOperationCostOneImportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const sourceOperationCostOneImportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostOneImportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -83975,26 +81734,10 @@ const sourceOperationCostOneImportOfferCurvesVomCostCurveTypeDefault = `INPUT_OU
 const sourceOperationCostOneImportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const sourceOperationCostOneImportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostOneImportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const sourceOperationCostOneImportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const sourceOperationCostOneExportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const sourceOperationCostOneExportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const sourceOperationCostOneExportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostOneExportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const sourceOperationCostOneExportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const sourceOperationCostOneExportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const sourceOperationCostOneExportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostOneExportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -84033,14 +81776,6 @@ const sourceOperationCostOneExportOfferCurvesVomCostCurveTypeDefault = `INPUT_OU
 const sourceOperationCostOneExportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const sourceOperationCostOneExportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostOneExportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const sourceOperationCostOneExportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const sourceOperationCostTwoCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const sourceOperationCostTwoMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const sourceOperationCostTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -84064,14 +81799,6 @@ const sourceOperationCostTwoIncrementalOfferCurvesValueCurveOneCurveTypeDefault 
 const sourceOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const sourceOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const sourceOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const sourceOperationCostTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const sourceOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -84110,26 +81837,10 @@ const sourceOperationCostTwoIncrementalOfferCurvesVomCostCurveTypeDefault = `INP
 const sourceOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const sourceOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const sourceOperationCostTwoIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const sourceOperationCostTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const sourceOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const sourceOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const sourceOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const sourceOperationCostTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const sourceOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -84168,31 +81879,11 @@ const sourceOperationCostTwoDecrementalOfferCurvesVomCostCurveTypeDefault = `INP
 const sourceOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const sourceOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const sourceOperationCostTwoDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const sourceOperationCostTwoIncrementalSlopeDefault = false;
-const sourceOperationCostTwoDecrementalSlopeDefault = false;
-const sourceOperationCostTwoCurveStyleDefault = 0;
-const sourceOperationCostTwoCurveMultistepDefault = 0;
 const sourceOperationCostThreeCostTypeDefault = `IMPORT_EXPORT_TIME_SERIES`;
 const sourceOperationCostThreeImportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const sourceOperationCostThreeImportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const sourceOperationCostThreeImportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostThreeImportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const sourceOperationCostThreeImportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const sourceOperationCostThreeImportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const sourceOperationCostThreeImportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostThreeImportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -84231,26 +81922,10 @@ const sourceOperationCostThreeImportOfferCurvesVomCostCurveTypeDefault = `INPUT_
 const sourceOperationCostThreeImportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const sourceOperationCostThreeImportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostThreeImportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const sourceOperationCostThreeImportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const sourceOperationCostThreeExportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const sourceOperationCostThreeExportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const sourceOperationCostThreeExportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostThreeExportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const sourceOperationCostThreeExportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const sourceOperationCostThreeExportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const sourceOperationCostThreeExportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostThreeExportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -84289,59 +81964,6 @@ const sourceOperationCostThreeExportOfferCurvesVomCostCurveTypeDefault = `INPUT_
 const sourceOperationCostThreeExportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const sourceOperationCostThreeExportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const sourceOperationCostThreeExportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const sourceOperationCostThreeExportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const sourceOperationCostDefault = {
-  cost_type: "IMPORTEXPORT" as const,
-  import_offer_curves: {
-    power_units: "NATURAL_UNITS" as const,
-    variable_cost_type: "COST" as const,
-    value_curve: {
-      curve_type: "INPUT_OUTPUT" as const,
-      function_data: {
-        function_type: "LINEAR" as const,
-        constant_term: 0 as const,
-        proportional_term: 0 as const,
-      },
-    },
-    vom_cost: {
-      curve_type: "INPUT_OUTPUT" as const,
-      function_data: {
-        function_type: "LINEAR" as const,
-        constant_term: 0 as const,
-        proportional_term: 0 as const,
-      },
-    },
-  },
-  export_offer_curves: {
-    power_units: "NATURAL_UNITS" as const,
-    variable_cost_type: "COST" as const,
-    value_curve: {
-      curve_type: "INPUT_OUTPUT" as const,
-      function_data: {
-        function_type: "LINEAR" as const,
-        constant_term: 0 as const,
-        proportional_term: 0 as const,
-      },
-    },
-    vom_cost: {
-      curve_type: "INPUT_OUTPUT" as const,
-      function_data: {
-        function_type: "LINEAR" as const,
-        constant_term: 0 as const,
-        proportional_term: 0 as const,
-      },
-    },
-  },
-  energy_import_weekly_limit: 1000000 as const,
-  energy_export_weekly_limit: 1000000 as const,
-};
 export const Source = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -84360,13 +81982,13 @@ export const Source = zod
       .describe("ID of the bus that this component is connected to."),
     active_power: zod
       .number()
-      .default(sourceActivePowerDefault)
+      .optional()
       .describe(
         "Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     reactive_power: zod
       .number()
-      .default(sourceReactivePowerDefault)
+      .optional()
       .describe(
         "Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
@@ -84376,7 +81998,6 @@ export const Source = zod
         min: zod.number().optional(),
       })
       .optional()
-      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -84386,36 +82007,34 @@ export const Source = zod
         min: zod.number().optional(),
       })
       .optional()
-      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
-      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
     R_th: zod
       .number()
-      .default(sourceRThDefault)
+      .optional()
       .describe(
         "Source Thevenin resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
       ),
     X_th: zod
       .number()
-      .default(sourceXThDefault)
+      .optional()
       .describe(
         "Source Thevenin reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
       ),
     internal_voltage: zod
       .number()
-      .default(sourceInternalVoltageDefault)
+      .optional()
       .describe("Internal voltage. Units: pu."),
     internal_angle: zod
       .number()
-      .default(sourceInternalAngleDefault)
+      .optional()
       .describe("Internal angle. Units: rad."),
     base_voltage: zod
       .number()
@@ -84423,7 +82042,7 @@ export const Source = zod
       .describe("The base voltage. Units: kV."),
     base_power: zod
       .number()
-      .default(sourceBasePowerDefault)
+      .optional()
       .describe("Base power of the unit for per unitization. Units: MVA."),
     power_units: zod
       .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
@@ -84536,9 +82155,6 @@ export const Source = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        sourceOperationCostOneImportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -85351,9 +82967,6 @@ export const Source = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    sourceOperationCostOneImportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -85461,9 +83074,6 @@ export const Source = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        sourceOperationCostOneExportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -86276,9 +83886,6 @@ export const Source = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    sourceOperationCostOneExportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -86784,9 +84391,6 @@ export const Source = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        sourceOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -87599,9 +85203,6 @@ export const Source = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    sourceOperationCostTwoIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -87708,9 +85309,6 @@ export const Source = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        sourceOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -88523,9 +86121,6 @@ export const Source = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    sourceOperationCostTwoDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -88540,25 +86135,25 @@ export const Source = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(sourceOperationCostTwoIncrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(sourceOperationCostTwoDecrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(sourceOperationCostTwoCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(sourceOperationCostTwoCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -88670,9 +86265,6 @@ export const Source = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        sourceOperationCostThreeImportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -89485,9 +87077,6 @@ export const Source = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    sourceOperationCostThreeImportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -89594,9 +87183,6 @@ export const Source = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        sourceOperationCostThreeExportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -90409,9 +87995,6 @@ export const Source = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    sourceOperationCostThreeExportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -90435,7 +88018,6 @@ export const Source = zod
             "Cost representation for time-varying imports and exports with neighboring areas. The static counterpart is ImportExportCost.",
           ),
       ])
-      .default(sourceOperationCostDefault)
       .describe(
         "Cost of importing and exporting power at the source. or MarketBidCost",
       ),
@@ -90451,18 +88033,6 @@ export const Source = zod
 export type Source = zod.input<typeof Source>;
 export type SourceOutput = zod.output<typeof Source>;
 
-const standardLoadConstantActivePowerDefault = 0;
-const standardLoadConstantReactivePowerDefault = 0;
-const standardLoadImpedanceActivePowerDefault = 0;
-const standardLoadImpedanceReactivePowerDefault = 0;
-const standardLoadCurrentActivePowerDefault = 0;
-const standardLoadCurrentReactivePowerDefault = 0;
-const standardLoadMaxConstantActivePowerDefault = 0;
-const standardLoadMaxConstantReactivePowerDefault = 0;
-const standardLoadMaxImpedanceActivePowerDefault = 0;
-const standardLoadMaxImpedanceReactivePowerDefault = 0;
-const standardLoadMaxCurrentActivePowerDefault = 0;
-const standardLoadMaxCurrentReactivePowerDefault = 0;
 export const StandardLoad = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -90489,80 +88059,79 @@ export const StandardLoad = zod
       ),
     constant_active_power: zod
       .number()
-      .default(standardLoadConstantActivePowerDefault)
+      .optional()
       .describe(
         "Constant active power demand (P_P). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     constant_reactive_power: zod
       .number()
-      .default(standardLoadConstantReactivePowerDefault)
+      .optional()
       .describe(
         "Constant reactive power demand (Q_P). Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     impedance_active_power: zod
       .number()
-      .default(standardLoadImpedanceActivePowerDefault)
+      .optional()
       .describe(
         "Active power coefficient for constant impedance load (P_Z). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     impedance_reactive_power: zod
       .number()
-      .default(standardLoadImpedanceReactivePowerDefault)
+      .optional()
       .describe(
         "Reactive power coefficient for constant impedance load (Q_Z). Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     current_active_power: zod
       .number()
-      .default(standardLoadCurrentActivePowerDefault)
+      .optional()
       .describe(
         "Active power coefficient for constant current load (P_I). Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     current_reactive_power: zod
       .number()
-      .default(standardLoadCurrentReactivePowerDefault)
+      .optional()
       .describe(
         "Reactive power coefficient for constant current load (Q_I). Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     max_constant_active_power: zod
       .number()
-      .default(standardLoadMaxConstantActivePowerDefault)
+      .optional()
       .describe(
         "Maximum active power drawn by constant power load. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     max_constant_reactive_power: zod
       .number()
-      .default(standardLoadMaxConstantReactivePowerDefault)
+      .optional()
       .describe(
         "Maximum reactive power drawn by constant power load. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     max_impedance_active_power: zod
       .number()
-      .default(standardLoadMaxImpedanceActivePowerDefault)
+      .optional()
       .describe(
         "Maximum active power drawn by constant impedance load. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     max_impedance_reactive_power: zod
       .number()
-      .default(standardLoadMaxImpedanceReactivePowerDefault)
+      .optional()
       .describe(
         "Maximum reactive power drawn by constant impedance load. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     max_current_active_power: zod
       .number()
-      .default(standardLoadMaxCurrentActivePowerDefault)
+      .optional()
       .describe(
         "Maximum active power drawn by constant current load. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     max_current_reactive_power: zod
       .number()
-      .default(standardLoadMaxCurrentReactivePowerDefault)
+      .optional()
       .describe(
         "Maximum reactive power drawn by constant current load. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     conformity: zod
       .enum(["NON_CONFORMING", "CONFORMING", "UNDEFINED"])
       .optional()
-      .default("UNDEFINED")
       .describe(
         "WECC classification of how a load tracks voltage and frequency variation, used in dynamic studies to decide how it is modeled during a disturbance. `CONFORMING` responds predictably and follows standard load modeling practice; `NON_CONFORMING` does not, as with a constant power load or one behind a complex control system; `UNDEFINED` leaves the classification unstated.",
       ),
@@ -90578,7 +88147,6 @@ export const StandardLoad = zod
 export type StandardLoad = zod.input<typeof StandardLoad>;
 export type StandardLoadOutput = zod.output<typeof StandardLoad>;
 
-const substationGroundingResistanceDefault = 0.1;
 export const Substation = zod
   .strictObject({
     id: zod.int(),
@@ -90588,7 +88156,6 @@ export const Substation = zod
       .describe("Substation number in the source power flow data"),
     grounding_resistance: zod
       .number()
-      .default(substationGroundingResistanceDefault)
       .describe("Substation grounding DC resistance. Units: ohm."),
   })
   .describe(
@@ -90598,7 +88165,6 @@ export const Substation = zod
 export type Substation = zod.input<typeof Substation>;
 export type SubstationOutput = zod.output<typeof Substation>;
 
-const switchedAdmittanceThreeRegulatedBusNumberDefault = 0;
 export const SwitchedAdmittance = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -90618,7 +88184,6 @@ export const SwitchedAdmittance = zod
     admittance_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_MVAR"])
       .optional()
-      .default("COMPONENT_MVAR")
       .describe(
         "Subset of AdmittanceUnitBasis for fixed and switched shunts: omits COMPONENT_BASE because a shunt has no device MVA rating to per-unitize against. NATURAL_UNITS: physical siemens. COMPONENT_MVAR: reactive power at unity voltage (Mvar for susceptance, MW for conductance) — PSS/E RAW native for shunts.",
       ),
@@ -90683,13 +88248,12 @@ export const SwitchedAdmittance = zod
         "DISCRETE_REACTIVE_FACTS",
       ])
       .optional()
-      .default("FIXED")
       .describe(
         "Control mode of a switched shunt admittance (PSS/E MODSW). `UNDEFINED` leaves the mode unspecified; `FIXED` holds the admittance constant. `DISCRETE_VOLTAGE` and `CONTINUOUS_VOLTAGE` regulate voltage in steps or continuously and use `voltage_limits`. `DISCRETE_REACTIVE_PLANT`, `DISCRETE_REACTIVE_VSC`, `DISCRETE_ADMITTANCE_REMOTE` and `DISCRETE_REACTIVE_FACTS` regulate a plant's, a voltage-source-converter terminal's, a remote bus's, or a FACTS device's reactive quantity in steps and use `reactive_power_range_limits`.",
       ),
     regulated_bus_number: zod
       .int()
-      .default(switchedAdmittanceThreeRegulatedBusNumberDefault)
+      .optional()
       .describe(
         "Bus number whose voltage/quantity this shunt regulates; 0 means local bus (PSS/E SWREM/NREG). Units: 1.",
       ),
@@ -90707,7 +88271,6 @@ export const SwitchedAdmittance = zod
 export type SwitchedAdmittance = zod.input<typeof SwitchedAdmittance>;
 export type SwitchedAdmittanceOutput = zod.output<typeof SwitchedAdmittance>;
 
-const synchronousCondenserActivePowerLossesDefault = 0;
 export const SynchronousCondenser = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -90753,7 +88316,7 @@ export const SynchronousCondenser = zod
       ),
     active_power_losses: zod
       .number()
-      .default(synchronousCondenserActivePowerLossesDefault)
+      .optional()
       .describe(
         "Active power loss incurred by having the unit online. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
@@ -90850,15 +88413,6 @@ const thermalMultiStartOperationCostOneVariableOperationCostOneValueCurveOneCurv
 const thermalMultiStartOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostOneVariableOperationCostOneValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalMultiStartOperationCostOneVariableOperationCostOneValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalMultiStartOperationCostOneVariableOperationCostOneValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostOneVariableOperationCostOneValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -90897,41 +88451,14 @@ const thermalMultiStartOperationCostOneVariableOperationCostOneVomCostCurveTypeD
 const thermalMultiStartOperationCostOneVariableOperationCostOneVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostOneVariableOperationCostOneVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostOneVariableOperationCostOneVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostOneVariableOperationCostOneVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalMultiStartOperationCostOneVariableOperationCostTwoStartupFuelOfftakeCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalMultiStartOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostOneVariableOperationCostTwoStartupFuelOfftakeDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalMultiStartOperationCostOneVariableOperationCostTwoValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalMultiStartOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostOneVariableOperationCostTwoValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalMultiStartOperationCostOneVariableOperationCostTwoValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalMultiStartOperationCostOneVariableOperationCostTwoValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostOneVariableOperationCostTwoValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -90970,54 +88497,20 @@ const thermalMultiStartOperationCostOneVariableOperationCostTwoVomCostCurveTypeD
 const thermalMultiStartOperationCostOneVariableOperationCostTwoVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostOneVariableOperationCostTwoVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostOneVariableOperationCostTwoVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostOneVariableOperationCostTwoVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalMultiStartOperationCostTwoCostTypeDefault = `MARKET_BID`;
 const thermalMultiStartOperationCostTwoMinimumEnergyOfferCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalMultiStartOperationCostTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostTwoMinimumEnergyOfferFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostTwoMinimumEnergyOfferFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostTwoMinimumEnergyOfferDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const thermalMultiStartOperationCostTwoStartUpStartupStagesTypeDefault = `STAGES`;
 const thermalMultiStartOperationCostTwoShutDownCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalMultiStartOperationCostTwoShutDownFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostTwoShutDownFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostTwoShutDownFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostTwoShutDownDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const thermalMultiStartOperationCostTwoIncrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalMultiStartOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalMultiStartOperationCostTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalMultiStartOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -91056,27 +88549,10 @@ const thermalMultiStartOperationCostTwoIncrementalOfferCurvesVomCostCurveTypeDef
 const thermalMultiStartOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostTwoIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const thermalMultiStartOperationCostTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalMultiStartOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalMultiStartOperationCostTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalMultiStartOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -91115,18 +88591,6 @@ const thermalMultiStartOperationCostTwoDecrementalOfferCurvesVomCostCurveTypeDef
 const thermalMultiStartOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostTwoDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const thermalMultiStartOperationCostTwoIncrementalSlopeDefault = false;
-const thermalMultiStartOperationCostTwoDecrementalSlopeDefault = false;
-const thermalMultiStartOperationCostTwoCurveStyleDefault = 0;
-const thermalMultiStartOperationCostTwoCurveMultistepDefault = 0;
 const thermalMultiStartOperationCostThreeCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const thermalMultiStartOperationCostThreeMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const thermalMultiStartOperationCostThreeMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -91150,15 +88614,6 @@ const thermalMultiStartOperationCostThreeIncrementalOfferCurvesValueCurveOneCurv
 const thermalMultiStartOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalMultiStartOperationCostThreeIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalMultiStartOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -91197,28 +88652,10 @@ const thermalMultiStartOperationCostThreeIncrementalOfferCurvesVomCostCurveTypeD
 const thermalMultiStartOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostThreeIncrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalMultiStartOperationCostThreeDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalMultiStartOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalMultiStartOperationCostThreeDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalMultiStartOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -91257,33 +88694,11 @@ const thermalMultiStartOperationCostThreeDecrementalOfferCurvesVomCostCurveTypeD
 const thermalMultiStartOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostThreeDecrementalOfferCurvesVomCostDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
-const thermalMultiStartOperationCostThreeIncrementalSlopeDefault = false;
-const thermalMultiStartOperationCostThreeDecrementalSlopeDefault = false;
-const thermalMultiStartOperationCostThreeCurveStyleDefault = 0;
-const thermalMultiStartOperationCostThreeCurveMultistepDefault = 0;
 const thermalMultiStartOperationCostFourCostTypeDefault = `IMPORT_EXPORT_TIME_SERIES`;
 const thermalMultiStartOperationCostFourImportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalMultiStartOperationCostFourImportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostFourImportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostFourImportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostFourImportOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalMultiStartOperationCostFourImportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalMultiStartOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -91322,27 +88737,10 @@ const thermalMultiStartOperationCostFourImportOfferCurvesVomCostCurveTypeDefault
 const thermalMultiStartOperationCostFourImportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostFourImportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostFourImportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostFourImportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const thermalMultiStartOperationCostFourExportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalMultiStartOperationCostFourExportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostFourExportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostFourExportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostFourExportOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalMultiStartOperationCostFourExportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalMultiStartOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -91381,15 +88779,6 @@ const thermalMultiStartOperationCostFourExportOfferCurvesVomCostCurveTypeDefault
 const thermalMultiStartOperationCostFourExportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalMultiStartOperationCostFourExportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalMultiStartOperationCostFourExportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalMultiStartOperationCostFourExportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const thermalMultiStartTimeAtStatusDefault = 600000;
 export const ThermalMultiStart = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -91417,7 +88806,6 @@ export const ThermalMultiStart = zod
         "MUST_RUN",
       ])
       .optional()
-      .default("COMMITTED")
       .describe(
         "Why a committable unit is (or would be) committed, orthogonal to its operational state. UNCOMMITTED: not committed, offline but available. COMMITTED: committed by the scheduling process (a planning model's commitment decision or a cleared schedule). SELF_SCHEDULED: scheduled by its owner rather than by the scheduling process. RELIABILITY: committed by the system operator for reliability rather than by the scheduling process. MUST_RUN: required to run by contract or operating constraint.",
       ),
@@ -91703,9 +89091,6 @@ export const ThermalMultiStart = zod
                               .optional()
                               .describe("Units: the curve's y-axis unit."),
                           })
-                          .default(
-                            thermalMultiStartOperationCostOneVariableOperationCostOneValueCurveOneDefault,
-                          )
                           .describe(
                             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                           ),
@@ -92518,9 +89903,6 @@ export const ThermalMultiStart = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalMultiStartOperationCostOneVariableOperationCostOneVomCostDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -92642,9 +90024,7 @@ export const ThermalMultiStart = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalMultiStartOperationCostOneVariableOperationCostTwoStartupFuelOfftakeDefault,
-                      )
+                      .optional()
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -92740,9 +90120,6 @@ export const ThermalMultiStart = zod
                               .optional()
                               .describe("Units: the curve's y-axis unit."),
                           })
-                          .default(
-                            thermalMultiStartOperationCostOneVariableOperationCostTwoValueCurveOneDefault,
-                          )
                           .describe(
                             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                           ),
@@ -93555,9 +90932,6 @@ export const ThermalMultiStart = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalMultiStartOperationCostOneVariableOperationCostTwoVomCostDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -93662,9 +91036,6 @@ export const ThermalMultiStart = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(
-                thermalMultiStartOperationCostTwoMinimumEnergyOfferDefault,
-              )
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -93768,7 +91139,6 @@ export const ThermalMultiStart = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(thermalMultiStartOperationCostTwoShutDownDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -93871,9 +91241,6 @@ export const ThermalMultiStart = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalMultiStartOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -94686,9 +92053,6 @@ export const ThermalMultiStart = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    thermalMultiStartOperationCostTwoIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -94795,9 +92159,6 @@ export const ThermalMultiStart = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalMultiStartOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -95610,9 +92971,6 @@ export const ThermalMultiStart = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    thermalMultiStartOperationCostTwoDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -95627,25 +92985,25 @@ export const ThermalMultiStart = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(thermalMultiStartOperationCostTwoIncrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(thermalMultiStartOperationCostTwoDecrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(thermalMultiStartOperationCostTwoCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(thermalMultiStartOperationCostTwoCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -96138,9 +93496,6 @@ export const ThermalMultiStart = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalMultiStartOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -96953,9 +94308,6 @@ export const ThermalMultiStart = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    thermalMultiStartOperationCostThreeIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -97062,9 +94414,6 @@ export const ThermalMultiStart = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalMultiStartOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -97877,9 +95226,6 @@ export const ThermalMultiStart = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    thermalMultiStartOperationCostThreeDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -97894,29 +95240,25 @@ export const ThermalMultiStart = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(
-                thermalMultiStartOperationCostThreeIncrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(
-                thermalMultiStartOperationCostThreeDecrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(thermalMultiStartOperationCostThreeCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(thermalMultiStartOperationCostThreeCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -98028,9 +95370,6 @@ export const ThermalMultiStart = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalMultiStartOperationCostFourImportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -98843,9 +96182,6 @@ export const ThermalMultiStart = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    thermalMultiStartOperationCostFourImportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -98952,9 +96288,6 @@ export const ThermalMultiStart = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalMultiStartOperationCostFourExportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -99767,9 +97100,6 @@ export const ThermalMultiStart = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    thermalMultiStartOperationCostFourExportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -99804,7 +97134,7 @@ export const ThermalMultiStart = zod
       ),
     time_at_status: zod
       .number()
-      .default(thermalMultiStartTimeAtStatusDefault)
+      .optional()
       .describe(
         "Time the generator has been in its current status. Units: min.",
       ),
@@ -99847,15 +97177,6 @@ const thermalStandardOperationCostOneVariableOperationCostOneValueCurveOneCurveT
 const thermalStandardOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostOneVariableOperationCostOneValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostOneVariableOperationCostOneValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalStandardOperationCostOneVariableOperationCostOneValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalStandardOperationCostOneVariableOperationCostOneValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostOneVariableOperationCostOneValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -99894,40 +97215,14 @@ const thermalStandardOperationCostOneVariableOperationCostOneVomCostCurveTypeDef
 const thermalStandardOperationCostOneVariableOperationCostOneVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostOneVariableOperationCostOneVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostOneVariableOperationCostOneVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostOneVariableOperationCostOneVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const thermalStandardOperationCostOneVariableOperationCostTwoStartupFuelOfftakeCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalStandardOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostOneVariableOperationCostTwoStartupFuelOfftakeFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostOneVariableOperationCostTwoStartupFuelOfftakeDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalStandardOperationCostOneVariableOperationCostTwoValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalStandardOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostOneVariableOperationCostTwoValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostOneVariableOperationCostTwoValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalStandardOperationCostOneVariableOperationCostTwoValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalStandardOperationCostOneVariableOperationCostTwoValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostOneVariableOperationCostTwoValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -99966,53 +97261,20 @@ const thermalStandardOperationCostOneVariableOperationCostTwoVomCostCurveTypeDef
 const thermalStandardOperationCostOneVariableOperationCostTwoVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostOneVariableOperationCostTwoVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostOneVariableOperationCostTwoVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostOneVariableOperationCostTwoVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const thermalStandardOperationCostTwoCostTypeDefault = `MARKET_BID`;
 const thermalStandardOperationCostTwoMinimumEnergyOfferCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalStandardOperationCostTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostTwoMinimumEnergyOfferFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostTwoMinimumEnergyOfferFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostTwoMinimumEnergyOfferDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const thermalStandardOperationCostTwoStartUpStartupStagesTypeDefault = `STAGES`;
 const thermalStandardOperationCostTwoShutDownCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalStandardOperationCostTwoShutDownFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostTwoShutDownFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostTwoShutDownFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostTwoShutDownDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const thermalStandardOperationCostTwoIncrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalStandardOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalStandardOperationCostTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalStandardOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -100051,27 +97313,10 @@ const thermalStandardOperationCostTwoIncrementalOfferCurvesVomCostCurveTypeDefau
 const thermalStandardOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostTwoIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const thermalStandardOperationCostTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalStandardOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalStandardOperationCostTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalStandardOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -100110,18 +97355,6 @@ const thermalStandardOperationCostTwoDecrementalOfferCurvesVomCostCurveTypeDefau
 const thermalStandardOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostTwoDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const thermalStandardOperationCostTwoIncrementalSlopeDefault = false;
-const thermalStandardOperationCostTwoDecrementalSlopeDefault = false;
-const thermalStandardOperationCostTwoCurveStyleDefault = 0;
-const thermalStandardOperationCostTwoCurveMultistepDefault = 0;
 const thermalStandardOperationCostThreeCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const thermalStandardOperationCostThreeMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const thermalStandardOperationCostThreeMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -100145,15 +97378,6 @@ const thermalStandardOperationCostThreeIncrementalOfferCurvesValueCurveOneCurveT
 const thermalStandardOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostThreeIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalStandardOperationCostThreeIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalStandardOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostThreeIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -100192,27 +97416,10 @@ const thermalStandardOperationCostThreeIncrementalOfferCurvesVomCostCurveTypeDef
 const thermalStandardOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostThreeIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostThreeIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const thermalStandardOperationCostThreeDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalStandardOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostThreeDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const thermalStandardOperationCostThreeDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalStandardOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostThreeDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -100251,31 +97458,11 @@ const thermalStandardOperationCostThreeDecrementalOfferCurvesVomCostCurveTypeDef
 const thermalStandardOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostThreeDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostThreeDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const thermalStandardOperationCostThreeIncrementalSlopeDefault = false;
-const thermalStandardOperationCostThreeDecrementalSlopeDefault = false;
-const thermalStandardOperationCostThreeCurveStyleDefault = 0;
-const thermalStandardOperationCostThreeCurveMultistepDefault = 0;
 const thermalStandardOperationCostFourCostTypeDefault = `IMPORT_EXPORT_TIME_SERIES`;
 const thermalStandardOperationCostFourImportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalStandardOperationCostFourImportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostFourImportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostFourImportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostFourImportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const thermalStandardOperationCostFourImportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalStandardOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostFourImportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -100314,26 +97501,10 @@ const thermalStandardOperationCostFourImportOfferCurvesVomCostCurveTypeDefault =
 const thermalStandardOperationCostFourImportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostFourImportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostFourImportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostFourImportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const thermalStandardOperationCostFourExportOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const thermalStandardOperationCostFourExportOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostFourExportOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostFourExportOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostFourExportOfferCurvesValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const thermalStandardOperationCostFourExportOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const thermalStandardOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostFourExportOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -100372,15 +97543,6 @@ const thermalStandardOperationCostFourExportOfferCurvesVomCostCurveTypeDefault =
 const thermalStandardOperationCostFourExportOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const thermalStandardOperationCostFourExportOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const thermalStandardOperationCostFourExportOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const thermalStandardOperationCostFourExportOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const thermalStandardTimeAtStatusDefault = 600000;
 export const ThermalStandard = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -100408,7 +97570,6 @@ export const ThermalStandard = zod
         "MUST_RUN",
       ])
       .optional()
-      .default("COMMITTED")
       .describe(
         "Why a committable unit is (or would be) committed, orthogonal to its operational state. UNCOMMITTED: not committed, offline but available. COMMITTED: committed by the scheduling process (a planning model's commitment decision or a cleared schedule). SELF_SCHEDULED: scheduled by its owner rather than by the scheduling process. RELIABILITY: committed by the system operator for reliability rather than by the scheduling process. MUST_RUN: required to run by contract or operating constraint.",
       ),
@@ -100589,9 +97750,6 @@ export const ThermalStandard = zod
                               .optional()
                               .describe("Units: the curve's y-axis unit."),
                           })
-                          .default(
-                            thermalStandardOperationCostOneVariableOperationCostOneValueCurveOneDefault,
-                          )
                           .describe(
                             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                           ),
@@ -101404,9 +98562,6 @@ export const ThermalStandard = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalStandardOperationCostOneVariableOperationCostOneVomCostDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -101528,9 +98683,7 @@ export const ThermalStandard = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalStandardOperationCostOneVariableOperationCostTwoStartupFuelOfftakeDefault,
-                      )
+                      .optional()
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -101626,9 +98779,6 @@ export const ThermalStandard = zod
                               .optional()
                               .describe("Units: the curve's y-axis unit."),
                           })
-                          .default(
-                            thermalStandardOperationCostOneVariableOperationCostTwoValueCurveOneDefault,
-                          )
                           .describe(
                             "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                           ),
@@ -102441,9 +99591,6 @@ export const ThermalStandard = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalStandardOperationCostOneVariableOperationCostTwoVomCostDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -102548,7 +99695,6 @@ export const ThermalStandard = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(thermalStandardOperationCostTwoMinimumEnergyOfferDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -102652,7 +99798,6 @@ export const ThermalStandard = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(thermalStandardOperationCostTwoShutDownDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -102755,9 +99900,6 @@ export const ThermalStandard = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalStandardOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -103570,9 +100712,6 @@ export const ThermalStandard = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    thermalStandardOperationCostTwoIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -103679,9 +100818,6 @@ export const ThermalStandard = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalStandardOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -104494,9 +101630,6 @@ export const ThermalStandard = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    thermalStandardOperationCostTwoDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -104511,25 +101644,25 @@ export const ThermalStandard = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(thermalStandardOperationCostTwoIncrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(thermalStandardOperationCostTwoDecrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(thermalStandardOperationCostTwoCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(thermalStandardOperationCostTwoCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -105022,9 +102155,6 @@ export const ThermalStandard = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalStandardOperationCostThreeIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -105837,9 +102967,6 @@ export const ThermalStandard = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    thermalStandardOperationCostThreeIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -105946,9 +103073,6 @@ export const ThermalStandard = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalStandardOperationCostThreeDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -106761,9 +103885,6 @@ export const ThermalStandard = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    thermalStandardOperationCostThreeDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -106778,25 +103899,25 @@ export const ThermalStandard = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(thermalStandardOperationCostThreeIncrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(thermalStandardOperationCostThreeDecrementalSlopeDefault)
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(thermalStandardOperationCostThreeCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(thermalStandardOperationCostThreeCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -106908,9 +104029,6 @@ export const ThermalStandard = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalStandardOperationCostFourImportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -107723,9 +104841,6 @@ export const ThermalStandard = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    thermalStandardOperationCostFourImportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -107832,9 +104947,6 @@ export const ThermalStandard = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        thermalStandardOperationCostFourExportOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -108647,9 +105759,6 @@ export const ThermalStandard = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    thermalStandardOperationCostFourExportOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -108720,7 +105829,6 @@ export const ThermalStandard = zod
         "WS",
       ])
       .optional()
-      .default("OT")
       .describe(
         "Prime mover of a generating unit — the engine, turbine, water wheel, or similar machine that drives the generator — using the code set from the EIA Form 923 instructions. `PVe` is photovoltaic, spelled that way so it does not collide with the `PV` bus type.",
       ),
@@ -108762,13 +105870,12 @@ export const ThermalStandard = zod
         "OTHER",
       ])
       .optional()
-      .default("OTHER")
       .describe(
         "Thermal fuels that reflect options in the EIA annual energy review.",
       ),
     time_at_status: zod
       .number()
-      .default(thermalStandardTimeAtStatusDefault)
+      .optional()
       .describe(
         "Time the generator has been in its current status. Units: min.",
       ),
@@ -108824,7 +105931,6 @@ export const ThreeWindingTransformer = zod
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
-      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
@@ -108885,7 +105991,6 @@ export const ThreeWindingTransformer = zod
     admittance_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_MVAR", "COMPONENT_BASE"])
       .optional()
-      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a shunt admittance is stored in. NATURAL_UNITS: physical siemens. COMPONENT_MVAR: reactive power at unity voltage (Mvar for susceptance, MW for conductance). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base) — a per-unit base, not a power at unity voltage, and not an alternative spelling of COMPONENT_MVAR; components whose per-unit data was historically on the system base record that system base in base_power. Fixed and switched shunts use ShuntAdmittanceUnitBasis instead, which omits COMPONENT_BASE because a shunt has no device MVA rating.",
       ),
@@ -108895,12 +106000,10 @@ export const ThreeWindingTransformer = zod
         imag: zod.number().optional(),
       })
       .optional()
-      .default({ real: 0 as const, imag: 0 as const })
       .describe("A complex number, given as its `real` and `imag` parts."),
     shunt_location: zod
       .enum(["PRIMARY", "STAR"])
       .optional()
-      .default("PRIMARY")
       .describe(
         "Placement of a `ThreeWindingTransformer`'s magnetizing shunt admittance in the equivalent star model. PRIMARY: the full magnetizing shunt is applied on the winding-1 (primary) terminal side. STAR: the full magnetizing shunt is applied at the star node.",
       ),
@@ -108944,12 +106047,6 @@ export type TradingHubAssociationOutput = zod.output<
   typeof TradingHubAssociation
 >;
 
-const transformerCircuitFiveTapDefault = 1;
-const transformerCircuitFiveAlphaDefault = 0;
-const transformerCircuitFiveRDefault = 0;
-const transformerCircuitFiveXDefault = 0;
-const transformerCircuitFiveRegulatedBusNumberDefault = 0;
-const transformerCircuitFiveNumberOfTapPositionsDefault = 33;
 export const transformerCircuitFiveOperationalFlowLimitFromToMinMin = 0;
 
 export const transformerCircuitFiveOperationalFlowLimitFromToMaxMin = 0;
@@ -108958,9 +106055,6 @@ export const transformerCircuitFiveOperationalFlowLimitToFromMinMin = 0;
 
 export const transformerCircuitFiveOperationalFlowLimitToFromMaxMin = 0;
 
-const transformerCircuitFiveActivePowerFlowDefault = 0;
-const transformerCircuitFiveReactivePowerFlowDefault = 0;
-const transformerCircuitFiveBasePowerDefault = 100;
 export const TransformerCircuit = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -108974,32 +106068,31 @@ export const TransformerCircuit = zod
       ),
     tap: zod
       .number()
-      .default(transformerCircuitFiveTapDefault)
+      .optional()
       .describe(
         "Normalized tap changer position for voltage control, varying between 0 and 2, with 1 centered at the nominal voltage. Units: 1.",
       ),
     alpha: zod
       .number()
-      .default(transformerCircuitFiveAlphaDefault)
+      .optional()
       .describe(
         "Initial condition of phase shift across this circuit. Units: rad.",
       ),
     parameter_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
-      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
       ),
     r: zod
       .number()
-      .default(transformerCircuitFiveRDefault)
+      .optional()
       .describe(
         "Circuit resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
       ),
     x: zod
       .number()
-      .default(transformerCircuitFiveXDefault)
+      .optional()
       .describe(
         "Circuit reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
       ),
@@ -109019,13 +106112,12 @@ export const TransformerCircuit = zod
         "ASYMMETRIC_ACTIVE_POWER_FLOW",
       ])
       .optional()
-      .default("UNDEFINED")
       .describe(
         "Control objective of a transformer tap changer or phase shifter: a fixed tap position with no automatic adjustment (`FIXED`), or regulation of voltage magnitude at the controlled bus, reactive power flow, active power flow, asymmetric active power flow, or a DC line. Each regulating objective has a paired `_DISABLED` value naming the same control block while it is out of service, and `UNDEFINED` means no control objective is stated.",
       ),
     regulated_bus_number: zod
       .int()
-      .default(transformerCircuitFiveRegulatedBusNumberDefault)
+      .optional()
       .describe("Controlled bus number (PSS/E CONT; sign = regulation side)."),
     tap_ratio_limits: zod
       .strictObject({
@@ -109074,7 +106166,7 @@ export const TransformerCircuit = zod
       ),
     number_of_tap_positions: zod
       .int()
-      .default(transformerCircuitFiveNumberOfTapPositionsDefault)
+      .optional()
       .describe("Number of tap positions (PSS/E NTP)."),
     rating: zod
       .number()
@@ -109114,19 +106206,19 @@ export const TransformerCircuit = zod
       ),
     active_power_flow: zod
       .number()
-      .default(transformerCircuitFiveActivePowerFlowDefault)
+      .optional()
       .describe(
         "Initial condition of active power flow through this circuit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     reactive_power_flow: zod
       .number()
-      .default(transformerCircuitFiveReactivePowerFlowDefault)
+      .optional()
       .describe(
         "Initial condition of reactive power flow through this circuit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     base_power: zod
       .number()
-      .default(transformerCircuitFiveBasePowerDefault)
+      .optional()
       .describe("Base power for per unitization of this circuit. Units: MVA."),
     power_units: zod
       .enum(["COMPONENT_BASE", "NATURAL_UNITS"])
@@ -109216,25 +106308,9 @@ const twoTerminalGenericHVDCLineLossValueCurveOneCurveTypeDefault = `INPUT_OUTPU
 const twoTerminalGenericHVDCLineLossValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const twoTerminalGenericHVDCLineLossValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const twoTerminalGenericHVDCLineLossValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const twoTerminalGenericHVDCLineLossValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const twoTerminalGenericHVDCLineLossValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const twoTerminalGenericHVDCLineLossValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const twoTerminalGenericHVDCLineLossValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
-const twoTerminalGenericHVDCLineLossValueCurveDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 export const TwoTerminalGenericHVDCLine = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -109403,7 +106479,6 @@ export const TwoTerminalGenericHVDCLine = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(twoTerminalGenericHVDCLineLossValueCurveOneDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -109473,7 +106548,6 @@ export const TwoTerminalGenericHVDCLine = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
           ])
-          .default(twoTerminalGenericHVDCLineLossValueCurveDefault)
           .describe(
             "The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
           ),
@@ -109504,19 +106578,6 @@ export type TwoTerminalGenericHVDCLineOutput = zod.output<
   typeof TwoTerminalGenericHVDCLine
 >;
 
-const twoTerminalLCCLineThreeSwitchModeVoltageDefault = 0;
-const twoTerminalLCCLineThreeCompoundingResistanceDefault = 0;
-const twoTerminalLCCLineThreeMinCompoundingVoltageDefault = 0;
-const twoTerminalLCCLineThreeRectifierTransformerRatioDefault = 1;
-const twoTerminalLCCLineThreeRectifierTapSettingDefault = 1;
-const twoTerminalLCCLineThreeRectifierTapStepDefault = 0.00625;
-const twoTerminalLCCLineThreeRectifierDelayAngleDefault = 0;
-const twoTerminalLCCLineThreeRectifierCapacitorReactanceDefault = 0;
-const twoTerminalLCCLineThreeInverterTransformerRatioDefault = 1;
-const twoTerminalLCCLineThreeInverterTapSettingDefault = 1;
-const twoTerminalLCCLineThreeInverterTapStepDefault = 0.00625;
-const twoTerminalLCCLineThreeInverterExtinctionAngleDefault = 0;
-const twoTerminalLCCLineThreeInverterCapacitorReactanceDefault = 0;
 export const twoTerminalLCCLineThreeOperationalFlowLimitFromToMinMin = 0;
 
 export const twoTerminalLCCLineThreeOperationalFlowLimitFromToMaxMin = 0;
@@ -109529,25 +106590,9 @@ const twoTerminalLCCLineThreeLossValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const twoTerminalLCCLineThreeLossValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const twoTerminalLCCLineThreeLossValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const twoTerminalLCCLineThreeLossValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const twoTerminalLCCLineThreeLossValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const twoTerminalLCCLineThreeLossValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const twoTerminalLCCLineThreeLossValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const twoTerminalLCCLineThreeLossValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
-const twoTerminalLCCLineThreeLossValueCurveDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 export const TwoTerminalLCCLine = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -109640,37 +106685,36 @@ export const TwoTerminalLCCLine = zod
     control_mode: zod
       .enum(["BLOCKED", "POWER", "CURRENT"])
       .optional()
-      .default("BLOCKED")
       .describe(
         "Control mode of an LCC-HVDC line (PSS/E MDC). BLOCKED: the line is blocked and holds no schedule. POWER: the line holds a power schedule (power_transfer_setpoint, MW). CURRENT: the line holds a current schedule (current_transfer_setpoint, kA).",
       ),
     switch_mode_voltage: zod
       .number()
-      .default(twoTerminalLCCLineThreeSwitchModeVoltageDefault)
+      .optional()
       .describe(
         "Mode switch DC voltage. If `control_mode` is `POWER` and the DC voltage falls below this value, the line switches to current control. Units: kV.",
       ),
     compounding_resistance: zod
       .number()
-      .default(twoTerminalLCCLineThreeCompoundingResistanceDefault)
+      .optional()
       .describe(
         "Compounding Resistance. This parameter is for control of the DC voltage in the rectifier or inverter end. For inverter DC voltage control, the parameter is set to zero; for rectifier DC voltage control, the parameter is set to the DC line resistance; otherwise, set to a fraction of the DC line resistance. Units: ohm.",
       ),
     min_compounding_voltage: zod
       .number()
-      .default(twoTerminalLCCLineThreeMinCompoundingVoltageDefault)
+      .optional()
       .describe(
         "Minimum compounded voltage. Only used in constant gamma operation (gamma_min = gamma_max), and the AC transformer is used to control the DC voltage. Units: kV.",
       ),
     rectifier_transformer_ratio: zod
       .number()
-      .default(twoTerminalLCCLineThreeRectifierTransformerRatioDefault)
+      .optional()
       .describe(
         "Rectifier transformer ratio between the primary and secondary side AC voltages. Units: 1.",
       ),
     rectifier_tap_setting: zod
       .number()
-      .default(twoTerminalLCCLineThreeRectifierTapSettingDefault)
+      .optional()
       .describe("Rectifier transformer tap setting. Units: 1."),
     rectifier_tap_limits: zod
       .strictObject({
@@ -109678,33 +106722,32 @@ export const TwoTerminalLCCLine = zod
         min: zod.number().optional(),
       })
       .optional()
-      .default({ max: 1.5 as const, min: 0.51 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     rectifier_tap_step: zod
       .number()
-      .default(twoTerminalLCCLineThreeRectifierTapStepDefault)
+      .optional()
       .describe("Rectifier transformer tap step value. Units: 1."),
     rectifier_delay_angle: zod
       .number()
-      .default(twoTerminalLCCLineThreeRectifierDelayAngleDefault)
+      .optional()
       .describe("Rectifier firing delay angle (alpha). Units: rad."),
     rectifier_capacitor_reactance: zod
       .number()
-      .default(twoTerminalLCCLineThreeRectifierCapacitorReactanceDefault)
+      .optional()
       .describe(
         "Commutating rectifier capacitor reactance magnitude per bridge. Units: ohm.",
       ),
     inverter_transformer_ratio: zod
       .number()
-      .default(twoTerminalLCCLineThreeInverterTransformerRatioDefault)
+      .optional()
       .describe(
         "Inverter transformer ratio between the primary and secondary side AC voltages. Units: 1.",
       ),
     inverter_tap_setting: zod
       .number()
-      .default(twoTerminalLCCLineThreeInverterTapSettingDefault)
+      .optional()
       .describe("Inverter transformer tap setting. Units: 1."),
     inverter_tap_limits: zod
       .strictObject({
@@ -109712,21 +106755,20 @@ export const TwoTerminalLCCLine = zod
         min: zod.number().optional(),
       })
       .optional()
-      .default({ max: 1.5 as const, min: 0.51 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     inverter_tap_step: zod
       .number()
-      .default(twoTerminalLCCLineThreeInverterTapStepDefault)
+      .optional()
       .describe("Inverter transformer tap step value. Units: 1."),
     inverter_extinction_angle: zod
       .number()
-      .default(twoTerminalLCCLineThreeInverterExtinctionAngleDefault)
+      .optional()
       .describe("Inverter extinction angle (gamma). Units: rad."),
     inverter_capacitor_reactance: zod
       .number()
-      .default(twoTerminalLCCLineThreeInverterCapacitorReactanceDefault)
+      .optional()
       .describe(
         "Commutating inverter capacitor reactance magnitude per bridge. Units: ohm.",
       ),
@@ -109772,7 +106814,6 @@ export const TwoTerminalLCCLine = zod
         min: zod.number().optional(),
       })
       .optional()
-      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -109782,7 +106823,6 @@ export const TwoTerminalLCCLine = zod
         min: zod.number().optional(),
       })
       .optional()
-      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
@@ -109881,7 +106921,6 @@ export const TwoTerminalLCCLine = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(twoTerminalLCCLineThreeLossValueCurveOneDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -109951,23 +106990,11 @@ export const TwoTerminalLCCLine = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
           ])
-          .default(twoTerminalLCCLineThreeLossValueCurveDefault)
           .describe(
             "The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
           ),
       })
       .optional()
-      .default({
-        power_units: "NATURAL_UNITS" as const,
-        value_curve: {
-          curve_type: "INPUT_OUTPUT" as const,
-          function_data: {
-            function_type: "LINEAR" as const,
-            constant_term: 0 as const,
-            proportional_term: 0 as const,
-          },
-        },
-      })
       .describe(
         "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
@@ -109989,68 +107016,26 @@ export const TwoTerminalLCCLine = zod
 export type TwoTerminalLCCLine = zod.input<typeof TwoTerminalLCCLine>;
 export type TwoTerminalLCCLineOutput = zod.output<typeof TwoTerminalLCCLine>;
 
-const twoTerminalVSCLineNineGDefault = 0;
-const twoTerminalVSCLineNineDcCurrentDefault = 0;
-const twoTerminalVSCLineNineReactivePowerFromDefault = 0;
 export const twoTerminalVSCLineNinePowerFactorSetpointFromMin = -1;
 export const twoTerminalVSCLineNinePowerFactorSetpointFromMax = 1;
 
-const twoTerminalVSCLineNineRatedAcVoltageFromDefault = 0;
 const twoTerminalVSCLineNineConverterLossFromValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const twoTerminalVSCLineNineConverterLossFromValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const twoTerminalVSCLineNineConverterLossFromValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const twoTerminalVSCLineNineConverterLossFromValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const twoTerminalVSCLineNineConverterLossFromValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
-const twoTerminalVSCLineNineConverterLossFromValueCurveDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const twoTerminalVSCLineNineMaxDcCurrentFromDefault = 9999;
-const twoTerminalVSCLineNinePowerFactorWeightingFractionFromDefault = 1;
-const twoTerminalVSCLineNineDcVoltageDroopFromDefault = 0;
-const twoTerminalVSCLineNineReactivePowerToDefault = 0;
 export const twoTerminalVSCLineNinePowerFactorSetpointToMin = -1;
 export const twoTerminalVSCLineNinePowerFactorSetpointToMax = 1;
 
-const twoTerminalVSCLineNineRatedAcVoltageToDefault = 0;
 const twoTerminalVSCLineNineConverterLossToValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const twoTerminalVSCLineNineConverterLossToValueCurveOneDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const twoTerminalVSCLineNineConverterLossToValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const twoTerminalVSCLineNineConverterLossToValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const twoTerminalVSCLineNineConverterLossToValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
-const twoTerminalVSCLineNineConverterLossToValueCurveDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const twoTerminalVSCLineNineMaxDcCurrentToDefault = 9999;
 export const twoTerminalVSCLineNineOperationalFlowLimitFromToMinMin = 0;
 
 export const twoTerminalVSCLineNineOperationalFlowLimitFromToMaxMin = 0;
@@ -110059,11 +107044,6 @@ export const twoTerminalVSCLineNineOperationalFlowLimitToFromMinMin = 0;
 
 export const twoTerminalVSCLineNineOperationalFlowLimitToFromMaxMin = 0;
 
-const twoTerminalVSCLineNinePowerFactorWeightingFractionToDefault = 1;
-const twoTerminalVSCLineNineDcVoltageDroopToDefault = 0;
-const twoTerminalVSCLineNineRatedDcVoltageDefault = 0;
-const twoTerminalVSCLineNineRemoteBusControlFromDefault = null;
-const twoTerminalVSCLineNineRemoteBusControlToDefault = null;
 export const TwoTerminalVSCLine = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -110092,17 +107072,17 @@ export const TwoTerminalVSCLine = zod
       ),
     g: zod
       .number()
-      .default(twoTerminalVSCLineNineGDefault)
+      .optional()
       .describe("Series conductance of the DC line. Units: S."),
     dc_current: zod
       .number()
-      .default(twoTerminalVSCLineNineDcCurrentDefault)
+      .optional()
       .describe(
         "DC current on the converter flowing in the DC line, from `from` bus to `to` bus. Units: kA.",
       ),
     reactive_power_from: zod
       .number()
-      .default(twoTerminalVSCLineNineReactivePowerFromDefault)
+      .optional()
       .describe(
         "Initial condition of reactive power flowing into the from-bus. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
@@ -110146,7 +107126,7 @@ export const TwoTerminalVSCLine = zod
       ),
     rated_ac_voltage_from: zod
       .number()
-      .default(twoTerminalVSCLineNineRatedAcVoltageFromDefault)
+      .optional()
       .describe(
         "Rated AC voltage at the `from` converter's AC terminal; 0.0 means unspecified. Units: kV.",
       ),
@@ -110245,9 +107225,6 @@ export const TwoTerminalVSCLine = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(
-                twoTerminalVSCLineNineConverterLossFromValueCurveOneDefault,
-              )
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -110317,29 +107294,17 @@ export const TwoTerminalVSCLine = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
           ])
-          .default(twoTerminalVSCLineNineConverterLossFromValueCurveDefault)
           .describe(
             "The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
           ),
       })
       .optional()
-      .default({
-        power_units: "NATURAL_UNITS" as const,
-        value_curve: {
-          curve_type: "INPUT_OUTPUT" as const,
-          function_data: {
-            function_type: "LINEAR" as const,
-            constant_term: 0 as const,
-            proportional_term: 0 as const,
-          },
-        },
-      })
       .describe(
         "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     max_dc_current_from: zod
       .number()
-      .default(twoTerminalVSCLineNineMaxDcCurrentFromDefault)
+      .optional()
       .describe(
         "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
       ),
@@ -110355,13 +107320,12 @@ export const TwoTerminalVSCLine = zod
         min: zod.number().optional(),
       })
       .optional()
-      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     power_factor_weighting_fraction_from: zod
       .number()
-      .default(twoTerminalVSCLineNinePowerFactorWeightingFractionFromDefault)
+      .optional()
       .describe(
         "Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.",
       ),
@@ -110371,19 +107335,18 @@ export const TwoTerminalVSCLine = zod
         min: zod.number().optional(),
       })
       .optional()
-      .default({ max: 999.9 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     dc_voltage_droop_from: zod
       .number()
-      .default(twoTerminalVSCLineNineDcVoltageDroopFromDefault)
+      .optional()
       .describe(
         "DC-voltage droop gain on the `from` converter, used when `dc_control_from` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint_from - dc_voltage_droop_from * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.",
       ),
     reactive_power_to: zod
       .number()
-      .default(twoTerminalVSCLineNineReactivePowerToDefault)
+      .optional()
       .describe(
         "Initial condition of reactive power flowing into the to-bus. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
@@ -110427,7 +107390,7 @@ export const TwoTerminalVSCLine = zod
       ),
     rated_ac_voltage_to: zod
       .number()
-      .default(twoTerminalVSCLineNineRatedAcVoltageToDefault)
+      .optional()
       .describe(
         "Rated AC voltage at the `to` converter's AC terminal; 0.0 means unspecified. Units: kV.",
       ),
@@ -110526,9 +107489,6 @@ export const TwoTerminalVSCLine = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(
-                twoTerminalVSCLineNineConverterLossToValueCurveOneDefault,
-              )
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -110598,29 +107558,17 @@ export const TwoTerminalVSCLine = zod
                 "A curve whose y values are the marginal rate `f'(x)` at production level `x` — the native form for market bid stacks and incremental heat rate data. `initial_input` records the total input at the minimum production point, anchoring the absolute level and enabling conversion to an `InputOutputCurve`. Use `InputOutputCurve` when the data gives total cost at each output level.",
               ),
           ])
-          .default(twoTerminalVSCLineNineConverterLossToValueCurveDefault)
           .describe(
             "The shape of a loss curve, selected by `curve_type`. `INPUT_OUTPUT` gives the total loss at each flow level -- a constant loss plus a proportional loss rate, in MW of loss per MW of flow. `INCREMENTAL` gives the marginal loss rate instead, the form a piecewise model uses to give different proportional losses on different flow segments. Individual loss fields accept narrower sets of shapes than this union admits; the consuming data layer enforces that, not this schema.",
           ),
       })
       .optional()
-      .default({
-        power_units: "NATURAL_UNITS" as const,
-        value_curve: {
-          curve_type: "INPUT_OUTPUT" as const,
-          function_data: {
-            function_type: "LINEAR" as const,
-            constant_term: 0 as const,
-            proportional_term: 0 as const,
-          },
-        },
-      })
       .describe(
         "Losses of a device as a function of the power flow through it, together with the power basis the curve is expressed in. A loss driven by current instead is a `CurrentLossCurve`. `power_units` governs BOTH axes: a loss curve's y values are power in the same base as its x values, so a change of base rescales both. This is what separates it from a cost curve, whose y axis is currency and so rides through a change of base untouched. Units: both axes per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     max_dc_current_to: zod
       .number()
-      .default(twoTerminalVSCLineNineMaxDcCurrentToDefault)
+      .optional()
       .describe(
         "Maximum stable dc current limits. 9999 means no limit. Units: kA.",
       ),
@@ -110655,13 +107603,12 @@ export const TwoTerminalVSCLine = zod
         min: zod.number().optional(),
       })
       .optional()
-      .default({ max: 0 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     power_factor_weighting_fraction_to: zod
       .number()
-      .default(twoTerminalVSCLineNinePowerFactorWeightingFractionToDefault)
+      .optional()
       .describe(
         "Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.",
       ),
@@ -110671,33 +107618,30 @@ export const TwoTerminalVSCLine = zod
         min: zod.number().optional(),
       })
       .optional()
-      .default({ max: 999.9 as const, min: 0 as const })
       .describe(
         "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
       ),
     dc_voltage_droop_to: zod
       .number()
-      .default(twoTerminalVSCLineNineDcVoltageDroopToDefault)
+      .optional()
       .describe(
         "DC-voltage droop gain on the `to` converter, used when `dc_control_to` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint_to - dc_voltage_droop_to * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.",
       ),
     rated_dc_voltage: zod
       .number()
-      .default(twoTerminalVSCLineNineRatedDcVoltageDefault)
+      .optional()
       .describe(
         "Rated DC voltage of the link; 0.0 means unspecified. Units: kV.",
       ),
     remote_bus_control_from: zod
       .int()
       .nullish()
-      .default(twoTerminalVSCLineNineRemoteBusControlFromDefault)
       .describe(
         "Number of the AC bus whose voltage the `from` converter regulates when `ac_control_from` is `AC_VOLTAGE`; null regulates its own terminal bus.",
       ),
     remote_bus_control_to: zod
       .int()
       .nullish()
-      .default(twoTerminalVSCLineNineRemoteBusControlToDefault)
       .describe(
         "Number of the AC bus whose voltage the `to` converter regulates when `ac_control_to` is `AC_VOLTAGE`; null regulates its own terminal bus.",
       ),
@@ -110735,7 +107679,6 @@ export const TwoWindingTransformer = zod
     admittance_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_MVAR", "COMPONENT_BASE"])
       .optional()
-      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a shunt admittance is stored in. NATURAL_UNITS: physical siemens. COMPONENT_MVAR: reactive power at unity voltage (Mvar for susceptance, MW for conductance). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base) — a per-unit base, not a power at unity voltage, and not an alternative spelling of COMPONENT_MVAR; components whose per-unit data was historically on the system base record that system base in base_power. Fixed and switched shunts use ShuntAdmittanceUnitBasis instead, which omits COMPONENT_BASE because a shunt has no device MVA rating.",
       ),
@@ -110745,12 +107688,10 @@ export const TwoWindingTransformer = zod
         imag: zod.number().optional(),
       })
       .optional()
-      .default({ real: 0 as const, imag: 0 as const })
       .describe("A complex number, given as its `real` and `imag` parts."),
     shunt_location: zod
       .enum(["PRIMARY", "SECONDARY", "SPLIT"])
       .optional()
-      .default("PRIMARY")
       .describe(
         "Placement of a `TwoWindingTransformer`'s magnetizing shunt admittance on the two sides of its single circuit arc. PRIMARY: the full magnetizing shunt is applied on the primary (from) side. SECONDARY: the full magnetizing shunt is applied on the secondary (to) side. SPLIT: the full complex magnetizing shunt value is applied on BOTH sides.",
       ),
@@ -110769,40 +107710,15 @@ const virtualParticipantOperationCostOneMinimumEnergyOfferCurveTypeDefault = `IN
 const virtualParticipantOperationCostOneMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const virtualParticipantOperationCostOneMinimumEnergyOfferFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostOneMinimumEnergyOfferFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const virtualParticipantOperationCostOneMinimumEnergyOfferDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const virtualParticipantOperationCostOneStartUpStartupStagesTypeDefault = `STAGES`;
 const virtualParticipantOperationCostOneShutDownCurveTypeDefault = `INPUT_OUTPUT`;
 const virtualParticipantOperationCostOneShutDownFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const virtualParticipantOperationCostOneShutDownFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostOneShutDownFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const virtualParticipantOperationCostOneShutDownDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const virtualParticipantOperationCostOneIncrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const virtualParticipantOperationCostOneIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const virtualParticipantOperationCostOneIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostOneIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const virtualParticipantOperationCostOneIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const virtualParticipantOperationCostOneIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const virtualParticipantOperationCostOneIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostOneIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -110841,27 +107757,10 @@ const virtualParticipantOperationCostOneIncrementalOfferCurvesVomCostCurveTypeDe
 const virtualParticipantOperationCostOneIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const virtualParticipantOperationCostOneIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostOneIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const virtualParticipantOperationCostOneIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const virtualParticipantOperationCostOneDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const virtualParticipantOperationCostOneDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const virtualParticipantOperationCostOneDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostOneDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const virtualParticipantOperationCostOneDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const virtualParticipantOperationCostOneDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const virtualParticipantOperationCostOneDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostOneDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -110900,18 +107799,6 @@ const virtualParticipantOperationCostOneDecrementalOfferCurvesVomCostCurveTypeDe
 const virtualParticipantOperationCostOneDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const virtualParticipantOperationCostOneDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostOneDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const virtualParticipantOperationCostOneDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const virtualParticipantOperationCostOneIncrementalSlopeDefault = false;
-const virtualParticipantOperationCostOneDecrementalSlopeDefault = false;
-const virtualParticipantOperationCostOneCurveStyleDefault = 0;
-const virtualParticipantOperationCostOneCurveMultistepDefault = 0;
 const virtualParticipantOperationCostTwoCostTypeDefault = `MARKET_BID_TIME_SERIES`;
 const virtualParticipantOperationCostTwoMinimumEnergyOfferCurveTypeDefault = `TIME_SERIES_INPUT_OUTPUT`;
 const virtualParticipantOperationCostTwoMinimumEnergyOfferFunctionDataOneFunctionTypeDefault = `LINEAR`;
@@ -110935,15 +107822,6 @@ const virtualParticipantOperationCostTwoIncrementalOfferCurvesValueCurveOneCurve
 const virtualParticipantOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const virtualParticipantOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostTwoIncrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const virtualParticipantOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const virtualParticipantOperationCostTwoIncrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const virtualParticipantOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostTwoIncrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -110982,27 +107860,10 @@ const virtualParticipantOperationCostTwoIncrementalOfferCurvesVomCostCurveTypeDe
 const virtualParticipantOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const virtualParticipantOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostTwoIncrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const virtualParticipantOperationCostTwoIncrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
 const virtualParticipantOperationCostTwoDecrementalOfferCurvesValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
 const virtualParticipantOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const virtualParticipantOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostTwoDecrementalOfferCurvesValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const virtualParticipantOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault =
-  {
-    curve_type: "INPUT_OUTPUT" as const,
-    function_data: {
-      function_type: "LINEAR" as const,
-      constant_term: 0 as const,
-      proportional_term: 0 as const,
-    },
-  };
 const virtualParticipantOperationCostTwoDecrementalOfferCurvesValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
 const virtualParticipantOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostTwoDecrementalOfferCurvesValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
@@ -111041,18 +107902,6 @@ const virtualParticipantOperationCostTwoDecrementalOfferCurvesVomCostCurveTypeDe
 const virtualParticipantOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
 const virtualParticipantOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataTwoFunctionTypeDefault = `LINEAR`;
 const virtualParticipantOperationCostTwoDecrementalOfferCurvesVomCostFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const virtualParticipantOperationCostTwoDecrementalOfferCurvesVomCostDefault = {
-  curve_type: "INPUT_OUTPUT" as const,
-  function_data: {
-    function_type: "LINEAR" as const,
-    constant_term: 0 as const,
-    proportional_term: 0 as const,
-  },
-};
-const virtualParticipantOperationCostTwoIncrementalSlopeDefault = false;
-const virtualParticipantOperationCostTwoDecrementalSlopeDefault = false;
-const virtualParticipantOperationCostTwoCurveStyleDefault = 0;
-const virtualParticipantOperationCostTwoCurveMultistepDefault = 0;
 export const VirtualParticipant = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
@@ -111175,9 +108024,6 @@ export const VirtualParticipant = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(
-                virtualParticipantOperationCostOneMinimumEnergyOfferDefault,
-              )
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -111281,7 +108127,6 @@ export const VirtualParticipant = zod
                   .optional()
                   .describe("Units: the curve's y-axis unit."),
               })
-              .default(virtualParticipantOperationCostOneShutDownDefault)
               .describe(
                 "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
               ),
@@ -111384,9 +108229,6 @@ export const VirtualParticipant = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        virtualParticipantOperationCostOneIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -112199,9 +109041,6 @@ export const VirtualParticipant = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    virtualParticipantOperationCostOneIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -112308,9 +109147,6 @@ export const VirtualParticipant = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        virtualParticipantOperationCostOneDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -113123,9 +109959,6 @@ export const VirtualParticipant = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    virtualParticipantOperationCostOneDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -113140,29 +109973,25 @@ export const VirtualParticipant = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(
-                virtualParticipantOperationCostOneIncrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(
-                virtualParticipantOperationCostOneDecrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(virtualParticipantOperationCostOneCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(virtualParticipantOperationCostOneCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -113655,9 +110484,6 @@ export const VirtualParticipant = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        virtualParticipantOperationCostTwoIncrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -114470,9 +111296,6 @@ export const VirtualParticipant = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    virtualParticipantOperationCostTwoIncrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -114579,9 +111402,6 @@ export const VirtualParticipant = zod
                           .optional()
                           .describe("Units: the curve's y-axis unit."),
                       })
-                      .default(
-                        virtualParticipantOperationCostTwoDecrementalOfferCurvesValueCurveOneDefault,
-                      )
                       .describe(
                         "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                       ),
@@ -115394,9 +112214,6 @@ export const VirtualParticipant = zod
                       .optional()
                       .describe("Units: the curve's y-axis unit."),
                   })
-                  .default(
-                    virtualParticipantOperationCostTwoDecrementalOfferCurvesVomCostDefault,
-                  )
                   .describe(
                     "A curve whose y values are the total input `f(x)` at production level `x` — currency per hour against MW in a cost curve, fuel per hour against MW in a fuel curve. The y axis is an absolute quantity, not a rate; use `IncrementalCurve` for marginal-rate data.",
                   ),
@@ -115411,29 +112228,25 @@ export const VirtualParticipant = zod
               ),
             incremental_slope: zod
               .boolean()
-              .default(
-                virtualParticipantOperationCostTwoIncrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the incremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             decremental_slope: zod
               .boolean()
-              .default(
-                virtualParticipantOperationCostTwoDecrementalSlopeDefault,
-              )
+              .optional()
               .describe(
                 "Linear-interpolation flag for the decremental offer curves; false (default) is the step interpretation. Mutually exclusive with block groups on the same curve.",
               ),
             curve_style: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(virtualParticipantOperationCostTwoCurveStyleDefault)
+              .optional()
               .describe(
                 "Curve-clearing style for a bid: 0 = VARIABLE (default; continuous quantity with one or more segments); 1 = FIXED (all-or-nothing block with a single segment). FIXED is mutually exclusive with incremental_slope/decremental_slope and requires a single-segment offer curve.",
               ),
             curve_multistep: zod
               .union([zod.literal(0), zod.literal(1)])
-              .default(virtualParticipantOperationCostTwoCurveMultistepDefault)
+              .optional()
               .describe(
                 "Multi-step block indicator for a bid: 0 = SINGLE_STEP (default; each step of the bid clears independently); 1 = MULTI_STEP (the bid must be awarded as one block across every step it covers). Counted in model steps so it applies at any resolution. Independent of curve style: curve style is the quantity structure, this is the time structure, and they compose.",
               ),
@@ -115451,7 +112264,6 @@ export const VirtualParticipant = zod
 export type VirtualParticipant = zod.input<typeof VirtualParticipant>;
 export type VirtualParticipantOutput = zod.output<typeof VirtualParticipant>;
 
-const voltageControlAssociationWeightDefault = 1;
 export const voltageControlAssociationWeightExclusiveMin = 0;
 
 export const VoltageControlAssociation = zod
@@ -115465,14 +112277,13 @@ export const VoltageControlAssociation = zod
     weight: zod
       .number()
       .gt(voltageControlAssociationWeightExclusiveMin)
-      .default(voltageControlAssociationWeightDefault)
+      .optional()
       .describe(
         "Positive relative weight of this member. Its share of the reactive power required at the regulated bus is weight divided by the sum of the weights of the members in service. Units: 1.",
       ),
     terminal: zod
       .enum(["UNDEFINED", "FROM", "TO"])
       .optional()
-      .default("UNDEFINED")
       .describe(
         "Which converter of a two-terminal line a voltage control membership refers to. UNDEFINED: the member is a single-bus device, so no converter is named. FROM: the converter at the arc's `from` bus. TO: the converter at the arc's `to` bus.",
       ),
@@ -115488,7 +112299,6 @@ export type VoltageControlAssociationOutput = zod.output<
   typeof VoltageControlAssociation
 >;
 
-const voltageDroopControlAvailableDefault = true;
 export const VoltageDroopControl = zod
   .strictObject({
     id: zod
@@ -115497,7 +112307,7 @@ export const VoltageDroopControl = zod
     name: zod.string().describe("Name of the voltage droop controller."),
     available: zod
       .boolean()
-      .default(voltageDroopControlAvailableDefault)
+      .optional()
       .describe(
         "Whether the controller is in service (PSS/E STATUS). While false, members regulate their own targets.",
       ),
@@ -115522,7 +112332,6 @@ export const VoltageDroopControl = zod
     voltage_units: zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
-      .default("COMPONENT_BASE")
       .describe(
         "Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints — PSS/E RAW native for FACTS VSET — and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.",
       ),

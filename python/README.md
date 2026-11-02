@@ -99,6 +99,41 @@ else:
     raise AssertionError("a data source timestamp needs an offset")
 ```
 
+### Schema defaults are not filled in
+
+A schema `default` documents the value a consumer assumes when a field is absent.
+No SDK inserts it: the Python, TypeScript, Rust and Julia packages all behave the same
+way. An omitted optional field stays absent, so reading and writing a document never adds
+a value the producer did not write. A field the schema marks `required` stays required,
+even when it has a default. The one exception is a `const` field, such as a discriminator
+(`time_series_type`, `curve_type`): the schema fixes its value, so it is always set. To
+use a default, apply it where you read the field. The schema reference lists every
+default.
+
+```python
+from power_openapi_models.timeseries.models import IntervalAlignment, SingleTimeSeries
+
+series = SingleTimeSeries.model_validate(
+    {
+        "association_id": 1,
+        "owner_id": 2,
+        "owner_type": "ACBus",
+        "owner_category": "Component",
+        "name": "max_active_power",
+        "features": {},
+        "uri": "abc123",
+        "element_type": "f64",
+        "element_shape": [],
+        "initial_timestamp": "2024-01-01T00:00:00Z",
+        "resolution": "PT1H",
+        "length": 24,
+    }
+)
+assert series.interval_alignment is None
+assert series.time_series_type == "SingleTimeSeries"
+alignment = series.interval_alignment or IntervalAlignment.PERIOD_ENDING
+```
+
 ### Discriminated unions carry a `.root`
 
 Several types are one of several shapes, chosen by a discriminator field.

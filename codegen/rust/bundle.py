@@ -175,20 +175,6 @@ class Bundler:
         return names
 
 
-def drop_validation_rules(defs):
-    """Drop an object's `allOf` when every item is an `if`/`then` rule.
-
-    openapi-to-rust reads `allOf` as composition. A rule shapes no type, but its
-    presence turns a tagged union of such objects (`TimeSeriesAssociation`) into an
-    untagged one. The strict bundles behind the `validate` feature still check it.
-    """
-    for schema in defs.values():
-        rules = schema.get("allOf")
-        if rules and all(set(rule) <= {"if", "then", "else"} for rule in rules):
-            del schema["allOf"]
-    return defs
-
-
 def bundle(schema_dir):
     b = Bundler(schema_dir)
     listed = {}
@@ -212,7 +198,7 @@ def bundle(schema_dir):
         "openapi": "3.1.0",
         "info": {"title": "PowerOpenAPIModels", "version": "0.1.0"},
         "paths": {},
-        "components": {"schemas": dict(sorted(drop_validation_rules(b.defs).items()))},
+        "components": {"schemas": dict(sorted(b.defs.items()))},
         "x-domains": {d: sorted(set(n)) for d, n in listed.items()},
     }
 
