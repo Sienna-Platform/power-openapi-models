@@ -4402,6 +4402,9 @@ pub struct SingleTimeSeries {
     pub quantity_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_system: Option<UnitSystem>,
+    ///The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_unit_of: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -5060,6 +5063,9 @@ pub struct Scenarios {
     pub quantity_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_system: Option<UnitSystem>,
+    ///The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_unit_of: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -6152,6 +6158,9 @@ pub struct Probabilistic {
     pub quantity_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_system: Option<UnitSystem>,
+    ///The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_unit_of: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -6607,6 +6616,9 @@ pub struct NonSequentialTimeSeries {
     pub quantity_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_system: Option<UnitSystem>,
+    ///The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_unit_of: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
     ///The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.
@@ -13817,6 +13829,9 @@ pub struct DeterministicSingleTimeSeries {
     pub quantity_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_system: Option<UnitSystem>,
+    ///The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_unit_of: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -13897,6 +13912,9 @@ pub struct Deterministic {
     pub quantity_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_system: Option<UnitSystem>,
+    ///The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_unit_of: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
     #[serde(skip_serializing_if = "Option::is_none")]

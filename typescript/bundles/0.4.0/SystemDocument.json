@@ -912,6 +912,10 @@
           "description": "Type name of the owning entity. Descriptive, not part of the series' identity.",
           "type": "string"
         },
+        "per_unit_of": {
+          "description": "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          "type": "string"
+        },
         "quantity_kind": {
           "description": "Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
           "type": "string"
@@ -932,7 +936,7 @@
         },
         "unit_system": {
           "$ref": "#/definitions/UnitSystem",
-          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
+          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
         },
         "units": {
           "description": "Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
@@ -1122,6 +1126,10 @@
           "description": "Type name of the owning entity. Descriptive, not part of the series' identity.",
           "type": "string"
         },
+        "per_unit_of": {
+          "description": "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          "type": "string"
+        },
         "quantity_kind": {
           "description": "Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
           "type": "string"
@@ -1142,7 +1150,7 @@
         },
         "unit_system": {
           "$ref": "#/definitions/UnitSystem",
-          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
+          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
         },
         "units": {
           "description": "Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
@@ -4206,6 +4214,10 @@
           "description": "Type name of the owning entity. Descriptive, not part of the series' identity.",
           "type": "string"
         },
+        "per_unit_of": {
+          "description": "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          "type": "string"
+        },
         "quantity_kind": {
           "description": "Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
           "type": "string"
@@ -4226,7 +4238,7 @@
         },
         "unit_system": {
           "$ref": "#/definitions/UnitSystem",
-          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
+          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
         },
         "units": {
           "description": "Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
@@ -4895,6 +4907,10 @@
           "description": "Type name of the owning entity. Descriptive, not part of the series' identity.",
           "type": "string"
         },
+        "per_unit_of": {
+          "description": "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          "type": "string"
+        },
         "percentiles": {
           "description": "The percentiles this forecast carries, one per leading axis entry of the stored array.",
           "items": {
@@ -4923,7 +4939,7 @@
         },
         "unit_system": {
           "$ref": "#/definitions/UnitSystem",
-          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
+          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
         },
         "units": {
           "description": "Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
@@ -5418,6 +5434,10 @@
           "description": "Type name of the owning entity. Descriptive, not part of the series' identity.",
           "type": "string"
         },
+        "per_unit_of": {
+          "description": "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          "type": "string"
+        },
         "quantity_kind": {
           "description": "Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
           "type": "string"
@@ -5443,7 +5463,7 @@
         },
         "unit_system": {
           "$ref": "#/definitions/UnitSystem",
-          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
+          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
         },
         "units": {
           "description": "Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
@@ -5907,6 +5927,10 @@
           "description": "Type name of the owning entity. Descriptive, not part of the series' identity.",
           "type": "string"
         },
+        "per_unit_of": {
+          "description": "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          "type": "string"
+        },
         "quantity_kind": {
           "description": "Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
           "type": "string"
@@ -5927,7 +5951,7 @@
         },
         "unit_system": {
           "$ref": "#/definitions/UnitSystem",
-          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
+          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
         },
         "units": {
           "description": "Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
@@ -7269,6 +7293,7 @@
             "owner_category",
             "owner_id",
             "owner_type",
+            "per_unit_of",
             "percentiles",
             "quantity_kind",
             "resolution",
