@@ -226,11 +226,68 @@ class DiscreteControlledACBranch(BaseModel):
     )
 
 
-class SeriesCompensatorControlMode(Enum):
-    FIXED = "FIXED"
-    BYPASSED = "BYPASSED"
-    DISPATCHABLE = "DISPATCHABLE"
-    ACTIVE_POWER_FLOW = "ACTIVE_POWER_FLOW"
+class SeriesAdmittance(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
+    )
+    available: bool = Field(
+        ...,
+        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
+    )
+    active_power_flow: float = Field(
+        ...,
+        description="Initial condition of active power flow through the device. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    reactive_power_flow: float = Field(
+        ...,
+        description="Initial condition of reactive power flow through the device. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+    )
+    arc: int = Field(..., description="An `Arc` defining this line `from` a bus `to` another bus.")
+    r: float = Field(
+        ...,
+        description="Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+    )
+    x: float = Field(
+        ...,
+        description="Series reactance; negative for a capacitor. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+    )
+    rating: float = Field(
+        ...,
+        description="Thermal rating. Flow through the device must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    bypassed: bool | None = Field(
+        None,
+        description="Whether the device is bypassed: shorted into a zero-impedance tie between the `from` and `to` buses. `r` and `x` keep the impedance it has when in service.",
+    )
+    rating_b: float | None = Field(
+        None,
+        description="Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    rating_c: float | None = Field(
+        None,
+        description="Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+    )
+    operational_flow_limit: OperationalFlowLimit | None = Field(
+        None,
+        description="Operator-set minimum and maximum flow in each direction. Absent means no operational limit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+    )
+    base_power: float = Field(
+        ...,
+        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
+    )
+    power_units: UnitSystem = Field(
+        ...,
+        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
+    )
+    parameter_units: ImpedanceUnitBasis | None = Field(
+        None,
+        description="Unit basis for r and x. COMPONENT_BASE is per-unit on this component's base_power, which records the system base.",
+    )
 
 
 class EnergyReservoirStorage(BaseModel):
@@ -2257,78 +2314,6 @@ class CombinedCycleBlock(BaseModel):
     configuration: CombinedCycleConfiguration
     heat_recovery_to_steam_factor: float | None = Field(
         None, description="Factor for heat recovery to steam conversion"
-    )
-
-
-class SeriesCompensator(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    id: int = Field(..., description="Unique integer identifier for this component.")
-    name: str = Field(
-        ...,
-        description="Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.",
-    )
-    available: bool = Field(
-        ...,
-        description="Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
-    )
-    active_power_flow: float = Field(
-        ...,
-        description="Initial condition of active power flow through the compensator. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    reactive_power_flow: float = Field(
-        ...,
-        description="Initial condition of reactive power flow through the compensator. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
-    )
-    arc: int = Field(..., description="An `Arc` defining this line `from` a bus `to` another bus.")
-    r: float = Field(
-        ...,
-        description="Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-    )
-    x: float = Field(
-        ...,
-        description="Series reactance; negative for a capacitor. Under `DISPATCHABLE` and `ACTIVE_POWER_FLOW`, the present value. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-    )
-    rating: float = Field(
-        ...,
-        description="Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-    )
-    control_mode: SeriesCompensatorControlMode | None = Field(
-        None,
-        description="How the series reactance is set. `FIXED` holds `x`; `BYPASSED` shorts the compensator into a zero-impedance tie; `DISPATCHABLE` makes the reactance a decision within `reactance_limits`; `ACTIVE_POWER_FLOW` sets it to hold `active_power_flow_setpoint`.",
-    )
-    reactance_limits: MinMax | None = Field(
-        None,
-        description="Minimum and maximum series reactance. Required when `control_mode` is `DISPATCHABLE` or `ACTIVE_POWER_FLOW`. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
-    )
-    active_power_flow_setpoint: float | None = Field(
-        None,
-        description="Active power flow, from the `from` bus to the `to` bus, the compensator holds. Required when `control_mode` is `ACTIVE_POWER_FLOW`. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    rating_b: float | None = Field(
-        None,
-        description="Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-    )
-    rating_c: float | None = Field(
-        None,
-        description="Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
-    )
-    operational_flow_limit: OperationalFlowLimit | None = Field(
-        None,
-        description="Operator-set minimum and maximum flow in each direction. Absent means no operational limit. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
-    )
-    base_power: float = Field(
-        ...,
-        description="System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.",
-    )
-    power_units: UnitSystem = Field(
-        ...,
-        description="Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit.",
-    )
-    parameter_units: ImpedanceUnitBasis | None = Field(
-        None,
-        description="Unit basis for r and x. COMPONENT_BASE is per-unit on this component's base_power, which records the system base.",
     )
 
 

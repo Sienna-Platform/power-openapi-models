@@ -4947,35 +4947,31 @@ impl<'de> serde::Deserialize<'de> for ShiftablePowerLoadOperationCost {
         }
     }
 }
-///A series compensator on an `Arc`: a series capacitor or reactor, or a thyristor-controlled or static synchronous series compensator, with one series reactance. Devices that also inject at a bus, such as a UPFC, are not covered.
+///A fixed series admittance on an `Arc`: a series capacitor or reactor, or an AC line without charging susceptance, with constant `r` and `x` (the CIM `SeriesCompensator`). `bypassed` shorts the device into a zero-impedance tie; `available = false` takes it out of service. Controllable series devices are not covered.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
-pub struct SeriesCompensator {
+pub struct SeriesAdmittance {
     ///Unique integer identifier for this component.
     pub id: i64,
     ///Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.
     pub name: String,
     ///Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.
     pub available: bool,
-    ///Initial condition of active power flow through the compensator. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
+    ///Initial condition of active power flow through the device. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
     pub active_power_flow: f64,
-    ///Initial condition of reactive power flow through the compensator. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
+    ///Initial condition of reactive power flow through the device. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
     pub reactive_power_flow: f64,
     ///An `Arc` defining this line `from` a bus `to` another bus.
     pub arc: i64,
     ///Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
     pub r: f64,
-    ///Series reactance; negative for a capacitor. Under `DISPATCHABLE` and `ACTIVE_POWER_FLOW`, the present value. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    ///Series reactance; negative for a capacitor. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
     pub x: f64,
-    ///Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    ///Thermal rating. Flow through the device must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     pub rating: f64,
+    ///Whether the device is bypassed: shorted into a zero-impedance tie between the `from` and `to` buses. `r` and `x` keep the impedance it has when in service.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub control_mode: Option<SeriesCompensatorControlMode>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub reactance_limits: Option<MinMax>,
-    ///Active power flow, from the `from` bus to the `to` bus, the compensator holds. Required when `control_mode` is `ACTIVE_POWER_FLOW`. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub active_power_flow_setpoint: Option<f64>,
+    pub bypassed: Option<bool>,
     ///Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rating_b: Option<f64>,
@@ -4989,39 +4985,6 @@ pub struct SeriesCompensator {
     pub power_units: UnitSystem,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub parameter_units: Option<ImpedanceUnitBasis>,
-}
-///Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
-pub enum SeriesCompensatorControlMode {
-    #[default]
-    #[serde(rename = "FIXED")]
-    Fixed,
-    #[serde(rename = "BYPASSED")]
-    Bypassed,
-    #[serde(rename = "DISPATCHABLE")]
-    Dispatchable,
-    #[serde(rename = "ACTIVE_POWER_FLOW")]
-    ActivePowerFlow,
-}
-impl SeriesCompensatorControlMode {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::Fixed => "FIXED",
-            Self::Bypassed => "BYPASSED",
-            Self::Dispatchable => "DISPATCHABLE",
-            Self::ActivePowerFlow => "ACTIVE_POWER_FLOW",
-        }
-    }
-}
-impl ::std::fmt::Display for SeriesCompensatorControlMode {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        f.write_str(self.as_str())
-    }
-}
-impl AsRef<str> for SeriesCompensatorControlMode {
-    fn as_ref(&self) -> &str {
-        self.as_str()
-    }
 }
 ///A scenarios forecast: per-scenario, per-window horizon arrays. Adds a scenario axis in front of the deterministic layout.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]

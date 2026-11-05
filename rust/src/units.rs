@@ -4016,7 +4016,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
-        "SeriesCompensator",
+        "SeriesAdmittance",
         "active_power_flow",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -4039,30 +4039,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesCompensator",
-        "active_power_flow_setpoint",
-        FieldUnit::Discriminated {
-            discriminator: "power_units",
-            units: &[
-                (
-                    "NATURAL_UNITS",
-                    Unit {
-                        unit: "MW",
-                        quantity: "ActivePower",
-                    },
-                ),
-                (
-                    "COMPONENT_BASE",
-                    Unit {
-                        unit: "pu",
-                        quantity: "ActivePower",
-                    },
-                ),
-            ],
-        },
-    ),
-    (
-        "SeriesCompensator",
+        "SeriesAdmittance",
         "base_power",
         FieldUnit::Fixed(Unit {
             unit: "MVA",
@@ -4070,7 +4047,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
-        "SeriesCompensator",
+        "SeriesAdmittance",
         "operational_flow_limit",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -4093,7 +4070,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesCompensator",
+        "SeriesAdmittance",
         "r",
         FieldUnit::Discriminated {
             discriminator: "parameter_units",
@@ -4116,7 +4093,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesCompensator",
+        "SeriesAdmittance",
         "rating",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -4139,7 +4116,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesCompensator",
+        "SeriesAdmittance",
         "rating_b",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -4162,7 +4139,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesCompensator",
+        "SeriesAdmittance",
         "rating_c",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -4185,30 +4162,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesCompensator",
-        "reactance_limits",
-        FieldUnit::Discriminated {
-            discriminator: "parameter_units",
-            units: &[
-                (
-                    "NATURAL_UNITS",
-                    Unit {
-                        unit: "ohm",
-                        quantity: "Reactance",
-                    },
-                ),
-                (
-                    "COMPONENT_BASE",
-                    Unit {
-                        unit: "pu",
-                        quantity: "Reactance",
-                    },
-                ),
-            ],
-        },
-    ),
-    (
-        "SeriesCompensator",
+        "SeriesAdmittance",
         "reactive_power_flow",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -4231,7 +4185,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesCompensator",
+        "SeriesAdmittance",
         "x",
         FieldUnit::Discriminated {
             discriminator: "parameter_units",

@@ -441,7 +441,7 @@ function applyGeneratorFixes(
 /**
  * Drop the `zod.unknown()` placeholders orval renders for a validation-only `allOf`.
  *
- * An object schema whose `allOf` holds only `if`/`then` rules (`SeriesCompensator`, and
+ * An object schema whose `allOf` holds only `if`/`then` rules (`SwitchedAdmittance`, and
  * the time series types from schema 0.4.0) renders as
  * `zod.unknown().and(zod.unknown()).and(zod.object({...}))`. zod v4 lets a key the object
  * does not declare pass through an intersection with `unknown()`, so `strictObjects`

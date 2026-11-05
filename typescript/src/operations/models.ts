@@ -333,15 +333,15 @@ export type DiscreteControlledACBranchOutput = zod.output<
   typeof DiscreteControlledACBranch
 >;
 
-export const seriesCompensatorThreeOperationalFlowLimitFromToMinMin = 0;
+export const seriesAdmittanceOperationalFlowLimitFromToMinMin = 0;
 
-export const seriesCompensatorThreeOperationalFlowLimitFromToMaxMin = 0;
+export const seriesAdmittanceOperationalFlowLimitFromToMaxMin = 0;
 
-export const seriesCompensatorThreeOperationalFlowLimitToFromMinMin = 0;
+export const seriesAdmittanceOperationalFlowLimitToFromMinMin = 0;
 
-export const seriesCompensatorThreeOperationalFlowLimitToFromMaxMin = 0;
+export const seriesAdmittanceOperationalFlowLimitToFromMaxMin = 0;
 
-export const SeriesCompensator = zod
+export const SeriesAdmittance = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
     name: zod
@@ -357,12 +357,12 @@ export const SeriesCompensator = zod
     active_power_flow: zod
       .number()
       .describe(
-        "Initial condition of active power flow through the compensator. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+        "Initial condition of active power flow through the device. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     reactive_power_flow: zod
       .number()
       .describe(
-        "Initial condition of reactive power flow through the compensator. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+        "Initial condition of reactive power flow through the device. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     arc: zod
       .int()
@@ -375,33 +375,18 @@ export const SeriesCompensator = zod
     x: zod
       .number()
       .describe(
-        "Series reactance; negative for a capacitor. Under `DISPATCHABLE` and `ACTIVE_POWER_FLOW`, the present value. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+        "Series reactance; negative for a capacitor. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
       ),
     rating: zod
       .number()
       .describe(
-        "Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        "Thermal rating. Flow through the device must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
       ),
-    control_mode: zod
-      .enum(["FIXED", "BYPASSED", "DISPATCHABLE", "ACTIVE_POWER_FLOW"])
+    bypassed: zod
+      .boolean()
       .optional()
       .describe(
-        "Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.",
-      ),
-    reactance_limits: zod
-      .strictObject({
-        max: zod.number().optional(),
-        min: zod.number().optional(),
-      })
-      .optional()
-      .describe(
-        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-      ),
-    active_power_flow_setpoint: zod
-      .number()
-      .optional()
-      .describe(
-        "Active power flow, from the `from` bus to the `to` bus, the compensator holds. Required when `control_mode` is `ACTIVE_POWER_FLOW`. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+        "Whether the device is bypassed: shorted into a zero-impedance tie between the `from` and `to` buses. `r` and `x` keep the impedance it has when in service.",
       ),
     rating_b: zod
       .number()
@@ -419,16 +404,16 @@ export const SeriesCompensator = zod
       .strictObject({
         from_to_min: zod
           .number()
-          .min(seriesCompensatorThreeOperationalFlowLimitFromToMinMin),
+          .min(seriesAdmittanceOperationalFlowLimitFromToMinMin),
         from_to_max: zod
           .number()
-          .min(seriesCompensatorThreeOperationalFlowLimitFromToMaxMin),
+          .min(seriesAdmittanceOperationalFlowLimitFromToMaxMin),
         to_from_min: zod
           .number()
-          .min(seriesCompensatorThreeOperationalFlowLimitToFromMinMin),
+          .min(seriesAdmittanceOperationalFlowLimitToFromMinMin),
         to_from_max: zod
           .number()
-          .min(seriesCompensatorThreeOperationalFlowLimitToFromMaxMin),
+          .min(seriesAdmittanceOperationalFlowLimitToFromMaxMin),
       })
       .optional()
       .describe(
@@ -452,11 +437,11 @@ export const SeriesCompensator = zod
       ),
   })
   .describe(
-    "A series compensator on an `Arc`: a series capacitor or reactor, or a thyristor-controlled or static synchronous series compensator, with one series reactance. Devices that also inject at a bus, such as a UPFC, are not covered.",
+    "A fixed series admittance on an `Arc`: a series capacitor or reactor, or an AC line without charging susceptance, with constant `r` and `x` (the CIM `SeriesCompensator`). `bypassed` shorts the device into a zero-impedance tie; `available = false` takes it out of service. Controllable series devices are not covered.",
   );
 
-export type SeriesCompensator = zod.input<typeof SeriesCompensator>;
-export type SeriesCompensatorOutput = zod.output<typeof SeriesCompensator>;
+export type SeriesAdmittance = zod.input<typeof SeriesAdmittance>;
+export type SeriesAdmittanceOutput = zod.output<typeof SeriesAdmittance>;
 
 const energyReservoirStorageOperationCostOneCostTypeDefault = `STORAGE`;
 const energyReservoirStorageOperationCostOneChargeVariableCostValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
@@ -112438,19 +112423,6 @@ export type SwitchedAdmittanceControlMode = zod.input<
 >;
 export type SwitchedAdmittanceControlModeOutput = zod.output<
   typeof SwitchedAdmittanceControlMode
->;
-
-export const SeriesCompensatorControlMode = zod
-  .enum(["FIXED", "BYPASSED", "DISPATCHABLE", "ACTIVE_POWER_FLOW"])
-  .describe(
-    "Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.",
-  );
-
-export type SeriesCompensatorControlMode = zod.input<
-  typeof SeriesCompensatorControlMode
->;
-export type SeriesCompensatorControlModeOutput = zod.output<
-  typeof SeriesCompensatorControlMode
 >;
 
 export const ReserveDirection = zod
