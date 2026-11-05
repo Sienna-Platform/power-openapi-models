@@ -348,8 +348,8 @@ def fix_required_fields_with_schema_defaults(content: str) -> tuple[str, bool]:
     shape this previously fixed only for
     one field on one type by hand; SiennaSchemas turns out to use the
     pattern across every domain -- discriminator consts (`AverageRateCurve.
-    curve_type`), plain numeric fields (`PortfolioFinancialData.
-    discount_rate`, `Substation.grounding_resistance`), and composite `$ref`
+    curve_type`), plain numeric fields
+    (`Substation.grounding_resistance`), and composite `$ref`
     fields, both with the default written on the property itself
     (`CostCurve.vom_cost`) and one hop away on the referenced type
     (`FuelCurve.vom_cost`, `LossCurve.value_curve`) -- so this reads

@@ -29,7 +29,6 @@ import {
   writeDocument,
   writePortfolioDocument,
 } from "../src/document";
-import type { PortfolioFinancialData } from "../src/investments/models";
 import { classifySchemaVersion } from "../src/schema_version";
 
 const SCHEMAS_DIR =
@@ -364,46 +363,23 @@ describe("canonical encoding", () => {
     expect(written.base_system_file).toBeNull();
   });
 
-  const portfolioWithRates = (financial_data: PortfolioFinancialData) => ({
-    schema_version: SCHEMA_VERSION,
-    aggregation: "Area",
-    financial_data,
-    components: {},
-    supplemental_attributes: [],
-    supplemental_attribute_associations: [],
-    requirements_associations: [],
-    time_series_associations: [],
-    base_system_file: null,
-    time_series_storage_file: null,
-  });
-
-  // Schema-required with a schema default: required, as in the Julia package. No SDK
-  // fills a schema default (see the README).
-  it("requires the three financial rates and writes them as given", () => {
-    const out = join(tmp, "canonical-rates.json");
-    const rates = { discount_rate: 0, inflation_rate: 0, interest_rate: 0.123 };
-    writePortfolioDocument(
-      portfolioWithRates({
-        id: 5,
-        base_year: 2020,
-        ...rates,
-      } as PortfolioFinancialData),
-      out,
-    );
-    expect(loadJson(out).financial_data).toEqual({
-      id: 5,
-      base_year: 2020,
-      ...rates,
-    });
+  // Financial data lives on each technology; the document has no portfolio-wide block.
+  it("rejects a portfolio-wide financial_data block", () => {
     expect(() =>
       writePortfolioDocument(
-        portfolioWithRates({
-          id: 5,
-          base_year: 2020,
-          discount_rate: 0,
-          interest_rate: 0.123,
-        } as PortfolioFinancialData),
-        join(tmp, "missing-rate.json"),
+        {
+          schema_version: SCHEMA_VERSION,
+          aggregation: "Area",
+          financial_data: { id: 5, base_year: 2020 },
+          components: {},
+          supplemental_attributes: [],
+          supplemental_attribute_associations: [],
+          requirements_associations: [],
+          time_series_associations: [],
+          base_system_file: null,
+          time_series_storage_file: null,
+        } as Parameters<typeof writePortfolioDocument>[0],
+        join(tmp, "financial-data.json"),
       ),
     ).toThrow();
   });

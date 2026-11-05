@@ -46,10 +46,7 @@ import {
   TradingHubAssociation,
   VoltageControlAssociation,
 } from "./operations/models";
-import {
-  PortfolioFinancialData,
-  RequirementAssociation,
-} from "./investments/models";
+import { RequirementAssociation } from "./investments/models";
 import { TimeSeriesAssociation } from "./timeseries/models";
 import {
   SCHEMA_VERSION,
@@ -191,9 +188,6 @@ export const PortfolioDocument = zod
       .describe(
         "Qualified type name of the regional aggregation the portfolio groups its regions by. A type identifier resolved by the consumer, not a component in the document.",
       ),
-    financial_data: PortfolioFinancialData.optional().describe(
-      "Portfolio-wide financial parameters: the base economic year every cost is discounted to a net present value in, and the discount, inflation, and interest rates used in that conversion. Absent when the portfolio carries no financial data.",
-    ),
     components: zod
       .record(zod.string(), zod.array(genericRecord))
       .describe(
@@ -476,7 +470,6 @@ const PORTFOLIO_KIND: DocumentKind = {
     "name",
     "description",
     "data_source",
-    "financial_data",
     "investment_schedule",
     "ext",
   ],

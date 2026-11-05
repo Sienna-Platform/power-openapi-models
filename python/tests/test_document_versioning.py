@@ -209,39 +209,10 @@ def test_canonical_encoding_keeps_set_values(tmp_path):
     assert written["ext"] == {"1": {"k": "v"}}
 
 
-RATES = {"discount_rate": 0.0, "inflation_rate": 0.0, "interest_rate": 0.123}
-
-
-def test_financial_rates_are_required(tmp_path):
-    # Schema-required with a schema default: required, as in the Julia package. No SDK
-    # fills a schema default (see the README).
+def test_portfolio_financial_data_is_rejected():
+    # Financial data lives on each technology; the document has no portfolio-wide block.
     with pytest.raises(ValidationError):
-        PortfolioDocument(
-            **{**PORTFOLIO, "financial_data": {"id": 5, "base_year": 2020, "discount_rate": 0.0}},
-        )
-    doc = PortfolioDocument(
-        **{**PORTFOLIO, "financial_data": {"id": 5, "base_year": 2020, **RATES}}
-    )
-    path = tmp_path / "doc.json"
-    document.write_portfolio_document(doc, path)
-    assert json.loads(path.read_text())["financial_data"] == {"id": 5, "base_year": 2020, **RATES}
-
-
-def test_financial_data_rewrite_is_byte_stable(tmp_path):
-    first, second = tmp_path / "a.json", tmp_path / "b.json"
-    first.write_text(
-        json.dumps(
-            {
-                **PORTFOLIO,
-                "schema_version": R,
-                "financial_data": {"id": 5, "base_year": 2020, **RATES},
-            }
-        )
-    )
-    mid = tmp_path / "m.json"
-    document.write_portfolio_document(document.read_portfolio_document(first), mid)
-    document.write_portfolio_document(document.read_portfolio_document(mid), second)
-    assert mid.read_text() == second.read_text()
+        PortfolioDocument(**{**PORTFOLIO, "financial_data": {"id": 5, "base_year": 2020}})
 
 
 def test_ext_the_document_carries_is_written_back(tmp_path):

@@ -75,12 +75,9 @@ except ImportError:
     TimeSeriesAssociation = dict
 
 try:
-    from power_openapi_models.investments.models import (
-        PortfolioFinancialData,
-        RequirementAssociation,
-    )
+    from power_openapi_models.investments.models import RequirementAssociation
 except ImportError:
-    PortfolioFinancialData = RequirementAssociation = dict
+    RequirementAssociation = dict
 
 
 __all__ = [
@@ -368,13 +365,6 @@ class PortfolioDocument(_StampedDocument):
         description="Qualified type name of the regional aggregation the portfolio "
         "groups its regions by. A type identifier resolved by the consumer, not a "
         "component in the document.",
-    )
-    financial_data: PortfolioFinancialData | None = Field(
-        None,
-        description="Portfolio-wide financial parameters: the base economic year every "
-        "cost is discounted to a net present value in, and the discount, inflation, and "
-        "interest rates used in that conversion. Absent when the portfolio carries no "
-        "financial data.",
     )
     components: dict[str, list[dict]] = Field(
         ...,

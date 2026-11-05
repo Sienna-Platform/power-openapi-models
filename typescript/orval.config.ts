@@ -120,7 +120,6 @@ const EXTERNAL_REFS_ALLOW = [
   "Dynamics/DynamicInverterComponent/OutputCurrentLimiter/PriorityOutputCurrentLimiter.json",
   "Dynamics/DynamicInverterComponent/OutputCurrentLimiter/SaturationOutputCurrentLimiter.json",
   "Investments/Associations/RequirementAssociation.json",
-  "Investments/Financials/PortfolioFinancialData.json",
   "Investments/Financials/TechnologyFinancialData.json",
   "Investments/PortfolioDocument.json",
   "Investments/Requirements/CapacityReserveMargin.json",

@@ -3481,7 +3481,8 @@ pub struct StorageTechnology {
     pub min_discharge_fraction: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prime_mover_type: Option<PrimeMovers>,
-    pub storage_tech: StorageTech,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub storage_tech: Option<StorageTech>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub capital_costs: Option<StorageCapitalCost>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -15010,13 +15011,13 @@ pub struct AggregateTransportTechnology {
     pub unit_size: Option<f64>,
     pub financial_data: TechnologyFinancialData,
 }
-///Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, and the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital.
+///Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital, and the discount, inflation, and interest rates used to convert its costs to a net present value in the model base year.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct TechnologyFinancialData {
     ///Period over which capital costs are recovered for net present value calculations. Units: yr.
     pub capital_recovery_period: i64,
-    ///Base year for technology cost data used in NPV calculations.
+    ///Year the technology's cost data is reported in. Costs are converted from this year to the model base year using the inflation rate.
     pub technology_base_year: i64,
     ///Fraction of capital costs financed through debt. Units: 1.
     pub debt_fraction: f64,
@@ -15026,6 +15027,12 @@ pub struct TechnologyFinancialData {
     pub return_on_equity: f64,
     ///Tax rate applied to equity returns. Units: 1.
     pub tax_rate: f64,
+    ///Discount rate used to convert this technology's future costs to a net present value in the model base year. Units: 1.
+    pub discount_rate: f64,
+    ///Inflation rate used to convert this technology's costs from its base year to the model base year. Units: 1.
+    pub inflation_rate: f64,
+    ///Interest rate for financing calculations. Units: 1.
+    pub interest_rate: f64,
 }
 ///Investment cost for candidate generation and transmission technologies which includes overnight capital costs and last-mile interconnection costs.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -19859,21 +19866,6 @@ pub struct PlantAssociation {
     pub entity_id: i64,
     ///Group number within the plant (shaft, penstock, PCC, or exclusion group, depending on the parent plant's type)
     pub group_index: i64,
-}
-///Financial data for the portfolio as a whole: the base economic year that all costs are converted to a net present value in, and the discount, inflation, and interest rates used in that conversion.
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
-#[serde(deny_unknown_fields)]
-pub struct PortfolioFinancialData {
-    ///ID for individual component.
-    pub id: i64,
-    ///Discount rate for financial calculations. Units: 1.
-    pub discount_rate: f64,
-    ///Inflation rate for cost adjustments. Units: 1.
-    pub inflation_rate: f64,
-    ///Interest rate for financing calculations. Units: 1.
-    pub interest_rate: f64,
-    ///Base economic year. All costs will be converted to a net present value in this year.
-    pub base_year: i64,
 }
 ///Parameters of Priority-Based Current Controller Limiter. Regulates the magnitude of the inverter output current and prioritizes a specific angle for the resultant current signal
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]

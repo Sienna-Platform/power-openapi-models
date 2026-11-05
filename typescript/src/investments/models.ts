@@ -896,7 +896,7 @@ export const AggregateTransportTechnology = zod
         technology_base_year: zod
           .int()
           .describe(
-            "Base year for technology cost data used in NPV calculations.",
+            "Year the technology's cost data is reported in. Costs are converted from this year to the model base year using the inflation rate.",
           ),
         debt_fraction: zod
           .number()
@@ -912,9 +912,22 @@ export const AggregateTransportTechnology = zod
         tax_rate: zod
           .number()
           .describe("Tax rate applied to equity returns. Units: 1."),
+        discount_rate: zod
+          .number()
+          .describe(
+            "Discount rate used to convert this technology's future costs to a net present value in the model base year. Units: 1.",
+          ),
+        inflation_rate: zod
+          .number()
+          .describe(
+            "Inflation rate used to convert this technology's costs from its base year to the model base year. Units: 1.",
+          ),
+        interest_rate: zod
+          .number()
+          .describe("Interest rate for financing calculations. Units: 1."),
       })
       .describe(
-        "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, and the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital.",
+        "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital, and the discount, inflation, and interest rates used to convert its costs to a net present value in the model base year.",
       ),
   })
   .describe(
@@ -1167,7 +1180,7 @@ export const ColocatedSupplyStorageTechnology = zod
         technology_base_year: zod
           .int()
           .describe(
-            "Base year for technology cost data used in NPV calculations.",
+            "Year the technology's cost data is reported in. Costs are converted from this year to the model base year using the inflation rate.",
           ),
         debt_fraction: zod
           .number()
@@ -1183,9 +1196,22 @@ export const ColocatedSupplyStorageTechnology = zod
         tax_rate: zod
           .number()
           .describe("Tax rate applied to equity returns. Units: 1."),
+        discount_rate: zod
+          .number()
+          .describe(
+            "Discount rate used to convert this technology's future costs to a net present value in the model base year. Units: 1.",
+          ),
+        inflation_rate: zod
+          .number()
+          .describe(
+            "Inflation rate used to convert this technology's costs from its base year to the model base year. Units: 1.",
+          ),
+        interest_rate: zod
+          .number()
+          .describe("Interest rate for financing calculations. Units: 1."),
       })
       .describe(
-        "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, and the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital.",
+        "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital, and the discount, inflation, and interest rates used to convert its costs to a net present value in the model base year.",
       ),
     supply_technology: zod
       .int()
@@ -8314,7 +8340,7 @@ export const NodalACTransportTechnology = zod
         technology_base_year: zod
           .int()
           .describe(
-            "Base year for technology cost data used in NPV calculations.",
+            "Year the technology's cost data is reported in. Costs are converted from this year to the model base year using the inflation rate.",
           ),
         debt_fraction: zod
           .number()
@@ -8330,9 +8356,22 @@ export const NodalACTransportTechnology = zod
         tax_rate: zod
           .number()
           .describe("Tax rate applied to equity returns. Units: 1."),
+        discount_rate: zod
+          .number()
+          .describe(
+            "Discount rate used to convert this technology's future costs to a net present value in the model base year. Units: 1.",
+          ),
+        inflation_rate: zod
+          .number()
+          .describe(
+            "Inflation rate used to convert this technology's costs from its base year to the model base year. Units: 1.",
+          ),
+        interest_rate: zod
+          .number()
+          .describe("Interest rate for financing calculations. Units: 1."),
       })
       .describe(
-        "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, and the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital.",
+        "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital, and the discount, inflation, and interest rates used to convert its costs to a net present value in the model base year.",
       ),
   })
   .describe(
@@ -10032,7 +10071,7 @@ export const NodalHVDCTransportTechnology = zod
         technology_base_year: zod
           .int()
           .describe(
-            "Base year for technology cost data used in NPV calculations.",
+            "Year the technology's cost data is reported in. Costs are converted from this year to the model base year using the inflation rate.",
           ),
         debt_fraction: zod
           .number()
@@ -10048,9 +10087,22 @@ export const NodalHVDCTransportTechnology = zod
         tax_rate: zod
           .number()
           .describe("Tax rate applied to equity returns. Units: 1."),
+        discount_rate: zod
+          .number()
+          .describe(
+            "Discount rate used to convert this technology's future costs to a net present value in the model base year. Units: 1.",
+          ),
+        inflation_rate: zod
+          .number()
+          .describe(
+            "Inflation rate used to convert this technology's costs from its base year to the model base year. Units: 1.",
+          ),
+        interest_rate: zod
+          .number()
+          .describe("Interest rate for financing calculations. Units: 1."),
       })
       .describe(
-        "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, and the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital.",
+        "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital, and the discount, inflation, and interest rates used to convert its costs to a net present value in the model base year.",
       ),
   })
   .describe(
@@ -10062,33 +10114,6 @@ export type NodalHVDCTransportTechnology = zod.input<
 >;
 export type NodalHVDCTransportTechnologyOutput = zod.output<
   typeof NodalHVDCTransportTechnology
->;
-
-export const PortfolioFinancialData = zod
-  .strictObject({
-    id: zod.int().describe("ID for individual component."),
-    discount_rate: zod
-      .number()
-      .describe("Discount rate for financial calculations. Units: 1."),
-    inflation_rate: zod
-      .number()
-      .describe("Inflation rate for cost adjustments. Units: 1."),
-    interest_rate: zod
-      .number()
-      .describe("Interest rate for financing calculations. Units: 1."),
-    base_year: zod
-      .int()
-      .describe(
-        "Base economic year. All costs will be converted to a net present value in this year.",
-      ),
-  })
-  .describe(
-    "Financial data for the portfolio as a whole: the base economic year that all costs are converted to a net present value in, and the discount, inflation, and interest rates used in that conversion.",
-  );
-
-export type PortfolioFinancialData = zod.input<typeof PortfolioFinancialData>;
-export type PortfolioFinancialDataOutput = zod.output<
-  typeof PortfolioFinancialData
 >;
 
 export const RequirementAssociation = zod
@@ -12009,6 +12034,7 @@ export const StorageTechnology = zod
         "OTHER_MECH",
         "OTHER_THERM",
       ])
+      .optional()
       .describe(
         "defines the storage technology used in an energy Storage system, based on the options in EIA form 923.",
       ),
@@ -16424,7 +16450,7 @@ export const StorageTechnology = zod
         technology_base_year: zod
           .int()
           .describe(
-            "Base year for technology cost data used in NPV calculations.",
+            "Year the technology's cost data is reported in. Costs are converted from this year to the model base year using the inflation rate.",
           ),
         debt_fraction: zod
           .number()
@@ -16440,9 +16466,22 @@ export const StorageTechnology = zod
         tax_rate: zod
           .number()
           .describe("Tax rate applied to equity returns. Units: 1."),
+        discount_rate: zod
+          .number()
+          .describe(
+            "Discount rate used to convert this technology's future costs to a net present value in the model base year. Units: 1.",
+          ),
+        inflation_rate: zod
+          .number()
+          .describe(
+            "Inflation rate used to convert this technology's costs from its base year to the model base year. Units: 1.",
+          ),
+        interest_rate: zod
+          .number()
+          .describe("Interest rate for financing calculations. Units: 1."),
       })
       .describe(
-        "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, and the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital.",
+        "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital, and the discount, inflation, and interest rates used to convert its costs to a net present value in the model base year.",
       ),
   })
   .describe(
@@ -23575,7 +23614,7 @@ export const SupplyTechnology = zod
         technology_base_year: zod
           .int()
           .describe(
-            "Base year for technology cost data used in NPV calculations.",
+            "Year the technology's cost data is reported in. Costs are converted from this year to the model base year using the inflation rate.",
           ),
         debt_fraction: zod
           .number()
@@ -23591,9 +23630,22 @@ export const SupplyTechnology = zod
         tax_rate: zod
           .number()
           .describe("Tax rate applied to equity returns. Units: 1."),
+        discount_rate: zod
+          .number()
+          .describe(
+            "Discount rate used to convert this technology's future costs to a net present value in the model base year. Units: 1.",
+          ),
+        inflation_rate: zod
+          .number()
+          .describe(
+            "Inflation rate used to convert this technology's costs from its base year to the model base year. Units: 1.",
+          ),
+        interest_rate: zod
+          .number()
+          .describe("Interest rate for financing calculations. Units: 1."),
       })
       .describe(
-        "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, and the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital.",
+        "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital, and the discount, inflation, and interest rates used to convert its costs to a net present value in the model base year.",
       ),
   })
   .describe(
@@ -23612,7 +23664,9 @@ export const TechnologyFinancialData = zod
       ),
     technology_base_year: zod
       .int()
-      .describe("Base year for technology cost data used in NPV calculations."),
+      .describe(
+        "Year the technology's cost data is reported in. Costs are converted from this year to the model base year using the inflation rate.",
+      ),
     debt_fraction: zod
       .number()
       .describe("Fraction of capital costs financed through debt. Units: 1."),
@@ -23625,9 +23679,22 @@ export const TechnologyFinancialData = zod
     tax_rate: zod
       .number()
       .describe("Tax rate applied to equity returns. Units: 1."),
+    discount_rate: zod
+      .number()
+      .describe(
+        "Discount rate used to convert this technology's future costs to a net present value in the model base year. Units: 1.",
+      ),
+    inflation_rate: zod
+      .number()
+      .describe(
+        "Inflation rate used to convert this technology's costs from its base year to the model base year. Units: 1.",
+      ),
+    interest_rate: zod
+      .number()
+      .describe("Interest rate for financing calculations. Units: 1."),
   })
   .describe(
-    "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, and the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital.",
+    "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital, and the discount, inflation, and interest rates used to convert its costs to a net present value in the model base year.",
   );
 
 export type TechnologyFinancialData = zod.input<typeof TechnologyFinancialData>;

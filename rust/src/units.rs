@@ -3507,30 +3507,6 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
-        "PortfolioFinancialData",
-        "discount_rate",
-        FieldUnit::Fixed(Unit {
-            unit: "1",
-            quantity: "Fraction",
-        }),
-    ),
-    (
-        "PortfolioFinancialData",
-        "inflation_rate",
-        FieldUnit::Fixed(Unit {
-            unit: "1",
-            quantity: "Fraction",
-        }),
-    ),
-    (
-        "PortfolioFinancialData",
-        "interest_rate",
-        FieldUnit::Fixed(Unit {
-            unit: "1",
-            quantity: "Fraction",
-        }),
-    ),
-    (
         "PowerLoad",
         "active_power",
         FieldUnit::Discriminated {
@@ -5315,6 +5291,30 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
     (
         "TechnologyFinancialData",
         "debt_rate",
+        FieldUnit::Fixed(Unit {
+            unit: "1",
+            quantity: "Fraction",
+        }),
+    ),
+    (
+        "TechnologyFinancialData",
+        "discount_rate",
+        FieldUnit::Fixed(Unit {
+            unit: "1",
+            quantity: "Fraction",
+        }),
+    ),
+    (
+        "TechnologyFinancialData",
+        "inflation_rate",
+        FieldUnit::Fixed(Unit {
+            unit: "1",
+            quantity: "Fraction",
+        }),
+    ),
+    (
+        "TechnologyFinancialData",
+        "interest_rate",
         FieldUnit::Fixed(Unit {
             unit: "1",
             quantity: "Fraction",
