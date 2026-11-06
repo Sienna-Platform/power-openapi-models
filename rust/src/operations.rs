@@ -18,7 +18,7 @@ pub use crate::generated::{
     OperationalFlowLimit, OperationalStates, PiecewiseLinearData, PiecewiseStepData, PlannedOutage,
     PlantAssociation, PointToPointBid, PowerLoad, PrimeMovers, ProductionVariableCostCurve,
     QuadraticFunctionData, ReactivePowerSharing, RenewableDispatch, RenewableGenerationCost,
-    RenewableNonDispatch, RenewablePowerPlant, ReserveDirection, SeriesAdmittance,
+    RenewableNonDispatch, RenewablePowerPlant, ReserveDirection, SeriesCompensator,
     ServiceAssociation, ShiftablePowerLoad, ShuntAdmittanceUnitBasis, Source, StandardLoad,
     StartUpShutDown, StartUpStages, StorageCost, StorageTech, Substation, SwitchedAdmittance,
     SwitchedAdmittanceControlMode, SynchronousCondenser, TModelHVDCLine, ThermalFuels,

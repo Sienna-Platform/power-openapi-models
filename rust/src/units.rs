@@ -4016,7 +4016,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
-        "SeriesAdmittance",
+        "SeriesCompensator",
         "active_power_flow",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -4039,7 +4039,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesAdmittance",
+        "SeriesCompensator",
         "base_power",
         FieldUnit::Fixed(Unit {
             unit: "MVA",
@@ -4047,7 +4047,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
-        "SeriesAdmittance",
+        "SeriesCompensator",
         "operational_flow_limit",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -4070,7 +4070,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesAdmittance",
+        "SeriesCompensator",
         "r",
         FieldUnit::Discriminated {
             discriminator: "parameter_units",
@@ -4093,7 +4093,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesAdmittance",
+        "SeriesCompensator",
         "rating",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -4116,7 +4116,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesAdmittance",
+        "SeriesCompensator",
         "rating_b",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -4139,7 +4139,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesAdmittance",
+        "SeriesCompensator",
         "rating_c",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -4162,7 +4162,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesAdmittance",
+        "SeriesCompensator",
         "reactive_power_flow",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -4185,7 +4185,7 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
-        "SeriesAdmittance",
+        "SeriesCompensator",
         "x",
         FieldUnit::Discriminated {
             discriminator: "parameter_units",

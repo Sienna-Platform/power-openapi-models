@@ -226,7 +226,7 @@ class DiscreteControlledACBranch(BaseModel):
     )
 
 
-class SeriesAdmittance(BaseModel):
+class SeriesCompensator(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -241,11 +241,11 @@ class SeriesAdmittance(BaseModel):
     )
     active_power_flow: float = Field(
         ...,
-        description="Initial condition of active power flow through the device. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+        description="Initial condition of active power flow through the compensator. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
     )
     reactive_power_flow: float = Field(
         ...,
-        description="Initial condition of reactive power flow through the device. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+        description="Initial condition of reactive power flow through the compensator. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
     )
     arc: int = Field(..., description="An `Arc` defining this line `from` a bus `to` another bus.")
     r: float = Field(
@@ -258,7 +258,7 @@ class SeriesAdmittance(BaseModel):
     )
     rating: float = Field(
         ...,
-        description="Thermal rating. Flow through the device must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        description="Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
     )
     bypassed: bool | None = Field(
         None,

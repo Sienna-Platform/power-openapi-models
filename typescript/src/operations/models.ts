@@ -333,15 +333,15 @@ export type DiscreteControlledACBranchOutput = zod.output<
   typeof DiscreteControlledACBranch
 >;
 
-export const seriesAdmittanceOperationalFlowLimitFromToMinMin = 0;
+export const seriesCompensatorOperationalFlowLimitFromToMinMin = 0;
 
-export const seriesAdmittanceOperationalFlowLimitFromToMaxMin = 0;
+export const seriesCompensatorOperationalFlowLimitFromToMaxMin = 0;
 
-export const seriesAdmittanceOperationalFlowLimitToFromMinMin = 0;
+export const seriesCompensatorOperationalFlowLimitToFromMinMin = 0;
 
-export const seriesAdmittanceOperationalFlowLimitToFromMaxMin = 0;
+export const seriesCompensatorOperationalFlowLimitToFromMaxMin = 0;
 
-export const SeriesAdmittance = zod
+export const SeriesCompensator = zod
   .strictObject({
     id: zod.int().describe("Unique integer identifier for this component."),
     name: zod
@@ -357,12 +357,12 @@ export const SeriesAdmittance = zod
     active_power_flow: zod
       .number()
       .describe(
-        "Initial condition of active power flow through the device. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+        "Initial condition of active power flow through the compensator. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
       ),
     reactive_power_flow: zod
       .number()
       .describe(
-        "Initial condition of reactive power flow through the device. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
+        "Initial condition of reactive power flow through the compensator. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .",
       ),
     arc: zod
       .int()
@@ -380,7 +380,7 @@ export const SeriesAdmittance = zod
     rating: zod
       .number()
       .describe(
-        "Thermal rating. Flow through the device must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        "Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
       ),
     bypassed: zod
       .boolean()
@@ -404,16 +404,16 @@ export const SeriesAdmittance = zod
       .strictObject({
         from_to_min: zod
           .number()
-          .min(seriesAdmittanceOperationalFlowLimitFromToMinMin),
+          .min(seriesCompensatorOperationalFlowLimitFromToMinMin),
         from_to_max: zod
           .number()
-          .min(seriesAdmittanceOperationalFlowLimitFromToMaxMin),
+          .min(seriesCompensatorOperationalFlowLimitFromToMaxMin),
         to_from_min: zod
           .number()
-          .min(seriesAdmittanceOperationalFlowLimitToFromMinMin),
+          .min(seriesCompensatorOperationalFlowLimitToFromMinMin),
         to_from_max: zod
           .number()
-          .min(seriesAdmittanceOperationalFlowLimitToFromMaxMin),
+          .min(seriesCompensatorOperationalFlowLimitToFromMaxMin),
       })
       .optional()
       .describe(
@@ -437,11 +437,11 @@ export const SeriesAdmittance = zod
       ),
   })
   .describe(
-    "A fixed series admittance on an `Arc`: a series capacitor or reactor, or an AC line without charging susceptance, with constant `r` and `x` (the CIM `SeriesCompensator`). `bypassed` shorts the device into a zero-impedance tie; `available = false` takes it out of service. Controllable series devices are not covered.",
+    "A fixed series compensator on an `Arc` (the CIM `SeriesCompensator`): a series capacitor or reactor, or an AC line without charging susceptance, with constant `r` and `x`. `bypassed` shorts the device into a zero-impedance tie; `available = false` takes it out of service. Controllable series devices are not covered.",
   );
 
-export type SeriesAdmittance = zod.input<typeof SeriesAdmittance>;
-export type SeriesAdmittanceOutput = zod.output<typeof SeriesAdmittance>;
+export type SeriesCompensator = zod.input<typeof SeriesCompensator>;
+export type SeriesCompensatorOutput = zod.output<typeof SeriesCompensator>;
 
 const energyReservoirStorageOperationCostOneCostTypeDefault = `STORAGE`;
 const energyReservoirStorageOperationCostOneChargeVariableCostValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
