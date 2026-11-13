@@ -18,7 +18,7 @@ STAMP = re.compile(r'^(  "schema_version": )"[^"]*"', re.MULTILINE)
 
 def main() -> int:
     version = (ROOT / ".schema-version").read_text().strip().removeprefix("v")
-    for path in sorted((ROOT / "fixtures").glob("case14_operations.*.json")):
+    for path in sorted((ROOT / "fixtures").glob("*.json")):
         text = path.read_text()
         stamped, count = STAMP.subn(rf'\1"{version}"', text, count=1)
         if count != 1:

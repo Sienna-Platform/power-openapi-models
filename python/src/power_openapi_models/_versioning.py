@@ -175,7 +175,7 @@ def validate_source(tree: dict, document: str, bundle_name: str, bundle_dir: Pat
     """
     try:
         import regress
-        from jsonschema import Draft7Validator, validators
+        from jsonschema import Draft202012Validator, validators
         from jsonschema.exceptions import ValidationError
     except ImportError as e:
         raise ImportError(
@@ -197,7 +197,7 @@ def validate_source(tree: dict, document: str, bundle_name: str, bundle_dir: Pat
         if regex.find(instance) is None:
             yield ValidationError(f"{instance!r} does not match {pattern!r}")
 
-    validator = validators.extend(Draft7Validator, {"pattern": ecma_pattern})(root)
+    validator = validators.extend(Draft202012Validator, {"pattern": ecma_pattern})(root)
     found = sorted({leaf for e in validator.iter_errors(tree) for leaf in _leaves(e, root)})
     if found:
         lines = "\n".join(f"  {path}: {message}" for path, message in found)

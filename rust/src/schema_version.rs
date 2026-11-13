@@ -209,7 +209,7 @@ pub(crate) fn bundle_violations(
         .map_err(|e| fail(format!("strict bundle {}: {e}", bundle.display())))?;
     let schema: Value = serde_json::from_str(&text)
         .map_err(|e| fail(format!("strict bundle {}: {e}", bundle.display())))?;
-    let validator = jsonschema::draft7::new(&schema)
+    let validator = jsonschema::draft202012::new(&schema)
         .map_err(|e| fail(format!("strict bundle {}: {e}", bundle.display())))?;
 
     let mut violations = Vec::new();

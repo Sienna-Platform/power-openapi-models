@@ -11,6 +11,8 @@ from pathlib import Path
 import pytest
 
 from power_openapi_models.core import models as core_models
+from power_openapi_models.document import read_document, write_document
+from power_openapi_models.dynamics import models as dynamics_models
 from power_openapi_models.operations import models as operations_models
 
 FIXTURES_DIR = Path(__file__).resolve().parent.parent.parent / "fixtures"
@@ -43,7 +45,7 @@ ENVELOPE_KEYS = REQUIRED_ENVELOPE_KEYS | OPTIONAL_ENVELOPE_KEYS
 def _registry():
     """type name -> pydantic class, across the domains these fixtures use."""
     registry = {}
-    for module in (core_models, operations_models):
+    for module in (core_models, operations_models, dynamics_models):
         for attr in dir(module):
             obj = getattr(module, attr)
             if isinstance(obj, type) and hasattr(obj, "model_fields"):
@@ -164,3 +166,30 @@ def test_component_base_actually_converts_from_natural_units():
         if dev["rating"] != nat["rating"]:
             differed += 1
     assert differed > 0
+
+
+DYNAMICS_FIXTURE = FIXTURES_DIR / "dynamics_small.COMPONENT_BASE.json"
+DYNAMICS_COMPONENT_COUNT = 38
+
+
+def test_dynamics_fixture_components_roundtrip_without_drift():
+    """A saturating round-rotor machine, a salient-pole machine, and an inverter chain."""
+    doc = json.loads(DYNAMICS_FIXTURE.read_text())
+    assert sum(len(entries) for entries in doc["components"].values()) == DYNAMICS_COMPONENT_COUNT
+    for type_name in ("RoundRotorQuadratic", "SalientPoleExponential", "DynamicInverter"):
+        assert type_name in doc["components"]
+    registry = _registry()
+    diffs = []
+    for type_name, entries in doc["components"].items():
+        assert type_name in registry, f"no generated model for {type_name!r}"
+        for i, entry in enumerate(entries):
+            model = registry[type_name].model_validate(entry)
+            rebuilt = model.model_dump(mode="json", by_alias=True)
+            diffs.extend(_diff(_strip_none(entry), _strip_none(rebuilt), f"{type_name}[{i}]"))
+    assert not diffs, "\n".join(diffs[:20])
+
+
+def test_dynamics_fixture_document_roundtrip_is_byte_identical(tmp_path):
+    out = tmp_path / "roundtrip.json"
+    write_document(read_document(DYNAMICS_FIXTURE), out)
+    assert out.read_text() == DYNAMICS_FIXTURE.read_text()
