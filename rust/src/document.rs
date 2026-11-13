@@ -35,7 +35,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::{json, Map, Value};
 
 use crate::infrastructure_core::SupplementalAttributeAssociation;
-use crate::investments::{PortfolioFinancialData, RequirementAssociation};
+use crate::investments::RequirementAssociation;
 use crate::operations::{
     CombinedCycleAssociation, PlantAssociation, ServiceAssociation, TradingHubAssociation,
     VoltageControlAssociation,
@@ -252,9 +252,6 @@ pub struct PortfolioDocument {
     /// id it belongs to.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ext: Option<JsonObject>,
-    /// Portfolio-wide financial parameters.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub financial_data: Option<PortfolioFinancialData>,
     /// Investment decisions produced by solving the portfolio; carried opaquely.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub investment_schedule: Option<JsonObject>,

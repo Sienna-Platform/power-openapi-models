@@ -30,7 +30,8 @@ class TechnologyFinancialData(BaseModel):
         description="Period over which capital costs are recovered for net present value calculations. Units: yr.",
     )
     technology_base_year: int = Field(
-        ..., description="Base year for technology cost data used in NPV calculations."
+        ...,
+        description="Year the technology's cost data is reported in. Costs are converted from this year to the model base year using the inflation rate.",
     )
     debt_fraction: float = Field(
         ..., description="Fraction of capital costs financed through debt. Units: 1."
@@ -40,6 +41,17 @@ class TechnologyFinancialData(BaseModel):
         ..., description="Required rate of return on equity financing. Units: 1."
     )
     tax_rate: float = Field(..., description="Tax rate applied to equity returns. Units: 1.")
+    discount_rate: float = Field(
+        ...,
+        description="Discount rate used to convert this technology's future costs to a net present value in the model base year. Units: 1.",
+    )
+    inflation_rate: float = Field(
+        ...,
+        description="Inflation rate used to convert this technology's costs from its base year to the model base year. Units: 1.",
+    )
+    interest_rate: float = Field(
+        ..., description="Interest rate for financing calculations. Units: 1."
+    )
 
 
 class CapacityReserveMargin(BaseModel):
@@ -378,24 +390,6 @@ class NodalHVDCTransportTechnology(BaseModel):
     )
 
 
-class PortfolioFinancialData(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    id: int = Field(..., description="ID for individual component.")
-    discount_rate: float = Field(
-        ..., description="Discount rate for financial calculations. Units: 1."
-    )
-    inflation_rate: float = Field(..., description="Inflation rate for cost adjustments. Units: 1.")
-    interest_rate: float = Field(
-        ..., description="Interest rate for financing calculations. Units: 1."
-    )
-    base_year: int = Field(
-        ...,
-        description="Base economic year. All costs will be converted to a net present value in this year.",
-    )
-
-
 class RequirementAssociation(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -465,7 +459,7 @@ class StorageTechnology(BaseModel):
         None, description="Minimum discharge as a fraction of total discharge capacity. Units: 1."
     )
     prime_mover_type: PrimeMovers | None = Field(None, description="Prime mover for generator.")
-    storage_tech: StorageTech = Field(..., description="Storage Technology Type.")
+    storage_tech: StorageTech | None = Field(None, description="Storage Technology Type.")
     capital_costs: StorageCapitalCost | None = Field(
         None,
         description="Capital and interconnection cost for investing in a storage technology's charge, discharge, and energy capacity (charge and discharge in USD/MW, energy in USD/MWh).",

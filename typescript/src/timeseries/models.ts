@@ -3,7 +3,7 @@
  * Do not edit manually.
  * InfrastructureTimeSeriesOpenAPIModels
  * Time series associations: the six canonical time series types defined by the upstream data layer and their metadata, without the dense values
- * OpenAPI spec version: 0.4.0
+ * OpenAPI spec version: 0.5.0
  */
 import * as zod from "zod";
 
@@ -172,6 +172,12 @@ export const TimeSeriesAssociation = zod
           .describe(
             "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
           ),
+        per_unit_of: zod
+          .string()
+          .optional()
+          .describe(
+            "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          ),
         time_reference: zod
           .string()
           .optional()
@@ -318,6 +324,12 @@ export const TimeSeriesAssociation = zod
           .describe(
             "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
           ),
+        per_unit_of: zod
+          .string()
+          .optional()
+          .describe(
+            "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          ),
         time_reference: zod
           .string()
           .optional()
@@ -438,6 +450,12 @@ export const TimeSeriesAssociation = zod
           .optional()
           .describe(
             "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+          ),
+        per_unit_of: zod
+          .string()
+          .optional()
+          .describe(
+            "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
           ),
         time_reference: zod
           .string()
@@ -593,6 +611,12 @@ export const TimeSeriesAssociation = zod
           .describe(
             "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
           ),
+        per_unit_of: zod
+          .string()
+          .optional()
+          .describe(
+            "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          ),
         time_reference: zod
           .string()
           .optional()
@@ -746,6 +770,12 @@ export const TimeSeriesAssociation = zod
           .optional()
           .describe(
             "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+          ),
+        per_unit_of: zod
+          .string()
+          .optional()
+          .describe(
+            "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
           ),
         time_reference: zod
           .string()
@@ -904,6 +934,12 @@ export const TimeSeriesAssociation = zod
           .optional()
           .describe(
             "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+          ),
+        per_unit_of: zod
+          .string()
+          .optional()
+          .describe(
+            "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
           ),
         time_reference: zod
           .string()
@@ -1086,6 +1122,12 @@ export const SingleTimeSeries = zod
       .describe(
         "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
       ),
+    per_unit_of: zod
+      .string()
+      .optional()
+      .describe(
+        "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+      ),
     time_reference: zod
       .string()
       .optional()
@@ -1243,6 +1285,12 @@ export const NonSequentialTimeSeries = zod
       .describe(
         "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
       ),
+    per_unit_of: zod
+      .string()
+      .optional()
+      .describe(
+        "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+      ),
     time_reference: zod
       .string()
       .optional()
@@ -1380,6 +1428,12 @@ export const Deterministic = zod
       .optional()
       .describe(
         "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+      ),
+    per_unit_of: zod
+      .string()
+      .optional()
+      .describe(
+        "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
       ),
     time_reference: zod
       .string()
@@ -1551,6 +1605,12 @@ export const DeterministicSingleTimeSeries = zod
       .optional()
       .describe(
         "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+      ),
+    per_unit_of: zod
+      .string()
+      .optional()
+      .describe(
+        "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
       ),
     time_reference: zod
       .string()
@@ -1724,6 +1784,12 @@ export const Probabilistic = zod
       .optional()
       .describe(
         "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+      ),
+    per_unit_of: zod
+      .string()
+      .optional()
+      .describe(
+        "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
       ),
     time_reference: zod
       .string()
@@ -1899,6 +1965,12 @@ export const Scenarios = zod
       .optional()
       .describe(
         "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
+      ),
+    per_unit_of: zod
+      .string()
+      .optional()
+      .describe(
+        "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
       ),
     time_reference: zod
       .string()

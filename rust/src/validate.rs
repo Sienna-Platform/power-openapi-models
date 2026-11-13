@@ -23,7 +23,7 @@ fn definitions() -> &'static Value {
     DEFINITIONS.get_or_init(|| {
         let mut bundle: Value =
             serde_json::from_str(SYSTEM_BUNDLE).expect("the compiled-in bundle is JSON");
-        bundle["definitions"].take()
+        bundle["$defs"].take()
     })
 }
 
@@ -47,11 +47,11 @@ impl Validator {
             )));
         }
         let schema = json!({
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "definitions": definitions,
-            "allOf": [{"$ref": format!("#/definitions/{definition}")}],
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$defs": definitions,
+            "allOf": [{"$ref": format!("#/$defs/{definition}")}],
         });
-        let inner = jsonschema::draft7::options()
+        let inner = jsonschema::draft202012::options()
             .should_validate_formats(false)
             .build(&schema)
             .map_err(|e| DocumentError::Invalid(format!("definition {definition:?}: {e}")))?;

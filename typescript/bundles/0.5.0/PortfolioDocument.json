@@ -1,14 +1,12 @@
 {
-  "$comment": "Strict validation bundle for schema release 0.4.0.",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "additionalProperties": false,
-  "definitions": {
+  "$comment": "Strict validation bundle for schema release 0.5.0.",
+  "$defs": {
     "ACBus": {
       "additionalProperties": false,
       "description": "An AC bus.",
       "properties": {
         "angle": {
-          "description": "Angle of the bus. Units: rad.",
+          "description": "Solved voltage angle from the last power flow, or the start value for the next solve. Units: rad.",
           "type": "number"
         },
         "area": {
@@ -24,8 +22,8 @@
           "type": "number"
         },
         "bustype": {
-          "$ref": "#/definitions/ACBusType",
-          "description": "Used to describe the connectivity and behavior of this bus. in psy5 a required param with an option to be nothing"
+          "$ref": "#/$defs/ACBusType",
+          "description": "Power flow classification of this bus. It does not by itself say which bus voltage is held; the regulating devices and the bus `voltage_setpoint` say that."
         },
         "id": {
           "description": "Unique integer identifier for this component.",
@@ -36,7 +34,7 @@
           "type": "integer"
         },
         "magnitude": {
-          "description": "Voltage as a multiple of `base_voltage`. Units: pu.",
+          "description": "Solved voltage magnitude from the last power flow, or the start value for the next solve, as a multiple of `base_voltage`. This is a result, not a control target; the target is `voltage_setpoint`. Units: pu.",
           "type": "number"
         },
         "name": {
@@ -48,8 +46,15 @@
           "type": "integer"
         },
         "voltage_limits": {
-          "$ref": "#/definitions/MinMax",
+          "$ref": "#/$defs/MinMax",
           "description": "Limits on the voltage variation as multiples of `base_voltage`. Units: pu."
+        },
+        "voltage_setpoint": {
+          "description": "Scheduled voltage magnitude for this bus, as a multiple of `base_voltage`. It is the target of every device that regulates this bus, at the bus or from a remote terminal. The devices that regulate this bus hold it at this value unless a droop or a reactive power limit prevents it. `null` when no device regulates this bus. Units: pu.",
+          "type": [
+            "number",
+            "null"
+          ]
         }
       },
       "required": [
@@ -62,7 +67,7 @@
       "type": "object"
     },
     "ACBusType": {
-      "description": "Classification of an AC bus for power flow, following the MATPOWER bus-type convention. `PQ` fixes the active and reactive injections and solves for voltage magnitude and angle; `PV` fixes active power and voltage magnitude and solves for reactive power and angle; `REF` names the reference for the system voltage angle; `SLACK` balances the system active and reactive mismatch and sets the reference angle; `ISOLATED` marks a bus not connected to the network.",
+      "description": "Classification of an AC bus for power flow, following the MATPOWER bus-type convention. `PQ` marks a bus with no in-service generation that regulates voltage; it can still have a `voltage_setpoint` that remote devices hold, or that a droop or a reactive power limit stops them from reaching. `PV` marks a bus with in-service generation that regulates voltage: generators, storage, synchronous condensers or sources. Those devices hold the `voltage_setpoint` of the bus they regulate, this bus or their `remote_regulated_bus`; `REF` names the reference for the system voltage angle; `SLACK` balances the system active and reactive mismatch and sets the reference angle; `ISOLATED` marks a bus not connected to the network.",
       "enum": [
         "PQ",
         "PV",
@@ -82,11 +87,11 @@
           "type": "boolean"
         },
         "capacity_limits": {
-          "$ref": "#/definitions/MinMax",
+          "$ref": "#/$defs/MinMax",
           "description": "Allowable capacity for a transmission line. Units: MW."
         },
         "capital_costs": {
-          "$ref": "#/definitions/CapitalCost",
+          "$ref": "#/$defs/CapitalCost",
           "description": "Capital and interconnection cost of adding new capacity to the transmission line (capital cost in USD/MW)."
         },
         "end_region": {
@@ -94,7 +99,7 @@
           "type": "integer"
         },
         "financial_data": {
-          "$ref": "#/definitions/TechnologyFinancialData",
+          "$ref": "#/$defs/TechnologyFinancialData",
           "description": "Struct containing relevant financial information for a technology."
         },
         "id": {
@@ -200,7 +205,7 @@
           "type": "number"
         },
         "power_units": {
-          "$ref": "#/definitions/UnitSystem",
+          "$ref": "#/$defs/UnitSystem",
           "description": "Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit."
         },
         "scheduled_net_interchange": {
@@ -232,10 +237,10 @@
         "function_data": {
           "oneOf": [
             {
-              "$ref": "#/definitions/LinearFunctionData"
+              "$ref": "#/$defs/LinearFunctionData"
             },
             {
-              "$ref": "#/definitions/PiecewiseStepData"
+              "$ref": "#/$defs/PiecewiseStepData"
             }
           ]
         },
@@ -294,7 +299,7 @@
       "description": "Investment cost for candidate generation and transmission technologies which includes overnight capital costs and last-mile interconnection costs.",
       "properties": {
         "capital_cost": {
-          "$ref": "#/definitions/ValueCurve"
+          "$ref": "#/$defs/ValueCurve"
         },
         "interconnection_cost": {
           "default": 0.0,
@@ -406,11 +411,11 @@
           "type": "boolean"
         },
         "capital_costs_inverter": {
-          "$ref": "#/definitions/CapitalCost",
+          "$ref": "#/$defs/CapitalCost",
           "description": "Capital and interconnection cost for investing in inverter capacity (capital cost in USD/MW)."
         },
         "financial_data": {
-          "$ref": "#/definitions/TechnologyFinancialData",
+          "$ref": "#/$defs/TechnologyFinancialData",
           "description": "Struct containing relevant financial information for a technology."
         },
         "id": {
@@ -418,7 +423,7 @@
           "type": "integer"
         },
         "inverter_capacity_limits": {
-          "$ref": "#/definitions/MinMax",
+          "$ref": "#/$defs/MinMax",
           "description": "Limits on inverter capacity. Units: MW."
         },
         "inverter_efficiency": {
@@ -434,7 +439,7 @@
           "type": "string"
         },
         "operation_costs_inverter": {
-          "$ref": "#/definitions/ProductionVariableCostCurve",
+          "$ref": "#/$defs/ProductionVariableCostCurve",
           "description": "Operational costs for using inverter in co-located systems. Units: USD/MWh."
         },
         "power_systems_type": {
@@ -477,11 +482,11 @@
       "description": "Variable operation cost of a device expressed directly in currency. Wraps a `ValueCurve` that may be in input-output, incremental, or average-rate form, with `power_units` declaring the basis of the x axis and `vom_cost` adding a proportional variable operation and maintenance term. Units: x-axis per power_units \u2014 NATURAL_UNITS: MW, COMPONENT_BASE: pu ; y-axis USD/h .",
       "properties": {
         "power_units": {
-          "$ref": "#/definitions/UnitSystem",
+          "$ref": "#/$defs/UnitSystem",
           "default": "NATURAL_UNITS"
         },
         "value_curve": {
-          "$ref": "#/definitions/ValueCurve"
+          "$ref": "#/$defs/ValueCurve"
         },
         "variable_cost_type": {
           "const": "COST",
@@ -489,7 +494,7 @@
           "type": "string"
         },
         "vom_cost": {
-          "$ref": "#/definitions/InputOutputCurve",
+          "$ref": "#/$defs/InputOutputCurve",
           "default": {
             "curve_type": "INPUT_OUTPUT",
             "function_data": {
@@ -522,7 +527,7 @@
           "type": "boolean"
         },
         "base_voltage": {
-          "description": "The base voltage. in psy5 a required param with an option to be nothing Units: kV.",
+          "description": "The base voltage. in psy5 a required param with an option to be nothing. Units: kV.",
           "type": "number"
         },
         "id": {
@@ -534,7 +539,7 @@
           "type": "integer"
         },
         "magnitude": {
-          "description": "Voltage as a multiple of `base_voltage`. in psy5 a required param with an option to be nothing Units: pu.",
+          "description": "Voltage as a multiple of `base_voltage`. in psy5 a required param with an option to be nothing. Units: pu.",
           "type": "number"
         },
         "name": {
@@ -546,8 +551,8 @@
           "type": "number"
         },
         "voltage_limits": {
-          "$ref": "#/definitions/MinMax",
-          "description": "Limits on the voltage variation as multiples of `base_voltage`. in psy5 a required param with an option to be nothing Units: pu."
+          "$ref": "#/$defs/MinMax",
+          "description": "Limits on the voltage variation as multiples of `base_voltage`. in psy5 a required param with an option to be nothing. Units: pu."
         }
       },
       "required": [
@@ -684,7 +689,7 @@
           "type": "array"
         },
         "unserved_demand_curve": {
-          "$ref": "#/definitions/ValueCurve",
+          "$ref": "#/$defs/ValueCurve",
           "description": "Piecewise curve to scale the cost of unserved load based on the value of lost load. Units: USD/MWh."
         },
         "value_of_lost_load": {
@@ -709,7 +714,7 @@
           "type": "boolean"
         },
         "curtailment_cost": {
-          "$ref": "#/definitions/ValueCurve",
+          "$ref": "#/$defs/ValueCurve",
           "description": "Energy cost of curtailed demand, USD per MWh. Units: USD/MWh."
         },
         "demand_energy_efficiency": {
@@ -751,7 +756,7 @@
           "type": "string"
         },
         "price_per_unit": {
-          "$ref": "#/definitions/ValueCurve",
+          "$ref": "#/$defs/ValueCurve",
           "description": "Price or value per unit of output. Ex: USD per ton of hydrogen for electrolyzers. Units: USD/t."
         },
         "region": {
@@ -762,7 +767,7 @@
           "type": "array"
         },
         "shift_variable_cost": {
-          "$ref": "#/definitions/ValueCurve",
+          "$ref": "#/$defs/ValueCurve",
           "description": "Variable operation and maintenance costs associated with flexible demand deferral/advancement. Units: USD/MWh."
         },
         "technology_efficiency": {
@@ -888,15 +893,15 @@
           "type": "array"
         },
         "element_type": {
-          "$ref": "#/definitions/ElementType",
+          "$ref": "#/$defs/ElementType",
           "description": "What one timestep's values mean and how they are laid out. The physical dtype of the stored bytes derives from this and is not recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label \u2014 the writing package derives it from the array."
         },
         "features": {
-          "$ref": "#/definitions/TimeSeriesFeatures",
+          "$ref": "#/$defs/TimeSeriesFeatures",
           "description": "User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected."
         },
         "horizon": {
-          "$ref": "#/definitions/Period",
+          "$ref": "#/$defs/Period",
           "description": "Length of one forecast window. Descriptive, not part of the series' identity."
         },
         "initial_timestamp": {
@@ -915,11 +920,11 @@
           "description": "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed."
         },
         "interval": {
-          "$ref": "#/definitions/Period",
+          "$ref": "#/$defs/Period",
           "description": "Step between the start of consecutive forecast windows. Part of the series' identity: two forecasts of one variable at the same resolution but different intervals \u2014 a day-ahead and a real-time forecast \u2014 are distinct series. `PT0S` is the canonical interval of a single-window forecast, which has no second window to step to."
         },
         "interval_alignment": {
-          "$ref": "#/definitions/IntervalAlignment",
+          "$ref": "#/$defs/IntervalAlignment",
           "default": "PERIOD_ENDING",
           "description": "Position of each timestamp in the period it represents."
         },
@@ -928,7 +933,7 @@
           "type": "string"
         },
         "owner_category": {
-          "$ref": "#/definitions/OwnerCategory",
+          "$ref": "#/$defs/OwnerCategory",
           "description": "Whether the owner is a component or a supplemental attribute."
         },
         "owner_id": {
@@ -939,16 +944,20 @@
           "description": "Type name of the owning entity. Descriptive, not part of the series' identity.",
           "type": "string"
         },
+        "per_unit_of": {
+          "description": "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          "type": "string"
+        },
         "quantity_kind": {
           "description": "Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
           "type": "string"
         },
         "resolution": {
-          "$ref": "#/definitions/Period",
+          "$ref": "#/$defs/Period",
           "description": "Cadence within a forecast window. Always present for a forecast, and part of the series' identity."
         },
         "time_reference": {
-          "$ref": "#/definitions/TimeReference",
+          "$ref": "#/$defs/TimeReference",
           "description": "How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC."
         },
         "time_series_type": {
@@ -958,8 +967,8 @@
           "type": "string"
         },
         "unit_system": {
-          "$ref": "#/definitions/UnitSystem",
-          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
+          "$ref": "#/$defs/UnitSystem",
+          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
         },
         "units": {
           "description": "Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
@@ -1098,15 +1107,15 @@
           "type": "array"
         },
         "element_type": {
-          "$ref": "#/definitions/ElementType",
+          "$ref": "#/$defs/ElementType",
           "description": "What one timestep's values mean and how they are laid out. The physical dtype of the stored bytes derives from this and is not recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label \u2014 the writing package derives it from the array."
         },
         "features": {
-          "$ref": "#/definitions/TimeSeriesFeatures",
+          "$ref": "#/$defs/TimeSeriesFeatures",
           "description": "User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected."
         },
         "horizon": {
-          "$ref": "#/definitions/Period",
+          "$ref": "#/$defs/Period",
           "description": "Length of one forecast window. Descriptive, not part of the series' identity."
         },
         "initial_timestamp": {
@@ -1125,11 +1134,11 @@
           "description": "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed."
         },
         "interval": {
-          "$ref": "#/definitions/Period",
+          "$ref": "#/$defs/Period",
           "description": "Step between the start of consecutive forecast windows. Part of the series' identity: two forecasts of one variable at the same resolution but different intervals \u2014 a day-ahead and a real-time forecast \u2014 are distinct series. `PT0S` is the canonical interval of a single-window forecast, which has no second window to step to."
         },
         "interval_alignment": {
-          "$ref": "#/definitions/IntervalAlignment",
+          "$ref": "#/$defs/IntervalAlignment",
           "default": "PERIOD_ENDING",
           "description": "Position of each timestamp in the period it represents."
         },
@@ -1138,7 +1147,7 @@
           "type": "string"
         },
         "owner_category": {
-          "$ref": "#/definitions/OwnerCategory",
+          "$ref": "#/$defs/OwnerCategory",
           "description": "Whether the owner is a component or a supplemental attribute."
         },
         "owner_id": {
@@ -1149,16 +1158,20 @@
           "description": "Type name of the owning entity. Descriptive, not part of the series' identity.",
           "type": "string"
         },
+        "per_unit_of": {
+          "description": "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          "type": "string"
+        },
         "quantity_kind": {
           "description": "Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
           "type": "string"
         },
         "resolution": {
-          "$ref": "#/definitions/Period",
+          "$ref": "#/$defs/Period",
           "description": "Cadence within a forecast window. Always present for a forecast, and part of the series' identity."
         },
         "time_reference": {
-          "$ref": "#/definitions/TimeReference",
+          "$ref": "#/$defs/TimeReference",
           "description": "How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC."
         },
         "time_series_type": {
@@ -1168,8 +1181,8 @@
           "type": "string"
         },
         "unit_system": {
-          "$ref": "#/definitions/UnitSystem",
-          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
+          "$ref": "#/$defs/UnitSystem",
+          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
         },
         "units": {
           "description": "Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
@@ -1267,15 +1280,15 @@
           "type": "boolean"
         },
         "basis": {
-          "$ref": "#/definitions/EmissionBasis",
+          "$ref": "#/$defs/EmissionBasis",
           "description": "FUEL_INPUT (mass per unit of heat input) or POWER_OUTPUT (mass per unit of electrical output)"
         },
         "emission_rate": {
-          "$ref": "#/definitions/ValueCurve",
+          "$ref": "#/$defs/ValueCurve",
           "description": "Emission rate as a ValueCurve, typically an IncrementalCurve with LinearFunctionData (constant or linearly varying rate) or PiecewiseStepData (piecewise step rates). Rates must be non-negative and finite."
         },
         "energy_unit": {
-          "$ref": "#/definitions/EnergyUnit",
+          "$ref": "#/$defs/EnergyUnit",
           "description": "Energy unit for the rate denominator. Must be MMBTU or GJ when basis is FUEL_INPUT, and MWH when basis is POWER_OUTPUT."
         },
         "gwp": {
@@ -1287,7 +1300,7 @@
           "type": "integer"
         },
         "mass_unit": {
-          "$ref": "#/definitions/MassUnit",
+          "$ref": "#/$defs/MassUnit",
           "default": "KG",
           "description": "Mass unit of the emission rate numerator"
         },
@@ -1296,7 +1309,7 @@
           "type": "string"
         },
         "pollutant": {
-          "$ref": "#/definitions/PollutantType",
+          "$ref": "#/$defs/PollutantType",
           "description": "Pollutant identity (CO2, CO2E, CH4, N2O, NOX, SO2, PM25, PM10, HG, HAP, CUSTOM)"
         },
         "start_up_adder": {
@@ -1401,18 +1414,18 @@
           ]
         },
         "fuel_units": {
-          "$ref": "#/definitions/FuelUnit",
+          "$ref": "#/$defs/FuelUnit",
           "description": "The fuel quantity the curve's y axis counts (per hour) and `fuel_cost` is priced per. No default: an unstated fuel unit is ambiguous."
         },
         "power_units": {
-          "$ref": "#/definitions/UnitSystem"
+          "$ref": "#/$defs/UnitSystem"
         },
         "startup_fuel_offtake": {
-          "$ref": "#/definitions/InputOutputCurve",
+          "$ref": "#/$defs/InputOutputCurve",
           "description": "Fuel consumed during startup, as a curve in `fuel_units`."
         },
         "value_curve": {
-          "$ref": "#/definitions/ValueCurve"
+          "$ref": "#/$defs/ValueCurve"
         },
         "variable_cost_type": {
           "const": "FUEL",
@@ -1420,7 +1433,7 @@
           "type": "string"
         },
         "vom_cost": {
-          "$ref": "#/definitions/InputOutputCurve"
+          "$ref": "#/$defs/InputOutputCurve"
         }
       },
       "required": [
@@ -1446,28 +1459,28 @@
       "description": "Raw mathematical data defining a function `f(x)` \u2014 coefficients or point tables with no units or interpretation attached. `function_type` selects the shape: linear, quadratic, piecewise linear through (x, y) points, or piecewise constant between x endpoints. What `x` and `y` stand for is supplied by whatever wraps this, and the `TIME_SERIES_*` variants hold a reference to a stored series in place of the numbers.",
       "oneOf": [
         {
-          "$ref": "#/definitions/LinearFunctionData"
+          "$ref": "#/$defs/LinearFunctionData"
         },
         {
-          "$ref": "#/definitions/QuadraticFunctionData"
+          "$ref": "#/$defs/QuadraticFunctionData"
         },
         {
-          "$ref": "#/definitions/PiecewiseLinearData"
+          "$ref": "#/$defs/PiecewiseLinearData"
         },
         {
-          "$ref": "#/definitions/PiecewiseStepData"
+          "$ref": "#/$defs/PiecewiseStepData"
         },
         {
-          "$ref": "#/definitions/TimeSeriesLinearFunctionData"
+          "$ref": "#/$defs/TimeSeriesLinearFunctionData"
         },
         {
-          "$ref": "#/definitions/TimeSeriesQuadraticFunctionData"
+          "$ref": "#/$defs/TimeSeriesQuadraticFunctionData"
         },
         {
-          "$ref": "#/definitions/TimeSeriesPiecewiseLinearData"
+          "$ref": "#/$defs/TimeSeriesPiecewiseLinearData"
         },
         {
-          "$ref": "#/definitions/TimeSeriesPiecewiseStepData"
+          "$ref": "#/$defs/TimeSeriesPiecewiseStepData"
         }
       ],
       "title": "FunctionData",
@@ -1477,13 +1490,13 @@
       "description": "Operating cost of a generation technology, selected by `cost_type` among the thermal (`THERMAL`), renewable (`RENEWABLE`), and hydro (`HYDRO_GEN`) generation cost representations.",
       "oneOf": [
         {
-          "$ref": "#/definitions/ThermalGenerationCost"
+          "$ref": "#/$defs/ThermalGenerationCost"
         },
         {
-          "$ref": "#/definitions/RenewableGenerationCost"
+          "$ref": "#/$defs/RenewableGenerationCost"
         },
         {
-          "$ref": "#/definitions/HydroGenerationCost"
+          "$ref": "#/$defs/HydroGenerationCost"
         }
       ],
       "title": "GenericOperationCost",
@@ -1547,7 +1560,7 @@
           "type": "number"
         },
         "variable_operation_cost": {
-          "$ref": "#/definitions/ProductionVariableCostCurve"
+          "$ref": "#/$defs/ProductionVariableCostCurve"
         }
       },
       "required": [
@@ -1582,10 +1595,10 @@
         "function_data": {
           "oneOf": [
             {
-              "$ref": "#/definitions/LinearFunctionData"
+              "$ref": "#/$defs/LinearFunctionData"
             },
             {
-              "$ref": "#/definitions/PiecewiseStepData"
+              "$ref": "#/$defs/PiecewiseStepData"
             }
           ]
         },
@@ -1625,13 +1638,13 @@
         "function_data": {
           "oneOf": [
             {
-              "$ref": "#/definitions/QuadraticFunctionData"
+              "$ref": "#/$defs/QuadraticFunctionData"
             },
             {
-              "$ref": "#/definitions/LinearFunctionData"
+              "$ref": "#/$defs/LinearFunctionData"
             },
             {
-              "$ref": "#/definitions/PiecewiseLinearData"
+              "$ref": "#/$defs/PiecewiseLinearData"
             }
           ]
         },
@@ -1708,7 +1721,7 @@
           "type": "number"
         },
         "power_units": {
-          "$ref": "#/definitions/UnitSystem",
+          "$ref": "#/$defs/UnitSystem",
           "description": "Unit basis for this component's power-family fields (active/reactive/apparent power, ratings, limits, ramp rates). COMPONENT_BASE: per unit on this component's own base_power. NATURAL_UNITS: the field's physical unit."
         }
       },
@@ -1785,7 +1798,7 @@
     },
     "MinMaxByKey": {
       "additionalProperties": {
-        "$ref": "#/definitions/MinMax"
+        "$ref": "#/$defs/MinMax"
       },
       "description": "A mapping from a stringified float key to the `MinMax` bound that applies at that key.",
       "title": "MinMaxByKey",
@@ -1833,11 +1846,11 @@
           "type": "boolean"
         },
         "capacity_limits": {
-          "$ref": "#/definitions/MinMax",
+          "$ref": "#/$defs/MinMax",
           "description": "Allowable capacity for a transmission line. Units: MW."
         },
         "capital_costs": {
-          "$ref": "#/definitions/CapitalCost",
+          "$ref": "#/$defs/CapitalCost",
           "description": "Capital and interconnection cost of adding new capacity to the nodal transmission line (capital cost in USD/MW)."
         },
         "end_node": {
@@ -1845,7 +1858,7 @@
           "type": "integer"
         },
         "financial_data": {
-          "$ref": "#/definitions/TechnologyFinancialData",
+          "$ref": "#/$defs/TechnologyFinancialData",
           "description": "Struct containing relevant financial information for a technology."
         },
         "id": {
@@ -1906,11 +1919,11 @@
           "type": "boolean"
         },
         "capacity_limits": {
-          "$ref": "#/definitions/MinMax",
+          "$ref": "#/$defs/MinMax",
           "description": "Allowable capacity for a transmission line. Units: MW."
         },
         "capital_costs": {
-          "$ref": "#/definitions/CapitalCost",
+          "$ref": "#/$defs/CapitalCost",
           "description": "Capital and interconnection cost of adding new capacity to the nodal transmission line (capital cost in USD/MW)."
         },
         "end_node": {
@@ -1918,7 +1931,7 @@
           "type": "integer"
         },
         "financial_data": {
-          "$ref": "#/definitions/TechnologyFinancialData",
+          "$ref": "#/$defs/TechnologyFinancialData",
           "description": "Struct containing relevant financial information for a technology."
         },
         "id": {
@@ -1926,7 +1939,7 @@
           "type": "integer"
         },
         "line_loss": {
-          "$ref": "#/definitions/ValueCurve",
+          "$ref": "#/$defs/ValueCurve",
           "description": "Loss model coefficients. Accepts a linear model with a constant loss and a proportional loss rate, or a Piecewise loss with N segments for different proportional losses. All terms are defined as fraction of installed nameplate capacity. Units: 1."
         },
         "name": {
@@ -1997,11 +2010,11 @@
           "type": "array"
         },
         "element_type": {
-          "$ref": "#/definitions/ElementType",
+          "$ref": "#/$defs/ElementType",
           "description": "What one timestep's values mean and how they are laid out. The physical dtype of the stored bytes derives from this and is not recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label \u2014 the writing package derives it from the array."
         },
         "features": {
-          "$ref": "#/definitions/TimeSeriesFeatures",
+          "$ref": "#/$defs/TimeSeriesFeatures",
           "description": "User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected."
         },
         "length": {
@@ -2014,7 +2027,7 @@
           "type": "string"
         },
         "owner_category": {
-          "$ref": "#/definitions/OwnerCategory",
+          "$ref": "#/$defs/OwnerCategory",
           "description": "Whether the owner is a component or a supplemental attribute."
         },
         "owner_id": {
@@ -2025,12 +2038,16 @@
           "description": "Type name of the owning entity. Descriptive, not part of the series' identity.",
           "type": "string"
         },
+        "per_unit_of": {
+          "description": "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          "type": "string"
+        },
         "quantity_kind": {
           "description": "Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
           "type": "string"
         },
         "time_reference": {
-          "$ref": "#/definitions/TimeReference",
+          "$ref": "#/$defs/TimeReference",
           "description": "How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC."
         },
         "time_series_type": {
@@ -2044,8 +2061,8 @@
           "type": "string"
         },
         "unit_system": {
-          "$ref": "#/definitions/UnitSystem",
-          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
+          "$ref": "#/$defs/UnitSystem",
+          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
         },
         "units": {
           "description": "Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
@@ -2113,7 +2130,7 @@
         },
         "points": {
           "items": {
-            "$ref": "#/definitions/TwoDimensionalFunctionPoint"
+            "$ref": "#/$defs/TwoDimensionalFunctionPoint"
           },
           "type": "array"
         }
@@ -2176,44 +2193,6 @@
       ],
       "title": "PollutantType",
       "type": "string"
-    },
-    "PortfolioFinancialData": {
-      "additionalProperties": false,
-      "description": "Financial data for the portfolio as a whole: the base economic year that all costs are converted to a net present value in, and the discount, inflation, and interest rates used in that conversion.",
-      "properties": {
-        "base_year": {
-          "description": "Base economic year. All costs will be converted to a net present value in this year.",
-          "type": "integer"
-        },
-        "discount_rate": {
-          "default": 0.0,
-          "description": "Discount rate for financial calculations. Units: 1.",
-          "type": "number"
-        },
-        "id": {
-          "description": "ID for individual component.",
-          "type": "integer"
-        },
-        "inflation_rate": {
-          "default": 0.0,
-          "description": "Inflation rate for cost adjustments. Units: 1.",
-          "type": "number"
-        },
-        "interest_rate": {
-          "default": 0.0,
-          "description": "Interest rate for financing calculations. Units: 1.",
-          "type": "number"
-        }
-      },
-      "required": [
-        "id",
-        "discount_rate",
-        "inflation_rate",
-        "interest_rate",
-        "base_year"
-      ],
-      "title": "PortfolioFinancialData",
-      "type": "object"
     },
     "PrimeMovers": {
       "description": "Prime mover of a generating unit \u2014 the engine, turbine, water wheel, or similar machine that drives the generator \u2014 using the code set from the EIA Form 923 instructions. `PVe` is photovoltaic, spelled that way so it does not collide with the `PV` bus type.",
@@ -2353,15 +2332,15 @@
           "type": "array"
         },
         "element_type": {
-          "$ref": "#/definitions/ElementType",
+          "$ref": "#/$defs/ElementType",
           "description": "What one timestep's values mean and how they are laid out. The physical dtype of the stored bytes derives from this and is not recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label \u2014 the writing package derives it from the array."
         },
         "features": {
-          "$ref": "#/definitions/TimeSeriesFeatures",
+          "$ref": "#/$defs/TimeSeriesFeatures",
           "description": "User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected."
         },
         "horizon": {
-          "$ref": "#/definitions/Period",
+          "$ref": "#/$defs/Period",
           "description": "Length of one forecast window. Descriptive, not part of the series' identity."
         },
         "initial_timestamp": {
@@ -2380,11 +2359,11 @@
           "description": "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed."
         },
         "interval": {
-          "$ref": "#/definitions/Period",
+          "$ref": "#/$defs/Period",
           "description": "Step between the start of consecutive forecast windows. Part of the series' identity: two forecasts of one variable at the same resolution but different intervals \u2014 a day-ahead and a real-time forecast \u2014 are distinct series. `PT0S` is the canonical interval of a single-window forecast, which has no second window to step to."
         },
         "interval_alignment": {
-          "$ref": "#/definitions/IntervalAlignment",
+          "$ref": "#/$defs/IntervalAlignment",
           "default": "PERIOD_ENDING",
           "description": "Position of each timestamp in the period it represents."
         },
@@ -2393,7 +2372,7 @@
           "type": "string"
         },
         "owner_category": {
-          "$ref": "#/definitions/OwnerCategory",
+          "$ref": "#/$defs/OwnerCategory",
           "description": "Whether the owner is a component or a supplemental attribute."
         },
         "owner_id": {
@@ -2402,6 +2381,10 @@
         },
         "owner_type": {
           "description": "Type name of the owning entity. Descriptive, not part of the series' identity.",
+          "type": "string"
+        },
+        "per_unit_of": {
+          "description": "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
           "type": "string"
         },
         "percentiles": {
@@ -2417,11 +2400,11 @@
           "type": "string"
         },
         "resolution": {
-          "$ref": "#/definitions/Period",
+          "$ref": "#/$defs/Period",
           "description": "Cadence within a forecast window. Always present for a forecast, and part of the series' identity."
         },
         "time_reference": {
-          "$ref": "#/definitions/TimeReference",
+          "$ref": "#/$defs/TimeReference",
           "description": "How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC."
         },
         "time_series_type": {
@@ -2431,8 +2414,8 @@
           "type": "string"
         },
         "unit_system": {
-          "$ref": "#/definitions/UnitSystem",
-          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
+          "$ref": "#/$defs/UnitSystem",
+          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
         },
         "units": {
           "description": "Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
@@ -2468,10 +2451,10 @@
       "description": "Variable production cost of a device, selected by `variable_cost_type` between a curve denominated directly in currency (`COST`) and one denominated in fuel with a separate fuel price (`FUEL`).",
       "oneOf": [
         {
-          "$ref": "#/definitions/CostCurve"
+          "$ref": "#/$defs/CostCurve"
         },
         {
-          "$ref": "#/definitions/FuelCurve"
+          "$ref": "#/$defs/FuelCurve"
         }
       ],
       "title": "ProductionVariableCostCurve",
@@ -2518,7 +2501,7 @@
           "type": "string"
         },
         "curtailment_cost": {
-          "$ref": "#/definitions/CostCurve",
+          "$ref": "#/$defs/CostCurve",
           "default": {
             "value_curve": {
               "curve_type": "INPUT_OUTPUT",
@@ -2544,7 +2527,7 @@
           "type": "number"
         },
         "variable_operation_cost": {
-          "$ref": "#/definitions/CostCurve"
+          "$ref": "#/$defs/CostCurve"
         }
       },
       "required": [
@@ -2603,7 +2586,7 @@
           "type": "object"
         },
         "retirement_cost": {
-          "$ref": "#/definitions/ValueCurve",
+          "$ref": "#/$defs/ValueCurve",
           "description": "Cost associated with retiring the eligible generators. Units: USD/MW."
         }
       },
@@ -2631,7 +2614,7 @@
           "type": "integer"
         },
         "retrofit_cost": {
-          "$ref": "#/definitions/ValueCurve",
+          "$ref": "#/$defs/ValueCurve",
           "description": "Cost associated with retrofitting the eligible generators. Units: USD/MW."
         },
         "retrofit_fraction": {
@@ -2756,15 +2739,15 @@
           "type": "array"
         },
         "element_type": {
-          "$ref": "#/definitions/ElementType",
+          "$ref": "#/$defs/ElementType",
           "description": "What one timestep's values mean and how they are laid out. The physical dtype of the stored bytes derives from this and is not recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label \u2014 the writing package derives it from the array."
         },
         "features": {
-          "$ref": "#/definitions/TimeSeriesFeatures",
+          "$ref": "#/$defs/TimeSeriesFeatures",
           "description": "User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected."
         },
         "horizon": {
-          "$ref": "#/definitions/Period",
+          "$ref": "#/$defs/Period",
           "description": "Length of one forecast window. Descriptive, not part of the series' identity."
         },
         "initial_timestamp": {
@@ -2783,11 +2766,11 @@
           "description": "Start of the first forecast window. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed."
         },
         "interval": {
-          "$ref": "#/definitions/Period",
+          "$ref": "#/$defs/Period",
           "description": "Step between the start of consecutive forecast windows. Part of the series' identity: two forecasts of one variable at the same resolution but different intervals \u2014 a day-ahead and a real-time forecast \u2014 are distinct series. `PT0S` is the canonical interval of a single-window forecast, which has no second window to step to."
         },
         "interval_alignment": {
-          "$ref": "#/definitions/IntervalAlignment",
+          "$ref": "#/$defs/IntervalAlignment",
           "default": "PERIOD_ENDING",
           "description": "Position of each timestamp in the period it represents."
         },
@@ -2796,7 +2779,7 @@
           "type": "string"
         },
         "owner_category": {
-          "$ref": "#/definitions/OwnerCategory",
+          "$ref": "#/$defs/OwnerCategory",
           "description": "Whether the owner is a component or a supplemental attribute."
         },
         "owner_id": {
@@ -2807,12 +2790,16 @@
           "description": "Type name of the owning entity. Descriptive, not part of the series' identity.",
           "type": "string"
         },
+        "per_unit_of": {
+          "description": "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          "type": "string"
+        },
         "quantity_kind": {
           "description": "Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
           "type": "string"
         },
         "resolution": {
-          "$ref": "#/definitions/Period",
+          "$ref": "#/$defs/Period",
           "description": "Cadence within a forecast window. Always present for a forecast, and part of the series' identity."
         },
         "scenario_count": {
@@ -2821,7 +2808,7 @@
           "type": "integer"
         },
         "time_reference": {
-          "$ref": "#/definitions/TimeReference",
+          "$ref": "#/$defs/TimeReference",
           "description": "How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC."
         },
         "time_series_type": {
@@ -2831,8 +2818,8 @@
           "type": "string"
         },
         "unit_system": {
-          "$ref": "#/definitions/UnitSystem",
-          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
+          "$ref": "#/$defs/UnitSystem",
+          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
         },
         "units": {
           "description": "Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
@@ -2967,11 +2954,11 @@
           "type": "array"
         },
         "element_type": {
-          "$ref": "#/definitions/ElementType",
+          "$ref": "#/$defs/ElementType",
           "description": "What one timestep's values mean and how they are laid out. The physical dtype of the stored bytes derives from this and is not recorded separately. Unlike `units` and `quantity_kind` this is not a user-facing label \u2014 the writing package derives it from the array."
         },
         "features": {
-          "$ref": "#/definitions/TimeSeriesFeatures",
+          "$ref": "#/$defs/TimeSeriesFeatures",
           "description": "User-defined key/value tags that are part of the series' identity: two series differing only by a feature are distinct series. Feature names that collide with a field of a series or of the tuple addressing one are rejected."
         },
         "initial_timestamp": {
@@ -2990,7 +2977,7 @@
           "description": "First timestamp of the regular grid; every later step lands at `initial_timestamp + k * resolution`. The store's floor is one millisecond, matching Julia's millisecond-precision DateTime. Written in one of two RFC 3339 forms, with at most 3 fractional-second digits: `date-time`, with `Z` or a UTC offset, names an instant; `date-time-local`, with no offset, is a wall clock and names no instant. `time_reference` fixes the form: `zoneless` requires `date-time-local`, `utc` requires a zero offset, and a fixed offset or an IANA zone requires `date-time`. With no `time_reference`, either form is accepted and none is assumed."
         },
         "interval_alignment": {
-          "$ref": "#/definitions/IntervalAlignment",
+          "$ref": "#/$defs/IntervalAlignment",
           "default": "PERIOD_ENDING",
           "description": "Position of each timestamp in the period it represents."
         },
@@ -3004,7 +2991,7 @@
           "type": "string"
         },
         "owner_category": {
-          "$ref": "#/definitions/OwnerCategory",
+          "$ref": "#/$defs/OwnerCategory",
           "description": "Whether the owner is a component or a supplemental attribute."
         },
         "owner_id": {
@@ -3015,16 +3002,20 @@
           "description": "Type name of the owning entity. Descriptive, not part of the series' identity.",
           "type": "string"
         },
+        "per_unit_of": {
+          "description": "The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
+          "type": "string"
+        },
         "quantity_kind": {
           "description": "Kind of physical quantity the values measure (e.g. ActivePower, ReactivePower, ElectricalEnergy). Coarser than `units` but finer than a dimension: ActivePower, ReactivePower, and ApparentPower share the dimension {M:1,L:2,T:-3}, so a dimension cannot tell them apart and a quantity kind can. It is also the only record of what the values measure when `unit_system` is a per-unit basis.",
           "type": "string"
         },
         "resolution": {
-          "$ref": "#/definitions/Period",
+          "$ref": "#/$defs/Period",
           "description": "Cadence of the regular grid. Always present for a SingleTimeSeries, and part of the series' identity."
         },
         "time_reference": {
-          "$ref": "#/definitions/TimeReference",
+          "$ref": "#/$defs/TimeReference",
           "description": "How this series' timestamps were spelled, so a read hands back what the write declared instead of relabelling everything UTC. Absent means unspecified, which is not a claim the timestamps were written as UTC."
         },
         "time_series_type": {
@@ -3034,8 +3025,8 @@
           "type": "string"
         },
         "unit_system": {
-          "$ref": "#/definitions/UnitSystem",
-          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
+          "$ref": "#/$defs/UnitSystem",
+          "description": "Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS."
         },
         "units": {
           "description": "Unit label for the series values. Set by whoever creates the series and returned unchanged; not part of the series' identity, so two series differing only in this label are duplicates. Meaningless on its own when `unit_system` is a per-unit basis, where the values are dimensionless. By convention drawn from the unit vocabulary in Core/units.json, though this field is a free-text label the store does not validate against it.",
@@ -3096,13 +3087,13 @@
       "description": "Investment cost for candidate generation and transmission technologies which includes overnight capital costs and last-mile interconnection costs.",
       "properties": {
         "charge_capital_cost": {
-          "$ref": "#/definitions/ValueCurve"
+          "$ref": "#/$defs/ValueCurve"
         },
         "discharge_capital_cost": {
-          "$ref": "#/definitions/ValueCurve"
+          "$ref": "#/$defs/ValueCurve"
         },
         "energy_capital_cost": {
-          "$ref": "#/definitions/ValueCurve"
+          "$ref": "#/$defs/ValueCurve"
         },
         "interconnection_cost": {
           "default": 0.0,
@@ -3123,7 +3114,7 @@
       "description": "Cost representation for storage units",
       "properties": {
         "charge_variable_cost": {
-          "$ref": "#/definitions/CostCurve"
+          "$ref": "#/$defs/CostCurve"
         },
         "cost_type": {
           "const": "STORAGE",
@@ -3131,7 +3122,7 @@
           "type": "string"
         },
         "discharge_variable_cost": {
-          "$ref": "#/definitions/CostCurve"
+          "$ref": "#/$defs/CostCurve"
         },
         "energy_shortage_cost": {
           "default": 0.0,
@@ -3156,7 +3147,7 @@
               "type": "number"
             },
             {
-              "$ref": "#/definitions/ChargeDischarge"
+              "$ref": "#/$defs/ChargeDischarge"
             }
           ]
         }
@@ -3198,10 +3189,10 @@
         "capacity_limits_charge": {
           "anyOf": [
             {
-              "$ref": "#/definitions/MinMax"
+              "$ref": "#/$defs/MinMax"
             },
             {
-              "$ref": "#/definitions/MinMaxByKey"
+              "$ref": "#/$defs/MinMaxByKey"
             }
           ],
           "description": "Allowable installed power capacity for charging of a storage technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MW."
@@ -3209,10 +3200,10 @@
         "capacity_limits_discharge": {
           "anyOf": [
             {
-              "$ref": "#/definitions/MinMax"
+              "$ref": "#/$defs/MinMax"
             },
             {
-              "$ref": "#/definitions/MinMaxByKey"
+              "$ref": "#/$defs/MinMaxByKey"
             }
           ],
           "description": "Allowable installed power capacity for discharging of a storage technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MW."
@@ -3220,28 +3211,28 @@
         "capacity_limits_energy": {
           "anyOf": [
             {
-              "$ref": "#/definitions/MinMax"
+              "$ref": "#/$defs/MinMax"
             },
             {
-              "$ref": "#/definitions/MinMaxByKey"
+              "$ref": "#/$defs/MinMaxByKey"
             }
           ],
           "description": "Allowable installed energy capacity for a storage technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MWh."
         },
         "capital_costs": {
-          "$ref": "#/definitions/StorageCapitalCost",
+          "$ref": "#/$defs/StorageCapitalCost",
           "description": "Capital and interconnection cost for investing in a storage technology's charge, discharge, and energy capacity (charge and discharge in USD/MW, energy in USD/MWh)."
         },
         "duration_limits": {
-          "$ref": "#/definitions/MinMax",
+          "$ref": "#/$defs/MinMax",
           "description": "Minimum and maximum duration limits (energy to discharge capacity ratio) for a storage technology (minutes). Units: min."
         },
         "efficiency": {
-          "$ref": "#/definitions/InOut",
+          "$ref": "#/$defs/InOut",
           "description": "Efficiency of charging storage, fraction of total charge (in) and discharge (out) capacity. Units: 1."
         },
         "financial_data": {
-          "$ref": "#/definitions/TechnologyFinancialData",
+          "$ref": "#/$defs/TechnologyFinancialData",
           "description": "Struct containing relevant financial information for a technology."
         },
         "id": {
@@ -3268,7 +3259,7 @@
           "type": "string"
         },
         "operation_costs": {
-          "$ref": "#/definitions/StorageCost",
+          "$ref": "#/$defs/StorageCost",
           "description": "Fixed and variable O&M costs for a storage technology. Units: USD/MWh."
         },
         "power_systems_type": {
@@ -3276,7 +3267,7 @@
           "type": "string"
         },
         "prime_mover_type": {
-          "$ref": "#/definitions/PrimeMovers",
+          "$ref": "#/$defs/PrimeMovers",
           "default": "OT",
           "description": "Prime mover for generator."
         },
@@ -3288,7 +3279,8 @@
           "type": "array"
         },
         "storage_tech": {
-          "$ref": "#/definitions/StorageTech",
+          "$ref": "#/$defs/StorageTech",
+          "default": "OTHER_CHEM",
           "description": "Storage Technology Type."
         },
         "unit_size_charge": {
@@ -3311,8 +3303,7 @@
         "financial_data",
         "id",
         "name",
-        "power_systems_type",
-        "storage_tech"
+        "power_systems_type"
       ],
       "title": "StorageTechnology",
       "type": "object"
@@ -3358,40 +3349,40 @@
         "capacity_limits": {
           "anyOf": [
             {
-              "$ref": "#/definitions/MinMax"
+              "$ref": "#/$defs/MinMax"
             },
             {
-              "$ref": "#/definitions/MinMaxByKey"
+              "$ref": "#/$defs/MinMaxByKey"
             }
           ],
           "description": "Minimum and maximum allowable installed capacity for a technology, given either as a single bound applied to all capacity or as a mapping from a float key (stringified) to the bound that applies at that key. Units: MW."
         },
         "capital_costs": {
-          "$ref": "#/definitions/CapitalCost",
+          "$ref": "#/$defs/CapitalCost",
           "description": "Capital and interconnection cost for investing in a technology (capital cost in USD/MW)."
         },
         "cofire_level_limits": {
           "additionalProperties": {
-            "$ref": "#/definitions/MinMax"
+            "$ref": "#/$defs/MinMax"
           },
           "description": "Minimum and maximum blending level of each fuel during normal generation process for multi-fuel generator. Units: 1.",
           "type": "object"
         },
         "cofire_start_limits": {
           "additionalProperties": {
-            "$ref": "#/definitions/MinMax"
+            "$ref": "#/$defs/MinMax"
           },
           "description": "Minimum and maximum blending level of each fuel during start-up process for multi-fuel generator. Units: 1.",
           "type": "object"
         },
         "financial_data": {
-          "$ref": "#/definitions/TechnologyFinancialData",
+          "$ref": "#/$defs/TechnologyFinancialData",
           "description": "Struct containing relevant financial information for a technology."
         },
         "fuel": {
           "description": "Fuel type according to IEA.",
           "items": {
-            "$ref": "#/definitions/ThermalFuels"
+            "$ref": "#/$defs/ThermalFuels"
           },
           "type": "array"
         },
@@ -3414,11 +3405,11 @@
           "type": "string"
         },
         "operation_costs": {
-          "$ref": "#/definitions/GenericOperationCost",
+          "$ref": "#/$defs/GenericOperationCost",
           "description": "Fixed and variable O&M costs for a technology. Units: USD/MWh."
         },
         "outage_factor": {
-          "$ref": "#/definitions/OutageFactors",
+          "$ref": "#/$defs/OutageFactors",
           "description": "Planned and forced outage factors for a technology, each a fraction of total availability (the fraction of hours in a year the technology is unavailable)."
         },
         "power_systems_type": {
@@ -3426,12 +3417,12 @@
           "type": "string"
         },
         "prime_mover_type": {
-          "$ref": "#/definitions/PrimeMovers",
+          "$ref": "#/$defs/PrimeMovers",
           "default": "OT",
           "description": "Prime mover for generator."
         },
         "ramp_limits": {
-          "$ref": "#/definitions/UpDown",
+          "$ref": "#/$defs/UpDown",
           "description": "Maximum decrease and increase in output between operation periods. Units: MW/min."
         },
         "region": {
@@ -3447,7 +3438,7 @@
           "type": "number"
         },
         "time_limits": {
-          "$ref": "#/definitions/UpDown",
+          "$ref": "#/$defs/UpDown",
           "description": "Minimum amount of time a resource has to stay in the committed or shutdown state (minutes). Units: min."
         },
         "unit_size": {
@@ -3467,7 +3458,7 @@
     },
     "TechnologyFinancialData": {
       "additionalProperties": false,
-      "description": "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, and the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital.",
+      "description": "Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital, and the discount, inflation, and interest rates used to convert its costs to a net present value in the model base year.",
       "properties": {
         "capital_recovery_period": {
           "description": "Period over which capital costs are recovered for net present value calculations. Units: yr.",
@@ -3481,6 +3472,18 @@
           "description": "Interest rate on debt financing. Units: 1.",
           "type": "number"
         },
+        "discount_rate": {
+          "description": "Discount rate used to convert this technology's future costs to a net present value in the model base year. Units: 1.",
+          "type": "number"
+        },
+        "inflation_rate": {
+          "description": "Inflation rate used to convert this technology's costs from its base year to the model base year. Units: 1.",
+          "type": "number"
+        },
+        "interest_rate": {
+          "description": "Interest rate for financing calculations. Units: 1.",
+          "type": "number"
+        },
         "return_on_equity": {
           "description": "Required rate of return on equity financing. Units: 1.",
           "type": "number"
@@ -3490,7 +3493,7 @@
           "type": "number"
         },
         "technology_base_year": {
-          "description": "Base year for technology cost data used in NPV calculations.",
+          "description": "Year the technology's cost data is reported in. Costs are converted from this year to the model base year using the inflation rate.",
           "type": "integer"
         }
       },
@@ -3500,7 +3503,10 @@
         "debt_fraction",
         "debt_rate",
         "return_on_equity",
-        "tax_rate"
+        "tax_rate",
+        "discount_rate",
+        "inflation_rate",
+        "interest_rate"
       ],
       "title": "TechnologyFinancialData",
       "type": "object"
@@ -3570,12 +3576,12 @@
               "type": "number"
             },
             {
-              "$ref": "#/definitions/StartUpStages"
+              "$ref": "#/$defs/StartUpStages"
             }
           ]
         },
         "variable_operation_cost": {
-          "$ref": "#/definitions/ProductionVariableCostCurve"
+          "$ref": "#/$defs/ProductionVariableCostCurve"
         }
       },
       "required": [
@@ -3596,22 +3602,22 @@
       "description": "Metadata linking one time series to the component or supplemental attribute that owns it \u2014 the JSON form of a row in the store's `time_series_associations` catalog table. A closed set of six canonical types owned by the data layer: two static (SingleTimeSeries on a regular grid, NonSequentialTimeSeries on explicit irregular timestamps) and four forecasts. The type decides which timing fields the row carries, which is why each is its own schema rather than one row with everything nullable.\n\nDense values never appear here. `uri` names the store location that holds them; `data_hash` optionally carries a content hash of that array. A NonSequentialTimeSeries adds `timestamps_uri`, the same kind of locator for its explicit time axis, which is likewise stored rather than carried. Content hashes themselves (features_hash, timestamps_hash) remain store-internal and deliberately absent \u2014 a locator names where something is, which is not the same as exposing the store's own address for it.",
       "oneOf": [
         {
-          "$ref": "#/definitions/SingleTimeSeries"
+          "$ref": "#/$defs/SingleTimeSeries"
         },
         {
-          "$ref": "#/definitions/NonSequentialTimeSeries"
+          "$ref": "#/$defs/NonSequentialTimeSeries"
         },
         {
-          "$ref": "#/definitions/Deterministic"
+          "$ref": "#/$defs/Deterministic"
         },
         {
-          "$ref": "#/definitions/DeterministicSingleTimeSeries"
+          "$ref": "#/$defs/DeterministicSingleTimeSeries"
         },
         {
-          "$ref": "#/definitions/Probabilistic"
+          "$ref": "#/$defs/Probabilistic"
         },
         {
-          "$ref": "#/definitions/Scenarios"
+          "$ref": "#/$defs/Scenarios"
         }
       ],
       "title": "TimeSeriesAssociation",
@@ -3627,7 +3633,7 @@
           "type": "string"
         },
         "function_data": {
-          "$ref": "#/definitions/FunctionData",
+          "$ref": "#/$defs/FunctionData",
           "description": "Only TIME_SERIES_LINEAR or TIME_SERIES_PIECEWISE_STEP is admissible here; all other FunctionData variants, static or time-series-backed, are rejected by the consuming constructor."
         },
         "initial_input_association_id": {
@@ -3672,7 +3678,7 @@
     },
     "TimeSeriesFeatures": {
       "additionalProperties": {
-        "$ref": "#/definitions/TimeSeriesFeatureValue"
+        "$ref": "#/$defs/TimeSeriesFeatureValue"
       },
       "description": "User-defined key/value tags forming part of a series' identity. A map, matching the backing store's feature-map type (a BTreeMap whose sort order is load-bearing, because the hash of the feature map keys the catalog's uniqueness index). The excluded property names each already name a field of a time series or of the tuple that addresses one: consumers routinely spread a feature map into keyword arguments, where a feature called `name` or `resolution` would shadow the real field and silently change what a query means. The comparison is exact and case-sensitive \u2014 `resolution` is reserved, `Resolution` is not.",
       "propertyNames": {
@@ -3700,6 +3706,7 @@
             "owner_category",
             "owner_id",
             "owner_type",
+            "per_unit_of",
             "percentiles",
             "quantity_kind",
             "resolution",
@@ -3727,7 +3734,7 @@
           "type": "string"
         },
         "function_data": {
-          "$ref": "#/definitions/FunctionData",
+          "$ref": "#/$defs/FunctionData",
           "description": "Only TIME_SERIES_LINEAR or TIME_SERIES_PIECEWISE_STEP is admissible here; all other FunctionData variants, static or time-series-backed, are rejected by the consuming constructor."
         },
         "initial_input_association_id": {
@@ -3762,7 +3769,7 @@
           "type": "string"
         },
         "function_data": {
-          "$ref": "#/definitions/FunctionData",
+          "$ref": "#/$defs/FunctionData",
           "description": "Only TIME_SERIES_LINEAR, TIME_SERIES_QUADRATIC, or TIME_SERIES_PIECEWISE_LINEAR is admissible here; the static variants and TIME_SERIES_PIECEWISE_STEP are invalid and rejected by the consuming constructor."
         },
         "input_at_zero": {
@@ -3917,28 +3924,30 @@
       "description": "A cost or fuel curve: function data plus a declaration of how to read its y axis. `INPUT_OUTPUT` reads y as the total `f(x)`, `INCREMENTAL` as the marginal rate `f'(x)`, and `AVERAGE_RATE` as the average `f(x)/x`; the three can express the same underlying function and are inter-convertible given `initial_input`. The `TIME_SERIES_*` variants are the time-varying equivalents. Which form to use follows the data source: bid stacks are incremental, total cost tables input-output, efficiency tables average rate.",
       "oneOf": [
         {
-          "$ref": "#/definitions/InputOutputCurve"
+          "$ref": "#/$defs/InputOutputCurve"
         },
         {
-          "$ref": "#/definitions/IncrementalCurve"
+          "$ref": "#/$defs/IncrementalCurve"
         },
         {
-          "$ref": "#/definitions/AverageRateCurve"
+          "$ref": "#/$defs/AverageRateCurve"
         },
         {
-          "$ref": "#/definitions/TimeSeriesInputOutputCurve"
+          "$ref": "#/$defs/TimeSeriesInputOutputCurve"
         },
         {
-          "$ref": "#/definitions/TimeSeriesIncrementalCurve"
+          "$ref": "#/$defs/TimeSeriesIncrementalCurve"
         },
         {
-          "$ref": "#/definitions/TimeSeriesAverageRateCurve"
+          "$ref": "#/$defs/TimeSeriesAverageRateCurve"
         }
       ],
       "title": "ValueCurve",
       "type": "object"
     }
   },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
   "description": "The serialized form of a whole investment portfolio: the candidate technologies, regional aggregations, and policy requirements that make up an expansion problem, the supplemental attributes that describe them, the association tables that link them, and the names of the sidecar files holding the base power system and the time series values. This is the interchange format between producers of portfolio data and the consumers that expand or solve it, so the shape is defined here rather than by convention in each producer.\n\nThere is no document-level unit system or base power. A portfolio records every value in natural units and, unlike a power system, carries no per-unit basis of its own: there is no `power_units`/`base_power` resolution to perform at the document level. The only unit marker that ever appears is an embedded cost payload's own `power_units` (on a CostCurve or FuelCurve), which is intrinsic to that curve and interpreted from the curve alone.\n\nDeliberately excluded from openapi-generator: `components` is a map from type name to an array of heterogeneous component objects, which the generated client cannot express as typed buckets. The hand-written container in the generated investments model package (`src/openapi/document.jl`) is the single representation of that type ordering, and its fields are checked against this file. This schema remains authoritative for every other language binding.\n\nThe base power system the portfolio expands is not embedded: `base_system_file` names a sidecar holding it as its own system document, so a portfolio and its base system can be written, moved, and read together. Time series *values* likewise never appear here \u2014 `time_series_associations` carries the metadata rows and `time_series_storage_file` names the sidecar; reading or writing that file is the consumer's job.",
   "properties": {
     "aggregation": {
@@ -3958,121 +3967,121 @@
       "properties": {
         "ACBus": {
           "items": {
-            "$ref": "#/definitions/ACBus"
+            "$ref": "#/$defs/ACBus"
           },
           "type": "array"
         },
         "AggregateTransportTechnology": {
           "items": {
-            "$ref": "#/definitions/AggregateTransportTechnology"
+            "$ref": "#/$defs/AggregateTransportTechnology"
           },
           "type": "array"
         },
         "Arc": {
           "items": {
-            "$ref": "#/definitions/Arc"
+            "$ref": "#/$defs/Arc"
           },
           "type": "array"
         },
         "Area": {
           "items": {
-            "$ref": "#/definitions/Area"
+            "$ref": "#/$defs/Area"
           },
           "type": "array"
         },
         "CapacityReserveMargin": {
           "items": {
-            "$ref": "#/definitions/CapacityReserveMargin"
+            "$ref": "#/$defs/CapacityReserveMargin"
           },
           "type": "array"
         },
         "CarbonCaps": {
           "items": {
-            "$ref": "#/definitions/CarbonCaps"
+            "$ref": "#/$defs/CarbonCaps"
           },
           "type": "array"
         },
         "CarbonTax": {
           "items": {
-            "$ref": "#/definitions/CarbonTax"
+            "$ref": "#/$defs/CarbonTax"
           },
           "type": "array"
         },
         "ColocatedSupplyStorageTechnology": {
           "items": {
-            "$ref": "#/definitions/ColocatedSupplyStorageTechnology"
+            "$ref": "#/$defs/ColocatedSupplyStorageTechnology"
           },
           "type": "array"
         },
         "DCBus": {
           "items": {
-            "$ref": "#/definitions/DCBus"
+            "$ref": "#/$defs/DCBus"
           },
           "type": "array"
         },
         "DemandRequirement": {
           "items": {
-            "$ref": "#/definitions/DemandRequirement"
+            "$ref": "#/$defs/DemandRequirement"
           },
           "type": "array"
         },
         "DemandSideTechnology": {
           "items": {
-            "$ref": "#/definitions/DemandSideTechnology"
+            "$ref": "#/$defs/DemandSideTechnology"
           },
           "type": "array"
         },
         "EnergyShareRequirements": {
           "items": {
-            "$ref": "#/definitions/EnergyShareRequirements"
+            "$ref": "#/$defs/EnergyShareRequirements"
           },
           "type": "array"
         },
         "HourlyMatching": {
           "items": {
-            "$ref": "#/definitions/HourlyMatching"
+            "$ref": "#/$defs/HourlyMatching"
           },
           "type": "array"
         },
         "LoadZone": {
           "items": {
-            "$ref": "#/definitions/LoadZone"
+            "$ref": "#/$defs/LoadZone"
           },
           "type": "array"
         },
         "MaximumCapacityRequirements": {
           "items": {
-            "$ref": "#/definitions/MaximumCapacityRequirements"
+            "$ref": "#/$defs/MaximumCapacityRequirements"
           },
           "type": "array"
         },
         "MinimumCapacityRequirements": {
           "items": {
-            "$ref": "#/definitions/MinimumCapacityRequirements"
+            "$ref": "#/$defs/MinimumCapacityRequirements"
           },
           "type": "array"
         },
         "NodalACTransportTechnology": {
           "items": {
-            "$ref": "#/definitions/NodalACTransportTechnology"
+            "$ref": "#/$defs/NodalACTransportTechnology"
           },
           "type": "array"
         },
         "NodalHVDCTransportTechnology": {
           "items": {
-            "$ref": "#/definitions/NodalHVDCTransportTechnology"
+            "$ref": "#/$defs/NodalHVDCTransportTechnology"
           },
           "type": "array"
         },
         "StorageTechnology": {
           "items": {
-            "$ref": "#/definitions/StorageTechnology"
+            "$ref": "#/$defs/StorageTechnology"
           },
           "type": "array"
         },
         "SupplyTechnology": {
           "items": {
-            "$ref": "#/definitions/SupplyTechnology"
+            "$ref": "#/$defs/SupplyTechnology"
           },
           "type": "array"
         }
@@ -4100,10 +4109,6 @@
       "description": "Source data that no schema field claims, keyed by the stringified component id it belongs to. Only values genuinely unclaimed by any schema field may appear here; a producer must never mirror a value that also landed in a schema field. An absent or empty `ext` means the producer mapped everything. A consumer must consume keys via a declared ignore list: a listed key is skipped, an unlisted key is an error naming the key and the component id \u2014 never a silent drop.",
       "type": "object"
     },
-    "financial_data": {
-      "$ref": "#/definitions/PortfolioFinancialData",
-      "description": "Portfolio-wide financial parameters: the base economic year every cost is discounted to a net present value in, and the discount, inflation, and interest rates used in that conversion. Absent when the portfolio carries no financial data."
-    },
     "investment_schedule": {
       "description": "Optional investment decisions container: the schedule of capacity installations produced by solving the portfolio. This is a model output rather than an input, is absent from an inputs-only portfolio, and its internal shape is not further constrained here.",
       "type": [
@@ -4121,7 +4126,7 @@
     "requirements_associations": {
       "description": "Links each policy requirement to one member subject to it: `requirement_id` names the requirement and `entity_id` names the member. One row per (requirement, member) pair.",
       "items": {
-        "$ref": "#/definitions/RequirementAssociation"
+        "$ref": "#/$defs/RequirementAssociation"
       },
       "type": "array"
     },
@@ -4133,7 +4138,7 @@
     "supplemental_attribute_associations": {
       "description": "Links each supplemental attribute (e.g. RetirementPotential, ExistingDevices) to the entity it describes. One row per (attribute, entity) pair.",
       "items": {
-        "$ref": "#/definitions/SupplementalAttributeAssociation"
+        "$ref": "#/$defs/SupplementalAttributeAssociation"
       },
       "type": "array"
     },
@@ -4142,22 +4147,22 @@
       "items": {
         "anyOf": [
           {
-            "$ref": "#/definitions/DataSource"
+            "$ref": "#/$defs/DataSource"
           },
           {
-            "$ref": "#/definitions/EmissionsData"
+            "$ref": "#/$defs/EmissionsData"
           },
           {
-            "$ref": "#/definitions/ExistingDevices"
+            "$ref": "#/$defs/ExistingDevices"
           },
           {
-            "$ref": "#/definitions/GeographicInfo"
+            "$ref": "#/$defs/GeographicInfo"
           },
           {
-            "$ref": "#/definitions/RetirementPotential"
+            "$ref": "#/$defs/RetirementPotential"
           },
           {
-            "$ref": "#/definitions/RetrofitPotential"
+            "$ref": "#/$defs/RetrofitPotential"
           }
         ]
       },
@@ -4166,7 +4171,7 @@
     "time_series_associations": {
       "description": "Time series metadata rows, one per (series, owner) association. Each row names the store holding its values in its own `address`; `time_series_storage_file` remains the document-level sidecar name.",
       "items": {
-        "$ref": "#/definitions/TimeSeriesAssociation"
+        "$ref": "#/$defs/TimeSeriesAssociation"
       },
       "type": "array"
     },

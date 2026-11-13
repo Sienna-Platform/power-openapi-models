@@ -3,7 +3,7 @@
  * Do not edit manually.
  * PowerCoreOpenAPIModels
  * Shared types for the Sienna power systems ecosystem: curves, enums, helpers (MinMax, UpDown, CostCurve, etc.)
- * OpenAPI spec version: 0.4.0
+ * OpenAPI spec version: 0.5.0
  */
 import * as zod from "zod";
 
@@ -27,13 +27,26 @@ export const ACBus = zod
       .enum(["PQ", "PV", "REF", "ISOLATED", "SLACK"])
       .optional()
       .describe(
-        "Classification of an AC bus for power flow, following the MATPOWER bus-type convention. `PQ` fixes the active and reactive injections and solves for voltage magnitude and angle; `PV` fixes active power and voltage magnitude and solves for reactive power and angle; `REF` names the reference for the system voltage angle; `SLACK` balances the system active and reactive mismatch and sets the reference angle; `ISOLATED` marks a bus not connected to the network.",
+        "Classification of an AC bus for power flow, following the MATPOWER bus-type convention. `PQ` marks a bus with no in-service generation that regulates voltage; it can still have a `voltage_setpoint` that remote devices hold, or that a droop or a reactive power limit stops them from reaching. `PV` marks a bus with in-service generation that regulates voltage: generators, storage, synchronous condensers or sources. Those devices hold the `voltage_setpoint` of the bus they regulate, this bus or their `remote_regulated_bus`; `REF` names the reference for the system voltage angle; `SLACK` balances the system active and reactive mismatch and sets the reference angle; `ISOLATED` marks a bus not connected to the network.",
       ),
-    angle: zod.number().optional().describe("Angle of the bus. Units: rad."),
+    angle: zod
+      .number()
+      .optional()
+      .describe(
+        "Solved voltage angle from the last power flow, or the start value for the next solve. Units: rad.",
+      ),
     magnitude: zod
       .number()
       .optional()
-      .describe("Voltage as a multiple of `base_voltage`. Units: pu."),
+      .describe(
+        "Solved voltage magnitude from the last power flow, or the start value for the next solve, as a multiple of `base_voltage`. This is a result, not a control target; the target is `voltage_setpoint`. Units: pu.",
+      ),
+    voltage_setpoint: zod
+      .number()
+      .nullish()
+      .describe(
+        "Scheduled voltage magnitude for this bus, as a multiple of `base_voltage`. It is the target of every device that regulates this bus, at the bus or from a remote terminal. The devices that regulate this bus hold it at this value unless a droop or a reactive power limit prevents it. `null` when no device regulates this bus. Units: pu.",
+      ),
     voltage_limits: zod
       .strictObject({
         max: zod.number().optional(),
@@ -61,7 +74,7 @@ export type ACBusOutput = zod.output<typeof ACBus>;
 export const ACBusType = zod
   .enum(["PQ", "PV", "REF", "ISOLATED", "SLACK"])
   .describe(
-    "Classification of an AC bus for power flow, following the MATPOWER bus-type convention. `PQ` fixes the active and reactive injections and solves for voltage magnitude and angle; `PV` fixes active power and voltage magnitude and solves for reactive power and angle; `REF` names the reference for the system voltage angle; `SLACK` balances the system active and reactive mismatch and sets the reference angle; `ISOLATED` marks a bus not connected to the network.",
+    "Classification of an AC bus for power flow, following the MATPOWER bus-type convention. `PQ` marks a bus with no in-service generation that regulates voltage; it can still have a `voltage_setpoint` that remote devices hold, or that a droop or a reactive power limit stops them from reaching. `PV` marks a bus with in-service generation that regulates voltage: generators, storage, synchronous condensers or sources. Those devices hold the `voltage_setpoint` of the bus they regulate, this bus or their `remote_regulated_bus`; `REF` names the reference for the system voltage angle; `SLACK` balances the system active and reactive mismatch and sets the reference angle; `ISOLATED` marks a bus not connected to the network.",
   );
 
 export type ACBusType = zod.input<typeof ACBusType>;
@@ -6708,7 +6721,7 @@ export const DCBus = zod
       .number()
       .optional()
       .describe(
-        "The base voltage. in psy5 a required param with an option to be nothing Units: kV.",
+        "The base voltage. in psy5 a required param with an option to be nothing. Units: kV.",
       ),
     id: zod.int().describe("Unique integer identifier for this component."),
     load_zone: zod
@@ -6719,7 +6732,7 @@ export const DCBus = zod
       .number()
       .optional()
       .describe(
-        "Voltage as a multiple of `base_voltage`. in psy5 a required param with an option to be nothing Units: pu.",
+        "Voltage as a multiple of `base_voltage`. in psy5 a required param with an option to be nothing. Units: pu.",
       ),
     name: zod
       .string()

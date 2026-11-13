@@ -3,7 +3,7 @@
  * Do not edit manually.
  * PowerOperationsOpenAPIModels
  * Power system operations models: Branch, StaticInjection, and Service components
- * OpenAPI spec version: 0.4.0
+ * OpenAPI spec version: 0.5.0
  */
 import * as zod from "zod";
 
@@ -292,6 +292,18 @@ export const DiscreteControlledACBranch = zod
       .describe(
         "Thermal rating. Flow on the branch must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
       ),
+    rating_b: zod
+      .number()
+      .optional()
+      .describe(
+        "Short-term thermal rating (Rate B in PSS/E), the flow allowed for a limited time, such as after a contingency. Absent means no short-term rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
+    rating_c: zod
+      .number()
+      .optional()
+      .describe(
+        "Emergency thermal rating (Rate C in PSS/E), the highest flow allowed for a brief period. Absent means no emergency rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+      ),
     operational_flow_limit: zod
       .strictObject({
         from_to_min: zod
@@ -333,13 +345,13 @@ export type DiscreteControlledACBranchOutput = zod.output<
   typeof DiscreteControlledACBranch
 >;
 
-export const seriesCompensatorThreeOperationalFlowLimitFromToMinMin = 0;
+export const seriesCompensatorOperationalFlowLimitFromToMinMin = 0;
 
-export const seriesCompensatorThreeOperationalFlowLimitFromToMaxMin = 0;
+export const seriesCompensatorOperationalFlowLimitFromToMaxMin = 0;
 
-export const seriesCompensatorThreeOperationalFlowLimitToFromMinMin = 0;
+export const seriesCompensatorOperationalFlowLimitToFromMinMin = 0;
 
-export const seriesCompensatorThreeOperationalFlowLimitToFromMaxMin = 0;
+export const seriesCompensatorOperationalFlowLimitToFromMaxMin = 0;
 
 export const SeriesCompensator = zod
   .strictObject({
@@ -375,33 +387,18 @@ export const SeriesCompensator = zod
     x: zod
       .number()
       .describe(
-        "Series reactance; negative for a capacitor. Under `DISPATCHABLE` and `ACTIVE_POWER_FLOW`, the present value. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+        "Series reactance; negative for a capacitor. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
       ),
     rating: zod
       .number()
       .describe(
         "Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
       ),
-    control_mode: zod
-      .enum(["FIXED", "BYPASSED", "DISPATCHABLE", "ACTIVE_POWER_FLOW"])
+    bypassed: zod
+      .boolean()
       .optional()
       .describe(
-        "Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.",
-      ),
-    reactance_limits: zod
-      .strictObject({
-        max: zod.number().optional(),
-        min: zod.number().optional(),
-      })
-      .optional()
-      .describe(
-        "A pair of values bounding a quantity from below (`min`) and from above (`max`).",
-      ),
-    active_power_flow_setpoint: zod
-      .number()
-      .optional()
-      .describe(
-        "Active power flow, from the `from` bus to the `to` bus, the compensator holds. Required when `control_mode` is `ACTIVE_POWER_FLOW`. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .",
+        "Whether the device is bypassed: shorted into a zero-impedance tie between the `from` and `to` buses. `r` and `x` keep the impedance it has when in service.",
       ),
     rating_b: zod
       .number()
@@ -419,16 +416,16 @@ export const SeriesCompensator = zod
       .strictObject({
         from_to_min: zod
           .number()
-          .min(seriesCompensatorThreeOperationalFlowLimitFromToMinMin),
+          .min(seriesCompensatorOperationalFlowLimitFromToMinMin),
         from_to_max: zod
           .number()
-          .min(seriesCompensatorThreeOperationalFlowLimitFromToMaxMin),
+          .min(seriesCompensatorOperationalFlowLimitFromToMaxMin),
         to_from_min: zod
           .number()
-          .min(seriesCompensatorThreeOperationalFlowLimitToFromMinMin),
+          .min(seriesCompensatorOperationalFlowLimitToFromMinMin),
         to_from_max: zod
           .number()
-          .min(seriesCompensatorThreeOperationalFlowLimitToFromMaxMin),
+          .min(seriesCompensatorOperationalFlowLimitToFromMaxMin),
       })
       .optional()
       .describe(
@@ -452,7 +449,7 @@ export const SeriesCompensator = zod
       ),
   })
   .describe(
-    "A series compensator on an `Arc`: a series capacitor or reactor, or a thyristor-controlled or static synchronous series compensator, with one series reactance. Devices that also inject at a bus, such as a UPFC, are not covered.",
+    "A fixed series compensator on an `Arc` (the CIM `SeriesCompensator`): a series capacitor or reactor, or an AC line without charging susceptance, with constant `r` and `x`. `bypassed` shorts the device into a zero-impedance tie; `available = false` takes it out of service. Controllable series devices are not covered.",
   );
 
 export type SeriesCompensator = zod.input<typeof SeriesCompensator>;
@@ -841,6 +838,12 @@ export const EnergyReservoirStorage = zod
     bus: zod
       .int()
       .describe("ID of the bus that this component is connected to."),
+    remote_regulated_bus: zod
+      .int()
+      .nullish()
+      .describe(
+        "ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.",
+      ),
     prime_mover_type: zod
       .enum([
         "BA",
@@ -9144,23 +9147,12 @@ export const FACTSControlDevice = zod
       .describe(
         "Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.",
       ),
-    bus: zod.int().describe("Sending end bus number."),
+    bus: zod.int().describe("ID of the sending end bus."),
     control_mode: zod
       .enum(["OOS", "NML", "BYP"])
       .optional()
       .describe(
         "Operating mode of a FACTS control device. `OOS` (out-of-service): both series and shunt links are open. `NML` (normal): both series and shunt links are operating. `BYP` (bypass): the series link is bypassed (acts as a zero-impedance line) and the shunt link operates as a STATCOM (reactive-only).",
-      ),
-    voltage_setpoint_units: zod
-      .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
-      .optional()
-      .describe(
-        "Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints — PSS/E RAW native for FACTS VSET — and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.",
-      ),
-    voltage_setpoint: zod
-      .number()
-      .describe(
-        "Voltage setpoint at the sending end bus in kV, it has to be a `PV` bus. Units: kV. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .",
       ),
     max_shunt_current: zod
       .number()
@@ -9184,11 +9176,11 @@ export const FACTSControlDevice = zod
       .describe(
         "Device class selecting the reactive-limit law (SVC vs STATCOM).",
       ),
-    regulated_bus_number: zod
+    remote_regulated_bus: zod
       .int()
-      .optional()
+      .nullish()
       .describe(
-        "Bus whose voltage this device regulates; 0 means local (sending) bus (PSS/E FCREG). Units: 1.",
+        "ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus (PSS/E FCREG); null regulates the sending end bus. A value equal to `bus` is invalid.",
       ),
     base_power: zod
       .number()
@@ -10310,21 +10302,15 @@ export const GenericArcImpedance = zod
       .describe(
         "Unit basis a stored value is expressed in. COMPONENT_BASE: per-unit against a base the component records itself. NATURAL_UNITS: the quantity's own physical unit. No system-wide option: a value per-unitized against a shared base records that base on the component and rides as COMPONENT_BASE. Used in three scopes, each read against its own record rather than a document-wide table: a component's own `power_units` (against that component's `base_power`), a cost payload's own `power_units` (e.g. `CostCurve`, against the owning component's `base_power`), and a time series association's own `unit_system` (governing only that one series).",
       ),
-    parameter_units: zod
-      .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
-      .optional()
-      .describe(
-        "Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.",
-      ),
     r: zod
       .number()
       .describe(
-        "Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+        "Resistance. Per-unit on `base_power`, which records the system base. Units: pu.",
       ),
     x: zod
       .number()
       .describe(
-        "Reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .",
+        "Reactance. Per-unit on `base_power`, which records the system base. Units: pu.",
       ),
   })
   .describe(
@@ -10488,6 +10474,12 @@ export const HybridSystem = zod
     bus: zod
       .int()
       .describe("ID of the bus that this component is connected to."),
+    remote_regulated_bus: zod
+      .int()
+      .nullish()
+      .describe(
+        "ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.",
+      ),
     active_power: zod
       .number()
       .describe(
@@ -13034,6 +13026,12 @@ export const HydroDispatch = zod
     bus: zod
       .int()
       .describe("ID of the bus that this component is connected to."),
+    remote_regulated_bus: zod
+      .int()
+      .nullish()
+      .describe(
+        "ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.",
+      ),
     active_power: zod
       .number()
       .describe(
@@ -21688,6 +21686,12 @@ export const HydroPumpTurbine = zod
     bus: zod
       .int()
       .describe("ID of the bus that this component is connected to."),
+    remote_regulated_bus: zod
+      .int()
+      .nullish()
+      .describe(
+        "ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.",
+      ),
     active_power: zod
       .number()
       .describe(
@@ -30267,7 +30271,7 @@ export const HydroReservoir = zod
       .number()
       .optional()
       .describe(
-        "in psy5 a required param with an option to be nothing Units: per level_data_type — USABLE_VOLUME: m3, TOTAL_VOLUME: m3, HEAD: m, ENERGY: MWh .",
+        "in psy5 a required param with an option to be nothing. Units: per level_data_type — USABLE_VOLUME: m3, TOTAL_VOLUME: m3, HEAD: m, ENERGY: MWh .",
       ),
     intake_elevation: zod.number().describe("Units: m."),
     head_to_volume_factor: zod
@@ -34941,6 +34945,12 @@ export const HydroTurbine = zod
     bus: zod
       .int()
       .describe("ID of the bus that this component is connected to."),
+    remote_regulated_bus: zod
+      .int()
+      .nullish()
+      .describe(
+        "ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.",
+      ),
     active_power: zod
       .number()
       .describe(
@@ -43326,15 +43336,15 @@ export type ImpedanceCorrectionDataOutput = zod.output<
   typeof ImpedanceCorrectionData
 >;
 
-const interconnectingConverterFiveLossFunctionValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
-const interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
-const interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
-const interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const interconnectingConverterFiveLossFunctionValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
-const interconnectingConverterFiveLossFunctionValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
-const interconnectingConverterFiveLossFunctionValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
-export const interconnectingConverterFivePowerFactorSetpointMin = -1;
-export const interconnectingConverterFivePowerFactorSetpointMax = 1;
+const interconnectingConverterFourLossFunctionValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
+const interconnectingConverterFourLossFunctionValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
+const interconnectingConverterFourLossFunctionValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
+const interconnectingConverterFourLossFunctionValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
+const interconnectingConverterFourLossFunctionValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
+const interconnectingConverterFourLossFunctionValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
+const interconnectingConverterFourLossFunctionValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
+export const interconnectingConverterFourPowerFactorSetpointMin = -1;
+export const interconnectingConverterFourPowerFactorSetpointMax = 1;
 
 export const InterconnectingConverter = zod
   .strictObject({
@@ -43412,7 +43422,7 @@ export const InterconnectingConverter = zod
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
-                    interconnectingConverterFiveLossFunctionValueCurveOneCurveTypeDefault,
+                    interconnectingConverterFourLossFunctionValueCurveOneCurveTypeDefault,
                   ),
                 function_data: zod.union([
                   zod
@@ -43423,7 +43433,7 @@ export const InterconnectingConverter = zod
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
-                          interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataOneFunctionTypeDefault,
+                          interconnectingConverterFourLossFunctionValueCurveOneFunctionDataOneFunctionTypeDefault,
                         ),
                       proportional_term: zod
                         .number()
@@ -43447,7 +43457,7 @@ export const InterconnectingConverter = zod
                       function_type: zod
                         .literal("LINEAR")
                         .default(
-                          interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataTwoFunctionTypeDefault,
+                          interconnectingConverterFourLossFunctionValueCurveOneFunctionDataTwoFunctionTypeDefault,
                         ),
                       proportional_term: zod
                         .number()
@@ -43463,7 +43473,7 @@ export const InterconnectingConverter = zod
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
-                          interconnectingConverterFiveLossFunctionValueCurveOneFunctionDataThreeFunctionTypeDefault,
+                          interconnectingConverterFourLossFunctionValueCurveOneFunctionDataThreeFunctionTypeDefault,
                         ),
                       points: zod.array(
                         zod
@@ -43501,7 +43511,7 @@ export const InterconnectingConverter = zod
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
-                    interconnectingConverterFiveLossFunctionValueCurveTwoCurveTypeDefault,
+                    interconnectingConverterFourLossFunctionValueCurveTwoCurveTypeDefault,
                   ),
                 function_data: zod.union([
                   zod
@@ -43512,7 +43522,7 @@ export const InterconnectingConverter = zod
                       function_type: zod
                         .literal("LINEAR")
                         .default(
-                          interconnectingConverterFiveLossFunctionValueCurveTwoFunctionDataOneFunctionTypeDefault,
+                          interconnectingConverterFourLossFunctionValueCurveTwoFunctionDataOneFunctionTypeDefault,
                         ),
                       proportional_term: zod
                         .number()
@@ -43528,7 +43538,7 @@ export const InterconnectingConverter = zod
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
-                          interconnectingConverterFiveLossFunctionValueCurveTwoFunctionDataTwoFunctionTypeDefault,
+                          interconnectingConverterFourLossFunctionValueCurveTwoFunctionDataTwoFunctionTypeDefault,
                         ),
                       x_coords: zod.array(
                         zod
@@ -43580,7 +43590,7 @@ export const InterconnectingConverter = zod
       .enum(["AC_REACTIVE_POWER", "AC_VOLTAGE"])
       .optional()
       .describe(
-        "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.",
+        "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter holds the voltage magnitude of its regulated AC bus at the `voltage_setpoint` of that bus.",
       ),
     dc_power_setpoint: zod
       .number()
@@ -43602,23 +43612,17 @@ export const InterconnectingConverter = zod
       ),
     power_factor_setpoint: zod
       .number()
-      .min(interconnectingConverterFivePowerFactorSetpointMin)
-      .max(interconnectingConverterFivePowerFactorSetpointMax)
+      .min(interconnectingConverterFourPowerFactorSetpointMin)
+      .max(interconnectingConverterFourPowerFactorSetpointMax)
       .nullish()
       .describe(
         "Power-factor setpoint of the converter, used when `ac_control` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.",
-      ),
-    ac_voltage_setpoint: zod
-      .number()
-      .nullish()
-      .describe(
-        "AC-side voltage magnitude target of the converter, used when `ac_control` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
       ),
     rated_ac_voltage: zod
       .number()
       .optional()
       .describe(
-        "Rated AC voltage at the converter's AC terminal, the base for `ac_voltage_setpoint`; 0.0 means unspecified. Units: kV.",
+        "Rated AC voltage at the converter's AC terminal; 0.0 means unspecified. Units: kV.",
       ),
     dc_voltage_droop: zod
       .number()
@@ -43626,11 +43630,11 @@ export const InterconnectingConverter = zod
       .describe(
         "DC-voltage droop gain on the converter, used when `dc_control` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint - dc_voltage_droop * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.",
       ),
-    remote_bus_control: zod
+    remote_regulated_bus: zod
       .int()
       .nullish()
       .describe(
-        "Number of the AC bus whose voltage the converter regulates when `ac_control` is `AC_VOLTAGE`; null regulates its own terminal bus.",
+        "ID of the AC bus whose voltage the converter regulates when `ac_control` is `AC_VOLTAGE`, to the `voltage_setpoint` of that bus; null regulates the converter's own AC bus. A value equal to `bus` is invalid.",
       ),
     power_factor_weighting_fraction: zod
       .number()
@@ -43653,7 +43657,7 @@ export const InterconnectingConverter = zod
       .describe("ID of the corresponding dynamic injection device, if any."),
   })
   .describe(
-    "Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus. Voltage and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them. `rated_dc_voltage` and `rated_ac_voltage` record the voltage bases, so a consumer can convert the voltage fields to per unit.",
+    "Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus. Voltage and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them. `rated_dc_voltage` records the DC voltage base, so a consumer can convert the DC voltage fields to per unit.",
   );
 
 export type InterconnectingConverter = zod.input<
@@ -58795,13 +58799,13 @@ export const Line = zod
       .number()
       .optional()
       .describe(
-        "Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        "Short-term thermal rating (Rate B in PSS/E), the flow allowed for a limited time, such as after a contingency. Absent means no short-term rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
       ),
     rating_c: zod
       .number()
       .optional()
       .describe(
-        "Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        "Emergency thermal rating (Rate C in PSS/E), the highest flow allowed for a brief period. Absent means no emergency rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
       ),
     operational_flow_limit: zod
       .strictObject({
@@ -60899,12 +60903,6 @@ export const PlannedOutage = zod
   .strictObject({
     id: zod.int(),
     outage_schedule: zod.string(),
-    monitored_components: zod
-      .array(zod.int())
-      .optional()
-      .describe(
-        "IDs of devices whose post-contingency state should be modeled when this outage occurs. Empty by default; semantics of an empty list are decided by the downstream consumer.",
-      ),
     identifier: zod
       .string()
       .nullish()
@@ -60913,7 +60911,7 @@ export const PlannedOutage = zod
       ),
   })
   .describe(
-    "Supplemental attribute describing outages that are scheduled in advance, naming the time series that carries the schedule.",
+    "Supplemental attribute describing outages that are scheduled in advance, naming the time series that carries the schedule. A planned outage is not a contingency, so it has no monitored components.",
   );
 
 export type PlannedOutage = zod.input<typeof PlannedOutage>;
@@ -65971,6 +65969,12 @@ export const RenewableDispatch = zod
     bus: zod
       .int()
       .describe("ID of the bus that this component is connected to."),
+    remote_regulated_bus: zod
+      .int()
+      .nullish()
+      .describe(
+        "ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.",
+      ),
     active_power: zod
       .number()
       .describe(
@@ -81980,6 +81984,12 @@ export const Source = zod
     bus: zod
       .int()
       .describe("ID of the bus that this component is connected to."),
+    remote_regulated_bus: zod
+      .int()
+      .nullish()
+      .describe(
+        "ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.",
+      ),
     active_power: zod
       .number()
       .optional()
@@ -88251,11 +88261,11 @@ export const SwitchedAdmittance = zod
       .describe(
         "Control mode of a switched shunt admittance (PSS/E MODSW). `UNDEFINED` leaves the mode unspecified; `FIXED` holds the admittance constant. `DISCRETE_VOLTAGE` and `CONTINUOUS_VOLTAGE` regulate voltage in steps or continuously and use `voltage_limits`. `DISCRETE_REACTIVE_PLANT`, `DISCRETE_REACTIVE_VSC`, `DISCRETE_ADMITTANCE_REMOTE` and `DISCRETE_REACTIVE_FACTS` regulate a plant's, a voltage-source-converter terminal's, a remote bus's, or a FACTS device's reactive quantity in steps and use `reactive_power_range_limits`.",
       ),
-    regulated_bus_number: zod
+    remote_regulated_bus: zod
       .int()
-      .optional()
+      .nullish()
       .describe(
-        "Bus number whose voltage/quantity this shunt regulates; 0 means local bus (PSS/E SWREM/NREG). Units: 1.",
+        "ID of the bus this shunt regulates (PSS/E SWREM in v33, SWREG in v34 and later): under the voltage modes, the bus whose voltage it holds within `voltage_limits`; under the reactive modes, the bus of the device whose reactive quantity it regulates. null means the bus this shunt is connected to. A value equal to `bus` is invalid.",
       ),
     dynamic_injector: zod
       .int()
@@ -88287,6 +88297,12 @@ export const SynchronousCondenser = zod
     bus: zod
       .int()
       .describe("ID of the bus that this component is connected to."),
+    remote_regulated_bus: zod
+      .int()
+      .nullish()
+      .describe(
+        "ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.",
+      ),
     reactive_power: zod
       .number()
       .describe(
@@ -88812,6 +88828,12 @@ export const ThermalMultiStart = zod
     bus: zod
       .int()
       .describe("ID of the bus that this component is connected to."),
+    remote_regulated_bus: zod
+      .int()
+      .nullish()
+      .describe(
+        "ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.",
+      ),
     active_power: zod
       .number()
       .describe(
@@ -97576,6 +97598,12 @@ export const ThermalStandard = zod
     bus: zod
       .int()
       .describe("ID of the bus that this component is connected to."),
+    remote_regulated_bus: zod
+      .int()
+      .nullish()
+      .describe(
+        "ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.",
+      ),
     active_power: zod
       .number()
       .describe(
@@ -106047,13 +106075,13 @@ export type TradingHubAssociationOutput = zod.output<
   typeof TradingHubAssociation
 >;
 
-export const transformerCircuitFiveOperationalFlowLimitFromToMinMin = 0;
+export const transformerCircuitSixOperationalFlowLimitFromToMinMin = 0;
 
-export const transformerCircuitFiveOperationalFlowLimitFromToMaxMin = 0;
+export const transformerCircuitSixOperationalFlowLimitFromToMaxMin = 0;
 
-export const transformerCircuitFiveOperationalFlowLimitToFromMinMin = 0;
+export const transformerCircuitSixOperationalFlowLimitToFromMinMin = 0;
 
-export const transformerCircuitFiveOperationalFlowLimitToFromMaxMin = 0;
+export const transformerCircuitSixOperationalFlowLimitToFromMaxMin = 0;
 
 export const TransformerCircuit = zod
   .strictObject({
@@ -106115,10 +106143,18 @@ export const TransformerCircuit = zod
       .describe(
         "Control objective of a transformer tap changer or phase shifter: a fixed tap position with no automatic adjustment (`FIXED`), or regulation of voltage magnitude at the controlled bus, reactive power flow, active power flow, asymmetric active power flow, or a DC line. Each regulating objective has a paired `_DISABLED` value naming the same control block while it is out of service, and `UNDEFINED` means no control objective is stated.",
       ),
-    regulated_bus_number: zod
+    regulated_bus: zod
       .int()
+      .nullish()
+      .describe(
+        "ID of the bus whose voltage this circuit's tap changer regulates (PSS/E CONT), within `controlled_voltage_limits`. It may be an end of `arc` or a remote bus. Used only when `control_objective` is `VOLTAGE` or `VOLTAGE_DISABLED`; null otherwise, or when no regulated bus is stated.",
+      ),
+    regulated_bus_orientation: zod
+      .enum(["UNDEFINED", "FROM", "TO"])
       .optional()
-      .describe("Controlled bus number (PSS/E CONT; sign = regulation side)."),
+      .describe(
+        "Which end of a transformer circuit's `arc` the tap adjustment treats the regulated bus as lying on, when the regulated bus is not an end of the arc: a remote bus, or another winding's terminal of a three-winding transformer. It sets the direction the tap moves to raise that bus's voltage (PSS/E sign of CONT). The `from` end is the tapped winding. UNDEFINED: the regulated bus is an end of the arc, so the connections give the direction, or there is no regulated bus. FROM: adjust as if the regulated bus lies on the `from` side (PSS/E negative CONT). TO: adjust as if it lies on the `to` side (PSS/E positive CONT).",
+      ),
     tap_ratio_limits: zod
       .strictObject({
         max: zod.number().optional(),
@@ -106177,28 +106213,28 @@ export const TransformerCircuit = zod
       .number()
       .optional()
       .describe(
-        "Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        "Short-term thermal rating (Rate B in PSS/E), the flow allowed for a limited time, such as after a contingency. Absent means no short-term rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
       ),
     rating_c: zod
       .number()
       .optional()
       .describe(
-        "Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
+        "Emergency thermal rating (Rate C in PSS/E), the highest flow allowed for a brief period. Absent means no emergency rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .",
       ),
     operational_flow_limit: zod
       .strictObject({
         from_to_min: zod
           .number()
-          .min(transformerCircuitFiveOperationalFlowLimitFromToMinMin),
+          .min(transformerCircuitSixOperationalFlowLimitFromToMinMin),
         from_to_max: zod
           .number()
-          .min(transformerCircuitFiveOperationalFlowLimitFromToMaxMin),
+          .min(transformerCircuitSixOperationalFlowLimitFromToMaxMin),
         to_from_min: zod
           .number()
-          .min(transformerCircuitFiveOperationalFlowLimitToFromMinMin),
+          .min(transformerCircuitSixOperationalFlowLimitToFromMinMin),
         to_from_max: zod
           .number()
-          .min(transformerCircuitFiveOperationalFlowLimitToFromMaxMin),
+          .min(transformerCircuitSixOperationalFlowLimitToFromMaxMin),
       })
       .optional()
       .describe(
@@ -107016,33 +107052,33 @@ export const TwoTerminalLCCLine = zod
 export type TwoTerminalLCCLine = zod.input<typeof TwoTerminalLCCLine>;
 export type TwoTerminalLCCLineOutput = zod.output<typeof TwoTerminalLCCLine>;
 
-export const twoTerminalVSCLineNinePowerFactorSetpointFromMin = -1;
-export const twoTerminalVSCLineNinePowerFactorSetpointFromMax = 1;
+export const twoTerminalVSCLineSevenPowerFactorSetpointFromMin = -1;
+export const twoTerminalVSCLineSevenPowerFactorSetpointFromMax = 1;
 
-const twoTerminalVSCLineNineConverterLossFromValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
-const twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
-const twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
-const twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const twoTerminalVSCLineNineConverterLossFromValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
-const twoTerminalVSCLineNineConverterLossFromValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
-const twoTerminalVSCLineNineConverterLossFromValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
-export const twoTerminalVSCLineNinePowerFactorSetpointToMin = -1;
-export const twoTerminalVSCLineNinePowerFactorSetpointToMax = 1;
+const twoTerminalVSCLineSevenConverterLossFromValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
+const twoTerminalVSCLineSevenConverterLossFromValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
+const twoTerminalVSCLineSevenConverterLossFromValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
+const twoTerminalVSCLineSevenConverterLossFromValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
+const twoTerminalVSCLineSevenConverterLossFromValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
+const twoTerminalVSCLineSevenConverterLossFromValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
+const twoTerminalVSCLineSevenConverterLossFromValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
+export const twoTerminalVSCLineSevenPowerFactorSetpointToMin = -1;
+export const twoTerminalVSCLineSevenPowerFactorSetpointToMax = 1;
 
-const twoTerminalVSCLineNineConverterLossToValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
-const twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
-const twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
-const twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
-const twoTerminalVSCLineNineConverterLossToValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
-const twoTerminalVSCLineNineConverterLossToValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
-const twoTerminalVSCLineNineConverterLossToValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
-export const twoTerminalVSCLineNineOperationalFlowLimitFromToMinMin = 0;
+const twoTerminalVSCLineSevenConverterLossToValueCurveOneCurveTypeDefault = `INPUT_OUTPUT`;
+const twoTerminalVSCLineSevenConverterLossToValueCurveOneFunctionDataOneFunctionTypeDefault = `QUADRATIC`;
+const twoTerminalVSCLineSevenConverterLossToValueCurveOneFunctionDataTwoFunctionTypeDefault = `LINEAR`;
+const twoTerminalVSCLineSevenConverterLossToValueCurveOneFunctionDataThreeFunctionTypeDefault = `PIECEWISE_LINEAR`;
+const twoTerminalVSCLineSevenConverterLossToValueCurveTwoCurveTypeDefault = `INCREMENTAL`;
+const twoTerminalVSCLineSevenConverterLossToValueCurveTwoFunctionDataOneFunctionTypeDefault = `LINEAR`;
+const twoTerminalVSCLineSevenConverterLossToValueCurveTwoFunctionDataTwoFunctionTypeDefault = `PIECEWISE_STEP`;
+export const twoTerminalVSCLineSevenOperationalFlowLimitFromToMinMin = 0;
 
-export const twoTerminalVSCLineNineOperationalFlowLimitFromToMaxMin = 0;
+export const twoTerminalVSCLineSevenOperationalFlowLimitFromToMaxMin = 0;
 
-export const twoTerminalVSCLineNineOperationalFlowLimitToFromMinMin = 0;
+export const twoTerminalVSCLineSevenOperationalFlowLimitToFromMinMin = 0;
 
-export const twoTerminalVSCLineNineOperationalFlowLimitToFromMaxMin = 0;
+export const twoTerminalVSCLineSevenOperationalFlowLimitToFromMaxMin = 0;
 
 export const TwoTerminalVSCLine = zod
   .strictObject({
@@ -107096,7 +107132,7 @@ export const TwoTerminalVSCLine = zod
       .enum(["AC_REACTIVE_POWER", "AC_VOLTAGE"])
       .optional()
       .describe(
-        "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.",
+        "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter holds the voltage magnitude of its regulated AC bus at the `voltage_setpoint` of that bus.",
       ),
     dc_power_setpoint_from: zod
       .number()
@@ -107112,17 +107148,11 @@ export const TwoTerminalVSCLine = zod
       ),
     power_factor_setpoint_from: zod
       .number()
-      .min(twoTerminalVSCLineNinePowerFactorSetpointFromMin)
-      .max(twoTerminalVSCLineNinePowerFactorSetpointFromMax)
+      .min(twoTerminalVSCLineSevenPowerFactorSetpointFromMin)
+      .max(twoTerminalVSCLineSevenPowerFactorSetpointFromMax)
       .nullish()
       .describe(
         "Power-factor setpoint of the `from` bus converter, used when `ac_control_from` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.",
-      ),
-    ac_voltage_setpoint_from: zod
-      .number()
-      .nullish()
-      .describe(
-        "AC-side voltage magnitude target of the `from` bus converter, used when `ac_control_from` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
       ),
     rated_ac_voltage_from: zod
       .number()
@@ -107144,7 +107174,7 @@ export const TwoTerminalVSCLine = zod
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
-                    twoTerminalVSCLineNineConverterLossFromValueCurveOneCurveTypeDefault,
+                    twoTerminalVSCLineSevenConverterLossFromValueCurveOneCurveTypeDefault,
                   ),
                 function_data: zod.union([
                   zod
@@ -107155,7 +107185,7 @@ export const TwoTerminalVSCLine = zod
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
-                          twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataOneFunctionTypeDefault,
+                          twoTerminalVSCLineSevenConverterLossFromValueCurveOneFunctionDataOneFunctionTypeDefault,
                         ),
                       proportional_term: zod
                         .number()
@@ -107179,7 +107209,7 @@ export const TwoTerminalVSCLine = zod
                       function_type: zod
                         .literal("LINEAR")
                         .default(
-                          twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataTwoFunctionTypeDefault,
+                          twoTerminalVSCLineSevenConverterLossFromValueCurveOneFunctionDataTwoFunctionTypeDefault,
                         ),
                       proportional_term: zod
                         .number()
@@ -107195,7 +107225,7 @@ export const TwoTerminalVSCLine = zod
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
-                          twoTerminalVSCLineNineConverterLossFromValueCurveOneFunctionDataThreeFunctionTypeDefault,
+                          twoTerminalVSCLineSevenConverterLossFromValueCurveOneFunctionDataThreeFunctionTypeDefault,
                         ),
                       points: zod.array(
                         zod
@@ -107233,7 +107263,7 @@ export const TwoTerminalVSCLine = zod
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
-                    twoTerminalVSCLineNineConverterLossFromValueCurveTwoCurveTypeDefault,
+                    twoTerminalVSCLineSevenConverterLossFromValueCurveTwoCurveTypeDefault,
                   ),
                 function_data: zod.union([
                   zod
@@ -107244,7 +107274,7 @@ export const TwoTerminalVSCLine = zod
                       function_type: zod
                         .literal("LINEAR")
                         .default(
-                          twoTerminalVSCLineNineConverterLossFromValueCurveTwoFunctionDataOneFunctionTypeDefault,
+                          twoTerminalVSCLineSevenConverterLossFromValueCurveTwoFunctionDataOneFunctionTypeDefault,
                         ),
                       proportional_term: zod
                         .number()
@@ -107260,7 +107290,7 @@ export const TwoTerminalVSCLine = zod
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
-                          twoTerminalVSCLineNineConverterLossFromValueCurveTwoFunctionDataTwoFunctionTypeDefault,
+                          twoTerminalVSCLineSevenConverterLossFromValueCurveTwoFunctionDataTwoFunctionTypeDefault,
                         ),
                       x_coords: zod.array(
                         zod
@@ -107360,7 +107390,7 @@ export const TwoTerminalVSCLine = zod
       .enum(["AC_REACTIVE_POWER", "AC_VOLTAGE"])
       .optional()
       .describe(
-        "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.",
+        "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter holds the voltage magnitude of its regulated AC bus at the `voltage_setpoint` of that bus.",
       ),
     dc_power_setpoint_to: zod
       .number()
@@ -107376,17 +107406,11 @@ export const TwoTerminalVSCLine = zod
       ),
     power_factor_setpoint_to: zod
       .number()
-      .min(twoTerminalVSCLineNinePowerFactorSetpointToMin)
-      .max(twoTerminalVSCLineNinePowerFactorSetpointToMax)
+      .min(twoTerminalVSCLineSevenPowerFactorSetpointToMin)
+      .max(twoTerminalVSCLineSevenPowerFactorSetpointToMax)
       .nullish()
       .describe(
         "Power-factor setpoint of the `to` bus converter, used when `ac_control_to` is `AC_REACTIVE_POWER`; `null` otherwise. Units: 1.",
-      ),
-    ac_voltage_setpoint_to: zod
-      .number()
-      .nullish()
-      .describe(
-        "AC-side voltage magnitude target of the `to` bus converter, used when `ac_control_to` is `AC_VOLTAGE`; `null` otherwise. Units: kV.",
       ),
     rated_ac_voltage_to: zod
       .number()
@@ -107408,7 +107432,7 @@ export const TwoTerminalVSCLine = zod
                 curve_type: zod
                   .literal("INPUT_OUTPUT")
                   .default(
-                    twoTerminalVSCLineNineConverterLossToValueCurveOneCurveTypeDefault,
+                    twoTerminalVSCLineSevenConverterLossToValueCurveOneCurveTypeDefault,
                   ),
                 function_data: zod.union([
                   zod
@@ -107419,7 +107443,7 @@ export const TwoTerminalVSCLine = zod
                       function_type: zod
                         .literal("QUADRATIC")
                         .default(
-                          twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataOneFunctionTypeDefault,
+                          twoTerminalVSCLineSevenConverterLossToValueCurveOneFunctionDataOneFunctionTypeDefault,
                         ),
                       proportional_term: zod
                         .number()
@@ -107443,7 +107467,7 @@ export const TwoTerminalVSCLine = zod
                       function_type: zod
                         .literal("LINEAR")
                         .default(
-                          twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataTwoFunctionTypeDefault,
+                          twoTerminalVSCLineSevenConverterLossToValueCurveOneFunctionDataTwoFunctionTypeDefault,
                         ),
                       proportional_term: zod
                         .number()
@@ -107459,7 +107483,7 @@ export const TwoTerminalVSCLine = zod
                       function_type: zod
                         .literal("PIECEWISE_LINEAR")
                         .default(
-                          twoTerminalVSCLineNineConverterLossToValueCurveOneFunctionDataThreeFunctionTypeDefault,
+                          twoTerminalVSCLineSevenConverterLossToValueCurveOneFunctionDataThreeFunctionTypeDefault,
                         ),
                       points: zod.array(
                         zod
@@ -107497,7 +107521,7 @@ export const TwoTerminalVSCLine = zod
                 curve_type: zod
                   .literal("INCREMENTAL")
                   .default(
-                    twoTerminalVSCLineNineConverterLossToValueCurveTwoCurveTypeDefault,
+                    twoTerminalVSCLineSevenConverterLossToValueCurveTwoCurveTypeDefault,
                   ),
                 function_data: zod.union([
                   zod
@@ -107508,7 +107532,7 @@ export const TwoTerminalVSCLine = zod
                       function_type: zod
                         .literal("LINEAR")
                         .default(
-                          twoTerminalVSCLineNineConverterLossToValueCurveTwoFunctionDataOneFunctionTypeDefault,
+                          twoTerminalVSCLineSevenConverterLossToValueCurveTwoFunctionDataOneFunctionTypeDefault,
                         ),
                       proportional_term: zod
                         .number()
@@ -107524,7 +107548,7 @@ export const TwoTerminalVSCLine = zod
                       function_type: zod
                         .literal("PIECEWISE_STEP")
                         .default(
-                          twoTerminalVSCLineNineConverterLossToValueCurveTwoFunctionDataTwoFunctionTypeDefault,
+                          twoTerminalVSCLineSevenConverterLossToValueCurveTwoFunctionDataTwoFunctionTypeDefault,
                         ),
                       x_coords: zod.array(
                         zod
@@ -107582,16 +107606,16 @@ export const TwoTerminalVSCLine = zod
       .strictObject({
         from_to_min: zod
           .number()
-          .min(twoTerminalVSCLineNineOperationalFlowLimitFromToMinMin),
+          .min(twoTerminalVSCLineSevenOperationalFlowLimitFromToMinMin),
         from_to_max: zod
           .number()
-          .min(twoTerminalVSCLineNineOperationalFlowLimitFromToMaxMin),
+          .min(twoTerminalVSCLineSevenOperationalFlowLimitFromToMaxMin),
         to_from_min: zod
           .number()
-          .min(twoTerminalVSCLineNineOperationalFlowLimitToFromMinMin),
+          .min(twoTerminalVSCLineSevenOperationalFlowLimitToFromMinMin),
         to_from_max: zod
           .number()
-          .min(twoTerminalVSCLineNineOperationalFlowLimitToFromMaxMin),
+          .min(twoTerminalVSCLineSevenOperationalFlowLimitToFromMaxMin),
       })
       .optional()
       .describe(
@@ -107633,17 +107657,17 @@ export const TwoTerminalVSCLine = zod
       .describe(
         "Rated DC voltage of the link; 0.0 means unspecified. Units: kV.",
       ),
-    remote_bus_control_from: zod
+    remote_regulated_bus_from: zod
       .int()
       .nullish()
       .describe(
-        "Number of the AC bus whose voltage the `from` converter regulates when `ac_control_from` is `AC_VOLTAGE`; null regulates its own terminal bus.",
+        "ID of the AC bus whose voltage the `from` converter regulates when `ac_control_from` is `AC_VOLTAGE`, to the `voltage_setpoint` of that bus; null regulates the `from` terminal bus. A value equal to the `from` terminal bus is invalid.",
       ),
-    remote_bus_control_to: zod
+    remote_regulated_bus_to: zod
       .int()
       .nullish()
       .describe(
-        "Number of the AC bus whose voltage the `to` converter regulates when `ac_control_to` is `AC_VOLTAGE`; null regulates its own terminal bus.",
+        "ID of the AC bus whose voltage the `to` converter regulates when `ac_control_to` is `AC_VOLTAGE`, to the `voltage_setpoint` of that bus; null regulates the `to` terminal bus. A value equal to the `to` terminal bus is invalid.",
       ),
     base_power: zod
       .number()
@@ -112309,7 +112333,7 @@ export const VoltageDroopControl = zod
       .boolean()
       .optional()
       .describe(
-        "Whether the controller is in service (PSS/E STATUS). While false, members regulate their own targets.",
+        "Whether the controller is in service (PSS/E STATUS). While false, each member holds the bus it regulates at that bus's `voltage_setpoint`.",
       ),
     regulated_bus_id: zod
       .int()
@@ -112333,7 +112357,7 @@ export const VoltageDroopControl = zod
       .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
       .optional()
       .describe(
-        "Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints — PSS/E RAW native for FACTS VSET — and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.",
+        "Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints, and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.",
       ),
     deadband_voltage_limits: zod
       .strictObject({
@@ -112353,7 +112377,7 @@ export const VoltageDroopControl = zod
       ),
   })
   .describe(
-    "Supplemental attribute for a voltage droop controller (PSS/E voltage droop control): a set of generators jointly regulating the reactive power at one bus along a Q–V characteristic. While the controller is available its regulated bus and characteristic override each member's own voltage target; while it is unavailable the members fall back to their own targets. Membership and each member's relative reactive power weight are VoltageControlAssociation rows. The characteristic holds `reactive_power_limits.max` below `voltage_limits.min`, ramps to `deadband_reactive_power` at `deadband_voltage_limits.min`, holds it through `deadband_voltage_limits.max`, ramps to `reactive_power_limits.min` at `voltage_limits.max`, and holds it above.",
+    "Supplemental attribute for a voltage droop controller (PSS/E voltage droop control): a set of generators jointly regulating the reactive power at one bus along a Q–V characteristic. While the controller is available, its regulated bus and characteristic replace each member's own voltage regulation. While it is unavailable, each member holds the bus it regulates, its `remote_regulated_bus` or the bus it is connected to, at that bus's `voltage_setpoint`. Membership and each member's relative reactive power weight are VoltageControlAssociation rows. The characteristic holds `reactive_power_limits.max` below `voltage_limits.min`, ramps to `deadband_reactive_power` at `deadband_voltage_limits.min`, holds it through `deadband_voltage_limits.max`, ramps to `reactive_power_limits.min` at `voltage_limits.max`, and holds it above.",
   );
 
 export type VoltageDroopControl = zod.input<typeof VoltageDroopControl>;
@@ -112362,7 +112386,7 @@ export type VoltageDroopControlOutput = zod.output<typeof VoltageDroopControl>;
 export const VSCACControlModes = zod
   .enum(["AC_REACTIVE_POWER", "AC_VOLTAGE"])
   .describe(
-    "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.",
+    "AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter holds the voltage magnitude of its regulated AC bus at the `voltage_setpoint` of that bus.",
   );
 
 export type VSCACControlModes = zod.input<typeof VSCACControlModes>;
@@ -112440,19 +112464,6 @@ export type SwitchedAdmittanceControlModeOutput = zod.output<
   typeof SwitchedAdmittanceControlMode
 >;
 
-export const SeriesCompensatorControlMode = zod
-  .enum(["FIXED", "BYPASSED", "DISPATCHABLE", "ACTIVE_POWER_FLOW"])
-  .describe(
-    "Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.",
-  );
-
-export type SeriesCompensatorControlMode = zod.input<
-  typeof SeriesCompensatorControlMode
->;
-export type SeriesCompensatorControlModeOutput = zod.output<
-  typeof SeriesCompensatorControlMode
->;
-
 export const ReserveDirection = zod
   .enum(["UP", "DOWN", "SYMMETRIC"])
   .describe(
@@ -112488,6 +112499,19 @@ export type TransformerControlObjectiveOutput = zod.output<
   typeof TransformerControlObjective
 >;
 
+export const TransformerRegulationOrientation = zod
+  .enum(["UNDEFINED", "FROM", "TO"])
+  .describe(
+    "Which end of a transformer circuit's `arc` the tap adjustment treats the regulated bus as lying on, when the regulated bus is not an end of the arc: a remote bus, or another winding's terminal of a three-winding transformer. It sets the direction the tap moves to raise that bus's voltage (PSS/E sign of CONT). The `from` end is the tapped winding. UNDEFINED: the regulated bus is an end of the arc, so the connections give the direction, or there is no regulated bus. FROM: adjust as if the regulated bus lies on the `from` side (PSS/E negative CONT). TO: adjust as if it lies on the `to` side (PSS/E positive CONT).",
+  );
+
+export type TransformerRegulationOrientation = zod.input<
+  typeof TransformerRegulationOrientation
+>;
+export type TransformerRegulationOrientationOutput = zod.output<
+  typeof TransformerRegulationOrientation
+>;
+
 export const TwoWindingTransformerShuntLocation = zod
   .enum(["PRIMARY", "SECONDARY", "SPLIT"])
   .describe(
@@ -112517,7 +112541,7 @@ export type ThreeWindingTransformerShuntLocationOutput = zod.output<
 export const VoltageUnitBasis = zod
   .enum(["NATURAL_UNITS", "COMPONENT_BASE"])
   .describe(
-    "Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints — PSS/E RAW native for FACTS VSET — and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.",
+    "Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints, and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.",
   );
 
 export type VoltageUnitBasis = zod.input<typeof VoltageUnitBasis>;

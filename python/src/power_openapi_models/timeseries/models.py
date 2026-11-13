@@ -130,7 +130,11 @@ class NonSequentialTimeSeries(BaseModel):
     )
     unit_system: UnitSystem | None = Field(
         None,
-        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+    )
+    per_unit_of: str | None = Field(
+        None,
+        description="The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
     )
     time_reference: TimeReference | None = Field(
         None,
@@ -212,7 +216,11 @@ class Deterministic(BaseModel):
     )
     unit_system: UnitSystem | None = Field(
         None,
-        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+    )
+    per_unit_of: str | None = Field(
+        None,
+        description="The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
     )
     time_reference: TimeReference | None = Field(
         None,
@@ -313,7 +321,11 @@ class DeterministicSingleTimeSeries(BaseModel):
     )
     unit_system: UnitSystem | None = Field(
         None,
-        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+    )
+    per_unit_of: str | None = Field(
+        None,
+        description="The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
     )
     time_reference: TimeReference | None = Field(
         None,
@@ -414,7 +426,11 @@ class Probabilistic(BaseModel):
     )
     unit_system: UnitSystem | None = Field(
         None,
-        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+    )
+    per_unit_of: str | None = Field(
+        None,
+        description="The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
     )
     time_reference: TimeReference | None = Field(
         None,
@@ -520,7 +536,11 @@ class Scenarios(BaseModel):
     )
     unit_system: UnitSystem | None = Field(
         None,
-        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+    )
+    per_unit_of: str | None = Field(
+        None,
+        description="The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
     )
     time_reference: TimeReference | None = Field(
         None,
@@ -625,7 +645,11 @@ class SingleTimeSeries(BaseModel):
     )
     unit_system: UnitSystem | None = Field(
         None,
-        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's base_power. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+        description="Basis the series values are already expressed in. A declaration, not a conversion: nothing here rescales values, and converting a COMPONENT_BASE series back to natural units needs the owning component's field that `per_unit_of` names. Absent means unspecified, which is deliberately not the same as NATURAL_UNITS.",
+    )
+    per_unit_of: str | None = Field(
+        None,
+        description="The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.",
     )
     time_reference: TimeReference | None = Field(
         None,

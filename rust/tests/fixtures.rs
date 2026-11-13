@@ -36,6 +36,27 @@ fn roundtrip(type_name: &str, entry: &Value) -> Value {
     }
     through!(
         ACBus,
+        AVRFixed,
+        AverageConverter,
+        DynamicGenerator,
+        DynamicInverter,
+        FixedDCSource,
+        GenericDER,
+        HybridOutputCurrentLimiter,
+        KauraPLL,
+        LCLFilter,
+        OneDOneQMachine,
+        PSSFixed,
+        PeriodicVariableSource,
+        ReactivePowerDroop,
+        RoundRotorMachine,
+        RoundRotorQuadratic,
+        SalientPoleExponential,
+        SalientPoleMachine,
+        SingleMass,
+        TGFixed,
+        VirtualInertia,
+        VoltageModeControl,
         Arc,
         Area,
         DiscreteControlledACBranch,
@@ -165,4 +186,56 @@ fn natural_units_spot_checks() {
             .len(),
         9
     );
+}
+
+const DYNAMICS_FIXTURE: &str = "dynamics_small.COMPONENT_BASE.json";
+const DYNAMICS_COMPONENT_COUNT: usize = 38;
+
+fn dynamics_text() -> String {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../fixtures")
+        .join(DYNAMICS_FIXTURE);
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()))
+}
+
+#[test]
+fn dynamics_fixture_components_roundtrip_without_drift() {
+    let raw: Value = serde_json::from_str(&dynamics_text()).unwrap();
+    let components = raw["components"].as_object().unwrap();
+    let total: usize = components
+        .values()
+        .map(|v| v.as_array().unwrap().len())
+        .sum();
+    assert_eq!(total, DYNAMICS_COMPONENT_COUNT);
+    for needed in [
+        "RoundRotorQuadratic",
+        "SalientPoleExponential",
+        "DynamicInverter",
+    ] {
+        assert!(components.contains_key(needed), "{needed}");
+    }
+    let mut diffs = Vec::new();
+    for (type_name, entries) in components {
+        for (i, entry) in entries.as_array().unwrap().iter().enumerate() {
+            let rebuilt = roundtrip(type_name, entry);
+            diff(
+                &strip_null(entry),
+                &strip_null(&rebuilt),
+                &format!("{type_name}[{i}]"),
+                &mut diffs,
+            );
+        }
+    }
+    assert!(
+        diffs.is_empty(),
+        "{}",
+        diffs[..diffs.len().min(20)].join("\n")
+    );
+}
+
+#[test]
+fn dynamics_fixture_document_roundtrip_is_byte_identical() {
+    let raw = dynamics_text();
+    let doc = parse_document(&raw).unwrap();
+    assert_eq!(document_to_string(&doc).unwrap(), raw);
 }

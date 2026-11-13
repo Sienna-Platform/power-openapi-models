@@ -1,0 +1,724 @@
+{
+  "schema_version": "0.5.0",
+  "combined_cycle_associations": [],
+  "components": {
+    "ACBus": [
+      {
+        "id": 1,
+        "number": 1,
+        "name": "bus1",
+        "available": true,
+        "bustype": "REF",
+        "angle": 0.0,
+        "magnitude": 1.0,
+        "voltage_limits": {
+          "max": 1.1,
+          "min": 0.9
+        },
+        "base_voltage": 138.0
+      }
+    ],
+    "AVRFixed": [
+      {
+        "id": 24,
+        "Vf": 0.0,
+        "V_ref": 0.0
+      },
+      {
+        "id": 30,
+        "Vf": 0.0,
+        "V_ref": 0.0
+      },
+      {
+        "id": 36,
+        "Vf": 0.0,
+        "V_ref": 0.0
+      }
+    ],
+    "AverageConverter": [
+      {
+        "id": 14,
+        "rated_voltage": 0.0,
+        "rated_current": 0.0
+      }
+    ],
+    "DynamicGenerator": [
+      {
+        "id": 7,
+        "name": "g_1d1q",
+        "frequency_ref": 60.0,
+        "synchronous_machine_dynamics": 22,
+        "shaft": 23,
+        "excitation_system_dynamics": 24,
+        "turbine_governor_dynamics": 25,
+        "power_system_stabilizer_dynamics": 26,
+        "base_power": 100.0
+      },
+      {
+        "id": 5,
+        "name": "g_spe",
+        "frequency_ref": 60.0,
+        "synchronous_machine_dynamics": 28,
+        "shaft": 29,
+        "excitation_system_dynamics": 30,
+        "turbine_governor_dynamics": 31,
+        "power_system_stabilizer_dynamics": 32,
+        "base_power": 100.0
+      },
+      {
+        "id": 3,
+        "name": "g_rrq",
+        "frequency_ref": 60.0,
+        "synchronous_machine_dynamics": 34,
+        "shaft": 35,
+        "excitation_system_dynamics": 36,
+        "turbine_governor_dynamics": 37,
+        "power_system_stabilizer_dynamics": 38,
+        "base_power": 100.0
+      }
+    ],
+    "DynamicInverter": [
+      {
+        "id": 9,
+        "name": "inv",
+        "frequency_ref": 60.0,
+        "converter": 14,
+        "active_power_control": 15,
+        "reactive_power_control": 16,
+        "inner_control": 17,
+        "dc_source": 18,
+        "reference_frame_rotation": 19,
+        "filter": 20,
+        "current_limitation": 21,
+        "base_power": 100.0
+      }
+    ],
+    "FixedDCSource": [
+      {
+        "id": 18,
+        "voltage": 0.0
+      }
+    ],
+    "GenericDER": [
+      {
+        "id": 11,
+        "name": "der",
+        "Qref_Flag": 1,
+        "PQ_Flag": false,
+        "Gen_Flag": false,
+        "PerOp_Flag": false,
+        "Recon_Flag": false,
+        "Trv": 0.007,
+        "VV_pnts": {
+          "V1": 0.008,
+          "V2": 0.008,
+          "V3": 0.008,
+          "V4": 0.008
+        },
+        "Q_lim": {
+          "max": 0.009000000000000001,
+          "min": 0.009000000000000001
+        },
+        "Tp": 0.01,
+        "e_lim": {
+          "max": 0.011,
+          "min": 0.011
+        },
+        "Kpq": 0.012,
+        "Kiq": 0.013000000000000001,
+        "Iqr_lim": {
+          "max": 0.014,
+          "min": 0.014
+        },
+        "I_max": 0.015,
+        "Tg": 0.016,
+        "kWh_Cap": 0.017,
+        "SOC_ini": 0.018000000000000002,
+        "SOC_lim": {
+          "max": 0.019,
+          "min": 0.019
+        },
+        "Trf": 0.02,
+        "fdbd_pnts": {
+          "fdbd1": 0.021,
+          "fdbd2": 0.021
+        },
+        "D_dn": 0.022,
+        "D_up": 0.023,
+        "fe_lim": {
+          "max": 0.024,
+          "min": 0.024
+        },
+        "Kpp": 0.025,
+        "Kip": 0.026000000000000002,
+        "P_lim": {
+          "max": 0.027,
+          "min": 0.027
+        },
+        "dP_lim": {
+          "max": 0.028,
+          "min": 0.028
+        },
+        "T_pord": 0.029,
+        "rrpwr": 0.03,
+        "VRT_pnts": {
+          "vrt1": 0.031,
+          "vrt2": 0.031,
+          "vrt3": 0.031,
+          "vrt4": 0.031,
+          "vrt5": 0.031
+        },
+        "TVRT_pnts": {
+          "tvrt1": 0.032,
+          "tvrt2": 0.032,
+          "tvrt3": 0.032
+        },
+        "tV_delay": 0.033,
+        "VES_lim": {
+          "max": 0.034,
+          "min": 0.034
+        },
+        "FRT_pnts": {
+          "frt1": 0.035,
+          "frt2": 0.035,
+          "frt3": 0.035,
+          "frt4": 0.035
+        },
+        "TFRT_pnts": {
+          "tfrt1": 0.036000000000000004,
+          "tfrt2": 0.036000000000000004
+        },
+        "tF_delay": 0.037,
+        "FES_lim": {
+          "max": 0.038,
+          "min": 0.038
+        },
+        "Pfa_ref": 0.039,
+        "Q_ref": 0.04,
+        "P_ref": 0.041,
+        "base_power": 100.0
+      }
+    ],
+    "HybridOutputCurrentLimiter": [
+      {
+        "id": 21,
+        "I_max": 0.0,
+        "rv": 0.0,
+        "lv": 0.0
+      }
+    ],
+    "KauraPLL": [
+      {
+        "id": 19,
+        "frequency_lp": 0.0,
+        "kp_pll": 0.0,
+        "ki_pll": 0.0
+      }
+    ],
+    "LCLFilter": [
+      {
+        "id": 20,
+        "lf": 0.0,
+        "rf": 0.0,
+        "cf": 0.0,
+        "lg": 0.0,
+        "rg": 0.0
+      }
+    ],
+    "OneDOneQMachine": [
+      {
+        "id": 22,
+        "R": 0.0,
+        "Xd": 0.0,
+        "Xq": 0.0,
+        "Xd_p": 0.0,
+        "Xq_p": 0.0,
+        "Td0_p": 0.0,
+        "Tq0_p": 0.0
+      }
+    ],
+    "PSSFixed": [
+      {
+        "id": 26,
+        "V_pss": 0.0
+      },
+      {
+        "id": 32,
+        "V_pss": 0.0
+      },
+      {
+        "id": 38,
+        "V_pss": 0.0
+      }
+    ],
+    "PeriodicVariableSource": [
+      {
+        "id": 13,
+        "name": "pvs",
+        "R_th": 0.002,
+        "X_th": 0.003,
+        "internal_voltage_bias": 0.004,
+        "internal_voltage_frequencies": [
+          0.005
+        ],
+        "internal_voltage_coefficients": [
+          [
+            0.006,
+            0.012
+          ]
+        ],
+        "internal_angle_bias": 0.007,
+        "internal_angle_frequencies": [
+          0.008
+        ],
+        "internal_angle_coefficients": [
+          [
+            0.009000000000000001,
+            0.018000000000000002
+          ]
+        ],
+        "base_power": 100.0
+      }
+    ],
+    "ReactivePowerDroop": [
+      {
+        "id": 16,
+        "kq": 0.0,
+        "reactive_power_filter_frequency": 0.0,
+        "V_ref": 0.0
+      }
+    ],
+    "RoundRotorMachine": [
+      {
+        "id": 33,
+        "R": 0.0,
+        "Td0_p": 7.4,
+        "Td0_pp": 0.03,
+        "Tq0_p": 0.06,
+        "Tq0_pp": 0.033,
+        "Xd": 0.8979,
+        "Xq": 0.646,
+        "Xd_p": 0.2995,
+        "Xq_p": 0.646,
+        "Xd_pp": 0.23,
+        "Xl": 0.1,
+        "Se": [
+          0.1,
+          0.5
+        ]
+      }
+    ],
+    "RoundRotorQuadratic": [
+      {
+        "id": 34,
+        "base_machine": 33,
+        "saturation_coeffs": [
+          0.8620204102886728,
+          5.252551286084109
+        ]
+      }
+    ],
+    "SalientPoleExponential": [
+      {
+        "id": 28,
+        "base_machine": 27,
+        "saturation_coeffs": [
+          8.827469119589406,
+          0.1
+        ]
+      }
+    ],
+    "SalientPoleMachine": [
+      {
+        "id": 27,
+        "R": 0.0,
+        "Td0_p": 7.4,
+        "Td0_pp": 0.03,
+        "Tq0_pp": 0.033,
+        "Xd": 0.8979,
+        "Xq": 0.646,
+        "Xd_p": 0.2995,
+        "Xd_pp": 0.23,
+        "Xl": 0.1,
+        "Se": [
+          0.1,
+          0.5
+        ]
+      }
+    ],
+    "SingleMass": [
+      {
+        "id": 23,
+        "H": 0.0,
+        "D": 0.0
+      },
+      {
+        "id": 29,
+        "H": 0.0,
+        "D": 0.0
+      },
+      {
+        "id": 35,
+        "H": 0.0,
+        "D": 0.0
+      }
+    ],
+    "TGFixed": [
+      {
+        "id": 25,
+        "efficiency": 0.0,
+        "P_ref": 0.0
+      },
+      {
+        "id": 31,
+        "efficiency": 0.0,
+        "P_ref": 0.0
+      },
+      {
+        "id": 37,
+        "efficiency": 0.0,
+        "P_ref": 0.0
+      }
+    ],
+    "ThermalStandard": [
+      {
+        "id": 12,
+        "name": "pvs",
+        "available": true,
+        "status": "ONLINE",
+        "commitment_mode": "COMMITTED",
+        "bus": 1,
+        "active_power": 0.4,
+        "reactive_power": 0.01,
+        "rating": 0.5,
+        "active_power_limits": {
+          "max": 0.4,
+          "min": 0.0
+        },
+        "reactive_power_limits": {
+          "max": 0.3,
+          "min": -0.3
+        },
+        "operation_cost": {
+          "cost_type": "THERMAL",
+          "fixed": 0.0,
+          "shut_down": 2.0,
+          "start_up": 4.0,
+          "variable_operation_cost": {
+            "power_units": "NATURAL_UNITS",
+            "value_curve": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 1400.0
+              }
+            },
+            "variable_cost_type": "COST",
+            "vom_cost": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 0.0
+              }
+            }
+          }
+        },
+        "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "prime_mover_type": "ST",
+        "fuel": "COAL",
+        "time_at_status": 600000.0,
+        "dynamic_injector": 13
+      },
+      {
+        "id": 8,
+        "name": "inv",
+        "available": true,
+        "status": "ONLINE",
+        "commitment_mode": "COMMITTED",
+        "bus": 1,
+        "active_power": 0.4,
+        "reactive_power": 0.01,
+        "rating": 0.5,
+        "active_power_limits": {
+          "max": 0.4,
+          "min": 0.0
+        },
+        "reactive_power_limits": {
+          "max": 0.3,
+          "min": -0.3
+        },
+        "operation_cost": {
+          "cost_type": "THERMAL",
+          "fixed": 0.0,
+          "shut_down": 2.0,
+          "start_up": 4.0,
+          "variable_operation_cost": {
+            "power_units": "NATURAL_UNITS",
+            "value_curve": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 1400.0
+              }
+            },
+            "variable_cost_type": "COST",
+            "vom_cost": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 0.0
+              }
+            }
+          }
+        },
+        "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "prime_mover_type": "ST",
+        "fuel": "COAL",
+        "time_at_status": 600000.0,
+        "dynamic_injector": 9
+      },
+      {
+        "id": 10,
+        "name": "der",
+        "available": true,
+        "status": "ONLINE",
+        "commitment_mode": "COMMITTED",
+        "bus": 1,
+        "active_power": 0.4,
+        "reactive_power": 0.01,
+        "rating": 0.5,
+        "active_power_limits": {
+          "max": 0.4,
+          "min": 0.0
+        },
+        "reactive_power_limits": {
+          "max": 0.3,
+          "min": -0.3
+        },
+        "operation_cost": {
+          "cost_type": "THERMAL",
+          "fixed": 0.0,
+          "shut_down": 2.0,
+          "start_up": 4.0,
+          "variable_operation_cost": {
+            "power_units": "NATURAL_UNITS",
+            "value_curve": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 1400.0
+              }
+            },
+            "variable_cost_type": "COST",
+            "vom_cost": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 0.0
+              }
+            }
+          }
+        },
+        "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "prime_mover_type": "ST",
+        "fuel": "COAL",
+        "time_at_status": 600000.0,
+        "dynamic_injector": 11
+      },
+      {
+        "id": 2,
+        "name": "g_rrq",
+        "available": true,
+        "status": "ONLINE",
+        "commitment_mode": "COMMITTED",
+        "bus": 1,
+        "active_power": 0.4,
+        "reactive_power": 0.01,
+        "rating": 0.5,
+        "active_power_limits": {
+          "max": 0.4,
+          "min": 0.0
+        },
+        "reactive_power_limits": {
+          "max": 0.3,
+          "min": -0.3
+        },
+        "operation_cost": {
+          "cost_type": "THERMAL",
+          "fixed": 0.0,
+          "shut_down": 2.0,
+          "start_up": 4.0,
+          "variable_operation_cost": {
+            "power_units": "NATURAL_UNITS",
+            "value_curve": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 1400.0
+              }
+            },
+            "variable_cost_type": "COST",
+            "vom_cost": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 0.0
+              }
+            }
+          }
+        },
+        "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "prime_mover_type": "ST",
+        "fuel": "COAL",
+        "time_at_status": 600000.0,
+        "dynamic_injector": 3
+      },
+      {
+        "id": 6,
+        "name": "g_1d1q",
+        "available": true,
+        "status": "ONLINE",
+        "commitment_mode": "COMMITTED",
+        "bus": 1,
+        "active_power": 0.4,
+        "reactive_power": 0.01,
+        "rating": 0.5,
+        "active_power_limits": {
+          "max": 0.4,
+          "min": 0.0
+        },
+        "reactive_power_limits": {
+          "max": 0.3,
+          "min": -0.3
+        },
+        "operation_cost": {
+          "cost_type": "THERMAL",
+          "fixed": 0.0,
+          "shut_down": 2.0,
+          "start_up": 4.0,
+          "variable_operation_cost": {
+            "power_units": "NATURAL_UNITS",
+            "value_curve": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 1400.0
+              }
+            },
+            "variable_cost_type": "COST",
+            "vom_cost": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 0.0
+              }
+            }
+          }
+        },
+        "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "prime_mover_type": "ST",
+        "fuel": "COAL",
+        "time_at_status": 600000.0,
+        "dynamic_injector": 7
+      },
+      {
+        "id": 4,
+        "name": "g_spe",
+        "available": true,
+        "status": "ONLINE",
+        "commitment_mode": "COMMITTED",
+        "bus": 1,
+        "active_power": 0.4,
+        "reactive_power": 0.01,
+        "rating": 0.5,
+        "active_power_limits": {
+          "max": 0.4,
+          "min": 0.0
+        },
+        "reactive_power_limits": {
+          "max": 0.3,
+          "min": -0.3
+        },
+        "operation_cost": {
+          "cost_type": "THERMAL",
+          "fixed": 0.0,
+          "shut_down": 2.0,
+          "start_up": 4.0,
+          "variable_operation_cost": {
+            "power_units": "NATURAL_UNITS",
+            "value_curve": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 1400.0
+              }
+            },
+            "variable_cost_type": "COST",
+            "vom_cost": {
+              "curve_type": "INPUT_OUTPUT",
+              "function_data": {
+                "constant_term": 0.0,
+                "function_type": "LINEAR",
+                "proportional_term": 0.0
+              }
+            }
+          }
+        },
+        "base_power": 100.0,
+        "power_units": "COMPONENT_BASE",
+        "prime_mover_type": "ST",
+        "fuel": "COAL",
+        "time_at_status": 600000.0,
+        "dynamic_injector": 5
+      }
+    ],
+    "VirtualInertia": [
+      {
+        "id": 15,
+        "Ta": 0.0,
+        "kd": 0.0,
+        "k_frequency": 0.0,
+        "P_ref": 0.0
+      }
+    ],
+    "VoltageModeControl": [
+      {
+        "id": 17,
+        "kpv": 0.0,
+        "kiv": 0.0,
+        "kffv": 0.0,
+        "rv": 0.0,
+        "lv": 0.0,
+        "kpc": 0.0,
+        "kic": 0.0,
+        "kffi": 0.0,
+        "active_damping_filter_frequency": 0.0,
+        "kad": 0.0
+      }
+    ]
+  },
+  "ext": {},
+  "frequency": 60.0,
+  "plant_associations": [],
+  "service_associations": [],
+  "supplemental_attribute_associations": [],
+  "supplemental_attributes": [],
+  "time_series_associations": [],
+  "time_series_storage_file": null
+}

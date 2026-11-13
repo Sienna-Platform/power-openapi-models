@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "combined_cycle_associations": [],
   "components": {
     "ACBus": [
@@ -123,6 +123,7 @@
         "bustype": "REF",
         "angle": 0.20523850272976918,
         "magnitude": 1.0,
+        "voltage_setpoint": 1.0,
         "voltage_limits": {
           "max": 1.1,
           "min": 0.9
@@ -566,13 +567,10 @@
         "available": true,
         "bus": 10,
         "control_mode": "NML",
-        "voltage_setpoint_units": "COMPONENT_BASE",
-        "voltage_setpoint": 1.0,
         "max_shunt_current": 99.99,
         "reactive_power_required": 0.0,
         "max_reactive_power": 99.99,
         "shunt_control_type": "STATCOM",
-        "regulated_bus_number": 0,
         "base_power": 100.0,
         "power_units": "COMPONENT_BASE"
       }
@@ -1457,8 +1455,7 @@
           "max": 1.0,
           "min": 1.0
         },
-        "control_mode": "DISCRETE_VOLTAGE",
-        "regulated_bus_number": 0
+        "control_mode": "DISCRETE_VOLTAGE"
       },
       {
         "id": 118,
@@ -1482,8 +1479,7 @@
           "max": 1.0,
           "min": 1.0
         },
-        "control_mode": "DISCRETE_VOLTAGE",
-        "regulated_bus_number": 0
+        "control_mode": "DISCRETE_VOLTAGE"
       }
     ],
     "ThermalStandard": [
@@ -1934,7 +1930,6 @@
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
-        "regulated_bus_number": 0,
         "tap_ratio_limits": {
           "max": 1.1,
           "min": 0.9
@@ -1962,7 +1957,6 @@
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
-        "regulated_bus_number": 0,
         "tap_ratio_limits": {
           "max": 1.1,
           "min": 0.9
@@ -1990,7 +1984,6 @@
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
-        "regulated_bus_number": 0,
         "tap_ratio_limits": {
           "max": 1.1,
           "min": 0.9
@@ -2018,7 +2011,6 @@
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
-        "regulated_bus_number": 0,
         "tap_ratio_limits": {
           "max": 1.1,
           "min": 0.9
@@ -2046,7 +2038,6 @@
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
-        "regulated_bus_number": 0,
         "tap_ratio_limits": {
           "max": 1.1,
           "min": 0.9
@@ -2074,7 +2065,6 @@
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
-        "regulated_bus_number": 0,
         "tap_ratio_limits": {
           "max": 1.1,
           "min": 0.9
@@ -2102,7 +2092,6 @@
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
-        "regulated_bus_number": 0,
         "tap_ratio_limits": {
           "max": 1.1,
           "min": 0.9
@@ -2130,7 +2119,6 @@
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
-        "regulated_bus_number": 0,
         "tap_ratio_limits": {
           "max": 1.1,
           "min": 0.9
@@ -2158,7 +2146,6 @@
         "r": 0.0,
         "x": 0.0001,
         "control_objective": "FIXED",
-        "regulated_bus_number": 0,
         "tap_ratio_limits": {
           "max": 1.1,
           "min": 0.9
