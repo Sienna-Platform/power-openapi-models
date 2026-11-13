@@ -28,7 +28,7 @@ mod tri_state_serde {
 pub struct WPIDHY {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Input time constant of the governor
+    ///Input time constant of the governor. Units: s.
     #[serde(rename = "T_reg")]
     pub t_reg: f64,
     ///Input governor gain
@@ -42,17 +42,17 @@ pub struct WPIDHY {
     ///Governor derivative gain
     #[serde(rename = "Kd")]
     pub kd: f64,
-    ///Governor derivative/high-frequency time constant
+    ///Governor derivative/high-frequency time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
-    ///Gate-servo time constant
+    ///Gate-servo time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
     #[serde(rename = "V_lim")]
     pub v_lim: MinMax,
     #[serde(rename = "G_lim")]
     pub g_lim: MinMax,
-    ///Water inertia time constant
+    ///Water inertia time constant. Units: s.
     #[serde(rename = "Tw")]
     pub tw: f64,
     #[serde(rename = "P_lim")]
@@ -70,7 +70,7 @@ pub struct WPIDHY {
     #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
     pub p_ref: Option<f64>,
 }
-///Supplemental attribute for a voltage droop controller (PSS/E voltage droop control): a set of generators jointly regulating the reactive power at one bus along a Q–V characteristic. While the controller is available its regulated bus and characteristic override each member's own voltage target; while it is unavailable the members fall back to their own targets. Membership and each member's relative reactive power weight are VoltageControlAssociation rows. The characteristic holds `reactive_power_limits.max` below `voltage_limits.min`, ramps to `deadband_reactive_power` at `deadband_voltage_limits.min`, holds it through `deadband_voltage_limits.max`, ramps to `reactive_power_limits.min` at `voltage_limits.max`, and holds it above.
+///Supplemental attribute for a voltage droop controller (PSS/E voltage droop control): a set of generators jointly regulating the reactive power at one bus along a Q–V characteristic. While the controller is available, its regulated bus and characteristic replace each member's own voltage regulation. While it is unavailable, each member holds the bus it regulates, its `remote_regulated_bus` or the bus it is connected to, at that bus's `voltage_setpoint`. Membership and each member's relative reactive power weight are VoltageControlAssociation rows. The characteristic holds `reactive_power_limits.max` below `voltage_limits.min`, ramps to `deadband_reactive_power` at `deadband_voltage_limits.min`, holds it through `deadband_voltage_limits.max`, ramps to `reactive_power_limits.min` at `voltage_limits.max`, and holds it above.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct VoltageDroopControl {
@@ -78,7 +78,7 @@ pub struct VoltageDroopControl {
     pub id: i64,
     ///Name of the voltage droop controller.
     pub name: String,
-    ///Whether the controller is in service (PSS/E STATUS). While false, members regulate their own targets.
+    ///Whether the controller is in service (PSS/E STATUS). While false, each member holds the bus it regulates at that bus's `voltage_setpoint`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub available: Option<bool>,
     ///ID of the bus whose reactive power the controller regulates; overrides every member's own regulated bus while the controller is available.
@@ -90,6 +90,33 @@ pub struct VoltageDroopControl {
     pub voltage_units: Option<VoltageUnitBasis>,
     pub deadband_voltage_limits: MinMax,
     pub voltage_limits: MinMax,
+}
+///Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints, and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
+pub enum VoltageUnitBasis {
+    #[default]
+    #[serde(rename = "NATURAL_UNITS")]
+    NaturalUnits,
+    #[serde(rename = "COMPONENT_BASE")]
+    ComponentBase,
+}
+impl VoltageUnitBasis {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::NaturalUnits => "NATURAL_UNITS",
+            Self::ComponentBase => "COMPONENT_BASE",
+        }
+    }
+}
+impl ::std::fmt::Display for VoltageUnitBasis {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+impl AsRef<str> for VoltageUnitBasis {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
 }
 ///Links a voltage control group (a VoltageDroopControl or a ReactivePowerSharing attribute) to one member device and records the member's relative reactive power weight. One row per (control, member). `entity_id` names a device that regulates voltage to a setpoint; `terminal` picks the converter for a two-terminal member (a TwoTerminalVSCLine) and is UNDEFINED for every other member. A device, or a two-terminal line's converter, belongs to at most one group of either kind. PSS/E RMPCT imports as weight = RMPCT / 100, so the PSS/E default of 100 is the default weight of 1.0.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -454,13 +481,6 @@ pub struct TwoTerminalVSCLine {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub power_factor_setpoint_from: Option<Option<f64>>,
-    ///AC-side voltage magnitude target of the `from` bus converter, used when `ac_control_from` is `AC_VOLTAGE`; `null` otherwise. Units: kV.
-    #[serde(
-        skip_serializing_if = "Option::is_none",
-        default,
-        deserialize_with = "tri_state_serde::deserialize"
-    )]
-    pub ac_voltage_setpoint_from: Option<Option<f64>>,
     ///Rated AC voltage at the `from` converter's AC terminal; 0.0 means unspecified. Units: kV.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rated_ac_voltage_from: Option<f64>,
@@ -511,13 +531,6 @@ pub struct TwoTerminalVSCLine {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub power_factor_setpoint_to: Option<Option<f64>>,
-    ///AC-side voltage magnitude target of the `to` bus converter, used when `ac_control_to` is `AC_VOLTAGE`; `null` otherwise. Units: kV.
-    #[serde(
-        skip_serializing_if = "Option::is_none",
-        default,
-        deserialize_with = "tri_state_serde::deserialize"
-    )]
-    pub ac_voltage_setpoint_to: Option<Option<f64>>,
     ///Rated AC voltage at the `to` converter's AC terminal; 0.0 means unspecified. Units: kV.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rated_ac_voltage_to: Option<f64>,
@@ -544,20 +557,20 @@ pub struct TwoTerminalVSCLine {
     ///Rated DC voltage of the link; 0.0 means unspecified. Units: kV.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rated_dc_voltage: Option<f64>,
-    ///Number of the AC bus whose voltage the `from` converter regulates when `ac_control_from` is `AC_VOLTAGE`; null regulates its own terminal bus.
+    ///ID of the AC bus whose voltage the `from` converter regulates when `ac_control_from` is `AC_VOLTAGE`, to the `voltage_setpoint` of that bus; null regulates the `from` terminal bus. A value equal to the `from` terminal bus is invalid.
     #[serde(
         skip_serializing_if = "Option::is_none",
         default,
         deserialize_with = "tri_state_serde::deserialize"
     )]
-    pub remote_bus_control_from: Option<Option<i64>>,
-    ///Number of the AC bus whose voltage the `to` converter regulates when `ac_control_to` is `AC_VOLTAGE`; null regulates its own terminal bus.
+    pub remote_regulated_bus_from: Option<Option<i64>>,
+    ///ID of the AC bus whose voltage the `to` converter regulates when `ac_control_to` is `AC_VOLTAGE`, to the `voltage_setpoint` of that bus; null regulates the `to` terminal bus. A value equal to the `to` terminal bus is invalid.
     #[serde(
         skip_serializing_if = "Option::is_none",
         default,
         deserialize_with = "tri_state_serde::deserialize"
     )]
-    pub remote_bus_control_to: Option<Option<i64>>,
+    pub remote_regulated_bus_to: Option<Option<i64>>,
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
@@ -796,9 +809,15 @@ pub struct TransformerCircuit {
     pub x: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub control_objective: Option<TransformerControlObjective>,
-    ///Controlled bus number (PSS/E CONT; sign = regulation side).
+    ///ID of the bus whose voltage this circuit's tap changer regulates (PSS/E CONT), within `controlled_voltage_limits`. It may be an end of `arc` or a remote bus. Used only when `control_objective` is `VOLTAGE` or `VOLTAGE_DISABLED`; null otherwise, or when no regulated bus is stated.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub regulated_bus: Option<Option<i64>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub regulated_bus_number: Option<i64>,
+    pub regulated_bus_orientation: Option<TransformerRegulationOrientation>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tap_ratio_limits: Option<MinMax>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -814,10 +833,10 @@ pub struct TransformerCircuit {
     pub number_of_tap_positions: Option<i64>,
     ///Thermal rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     pub rating: f64,
-    ///Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    ///Short-term thermal rating (Rate B in PSS/E), the flow allowed for a limited time, such as after a contingency. Absent means no short-term rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rating_b: Option<f64>,
-    ///Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    ///Emergency thermal rating (Rate C in PSS/E), the highest flow allowed for a brief period. Absent means no emergency rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rating_c: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -838,6 +857,36 @@ pub struct TransformerCircuit {
     ///Secondary (to) terminal-side base voltage. For a three-winding transformer this defaults to the primary base voltage at parse time. Units: kV.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub base_voltage_secondary: Option<f64>,
+}
+///Which end of a transformer circuit's `arc` the tap adjustment treats the regulated bus as lying on, when the regulated bus is not an end of the arc: a remote bus, or another winding's terminal of a three-winding transformer. It sets the direction the tap moves to raise that bus's voltage (PSS/E sign of CONT). The `from` end is the tapped winding. UNDEFINED: the regulated bus is an end of the arc, so the connections give the direction, or there is no regulated bus. FROM: adjust as if the regulated bus lies on the `from` side (PSS/E negative CONT). TO: adjust as if it lies on the `to` side (PSS/E positive CONT).
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
+pub enum TransformerRegulationOrientation {
+    #[default]
+    #[serde(rename = "UNDEFINED")]
+    Undefined,
+    #[serde(rename = "FROM")]
+    From,
+    #[serde(rename = "TO")]
+    To,
+}
+impl TransformerRegulationOrientation {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Undefined => "UNDEFINED",
+            Self::From => "FROM",
+            Self::To => "TO",
+        }
+    }
+}
+impl ::std::fmt::Display for TransformerRegulationOrientation {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+impl AsRef<str> for TransformerRegulationOrientation {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
 }
 ///Control objective of a transformer tap changer or phase shifter: a fixed tap position with no automatic adjustment (`FIXED`), or regulation of voltage magnitude at the controlled bus, reactive power flow, active power flow, asymmetric active power flow, or a DC line. Each regulating objective has a paired `_DISABLED` value naming the same control block while it is out of service, and `UNDEFINED` means no control objective is stated.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -1856,6 +1905,13 @@ pub struct ThermalStandard {
     pub commitment_mode: Option<CommitmentModes>,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
+    ///ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub remote_regulated_bus: Option<Option<i64>>,
     ///Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
     pub active_power: f64,
     ///Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
@@ -2398,6 +2454,13 @@ pub struct ThermalMultiStart {
     pub commitment_mode: Option<CommitmentModes>,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
+    ///ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub remote_regulated_bus: Option<Option<i64>>,
     ///Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
     pub active_power: f64,
     ///Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
@@ -2975,7 +3038,7 @@ pub struct TGTypeII {
     ///Transient gain time constant
     #[serde(rename = "T1")]
     pub t1: f64,
-    ///Power fraction time constant
+    ///Power fraction time constant. Units: s.
     #[serde(rename = "T2")]
     pub t2: f64,
     pub tau_limits: MinMax,
@@ -2992,19 +3055,19 @@ pub struct TGTypeI {
     ///Droop parameter
     #[serde(rename = "R")]
     pub r: f64,
-    ///Governor time constant
+    ///Governor time constant. Units: s.
     #[serde(rename = "Ts")]
     pub ts: f64,
-    ///Servo time constant
+    ///Servo time constant. Units: s.
     #[serde(rename = "Tc")]
     pub tc: f64,
     ///Transient gain time constant
     #[serde(rename = "T3")]
     pub t3: f64,
-    ///Power fraction time constant
+    ///Power fraction time constant. Units: s.
     #[serde(rename = "T4")]
     pub t4: f64,
-    ///Reheat time constant
+    ///Reheat time constant. Units: s.
     #[serde(rename = "T5")]
     pub t5: f64,
     pub valve_position_limits: MinMax,
@@ -3024,6 +3087,13 @@ pub struct SynchronousCondenser {
     pub available: bool,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
+    ///ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub remote_regulated_bus: Option<Option<i64>>,
     ///Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
     pub reactive_power: f64,
     ///Maximum AC side output power rating of the unit. Not to be confused with base_power. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
@@ -3082,9 +3152,13 @@ pub struct SwitchedAdmittance {
     pub reactive_power_range_limits: Option<MinMax>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub control_mode: Option<SwitchedAdmittanceControlMode>,
-    ///Bus number whose voltage/quantity this shunt regulates; 0 means local bus (PSS/E SWREM/NREG). Units: 1.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub regulated_bus_number: Option<i64>,
+    ///ID of the bus this shunt regulates (PSS/E SWREM in v33, SWREG in v34 and later): under the voltage modes, the bus whose voltage it holds within `voltage_limits`; under the reactive modes, the bus of the device whose reactive quantity it regulates. null means the bus this shunt is connected to. A value equal to `bus` is invalid.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub remote_regulated_bus: Option<Option<i64>>,
     ///ID of the corresponding dynamic injection model for admittance, if any.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -3481,7 +3555,8 @@ pub struct StorageTechnology {
     pub min_discharge_fraction: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prime_mover_type: Option<PrimeMovers>,
-    pub storage_tech: StorageTech,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub storage_tech: Option<StorageTech>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub capital_costs: Option<StorageCapitalCost>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -4002,6 +4077,13 @@ pub struct Source {
     pub available: bool,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
+    ///ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub remote_regulated_bus: Option<Option<i64>>,
     ///Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active_power: Option<f64>,
@@ -4402,6 +4484,9 @@ pub struct SingleTimeSeries {
     pub quantity_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_system: Option<UnitSystem>,
+    ///The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_unit_of: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -4947,7 +5032,7 @@ impl<'de> serde::Deserialize<'de> for ShiftablePowerLoadOperationCost {
         }
     }
 }
-///A series compensator on an `Arc`: a series capacitor or reactor, or a thyristor-controlled or static synchronous series compensator, with one series reactance. Devices that also inject at a bus, such as a UPFC, are not covered.
+///A fixed series compensator on an `Arc` (the CIM `SeriesCompensator`): a series capacitor or reactor, or an AC line without charging susceptance, with constant `r` and `x`. `bypassed` shorts the device into a zero-impedance tie; `available = false` takes it out of service. Controllable series devices are not covered.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct SeriesCompensator {
@@ -4965,17 +5050,13 @@ pub struct SeriesCompensator {
     pub arc: i64,
     ///Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
     pub r: f64,
-    ///Series reactance; negative for a capacitor. Under `DISPATCHABLE` and `ACTIVE_POWER_FLOW`, the present value. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    ///Series reactance; negative for a capacitor. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
     pub x: f64,
     ///Thermal rating. Flow through the compensator must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     pub rating: f64,
+    ///Whether the device is bypassed: shorted into a zero-impedance tie between the `from` and `to` buses. `r` and `x` keep the impedance it has when in service.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub control_mode: Option<SeriesCompensatorControlMode>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub reactance_limits: Option<MinMax>,
-    ///Active power flow, from the `from` bus to the `to` bus, the compensator holds. Required when `control_mode` is `ACTIVE_POWER_FLOW`. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub active_power_flow_setpoint: Option<f64>,
+    pub bypassed: Option<bool>,
     ///Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rating_b: Option<f64>,
@@ -4989,39 +5070,6 @@ pub struct SeriesCompensator {
     pub power_units: UnitSystem,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub parameter_units: Option<ImpedanceUnitBasis>,
-}
-///Control mode of a series compensator. `FIXED` holds the series impedance constant (a series capacitor; PSS/E FACTS MODE 3). `BYPASSED` shorts the compensator into a zero-impedance tie (PSS/E FACTS MODE 2). `DISPATCHABLE` makes the series reactance a decision within `reactance_limits`. `ACTIVE_POWER_FLOW` sets the series reactance to hold `active_power_flow_setpoint`.
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
-pub enum SeriesCompensatorControlMode {
-    #[default]
-    #[serde(rename = "FIXED")]
-    Fixed,
-    #[serde(rename = "BYPASSED")]
-    Bypassed,
-    #[serde(rename = "DISPATCHABLE")]
-    Dispatchable,
-    #[serde(rename = "ACTIVE_POWER_FLOW")]
-    ActivePowerFlow,
-}
-impl SeriesCompensatorControlMode {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::Fixed => "FIXED",
-            Self::Bypassed => "BYPASSED",
-            Self::Dispatchable => "DISPATCHABLE",
-            Self::ActivePowerFlow => "ACTIVE_POWER_FLOW",
-        }
-    }
-}
-impl ::std::fmt::Display for SeriesCompensatorControlMode {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        f.write_str(self.as_str())
-    }
-}
-impl AsRef<str> for SeriesCompensatorControlMode {
-    fn as_ref(&self) -> &str {
-        self.as_str()
-    }
 }
 ///A scenarios forecast: per-scenario, per-window horizon arrays. Adds a scenario axis in front of the deterministic layout.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -5060,6 +5108,9 @@ pub struct Scenarios {
     pub quantity_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_system: Option<UnitSystem>,
+    ///The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_unit_of: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -5124,7 +5175,7 @@ pub struct ST8C {
     ///SW1 Flag for power source selector for ST8C: <2: Source from generator terminal voltage, 2: Independent power source
     #[serde(rename = "SW1_Flag")]
     pub sw1_flag: i64,
-    ///Regulator input filter time constant
+    ///Regulator input filter time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
     ///Regulator proportional gain
@@ -5146,7 +5197,7 @@ pub struct ST8C {
     ///Field current regulator proportional gain
     #[serde(rename = "K_a")]
     pub k_a: f64,
-    ///Controlled rectifier bridge equivalent time constant
+    ///Controlled rectifier bridge equivalent time constant. Units: s.
     #[serde(rename = "T_a")]
     pub t_a: f64,
     #[serde(rename = "Vr_lim")]
@@ -5154,7 +5205,7 @@ pub struct ST8C {
     ///Exciter field current feedback gain
     #[serde(rename = "K_f")]
     pub k_f: f64,
-    ///Field current feedback time constant
+    ///Field current feedback time constant. Units: s.
     #[serde(rename = "T_f")]
     pub t_f: f64,
     ///Rectifier loading factor proportional to commutating reactance
@@ -5199,7 +5250,7 @@ pub struct ST6B {
     ///OEL Flag for ST6B: 1: before HV gate, 2: after HV gate
     #[serde(rename = "OEL_Flag")]
     pub oel_flag: i64,
-    ///Regulator input filter time constant
+    ///Regulator input filter time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
     ///Regulator proportional gain
@@ -5211,7 +5262,7 @@ pub struct ST6B {
     ///Regulator derivative gain
     #[serde(rename = "K_da")]
     pub k_da: f64,
-    ///Voltage regulator derivative channel time constant
+    ///Voltage regulator derivative channel time constant. Units: s.
     #[serde(rename = "T_da")]
     pub t_da: f64,
     #[serde(rename = "Va_lim")]
@@ -5236,7 +5287,7 @@ pub struct ST6B {
     ///Feedback gain constant of the inner loop field regulator
     #[serde(rename = "Kg")]
     pub kg: f64,
-    ///Feedback time constant of the inner loop field voltage regulator
+    ///Feedback time constant of the inner loop field voltage regulator. Units: s.
     #[serde(rename = "Tg")]
     pub tg: f64,
     ///Reference voltage set-point
@@ -5282,7 +5333,7 @@ pub struct SCRX {
     ///Regulator gain
     #[serde(rename = "K")]
     pub k: f64,
-    ///Regulator time constant
+    ///Regulator time constant. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
     #[serde(rename = "Efd_lim")]
@@ -5380,6 +5431,8 @@ pub struct RenewableNonDispatch {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct RenewableEnergyVoltageConverterTypeA {
+    ///Unique integer identifier for this component
+    pub id: i64,
     ///Converter time constant. Units: s.
     #[serde(rename = "T_g")]
     pub t_g: f64,
@@ -5425,6 +5478,8 @@ pub struct RenewableEnergyVoltageConverterTypeA {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct RenewableEnergyConverterTypeA {
+    ///Unique integer identifier for this component
+    pub id: i64,
     ///Converter time constant. Units: s.
     #[serde(rename = "T_g")]
     pub t_g: f64,
@@ -5488,6 +5543,13 @@ pub struct RenewableDispatch {
     pub available: bool,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
+    ///ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub remote_regulated_bus: Option<Option<i64>>,
     ///Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
     pub active_power: f64,
     ///Initial reactive power set point of the unit, used in some production cost modeling simulations. To set the reactive power in a load flow, use `power_factor`. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
@@ -6008,6 +6070,8 @@ impl<'de> serde::Deserialize<'de> for RenewableDispatchOperationCost {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ReactiveRenewableControllerAB {
+    ///Unique integer identifier for this component
+    pub id: i64,
     ///ACBus identification number for voltage control. `0` identifies the local bus connected to this component.
     pub bus_control: i64,
     ///Monitored branch FROM bus identification number for line drop compensation (if 0 generator power will be used).
@@ -6082,38 +6146,40 @@ pub struct ReactiveRenewableControllerAB {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct RECurrentControlB {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Q Flag used for I_qinj
     #[serde(rename = "Q_Flag")]
     pub q_flag: bool,
+    ///PQ Flag used for the Current Limit Logic
     #[serde(rename = "PQ_Flag")]
     pub pq_flag: bool,
     #[serde(rename = "Vdip_lim")]
     pub vdip_lim: MinMax,
+    ///Voltage Filter Time Constant. Units: s.
     #[serde(rename = "T_rv")]
     pub t_rv: f64,
     pub dbd_pnts: DbdPnts,
+    ///Reactive current injection gain during over and undervoltage conditions
     #[serde(rename = "K_qv")]
     pub k_qv: f64,
     #[serde(rename = "Iqinj_lim")]
     pub iqinj_lim: MinMax,
+    ///User defined reference. If 0, it is initialized to the initial terminal voltage
     #[serde(rename = "V_ref0")]
     pub v_ref0: f64,
+    ///Voltage regulator proportional gain (used when QFlag = 1)
     #[serde(rename = "K_vp")]
     pub k_vp: f64,
+    ///Voltage regulator integral gain (used when QFlag = 1)
     #[serde(rename = "K_vi")]
     pub k_vi: f64,
+    ///Time constant for low-pass filter for state q_V when QFlag = 0. Units: s.
     #[serde(rename = "T_iq")]
     pub t_iq: f64,
+    ///Maximum limit on total converter current
     #[serde(rename = "I_max")]
     pub i_max: f64,
-}
-///A pair of deadband thresholds `(dbd1, dbd2)` on a voltage or reactive-power error signal, inside which the controller does not act.
-#[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
-#[serde(deny_unknown_fields)]
-pub struct DbdPnts {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub dbd1: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub dbd2: Option<f64>,
 }
 ///A probabilistic forecast: per-percentile, per-window horizon arrays. Adds a percentile axis in front of the deterministic layout.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -6152,6 +6218,9 @@ pub struct Probabilistic {
     pub quantity_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_system: Option<UnitSystem>,
+    ///The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_unit_of: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -6465,7 +6534,7 @@ pub struct PIDGOV {
     ///Speed permanent droop parameter
     #[serde(rename = "Rperm")]
     pub rperm: f64,
-    ///Speed detector time constant
+    ///Speed detector time constant. Units: s.
     #[serde(rename = "T_reg")]
     pub t_reg: f64,
     ///Governor proportional gain
@@ -6477,10 +6546,10 @@ pub struct PIDGOV {
     ///Governor derivative gain
     #[serde(rename = "Kd")]
     pub kd: f64,
-    ///Governor derivative time constant
+    ///Governor derivative time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
-    ///Gate-servo time constant
+    ///Gate-servo time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
     ///Turbine damping factor
@@ -6497,7 +6566,7 @@ pub struct PIDGOV {
     ///Factor multiplying Tw
     #[serde(rename = "A_tw")]
     pub a_tw: f64,
-    ///Water inertia time constant
+    ///Water inertia time constant. Units: s.
     #[serde(rename = "Tw")]
     pub tw: f64,
     #[serde(rename = "V_lim")]
@@ -6607,6 +6676,9 @@ pub struct NonSequentialTimeSeries {
     pub quantity_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_system: Option<UnitSystem>,
+    ///The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_unit_of: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
     ///The field on the owning component or supplemental attribute whose value these values are the time-varying form of (e.g. max_active_power, rating). Free-form: it names a field in the consumer's own object model. Records what the values are for, where `name` only says which series they are.
@@ -6832,10 +6904,10 @@ pub struct Line {
     pub b: Option<FromTo>,
     ///Thermal rating. Flow on the line must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     pub rating: f64,
-    ///Second current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    ///Short-term thermal rating (Rate B in PSS/E), the flow allowed for a limited time, such as after a contingency. Absent means no short-term rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rating_b: Option<f64>,
-    ///Third current rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    ///Emergency thermal rating (Rate C in PSS/E), the highest flow allowed for a brief period. Absent means no emergency rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rating_c: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -6843,6 +6915,33 @@ pub struct Line {
     pub angle_limits: MinMax,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub g: Option<FromTo>,
+}
+///Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
+pub enum ImpedanceUnitBasis {
+    #[default]
+    #[serde(rename = "NATURAL_UNITS")]
+    NaturalUnits,
+    #[serde(rename = "COMPONENT_BASE")]
+    ComponentBase,
+}
+impl ImpedanceUnitBasis {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::NaturalUnits => "NATURAL_UNITS",
+            Self::ComponentBase => "COMPONENT_BASE",
+        }
+    }
+}
+impl ::std::fmt::Display for ImpedanceUnitBasis {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+impl AsRef<str> for ImpedanceUnitBasis {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
 }
 ///A pair of values, one at the `from` end and one at the `to` end of a directed edge.
 #[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
@@ -7922,7 +8021,7 @@ impl<'de> serde::Deserialize<'de> for InterruptiblePowerLoadOperationCost {
         }
     }
 }
-///Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus. Voltage and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them. `rated_dc_voltage` and `rated_ac_voltage` record the voltage bases, so a consumer can convert the voltage fields to per unit.
+///Interconnecting Power Converter (IPC) for transforming power from an ACBus to a DCBus. Voltage and voltage-droop fields are natural units only: there is no conventional DC base voltage from which to per-unitize them. `rated_dc_voltage` records the DC voltage base, so a consumer can convert the DC voltage fields to per unit.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct InterconnectingConverter {
@@ -7983,26 +8082,19 @@ pub struct InterconnectingConverter {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub power_factor_setpoint: Option<Option<f64>>,
-    ///AC-side voltage magnitude target of the converter, used when `ac_control` is `AC_VOLTAGE`; `null` otherwise. Units: kV.
-    #[serde(
-        skip_serializing_if = "Option::is_none",
-        default,
-        deserialize_with = "tri_state_serde::deserialize"
-    )]
-    pub ac_voltage_setpoint: Option<Option<f64>>,
-    ///Rated AC voltage at the converter's AC terminal, the base for `ac_voltage_setpoint`; 0.0 means unspecified. Units: kV.
+    ///Rated AC voltage at the converter's AC terminal; 0.0 means unspecified. Units: kV.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rated_ac_voltage: Option<f64>,
     ///DC-voltage droop gain on the converter, used when `dc_control` is `DC_VOLTAGE_DROOP`: `V_dc = dc_voltage_setpoint - dc_voltage_droop * P_c`, with `V_dc` in kV and `P_c` in MW regardless of `power_units`. A value of 0.0 disables droop. Units: kV/MW.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dc_voltage_droop: Option<f64>,
-    ///Number of the AC bus whose voltage the converter regulates when `ac_control` is `AC_VOLTAGE`; null regulates its own terminal bus.
+    ///ID of the AC bus whose voltage the converter regulates when `ac_control` is `AC_VOLTAGE`, to the `voltage_setpoint` of that bus; null regulates the converter's own AC bus. A value equal to `bus` is invalid.
     #[serde(
         skip_serializing_if = "Option::is_none",
         default,
         deserialize_with = "tri_state_serde::deserialize"
     )]
-    pub remote_bus_control: Option<Option<i64>>,
+    pub remote_regulated_bus: Option<Option<i64>>,
     ///Power weighting factor fraction used in reducing the active power order and either the reactive power order when the converter rating is violated. When is 0.0, only the active power is reduced; when is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. Units: 1.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub power_factor_weighting_fraction: Option<f64>,
@@ -8046,7 +8138,7 @@ impl AsRef<str> for VSCDCControlModes {
         self.as_str()
     }
 }
-///AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter controls the AC-side voltage magnitude.
+///AC-side control mode of a voltage-source-converter (VSC) terminal. AC_REACTIVE_POWER: converter controls reactive power / fixed power factor. AC_VOLTAGE: converter holds the voltage magnitude of its regulated AC bus at the `voltage_setpoint` of that bus.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum VSCACControlModes {
     #[default]
@@ -8190,14 +8282,14 @@ pub struct IEEETurbineGov1 {
     pub id: i64,
     ///Governor gain
     #[serde(rename = "K")]
-    pub k: i64,
+    pub k: f64,
     ///Input filter lag
     #[serde(rename = "T1")]
-    pub t1: i64,
+    pub t1: f64,
     ///Input filter lead
     #[serde(rename = "T2")]
     pub t2: f64,
-    ///Valve position time constant
+    ///Valve position time constant. Units: s.
     #[serde(rename = "T3")]
     pub t3: f64,
     ///Maximum valve opening rate
@@ -8207,7 +8299,7 @@ pub struct IEEETurbineGov1 {
     #[serde(rename = "U_c")]
     pub u_c: f64,
     pub valve_position_limits: MinMax,
-    ///Time constant inlet steam
+    ///Time constant inlet steam. Units: s.
     #[serde(rename = "T4")]
     pub t4: f64,
     ///Fraction of high pressure shaft power
@@ -8216,7 +8308,7 @@ pub struct IEEETurbineGov1 {
     ///Fraction of low pressure shaft power
     #[serde(rename = "K2")]
     pub k2: f64,
-    ///Time constant for second boiler pass
+    ///Time constant for second boiler pass. Units: s.
     #[serde(rename = "T5")]
     pub t5: f64,
     ///Fraction of high pressure shaft power second boiler pass
@@ -8225,7 +8317,7 @@ pub struct IEEETurbineGov1 {
     ///Fraction of low pressure shaft power second boiler pass
     #[serde(rename = "K4")]
     pub k4: f64,
-    ///Time constant for third boiler pass
+    ///Time constant for third boiler pass. Units: s.
     #[serde(rename = "T6")]
     pub t6: f64,
     ///Fraction of high pressure shaft power third boiler pass
@@ -8234,7 +8326,7 @@ pub struct IEEETurbineGov1 {
     ///Fraction of low pressure shaft power third boiler pass
     #[serde(rename = "K6")]
     pub k6: f64,
-    ///Time constant for fourth boiler pass
+    ///Time constant for fourth boiler pass. Units: s.
     #[serde(rename = "T7")]
     pub t7: f64,
     ///Fraction of high pressure shaft power fourth boiler pass
@@ -8253,13 +8345,13 @@ pub struct IEEETurbineGov1 {
 pub struct IEEET1 {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Voltage measurement time constant
+    ///Voltage measurement time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
     ///Amplifier gain
     #[serde(rename = "Ka")]
     pub ka: f64,
-    ///Amplifier time constant
+    ///Amplifier time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
     #[serde(rename = "Vr_lim")]
@@ -8267,13 +8359,13 @@ pub struct IEEET1 {
     ///Exciter constant related to self-excited field
     #[serde(rename = "Ke")]
     pub ke: f64,
-    ///Exciter time constant, integration rate associated with exciter control
+    ///Exciter time constant, integration rate associated with exciter control. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
     ///Excitation control system stabilizer gain
     #[serde(rename = "Kf")]
     pub kf: f64,
-    ///Excitation control system stabilizer time constant
+    ///Excitation control system stabilizer time constant. Units: s.
     #[serde(rename = "Tf")]
     pub tf: f64,
     ///Switch
@@ -8296,26 +8388,26 @@ pub struct IEEET1 {
 pub struct HydroTurbineGov {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Permanent droop parameter
-    #[serde(rename = "R")]
-    pub r: f64,
-    ///Temporary droop
-    #[serde(rename = "r")]
-    pub r_2: f64,
-    ///Governor time constant
+    ///Permanent droop, in pu.
+    #[serde(rename = "R_BIG")]
+    pub r_big: f64,
+    ///Temporary droop, in pu.
+    #[serde(rename = "R_SMALL")]
+    pub r_small: f64,
+    ///Governor time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
-    ///Filter time constant
+    ///Filter time constant. Units: s.
     #[serde(rename = "Tf")]
     pub tf: f64,
-    ///Servo time constant
+    ///Servo time constant. Units: s.
     #[serde(rename = "Tg")]
     pub tg: f64,
     ///Gate velocity limit
     #[serde(rename = "VELM")]
     pub velm: f64,
     pub gate_position_limits: MinMax,
-    ///Water time constant
+    ///Water time constant. Units: s.
     #[serde(rename = "Tw")]
     pub tw: f64,
     ///Turbine gain
@@ -8342,6 +8434,13 @@ pub struct HydroTurbine {
     pub available: bool,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
+    ///ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub remote_regulated_bus: Option<Option<i64>>,
     ///Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
     pub active_power: f64,
     ///Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
@@ -9156,7 +9255,7 @@ pub struct HydroReservoir {
     pub inflow: f64,
     ///Units: per level_data_type — USABLE_VOLUME: m3/s, TOTAL_VOLUME: m3/s, HEAD: m/s, ENERGY: MW .
     pub outflow: f64,
-    ///in psy5 a required param with an option to be nothing Units: per level_data_type — USABLE_VOLUME: m3, TOTAL_VOLUME: m3, HEAD: m, ENERGY: MWh .
+    ///in psy5 a required param with an option to be nothing. Units: per level_data_type — USABLE_VOLUME: m3, TOTAL_VOLUME: m3, HEAD: m, ENERGY: MWh .
     #[serde(skip_serializing_if = "Option::is_none")]
     pub level_targets: Option<f64>,
     ///Units: m.
@@ -9578,6 +9677,13 @@ pub struct HydroPumpTurbine {
     pub available: bool,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
+    ///ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub remote_regulated_bus: Option<Option<i64>>,
     ///Initial active power set point of the turbine unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
     pub active_power: f64,
     ///Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
@@ -10215,6 +10321,13 @@ pub struct HydroDispatch {
     pub available: bool,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
+    ///ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub remote_regulated_bus: Option<Option<i64>>,
     ///Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
     pub active_power: f64,
     ///Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
@@ -10748,6 +10861,13 @@ pub struct HybridSystem {
     pub status: OperationalStates,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
+    ///ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub remote_regulated_bus: Option<Option<i64>>,
     ///Initial active power set point of the unit. For power flow, this is the steady state operating point of the system. For production cost modeling, this may or may not be used as the initial starting point for the solver, depending on the solver used. Units: per power_units — NATURAL_UNITS: MW, COMPONENT_BASE: pu .
     pub active_power: f64,
     ///Initial reactive power set point of the unit. Units: per power_units — NATURAL_UNITS: MVAr, COMPONENT_BASE: pu .
@@ -11369,6 +11489,167 @@ impl AsRef<str> for HydroGenerationCostCostType {
         self.as_str()
     }
 }
+///Parameters of a Generic Distributed Energy Resource Model. Based on "Modeling Framework and Coordination of DER and Flexible Loads for Ancillary Service Provision." It has no bus of its own: exactly one static injection device, with the same name, names it in its `dynamic_injector` property, and that device supplies the rest of its data.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct GenericDER {
+    ///Unique integer identifier for this component.
+    pub id: i64,
+    ///Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.
+    pub name: String,
+    ///Reactive Power Control Mode. 1 VoltVar Control, 2 Constant Q Control, 3 Constant PF Control
+    ///Constraint: minimum=1, maximum=3
+    #[serde(rename = "Qref_Flag")]
+    pub qref_flag: i64,
+    ///Active and reactive power priority mode. 0 for Q priority, 1 for P priority
+    #[serde(rename = "PQ_Flag")]
+    pub pq_flag: bool,
+    ///Define generator or storage system. 0 unit is a storage device, 1 unit is a generator
+    #[serde(rename = "Gen_Flag")]
+    pub gen_flag: bool,
+    ///Defines operation of permisible region in VRT characteristic. 0 for cease, 1 for continuous operation
+    #[serde(rename = "PerOp_Flag")]
+    pub per_op_flag: bool,
+    ///Defines if DER can reconnect after voltage ride-through disconnection
+    #[serde(rename = "Recon_Flag")]
+    pub recon_flag: bool,
+    ///Voltage measurement transducer's time constant, in s. Units: s.
+    #[serde(rename = "Trv")]
+    pub trv: f64,
+    #[serde(rename = "VV_pnts")]
+    pub vv_pnts: VoltVarPnts,
+    #[serde(rename = "Q_lim")]
+    pub q_lim: MinMax,
+    ///Power measurement transducer's time constant, in s. Units: s.
+    #[serde(rename = "Tp")]
+    pub tp: f64,
+    pub e_lim: MinMax,
+    ///PI controller proportional gain for q control
+    #[serde(rename = "Kpq")]
+    pub kpq: f64,
+    ///PI controller integral gain for q control
+    #[serde(rename = "Kiq")]
+    pub kiq: f64,
+    #[serde(rename = "Iqr_lim")]
+    pub iqr_lim: MinMax,
+    ///Max. inverter's current
+    #[serde(rename = "I_max")]
+    pub i_max: f64,
+    ///Current control's time constant, in s. Units: s.
+    #[serde(rename = "Tg")]
+    pub tg: f64,
+    ///BESS capacity in kWh
+    #[serde(rename = "kWh_Cap")]
+    pub k_wh_cap: f64,
+    ///Initial state of charge (SOC) in pu
+    #[serde(rename = "SOC_ini")]
+    pub soc_ini: f64,
+    #[serde(rename = "SOC_lim")]
+    pub soc_lim: MinMax,
+    ///Time constant to estimate system frequency, in s. Units: s.
+    #[serde(rename = "Trf")]
+    pub trf: f64,
+    pub fdbd_pnts: FdbdPnts,
+    ///reciprocal of droop for over-frequency conditions, in pu
+    #[serde(rename = "D_dn")]
+    pub d_dn: f64,
+    ///reciprocal of droop for under-frequency conditions, in pu
+    #[serde(rename = "D_up")]
+    pub d_up: f64,
+    pub fe_lim: MinMax,
+    ///PI controller proportional gain for p control
+    #[serde(rename = "Kpp")]
+    pub kpp: f64,
+    ///PI controller integral gain for p control
+    #[serde(rename = "Kip")]
+    pub kip: f64,
+    #[serde(rename = "P_lim")]
+    pub p_lim: MinMax,
+    #[serde(rename = "dP_lim")]
+    pub d_p_lim: MinMax,
+    ///Power filter time constant in s. Units: s.
+    #[serde(rename = "T_pord")]
+    pub t_pord: f64,
+    ///Ramp rate for real power increase following a fault, in pu/s
+    pub rrpwr: f64,
+    #[serde(rename = "VRT_pnts")]
+    pub vrt_pnts: VoltageRideThroughPnts,
+    #[serde(rename = "TVRT_pnts")]
+    pub tvrt_pnts: VoltageRideThroughTimePnts,
+    ///Time delay for reconnection after voltage ride-through disconnection. Units: s.
+    #[serde(rename = "tV_delay")]
+    pub t_v_delay: f64,
+    #[serde(rename = "VES_lim")]
+    pub ves_lim: MinMax,
+    #[serde(rename = "FRT_pnts")]
+    pub frt_pnts: FrequencyRideThroughPnts,
+    #[serde(rename = "TFRT_pnts")]
+    pub tfrt_pnts: FrequencyRideThroughTimePnts,
+    ///Time delay for reconnection after frequency ride-through disconnection. Units: s.
+    #[serde(rename = "tF_delay")]
+    pub t_f_delay: f64,
+    #[serde(rename = "FES_lim")]
+    pub fes_lim: MinMax,
+    ///Reference power factor
+    #[serde(rename = "Pfa_ref", skip_serializing_if = "Option::is_none")]
+    pub pfa_ref: Option<f64>,
+    ///Reference reactive power, in pu. Units: pu.
+    #[serde(rename = "Q_ref", skip_serializing_if = "Option::is_none")]
+    pub q_ref: Option<f64>,
+    ///Reference active power, in pu. Units: pu.
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
+    ///Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.
+    ///Constraint: exclusiveMinimum=0
+    pub base_power: f64,
+}
+///The three time points `(tvrt1, tvrt2, tvrt3)` of a voltage ride-through characteristic.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct VoltageRideThroughTimePnts {
+    pub tvrt1: f64,
+    pub tvrt2: f64,
+    pub tvrt3: f64,
+}
+///The five voltage points `(vrt1, ..., vrt5)` of a voltage ride-through characteristic.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct VoltageRideThroughPnts {
+    pub vrt1: f64,
+    pub vrt2: f64,
+    pub vrt3: f64,
+    pub vrt4: f64,
+    pub vrt5: f64,
+}
+///The four voltage points `(V1, V2, V3, V4)` of a volt-var curve.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct VoltVarPnts {
+    #[serde(rename = "V1")]
+    pub v1: f64,
+    #[serde(rename = "V2")]
+    pub v2: f64,
+    #[serde(rename = "V3")]
+    pub v3: f64,
+    #[serde(rename = "V4")]
+    pub v4: f64,
+}
+///The two time points `(tfrt1, tfrt2)` of a frequency ride-through characteristic.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct FrequencyRideThroughTimePnts {
+    pub tfrt1: f64,
+    pub tfrt2: f64,
+}
+///The four frequency points `(frt1, ..., frt4)` of a frequency ride-through characteristic.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct FrequencyRideThroughPnts {
+    pub frt1: f64,
+    pub frt2: f64,
+    pub frt3: f64,
+    pub frt4: f64,
+}
 ///A generic branch defined by a series impedance on an `Arc` between two buses.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -11390,39 +11671,10 @@ pub struct GenericArcImpedance {
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub parameter_units: Option<ImpedanceUnitBasis>,
-    ///Resistance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    ///Resistance. Per-unit on `base_power`, which records the system base. Units: pu.
     pub r: f64,
-    ///Reactance. Units: per parameter_units — NATURAL_UNITS: ohm, COMPONENT_BASE: pu .
+    ///Reactance. Per-unit on `base_power`, which records the system base. Units: pu.
     pub x: f64,
-}
-///Unit basis a branch/injection impedance is stored in. NATURAL_UNITS: physical ohms (PSS/E RAW native for DC-line impedances). COMPONENT_BASE: per-unit on the component's own base (base_power MVA and voltage base); components whose per-unit data was historically on the system base record that system base in base_power, so there is no separate system-base option. PSS/E supplies device base for DC-line converters and CZ=2 transformer windings. A branch's shunt admittance halves (b, g) share the branch's one basis: NATURAL_UNITS stores them in siemens.
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
-pub enum ImpedanceUnitBasis {
-    #[default]
-    #[serde(rename = "NATURAL_UNITS")]
-    NaturalUnits,
-    #[serde(rename = "COMPONENT_BASE")]
-    ComponentBase,
-}
-impl ImpedanceUnitBasis {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::NaturalUnits => "NATURAL_UNITS",
-            Self::ComponentBase => "COMPONENT_BASE",
-        }
-    }
-}
-impl ::std::fmt::Display for ImpedanceUnitBasis {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        f.write_str(self.as_str())
-    }
-}
-impl AsRef<str> for ImpedanceUnitBasis {
-    fn as_ref(&self) -> &str {
-        self.as_str()
-    }
 }
 ///GE General Governor/Turbine Model. The GeneralGovModel (GGOV1) model is a general purpose governor model used for a variety of prime movers controlled by proportional-integral-derivative (PID) governors including gas turbines
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -11438,7 +11690,7 @@ pub struct GeneralGovModel {
     ///Speed droop parameter
     #[serde(rename = "R", skip_serializing_if = "Option::is_none")]
     pub r: Option<f64>,
-    ///Electrical power transducer time constant
+    ///Electrical power transducer time constant. Units: s.
     #[serde(rename = "Tpelec")]
     pub tpelec: f64,
     pub speed_error_signal: MinMax,
@@ -11451,11 +11703,11 @@ pub struct GeneralGovModel {
     ///Governor derivative gain
     #[serde(rename = "Kd_gov")]
     pub kd_gov: f64,
-    ///Governor derivative time constant
+    ///Governor derivative time constant. Units: s.
     #[serde(rename = "Td_gov")]
     pub td_gov: f64,
     pub valve_position_limits: MinMax,
-    ///Actuator time constant
+    ///Actuator time constant. Units: s.
     #[serde(rename = "T_act")]
     pub t_act: f64,
     ///Turbine gain
@@ -11464,16 +11716,16 @@ pub struct GeneralGovModel {
     ///No load fuel flow
     #[serde(rename = "Wf_nl")]
     pub wf_nl: f64,
-    ///Turbine lag time constant
+    ///Turbine lag time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
-    ///Turbine lead time constant
+    ///Turbine lead time constant. Units: s.
     #[serde(rename = "Tc")]
     pub tc: f64,
-    ///Transport lag time constant for diesel engine
+    ///Transport lag time constant for diesel engine. Units: s.
     #[serde(rename = "T_eng")]
     pub t_eng: f64,
-    ///Load limiter time constant
+    ///Load limiter time constant. Units: s.
     #[serde(rename = "Tf_load")]
     pub tf_load: f64,
     ///Load limiter proportional gain for PI controller
@@ -11503,7 +11755,7 @@ pub struct GeneralGovModel {
     ///Acceleration limiter gain
     #[serde(rename = "Ka")]
     pub ka: f64,
-    ///Acceleration limiter time constant
+    ///Acceleration limiter time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
     ///Turbine rating
@@ -11511,10 +11763,10 @@ pub struct GeneralGovModel {
     pub t_rate: f64,
     ///Speed governor deadband
     pub db: f64,
-    ///Temperature detection lead time constant
+    ///Temperature detection lead time constant. Units: s.
     #[serde(rename = "Tsa")]
     pub tsa: f64,
-    ///Temperature detection lag time constant
+    ///Temperature detection lag time constant. Units: s.
     #[serde(rename = "Tsb")]
     pub tsb: f64,
     #[serde(rename = "R_lim")]
@@ -11599,14 +11851,10 @@ pub struct FACTSControlDevice {
     pub id: i64,
     ///Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.
     pub available: bool,
-    ///Sending end bus number.
+    ///ID of the sending end bus.
     pub bus: i64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub control_mode: Option<FACTSControlDeviceControlMode>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub voltage_setpoint_units: Option<VoltageUnitBasis>,
-    ///Voltage setpoint at the sending end bus in kV, it has to be a `PV` bus. Units: kV. Units: per voltage_setpoint_units — NATURAL_UNITS: kV, COMPONENT_BASE: pu .
-    pub voltage_setpoint: f64,
     ///Maximum shunt current at the sending end bus; entered at unity voltage. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     pub max_shunt_current: f64,
     ///Total reactive power required to hold voltage at sending bus, as a fraction in the range 0-1. Units: 1.
@@ -11617,9 +11865,13 @@ pub struct FACTSControlDevice {
     ///Device class selecting the reactive-limit law (SVC vs STATCOM).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub shunt_control_type: Option<FACTSControlDeviceShuntControlType>,
-    ///Bus whose voltage this device regulates; 0 means local (sending) bus (PSS/E FCREG). Units: 1.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub regulated_bus_number: Option<i64>,
+    ///ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus (PSS/E FCREG); null regulates the sending end bus. A value equal to `bus` is invalid.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub remote_regulated_bus: Option<Option<i64>>,
     ///System base power for per-unitization of this component's per-unit fields, recorded per component in lieu of a system-level table. Units: MVA.
     pub base_power: f64,
     pub power_units: UnitSystem,
@@ -11630,33 +11882,6 @@ pub struct FACTSControlDevice {
         deserialize_with = "tri_state_serde::deserialize"
     )]
     pub dynamic_injector: Option<Option<i64>>,
-}
-///Unit basis a voltage setpoint is stored in. NATURAL_UNITS: kilovolts. COMPONENT_BASE: per-unit on the component's own base voltage (the connected bus's base voltage for AC setpoints — PSS/E RAW native for FACTS VSET — and the device voltage base PSS/E supplies for DC-line converters and CZ=2 transformer windings). There is no separate system-base option: bus-base per-unit is the device base for voltage.
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
-pub enum VoltageUnitBasis {
-    #[default]
-    #[serde(rename = "NATURAL_UNITS")]
-    NaturalUnits,
-    #[serde(rename = "COMPONENT_BASE")]
-    ComponentBase,
-}
-impl VoltageUnitBasis {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::NaturalUnits => "NATURAL_UNITS",
-            Self::ComponentBase => "COMPONENT_BASE",
-        }
-    }
-}
-impl ::std::fmt::Display for VoltageUnitBasis {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        f.write_str(self.as_str())
-    }
-}
-impl AsRef<str> for VoltageUnitBasis {
-    fn as_ref(&self) -> &str {
-        self.as_str()
-    }
 }
 ///Device class selecting the reactive-limit law (SVC vs STATCOM).
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -11798,6 +12023,13 @@ pub struct EnergyReservoirStorage {
     pub available: bool,
     ///ID of the bus that this component is connected to.
     pub bus: i64,
+    ///ID of the bus whose voltage this device regulates, to the `voltage_setpoint` of that bus, while the device regulates voltage; null regulates the bus this device is connected to. A value equal to `bus` is invalid.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub remote_regulated_bus: Option<Option<i64>>,
     pub prime_mover_type: PrimeMovers,
     pub storage_technology_type: StorageTech,
     ///Maximum storage capacity (can be in units of, e.g., MWh for batteries or liters for hydrogen). Divided by base_power this gives an approximate duration, assuming unity power factor: in hours under MWH, in minutes under MWMIN. Units: per energy_units — MWH: MWh, MWMIN: MWmin .
@@ -12952,21 +13184,21 @@ impl AsRef<str> for EmissionBasis {
 pub struct EXST1 {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Voltage measurement time constant
+    ///Voltage measurement time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
     #[serde(rename = "Vi_lim")]
     pub vi_lim: MinMax,
-    ///Numerator lead-lag (lead) time constant
+    ///Numerator lead-lag (lead) time constant. Units: s.
     #[serde(rename = "Tc")]
     pub tc: f64,
-    ///Denominator lead-lag (lag) time constant
+    ///Denominator lead-lag (lag) time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
     ///Amplifier gain
     #[serde(rename = "Ka")]
     pub ka: f64,
-    ///Amplifier time constant
+    ///Amplifier time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
     #[serde(rename = "Vr_lim")]
@@ -12977,7 +13209,7 @@ pub struct EXST1 {
     ///Excitation control system stabilizer gain
     #[serde(rename = "Kf")]
     pub kf: f64,
-    ///Excitation control system stabilizer time constant
+    ///Excitation control system stabilizer time constant. Units: s.
     #[serde(rename = "Tf")]
     pub tf: f64,
     ///Reference voltage set-point
@@ -12990,24 +13222,24 @@ pub struct EXST1 {
 pub struct EXPIC1 {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Regulator input filter time constant
+    ///Regulator input filter time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
     ///Voltage regulator gain
     #[serde(rename = "Ka")]
     pub ka: f64,
-    ///Voltage regulator time constant
+    ///Voltage regulator time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
     #[serde(rename = "Va_lim")]
     pub va_lim: MinMax,
-    ///Voltage regulator time constant
+    ///Voltage regulator time constant. Units: s.
     #[serde(rename = "Ta_2")]
     pub ta_2: f64,
-    ///Voltage regulator time constant
+    ///Voltage regulator time constant. Units: s.
     #[serde(rename = "Ta_3")]
     pub ta_3: f64,
-    ///Voltage regulator time constant
+    ///Voltage regulator time constant. Units: s.
     #[serde(rename = "Ta_4")]
     pub ta_4: f64,
     #[serde(rename = "Vr_lim")]
@@ -13015,10 +13247,10 @@ pub struct EXPIC1 {
     ///Rate feedback excitation system stabilizer gain
     #[serde(rename = "Kf")]
     pub kf: f64,
-    ///Rate feedback time constant
+    ///Rate feedback time constant. Units: s.
     #[serde(rename = "Tf_1")]
     pub tf_1: f64,
-    ///Rate feedback time constant
+    ///Rate feedback time constant. Units: s.
     #[serde(rename = "Tf_2")]
     pub tf_2: f64,
     #[serde(rename = "Efd_lim")]
@@ -13026,7 +13258,7 @@ pub struct EXPIC1 {
     ///Exciter constant
     #[serde(rename = "Ke")]
     pub ke: f64,
-    ///Exciter time constant
+    ///Exciter time constant. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
     ///Exciter output voltage for saturation factor
@@ -13056,19 +13288,19 @@ pub struct EXPIC1 {
 pub struct EXAC2 {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Regulator input filter time constant
+    ///Regulator input filter time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
-    ///Regulator denominator (lag) time constant
+    ///Regulator denominator (lag) time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
-    ///Regulator numerator (lead) time constant
+    ///Regulator numerator (lead) time constant. Units: s.
     #[serde(rename = "Tc")]
     pub tc: f64,
     ///Regulator output gain
     #[serde(rename = "Ka")]
     pub ka: f64,
-    ///Regulator output time constant
+    ///Regulator output time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
     #[serde(rename = "Va_lim")]
@@ -13078,7 +13310,7 @@ pub struct EXAC2 {
     pub kb: f64,
     #[serde(rename = "Vr_lim")]
     pub vr_lim: MinMax,
-    ///Exciter field time constant
+    ///Exciter field time constant. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
     ///Exciter field current limiter gain
@@ -13090,7 +13322,7 @@ pub struct EXAC2 {
     ///Rate feedback excitation system stabilizer gain
     #[serde(rename = "Kf")]
     pub kf: f64,
-    ///Rate feedback time constant
+    ///Rate feedback time constant. Units: s.
     #[serde(rename = "Tf")]
     pub tf: f64,
     ///Rectifier loading factor proportional to commutating reactance
@@ -13123,30 +13355,30 @@ pub struct EXAC2 {
 pub struct EXAC1A {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Regulator input filter time constant
+    ///Regulator input filter time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
-    ///Regulator denominator (lag) time constant
+    ///Regulator denominator (lag) time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
-    ///Regulator numerator (lead) time constant
+    ///Regulator numerator (lead) time constant. Units: s.
     #[serde(rename = "Tc")]
     pub tc: f64,
     ///Regulator output gain
     #[serde(rename = "Ka")]
     pub ka: f64,
-    ///Regulator output time constant
+    ///Regulator output time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
     #[serde(rename = "Va_lim")]
     pub va_lim: MinMax,
-    ///Exciter field time constant
+    ///Exciter field time constant. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
     ///Rate feedback excitation system stabilizer gain
     #[serde(rename = "Kf")]
     pub kf: f64,
-    ///Rate feedback time constant
+    ///Rate feedback time constant. Units: s.
     #[serde(rename = "Tf")]
     pub tf: f64,
     ///Rectifier loading factor proportional to commutating reactance
@@ -13178,30 +13410,30 @@ pub struct EXAC1A {
 pub struct EXAC1 {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Regulator input filter time constant
+    ///Regulator input filter time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
-    ///Regulator denominator (lag) time constant
+    ///Regulator denominator (lag) time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
-    ///Regulator numerator (lead) time constant
+    ///Regulator numerator (lead) time constant. Units: s.
     #[serde(rename = "Tc")]
     pub tc: f64,
     ///Regulator output gain
     #[serde(rename = "Ka")]
     pub ka: f64,
-    ///Regulator output time constant
+    ///Regulator output time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
     #[serde(rename = "Vr_lim")]
     pub vr_lim: MinMax,
-    ///Exciter field time constant
+    ///Exciter field time constant. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
     ///Rate feedback excitation system stabilizer gain
     #[serde(rename = "Kf")]
     pub kf: f64,
-    ///Rate feedback time constant
+    ///Rate feedback time constant. Units: s.
     #[serde(rename = "Tf")]
     pub tf: f64,
     ///Rectifier loading factor proportional to commutating reactance
@@ -13241,7 +13473,7 @@ pub struct EX4VSA {
     ///OEL parameter Spar
     #[serde(rename = "Spar")]
     pub spar: f64,
-    ///OEL delay time constant
+    ///OEL delay time constant. Units: s.
     #[serde(rename = "K1")]
     pub k1: f64,
     ///OEL parameter K2
@@ -13252,13 +13484,13 @@ pub struct EX4VSA {
     ///AVR exciter gain
     #[serde(rename = "G")]
     pub g: f64,
-    ///Numerator lead-lag (lead) time constant
+    ///Numerator lead-lag (lead) time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
-    ///Denominator lead-lag (lag) time constant
+    ///Denominator lead-lag (lag) time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
-    ///Exciter time constant
+    ///Exciter time constant. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
     #[serde(rename = "E_lim")]
@@ -13271,7 +13503,7 @@ pub struct EX4VSA {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ESST4B {
-    ///Regulator input filter time constant
+    ///Regulator input filter time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
     ///Unique integer identifier for this component
@@ -13284,7 +13516,7 @@ pub struct ESST4B {
     pub k_ir: f64,
     #[serde(rename = "Vr_lim")]
     pub vr_lim: MinMax,
-    ///Voltage regulator time constant
+    ///Voltage regulator time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
     ///Voltage regulator proportional gain output
@@ -13331,29 +13563,29 @@ pub struct ESST1A {
     ///Code input for Power System Stabilizer (PSS) or (VOS) entry
     #[serde(rename = "PSS_flags")]
     pub pss_flags: i64,
-    ///Regulator input filter time constant
+    ///Regulator input filter time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
     ///Voltage error limits (regulator input)
     ///Constraint: minItems=2, maxItems=2
     #[serde(rename = "Vi_lim")]
     pub vi_lim: Vec<f64>,
-    ///First regulator numerator (lead) time constant
+    ///First regulator numerator (lead) time constant. Units: s.
     #[serde(rename = "Tc")]
     pub tc: f64,
-    ///First regulator denominator (lag) time constant
+    ///First regulator denominator (lag) time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
-    ///Second regulator numerator (lead) time constant
+    ///Second regulator numerator (lead) time constant. Units: s.
     #[serde(rename = "Tc1")]
     pub tc1: f64,
-    ///Second regulator denominator (lag) time constant
+    ///Second regulator denominator (lag) time constant. Units: s.
     #[serde(rename = "Tb1")]
     pub tb1: f64,
     ///Voltage regulator gain
     #[serde(rename = "Ka")]
     pub ka: f64,
-    ///Voltage regulator time constant
+    ///Voltage regulator time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
     #[serde(rename = "Va_lim")]
@@ -13366,7 +13598,7 @@ pub struct ESST1A {
     ///Rate feedback gain
     #[serde(rename = "Kf")]
     pub kf: f64,
-    ///Rate feedback time constant
+    ///Rate feedback time constant. Units: s.
     #[serde(rename = "Tf")]
     pub tf: f64,
     ///Exciter output current limiter gain
@@ -13385,19 +13617,19 @@ pub struct ESST1A {
 pub struct ESDC2A {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Voltage measurement time constant
+    ///Voltage measurement time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
     ///Amplifier gain
     #[serde(rename = "Ka")]
     pub ka: f64,
-    ///Amplifier time constant
+    ///Amplifier time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
-    ///Regulator input time constant
+    ///Regulator input time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
-    ///Regulator input time constant
+    ///Regulator input time constant. Units: s.
     #[serde(rename = "Tc")]
     pub tc: f64,
     #[serde(rename = "Vr_lim")]
@@ -13405,13 +13637,13 @@ pub struct ESDC2A {
     ///Exciter constant related to self-excited field
     #[serde(rename = "Ke")]
     pub ke: f64,
-    ///Exciter time constant, integration rate associated with exciter control
+    ///Exciter time constant, integration rate associated with exciter control. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
     ///Excitation control system stabilizer gain
     #[serde(rename = "Kf")]
     pub kf: f64,
-    ///Excitation control system stabilizer time constant
+    ///Excitation control system stabilizer time constant. Units: s.
     #[serde(rename = "Tf")]
     pub tf: f64,
     ///switch
@@ -13434,19 +13666,19 @@ pub struct ESDC2A {
 pub struct ESDC1A {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Voltage measurement time constant
+    ///Voltage measurement time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
     ///Amplifier gain
     #[serde(rename = "Ka")]
     pub ka: f64,
-    ///Amplifier time constant
+    ///Amplifier time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
-    ///Regulator input time constant
+    ///Regulator input time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
-    ///Regulator input time constant
+    ///Regulator input time constant. Units: s.
     #[serde(rename = "Tc")]
     pub tc: f64,
     #[serde(rename = "Vr_lim")]
@@ -13454,13 +13686,13 @@ pub struct ESDC1A {
     ///Exciter constant related to self-excited field
     #[serde(rename = "Ke")]
     pub ke: f64,
-    ///Exciter time constant, integration rate associated with exciter control
+    ///Exciter time constant, integration rate associated with exciter control. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
     ///Excitation control system stabilizer gain
     #[serde(rename = "Kf")]
     pub kf: f64,
-    ///Excitation control system stabilizer time constant
+    ///Excitation control system stabilizer time constant. Units: s.
     #[serde(rename = "Tf")]
     pub tf: f64,
     ///switch
@@ -13483,7 +13715,7 @@ pub struct ESDC1A {
 pub struct ESAC8B {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Regulator input filter time constant
+    ///Regulator input filter time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
     ///Regulator proportional PID gain
@@ -13495,18 +13727,18 @@ pub struct ESAC8B {
     ///Regulator derivative PID gain
     #[serde(rename = "Kd")]
     pub kd: f64,
-    ///Regulator derivative PID time constant
+    ///Regulator derivative PID time constant. Units: s.
     #[serde(rename = "Td")]
     pub td: f64,
     ///Regulator output gain
     #[serde(rename = "Ka")]
     pub ka: f64,
-    ///Regulator output lag time constant
+    ///Regulator output lag time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
     #[serde(rename = "Vr_lim")]
     pub vr_lim: MinMax,
-    ///Exciter field time constant
+    ///Exciter field time constant. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
     ///Exciter field proportional constant
@@ -13530,29 +13762,29 @@ pub struct ESAC8B {
 pub struct ESAC6A {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Regulator input filter time constant
+    ///Regulator input filter time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
     ///Regulator output gain
     #[serde(rename = "Ka")]
     pub ka: f64,
-    ///Regulator output lag time constant
+    ///Regulator output lag time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
-    ///Voltage regulator lead time constant
+    ///Voltage regulator lead time constant. Units: s.
     #[serde(rename = "Tk")]
     pub tk: f64,
-    ///Regulator denominator (lag) time constant
+    ///Regulator denominator (lag) time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
-    ///Regulator numerator (lead) time constant
+    ///Regulator numerator (lead) time constant. Units: s.
     #[serde(rename = "Tc")]
     pub tc: f64,
     #[serde(rename = "Va_lim")]
     pub va_lim: MinMax,
     #[serde(rename = "Vr_lim")]
     pub vr_lim: MinMax,
-    ///Exciter field time constant
+    ///Exciter field time constant. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
     ///Exciter field current limiter reference
@@ -13564,10 +13796,10 @@ pub struct ESAC6A {
     ///Exciter field current limiter maximum output
     #[serde(rename = "VH_max")]
     pub vh_max: f64,
-    ///Exciter field current limiter denominator (lag) time constant
+    ///Exciter field current limiter denominator (lag) time constant. Units: s.
     #[serde(rename = "Th")]
     pub th: f64,
-    ///Exciter field current limiter (lead) time constant
+    ///Exciter field current limiter (lead) time constant. Units: s.
     #[serde(rename = "Tj")]
     pub tj: f64,
     ///Rectifier loading factor proportional to commutating reactance
@@ -13597,30 +13829,30 @@ pub struct ESAC6A {
 pub struct ESAC1A {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Regulator input filter time constant
+    ///Regulator input filter time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
-    ///Regulator denominator (lag) time constant
+    ///Regulator denominator (lag) time constant. Units: s.
     #[serde(rename = "Tb")]
     pub tb: f64,
-    ///Regulator numerator (lead) time constant
+    ///Regulator numerator (lead) time constant. Units: s.
     #[serde(rename = "Tc")]
     pub tc: f64,
     ///Regulator output gain
     #[serde(rename = "Ka")]
     pub ka: f64,
-    ///Regulator output time constant
+    ///Regulator output time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
     #[serde(rename = "Va_lim")]
     pub va_lim: MinMax,
-    ///Exciter field time constant
+    ///Exciter field time constant. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
     ///Rate feedback excitation system stabilizer gain
     #[serde(rename = "Kf")]
     pub kf: f64,
-    ///Rate feedback time constant
+    ///Rate feedback time constant. Units: s.
     #[serde(rename = "Tf")]
     pub tf: f64,
     ///Rectifier loading factor proportional to commutating reactance
@@ -13671,6 +13903,12 @@ pub struct DiscreteControlledACBranch {
     pub x: f64,
     ///Thermal rating. Flow on the branch must be between -`rating` and `rating`. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
     pub rating: f64,
+    ///Short-term thermal rating (Rate B in PSS/E), the flow allowed for a limited time, such as after a contingency. Absent means no short-term rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rating_b: Option<f64>,
+    ///Emergency thermal rating (Rate C in PSS/E), the highest flow allowed for a brief period. Absent means no emergency rating. Units: per power_units — NATURAL_UNITS: MVA, COMPONENT_BASE: pu .
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rating_c: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub operational_flow_limit: Option<OperationalFlowLimit>,
     ///Type of discrete control.
@@ -13817,6 +14055,9 @@ pub struct DeterministicSingleTimeSeries {
     pub quantity_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_system: Option<UnitSystem>,
+    ///The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_unit_of: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -13897,6 +14138,9 @@ pub struct Deterministic {
     pub quantity_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_system: Option<UnitSystem>,
+    ///The field on the owning component that the values are a fraction of when `unit_system` is COMPONENT_BASE (e.g. base_power, storage_capacity). Completes the per-unit declaration: it names which of the owner's fields converts the values back to natural units, so a consumer need not know the owner's conventions. Free-form: it names a field in the consumer's own object model, and nothing here checks it against `unit_system`. Not part of the series' identity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_unit_of: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_reference: Option<TimeReference>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -14161,7 +14405,7 @@ pub struct DCBus {
     pub area: Option<i64>,
     ///Indicator of whether the component is connected and online (`true`) or disconnected, offline, or down (`false`). Unavailable components are excluded during simulations.
     pub available: bool,
-    ///The base voltage. in psy5 a required param with an option to be nothing Units: kV.
+    ///The base voltage. in psy5 a required param with an option to be nothing. Units: kV.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub base_voltage: Option<f64>,
     ///Unique integer identifier for this component.
@@ -14169,7 +14413,7 @@ pub struct DCBus {
     ///ID of the load zone containing the DC bus.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub load_zone: Option<i64>,
-    ///Voltage as a multiple of `base_voltage`. in psy5 a required param with an option to be nothing Units: pu.
+    ///Voltage as a multiple of `base_voltage`. in psy5 a required param with an option to be nothing. Units: pu.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub magnitude: Option<f64>,
     ///Name of the component. Components of the same type (e.g., `PowerLoad`) must have unique names, but components of different types (e.g., `PowerLoad` and `ACBus`) can have the same name.
@@ -15010,13 +15254,13 @@ pub struct AggregateTransportTechnology {
     pub unit_size: Option<f64>,
     pub financial_data: TechnologyFinancialData,
 }
-///Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, and the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital.
+///Financial data for a candidate technology: the capital recovery period used to derive overnight capital cost from annualized investment cost, the dollar-year its cost data is reported in, the debt fraction, debt rate, return on equity, and tax rate that together set its cost of capital, and the discount, inflation, and interest rates used to convert its costs to a net present value in the model base year.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct TechnologyFinancialData {
     ///Period over which capital costs are recovered for net present value calculations. Units: yr.
     pub capital_recovery_period: i64,
-    ///Base year for technology cost data used in NPV calculations.
+    ///Year the technology's cost data is reported in. Costs are converted from this year to the model base year using the inflation rate.
     pub technology_base_year: i64,
     ///Fraction of capital costs financed through debt. Units: 1.
     pub debt_fraction: f64,
@@ -15026,6 +15270,12 @@ pub struct TechnologyFinancialData {
     pub return_on_equity: f64,
     ///Tax rate applied to equity returns. Units: 1.
     pub tax_rate: f64,
+    ///Discount rate used to convert this technology's future costs to a net present value in the model base year. Units: 1.
+    pub discount_rate: f64,
+    ///Inflation rate used to convert this technology's costs from its base year to the model base year. Units: 1.
+    pub inflation_rate: f64,
+    ///Interest rate for financing calculations. Units: 1.
+    pub interest_rate: f64,
 }
 ///Investment cost for candidate generation and transmission technologies which includes overnight capital costs and last-mile interconnection costs.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -18564,10 +18814,136 @@ impl AsRef<str> for AverageRateCurveCurveType {
         self.as_str()
     }
 }
+///Parameters of the DERA1 model in PSS/E It has no bus of its own: exactly one static injection device, with the same name, names it in its `dynamic_injector` property, and that device supplies the rest of its data.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct AggregateDistributedGenerationA {
+    ///Unique integer identifier for this component.
+    pub id: i64,
+    ///Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.
+    pub name: String,
+    ///Flag for Power Factor Control
+    #[serde(rename = "Pf_Flag")]
+    pub pf_flag: bool,
+    ///Flag to enable/disable frequency control
+    #[serde(rename = "Freq_Flag")]
+    pub freq_flag: bool,
+    ///Flag used to enforce maximum current
+    #[serde(rename = "PQ_Flag")]
+    pub pq_flag: bool,
+    ///Flag to specify generator or storage
+    #[serde(rename = "Gen_Flag")]
+    pub gen_flag: bool,
+    ///Flag to enable/disable voltage trip logic
+    #[serde(rename = "Vtrip_Flag")]
+    pub vtrip_flag: bool,
+    ///Flag to enable/disable frequency trip logic
+    #[serde(rename = "Ftrip_Flag")]
+    pub ftrip_flag: bool,
+    ///Voltage measurement transducer time constant. Units: s.
+    #[serde(rename = "T_rv")]
+    pub t_rv: f64,
+    ///Frequency measurement transducer time constant. Units: s.
+    #[serde(rename = "Trf")]
+    pub trf: f64,
+    pub dbd_pnts: DbdPnts,
+    ///Proportional voltage control gain (pu)
+    #[serde(rename = "K_qv")]
+    pub k_qv: f64,
+    ///Power measurement transducer time constant. Units: s.
+    #[serde(rename = "Tp")]
+    pub tp: f64,
+    ///Time constant for low-pass filter for state q_V when QFlag = 0. Units: s.
+    #[serde(rename = "T_iq")]
+    pub t_iq: f64,
+    ///Reciprocal of droop for over-frequency conditions (>0) (pu)
+    #[serde(rename = "D_dn")]
+    pub d_dn: f64,
+    ///Reciprocal of droop for under-frequency conditions <=0) (pu)
+    #[serde(rename = "D_up")]
+    pub d_up: f64,
+    pub fdbd_pnts: FdbdPnts,
+    pub fe_lim: MinMax,
+    #[serde(rename = "P_lim")]
+    pub p_lim: MinMax,
+    #[serde(rename = "dP_lim")]
+    pub d_p_lim: MinMax,
+    ///Power filter time constant. Units: s.
+    #[serde(rename = "Tpord")]
+    pub tpord: f64,
+    ///PI controller proportional gain (pu)
+    #[serde(rename = "Kpg")]
+    pub kpg: f64,
+    ///PI controller integral gain (pu)
+    #[serde(rename = "Kig")]
+    pub kig: f64,
+    ///Maximum limit on total converter current (pu)
+    #[serde(rename = "I_max")]
+    pub i_max: f64,
+    ///Low voltage cutout points `[(tv10, vl0), (tv11, vl1)]`
+    ///Constraint: minItems=2, maxItems=2
+    pub vl_pnts: Vec<Vec<f64>>,
+    ///High voltage cutout points `[(tvh0, vh0), (tvh1, vh1)]`
+    ///Constraint: minItems=2, maxItems=2
+    pub vh_pnts: Vec<Vec<f64>>,
+    ///Fraction of device that recovers after voltage comes back to within vl1 < V < vh1 (0 <= Vrfrac <= 1)
+    #[serde(rename = "Vrfrac")]
+    pub vrfrac: f64,
+    ///Inverter frequency break-point for low frequency cut-out (Hz). Units: Hz.
+    pub fl: f64,
+    ///Inverter frequency break-point for high frequency cut-out (Hz). Units: Hz.
+    pub fh: f64,
+    ///Low frequency cut-out timer corresponding to frequency fl (s). Units: s.
+    pub tfl: f64,
+    ///High frequency cut-out timer corresponding to frequency fh (s). Units: s.
+    pub tfh: f64,
+    ///Current control time constant (to represent behavior of inner control loops) (> 0) (s). Units: s.
+    #[serde(rename = "Tg")]
+    pub tg: f64,
+    ///Ramp rate for real power increase following a fault (pu/s)
+    pub rrpwr: f64,
+    ///Time constant on the output of the multiplier (s). Units: s.
+    #[serde(rename = "Tv")]
+    pub tv: f64,
+    ///Voltage below which frequency tripping is disabled (pu). Units: pu.
+    #[serde(rename = "Vpr")]
+    pub vpr: f64,
+    #[serde(rename = "Iq_lim")]
+    pub iq_lim: MinMax,
+    ///User defined voltage reference. If 0, `PowerSimulationsDynamics.jl` initializes to initial terminal voltage
+    #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
+    pub v_ref: Option<f64>,
+    ///Reference power factor
+    #[serde(rename = "Pfa_ref", skip_serializing_if = "Option::is_none")]
+    pub pfa_ref: Option<f64>,
+    ///Reference frequency, in natural units. Usually equal to the system frequency. Units: Hz.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub frequency_ref: Option<f64>,
+    ///Reference reactive power, in pu. Units: pu.
+    #[serde(rename = "Q_ref", skip_serializing_if = "Option::is_none")]
+    pub q_ref: Option<f64>,
+    ///Reference active power, in pu. Units: pu.
+    #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
+    pub p_ref: Option<f64>,
+    ///Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.
+    ///Constraint: exclusiveMinimum=0
+    pub base_power: f64,
+}
+///A pair of deadband thresholds `(dbd1, dbd2)` on a voltage or reactive-power error signal, inside which the controller does not act.
+#[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct DbdPnts {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dbd1: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dbd2: Option<f64>,
+}
 ///Parameters of Active Power Controller including REPCA1 and REECB1.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ActiveRenewableControllerAB {
+    ///Unique integer identifier for this component
+    pub id: i64,
     ///ACBus identification number for voltage control. `0` identifies the local bus connected to this component.
     pub bus_control: i64,
     ///Monitored branch FROM bus number for line drop compensation (if 0 generator power will be used).
@@ -18630,22 +19006,22 @@ pub struct AVRTypeII {
     ///Regulator gain
     #[serde(rename = "K0")]
     pub k0: f64,
-    ///First pole in s
+    ///First pole in s. Units: s.
     #[serde(rename = "T1")]
     pub t1: f64,
-    ///First zero in s
+    ///First zero in s. Units: s.
     #[serde(rename = "T2")]
     pub t2: f64,
-    ///First pole in s
+    ///First pole in s. Units: s.
     #[serde(rename = "T3")]
     pub t3: f64,
-    ///First zero in s
+    ///First zero in s. Units: s.
     #[serde(rename = "T4")]
     pub t4: f64,
-    ///Field circuit time constant
+    ///Field circuit time constant. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
-    ///Voltage measurement time constant
+    ///Voltage measurement time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
     #[serde(rename = "Va_lim")]
@@ -18675,16 +19051,16 @@ pub struct AVRTypeI {
     ///Stabilizer gain
     #[serde(rename = "Kf")]
     pub kf: f64,
-    ///Amplifier time constant
+    ///Amplifier time constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
-    ///Field circuit time constant
+    ///Field circuit time constant. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
-    ///Stabilizer time constant
+    ///Stabilizer time constant. Units: s.
     #[serde(rename = "Tf")]
     pub tf: f64,
-    ///Voltage measurement time constant
+    ///Voltage measurement time constant. Units: s.
     #[serde(rename = "Tr")]
     pub tr: f64,
     #[serde(rename = "Va_lim")]
@@ -18713,12 +19089,19 @@ pub struct ACBus {
     pub available: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bustype: Option<ACBusType>,
-    ///Angle of the bus. Units: rad.
+    ///Solved voltage angle from the last power flow, or the start value for the next solve. Units: rad.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub angle: Option<f64>,
-    ///Voltage as a multiple of `base_voltage`. Units: pu.
+    ///Solved voltage magnitude from the last power flow, or the start value for the next solve, as a multiple of `base_voltage`. This is a result, not a control target; the target is `voltage_setpoint`. Units: pu.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub magnitude: Option<f64>,
+    ///Scheduled voltage magnitude for this bus, as a multiple of `base_voltage`. It is the target of every device that regulates this bus, at the bus or from a remote terminal. The devices that regulate this bus hold it at this value unless a droop or a reactive power limit prevents it. `null` when no device regulates this bus. Units: pu.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub voltage_setpoint: Option<Option<f64>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub voltage_limits: Option<MinMax>,
     ///The base voltage. Units: kV.
@@ -18740,7 +19123,7 @@ pub struct MinMax {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub min: Option<f64>,
 }
-///Classification of an AC bus for power flow, following the MATPOWER bus-type convention. `PQ` fixes the active and reactive injections and solves for voltage magnitude and angle; `PV` fixes active power and voltage magnitude and solves for reactive power and angle; `REF` names the reference for the system voltage angle; `SLACK` balances the system active and reactive mismatch and sets the reference angle; `ISOLATED` marks a bus not connected to the network.
+///Classification of an AC bus for power flow, following the MATPOWER bus-type convention. `PQ` marks a bus with no in-service generation that regulates voltage; it can still have a `voltage_setpoint` that remote devices hold, or that a droop or a reactive power limit stops them from reaching. `PV` marks a bus with in-service generation that regulates voltage: generators, storage, synchronous condensers or sources. Those devices hold the `voltage_setpoint` of the bus they regulate, this bus or their `remote_regulated_bus`; `REF` names the reference for the system voltage angle; `SLACK` balances the system active and reactive mismatch and sets the reference angle; `ISOLATED` marks a bus not connected to the network.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
 pub enum ACBusType {
     #[default]
@@ -18832,31 +19215,98 @@ pub struct AVRSimple {
     #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
     pub v_ref: Option<f64>,
 }
+///Parameters of 12-states active power load based on the paper, "Dynamic Stability of a Microgrid With an Active Load." It has no bus of its own: exactly one static injection device, with the same name, names it in its `dynamic_injector` property, and that device supplies the rest of its data.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct ActiveConstantPowerLoad {
+    ///Unique integer identifier for this component.
+    pub id: i64,
+    ///Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.
+    pub name: String,
+    ///DC-side resistor
+    pub r_load: f64,
+    ///DC-side capacitor
+    pub c_dc: f64,
+    ///Converter side filter resistance
+    pub rf: f64,
+    ///Converter side filter inductance
+    pub lf: f64,
+    ///AC Converter filter capacitance
+    pub cf: f64,
+    ///Network side filter resistance
+    pub rg: f64,
+    ///Network side filter inductance
+    pub lg: f64,
+    ///Proportional constant for PI-PLL block
+    pub kp_pll: f64,
+    ///Integral constant for PI-PLL block
+    pub ki_pll: f64,
+    ///Proportional constant for Voltage Control block
+    pub kpv: f64,
+    ///Integral constant for Voltage Control block
+    pub kiv: f64,
+    ///Proportional constant for Current Control block
+    pub kpc: f64,
+    ///Integral constant for Current Control block
+    pub kic: f64,
+    ///Reference active power (pu). Units: pu.
+    #[serde(rename = "P_ref")]
+    pub p_ref: f64,
+    ///Reference reactive power (pu). Units: pu.
+    #[serde(rename = "Q_ref")]
+    pub q_ref: f64,
+    ///Reference voltage (pu). Units: pu.
+    #[serde(rename = "V_ref")]
+    pub v_ref: f64,
+    ///Reference frequency, in natural units. Usually equal to the system frequency. Units: Hz.
+    pub frequency_ref: f64,
+    ///Boolean to decide if filter states are differential or algebraic
+    pub is_filter_differential: bool,
+    ///Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.
+    ///Constraint: exclusiveMinimum=0
+    pub base_power: f64,
+}
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ActivePowerDroop {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Droop Gain
     #[serde(rename = "Rp")]
     pub rp: f64,
-    pub omegaz: f64,
+    ///Filter cutoff frequency, in natural units. Units: Hz.
+    pub active_power_filter_frequency: f64,
+    ///Reference Power Set-point (pu). Units: pu.
     #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
     pub p_ref: Option<f64>,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ActivePowerPI {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Proportional Gain
     #[serde(rename = "Kp_p")]
     pub kp_p: f64,
+    ///Integral Gain
     #[serde(rename = "Ki_p")]
     pub ki_p: f64,
-    pub omegaz: f64,
+    ///Filter cutoff frequency, in natural units. Units: Hz.
+    pub active_power_filter_frequency: f64,
+    ///Reference Power Set-point (pu). Units: pu.
     #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
     pub p_ref: Option<f64>,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ActiveVirtualOscillator {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///VOC Synchronization Gain
     pub k1: f64,
+    ///Rotation angle of the controller
     pub psi: f64,
+    ///Reference Power Set-point (pu). Units: pu.
     #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
     pub p_ref: Option<f64>,
 }
@@ -18866,37 +19316,37 @@ pub struct ActiveVirtualOscillator {
 pub struct AndersonFouadMachine {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Resistance after EMF
+    ///Resistance after EMF. Units: pu.
     #[serde(rename = "R")]
     pub r: f64,
-    ///Reactance after EMF in d-axis
+    ///Reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd")]
     pub xd: f64,
-    ///Reactance after EMF in q-axis
+    ///Reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq")]
     pub xq: f64,
-    ///Transient reactance after EMF in d-axis
+    ///Transient reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd_p")]
     pub xd_p: f64,
-    ///Transient reactance after EMF in q-axis
+    ///Transient reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq_p")]
     pub xq_p: f64,
-    ///Sub-Transient reactance after EMF in d-axis
+    ///Sub-Transient reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd_pp")]
     pub xd_pp: f64,
-    ///Sub-Transient reactance after EMF in q-axis
+    ///Sub-Transient reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq_pp")]
     pub xq_pp: f64,
-    ///Time constant of transient d-axis voltage Units: s.
+    ///Time constant of transient d-axis voltage. Units: s.
     #[serde(rename = "Td0_p")]
     pub td0_p: f64,
-    ///Time constant of transient q-axis voltage Units: s.
+    ///Time constant of transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_p")]
     pub tq0_p: f64,
-    ///Time constant of sub-transient d-axis voltage Units: s.
+    ///Time constant of sub-transient d-axis voltage. Units: s.
     #[serde(rename = "Td0_pp")]
     pub td0_pp: f64,
-    ///Time constant of sub-transient q-axis voltage Units: s.
+    ///Time constant of sub-transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_pp")]
     pub tq0_pp: f64,
 }
@@ -18915,6 +19365,8 @@ pub struct Arc {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct AverageConverter {
+    ///Unique integer identifier for this component
+    pub id: i64,
     ///Rated voltage (V)
     pub rated_voltage: f64,
     ///Rated current (A)
@@ -18926,14 +19378,62 @@ pub struct AverageConverter {
 pub struct BaseMachine {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Resistance after EMF
+    ///Resistance after EMF. Units: pu.
     #[serde(rename = "R")]
     pub r: f64,
-    ///Reactance after EMF
+    ///Reactance after EMF. Units: pu.
     #[serde(rename = "Xd_p")]
     pub xd_p: f64,
     ///Fixed EMF behind the impedance
     pub eq_p: f64,
+}
+///Parameters of static shunt compensator: CSVGN1 in PSSE It has no bus of its own: exactly one static injection device, with the same name, names it in its `dynamic_injector` property, and that device supplies the rest of its data.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct CSVGN1 {
+    ///Unique integer identifier for this component.
+    pub id: i64,
+    ///Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.
+    pub name: String,
+    ///Gain in pu (`DEVICE_BASE`)
+    #[serde(rename = "K")]
+    pub k: f64,
+    ///Time constant in s. Units: s.
+    #[serde(rename = "T1")]
+    pub t1: f64,
+    ///Time constant in s. Units: s.
+    #[serde(rename = "T2")]
+    pub t2: f64,
+    ///Time constant in s. Units: s.
+    #[serde(rename = "T3")]
+    pub t3: f64,
+    ///Time constant in s. Units: s.
+    #[serde(rename = "T4")]
+    pub t4: f64,
+    ///Time constant in s. Units: s.
+    #[serde(rename = "T5")]
+    pub t5: f64,
+    ///Reactor minimum MVAr
+    #[serde(rename = "Rmin")]
+    pub rmin: f64,
+    ///Maximum voltage in pu. Units: pu.
+    #[serde(rename = "Vmax")]
+    pub vmax: f64,
+    ///Minimum voltage in pu. Units: pu.
+    #[serde(rename = "Vmin")]
+    pub vmin: f64,
+    ///Capacitor (MVAR)
+    #[serde(rename = "CBase")]
+    pub cbase: f64,
+    ///Source Thevenin resistance
+    #[serde(rename = "R_th")]
+    pub r_th: f64,
+    ///Source Thevenin reactance
+    #[serde(rename = "X_th")]
+    pub x_th: f64,
+    ///Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.
+    ///Constraint: exclusiveMinimum=0
+    pub base_power: f64,
 }
 ///Policy requirement enforcing a minimum capacity reserve margin in the target year, such that `(total_capacity - peak_demand) / peak_demand >= capacity_reserve_fraction`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -18992,8 +19492,13 @@ pub struct CarbonTax {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct CurrentModeControl {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Current controller proportional gain
     pub kpc: f64,
+    ///Current controller integral gain
     pub kic: f64,
+    ///Gain to enable feed-forward gain of voltage
     pub kffv: f64,
 }
 ///Parameters Woodward Diesel Governor Model. DEGOV in PowerWorld
@@ -19002,28 +19507,28 @@ pub struct CurrentModeControl {
 pub struct DEGOV {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Governor mechanism time constant
+    ///Governor mechanism time constant. Units: s.
     #[serde(rename = "T1")]
     pub t1: f64,
-    ///Turbine power time constant
+    ///Turbine power time constant. Units: s.
     #[serde(rename = "T2")]
     pub t2: f64,
-    ///Turbine exhaust temperature time constant
+    ///Turbine exhaust temperature time constant. Units: s.
     #[serde(rename = "T3")]
     pub t3: f64,
     ///Governor gain (reciproical of droop)
     #[serde(rename = "K")]
     pub k: f64,
-    ///Governor lead time constant
+    ///Governor lead time constant. Units: s.
     #[serde(rename = "T4")]
     pub t4: f64,
-    ///Governor lag time constant
+    ///Governor lag time constant. Units: s.
     #[serde(rename = "T5")]
     pub t5: f64,
-    ///Actuator time constant
+    ///Actuator time constant. Units: s.
     #[serde(rename = "T6")]
     pub t6: f64,
-    ///Engine time delay
+    ///Engine time delay. Units: s.
     #[serde(rename = "Td")]
     pub td: f64,
     ///Reference power set-point
@@ -19039,28 +19544,28 @@ pub struct DEGOV1 {
     ///Droop control Flag. 0 for throttle feedback and 1 for electric power feedback
     #[serde(skip_serializing_if = "Option::is_none")]
     pub droop_flag: Option<i64>,
-    ///Governor mechanism time constant
+    ///Governor mechanism time constant. Units: s.
     #[serde(rename = "T1")]
     pub t1: f64,
-    ///Turbine power time constant
+    ///Turbine power time constant. Units: s.
     #[serde(rename = "T2")]
     pub t2: f64,
-    ///Turbine exhaust temperature time constant
+    ///Turbine exhaust temperature time constant. Units: s.
     #[serde(rename = "T3")]
     pub t3: f64,
     ///Governor gain for actuator
     #[serde(rename = "K")]
     pub k: f64,
-    ///Governor lead time constant
+    ///Governor lead time constant. Units: s.
     #[serde(rename = "T4")]
     pub t4: f64,
-    ///Governor lag time constant
+    ///Governor lag time constant. Units: s.
     #[serde(rename = "T5")]
     pub t5: f64,
-    ///Actuator time constant
+    ///Actuator time constant. Units: s.
     #[serde(rename = "T6")]
     pub t6: f64,
-    ///Engine time delay
+    ///Engine time delay. Units: s.
     #[serde(rename = "Td")]
     pub td: f64,
     ///Operational control limits on actuator (Tmin, Tmax)
@@ -19070,12 +19575,99 @@ pub struct DEGOV1 {
     ///Steady state droop parameter
     #[serde(rename = "R")]
     pub r: f64,
-    ///Power transducer time constant
+    ///Power transducer time constant. Units: s.
     #[serde(rename = "Te")]
     pub te: f64,
     ///Reference power set-point
     #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
     pub p_ref: Option<f64>,
+}
+///Parameters of 2-states of a generic dynamic load model based on "Voltage stability analysis using generic dynamic load models." It has no bus of its own: exactly one static injection device, with the same name, names it in its `dynamic_injector` property, and that device supplies the rest of its data.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct DynamicExponentialLoad {
+    ///Unique integer identifier for this component.
+    pub id: i64,
+    ///Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.
+    pub name: String,
+    ///Active power static exponential coefficient
+    pub a: f64,
+    ///Reactive power static exponential coefficient
+    pub b: f64,
+    ///Active power transient exponential coefficient
+    pub alpha: f64,
+    ///Reactive power transient exponential coefficient
+    pub beta: f64,
+    ///Active Power Time Constant. Units: s.
+    #[serde(rename = "T_p")]
+    pub t_p: f64,
+    ///Reactive Power Time Constant. Units: s.
+    #[serde(rename = "T_q")]
+    pub t_q: f64,
+    ///Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.
+    ///Constraint: exclusiveMinimum=0
+    pub base_power: f64,
+}
+///Dynamic response model of a synchronous generator. It names five function blocks by id: a synchronous machine model, a shaft, an excitation system, a turbine governor, and a power system stabilizer. It has no bus of its own: exactly one static injection device, with the same name, names it in its `dynamic_injector` property, and that device supplies the rest of the generator's data.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct DynamicGenerator {
+    ///Unique integer identifier for this component.
+    pub id: i64,
+    ///Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.
+    pub name: String,
+    ///Frequency reference set-point, in natural units. Usually equal to the system frequency. Units: Hz.
+    ///Constraint: exclusiveMinimum=0
+    pub frequency_ref: f64,
+    ///ID of the SynchronousMachineDynamics function block: the machine model for the electromagnetic dynamics.
+    pub synchronous_machine_dynamics: i64,
+    ///ID of the Shaft function block: the shaft model for the electromechanical dynamics.
+    pub shaft: i64,
+    ///ID of the ExcitationSystemDynamics function block: the excitation system model.
+    pub excitation_system_dynamics: i64,
+    ///ID of the TurbineGovernorDynamics function block: the prime mover and turbine governor model.
+    pub turbine_governor_dynamics: i64,
+    ///ID of the PowerSystemStabilizerDynamics function block: the power system stabilizer model.
+    pub power_system_stabilizer_dynamics: i64,
+    ///Base power for the per-unit parameters of the referenced function blocks. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.
+    ///Constraint: exclusiveMinimum=0
+    pub base_power: f64,
+}
+///Dynamic response model of a grid-connected inverter. It names its function blocks by id: a converter, an active and a reactive power control, an inner control, a DC source, a reference frame rotation (the frequency estimator), a filter, and an optional current limitation. It has no bus of its own: exactly one static injection device, with the same name, names it in its `dynamic_injector` property, and that device supplies the rest of the inverter's data.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct DynamicInverter {
+    ///Unique integer identifier for this component.
+    pub id: i64,
+    ///Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.
+    pub name: String,
+    ///Frequency reference set-point, in natural units. Usually equal to the system frequency. Units: Hz.
+    ///Constraint: exclusiveMinimum=0
+    pub frequency_ref: f64,
+    ///ID of the Converter function block: the converter model.
+    pub converter: i64,
+    ///ID of the ActivePowerControl function block: the outer active power control.
+    pub active_power_control: i64,
+    ///ID of the ReactivePowerControl function block: the outer reactive power control.
+    pub reactive_power_control: i64,
+    ///ID of the InnerControl function block: the inner control model.
+    pub inner_control: i64,
+    ///ID of the DCSource function block: the DC source model.
+    pub dc_source: i64,
+    ///ID of the ReferenceFrameRotation function block: the frequency estimator (PLL) model.
+    pub reference_frame_rotation: i64,
+    ///ID of the Filter function block: the output filter model.
+    pub filter: i64,
+    ///ID of the CurrentLimitation function block: the output current limiter model, or null when the inverter has no limiter.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "tri_state_serde::deserialize"
+    )]
+    pub current_limitation: Option<Option<i64>>,
+    ///Base power for the per-unit parameters of the referenced function blocks. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.
+    ///Constraint: exclusiveMinimum=0
+    pub base_power: f64,
 }
 ///Policy requirement that the total generation of the eligible technologies be at least a pre-determined fraction of the total annual demand across the eligible zones in the target year.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -19110,19 +19702,19 @@ pub struct ExistingDevices {
 pub struct FiveMassShaft {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Rotor inertia constant in MWs/MVA
+    ///Rotor inertia constant in MWs/MVA. Units: s.
     #[serde(rename = "H")]
     pub h: f64,
-    ///High pressure turbine inertia constant in MWs/MVA
+    ///High pressure turbine inertia constant in MWs/MVA. Units: s.
     #[serde(rename = "H_hp")]
     pub h_hp: f64,
-    ///Intermediate pressure turbine inertia constant in MWs/MVA
+    ///Intermediate pressure turbine inertia constant in MWs/MVA. Units: s.
     #[serde(rename = "H_ip")]
     pub h_ip: f64,
-    ///Low pressure turbine inertia constant in MWs/MVA
+    ///Low pressure turbine inertia constant in MWs/MVA. Units: s.
     #[serde(rename = "H_lp")]
     pub h_lp: f64,
-    ///Exciter inertia constant in MWs/MVA
+    ///Exciter inertia constant in MWs/MVA. Units: s.
     #[serde(rename = "H_ex")]
     pub h_ex: f64,
     ///Rotor natural damping
@@ -19169,6 +19761,8 @@ pub struct FiveMassShaft {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct FixedDCSource {
+    ///Unique integer identifier for this component
+    pub id: i64,
     ///Voltage (V)
     pub voltage: f64,
 }
@@ -19191,12 +19785,14 @@ pub struct FixedForcedOutage {
     pub identifier: Option<Option<String>>,
 }
 ///Parameters of a Fixed Frequency Estimator (i.e. no PLL)
-#[derive(Debug, Clone, Deserialize, Serialize, Default, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct FixedFrequency {
-    ///Reference frequency
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub frequency: Option<f64>,
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Reference frequency, in natural units. Units: Hz.
+    ///Constraint: exclusiveMinimum=0
+    pub frequency: f64,
 }
 ///Parameter of a full order flux stator-rotor model without zero sequence flux in the stator. The derivative of stator fluxes (ψd and ψq) is NOT neglected. Only one q-axis damping circuit is considered. All parameters are in machine per unit. Refer to Chapter 3 of Power System Stability and Control by P. Kundur or Chapter 11 of Power System Dynamics: Stability and Control, by J. Machowski, J. Bialek and J. Bumby, for more details. Note that the models are somewhat different (but equivalent) due to the different Park Transformation used in both books
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -19204,40 +19800,40 @@ pub struct FixedFrequency {
 pub struct FullMachine {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Resistance after EMF
+    ///Resistance after EMF. Units: pu.
     #[serde(rename = "R")]
     pub r: f64,
-    ///Field rotor winding resistance
+    ///Field rotor winding resistance. Units: pu.
     #[serde(rename = "R_f")]
     pub r_f: f64,
-    ///Damping rotor winding resistance on d-axis in per unit. This value is denoted as RD in Machowski
+    ///Damping rotor winding resistance on d-axis in per unit. This value is denoted as RD in Machowski. Units: pu.
     #[serde(rename = "R_1d")]
     pub r_1d: f64,
-    ///Damping rotor winding resistance on q-axis in per unit. This value is denoted as RQ in Machowski
+    ///Damping rotor winding resistance on q-axis in per unit. This value is denoted as RQ in Machowski. Units: pu.
     #[serde(rename = "R_1q")]
     pub r_1q: f64,
-    ///Inductance of fictitious damping that represent the effect of the three-phase stator winding in the d-axis of the rotor, in per unit. This value is denoted as Lad + Ll in Kundur (and Ld in Machowski)
+    ///Inductance of fictitious damping that represent the effect of the three-phase stator winding in the d-axis of the rotor, in per unit. This value is denoted as Lad + Ll in Kundur (and Ld in Machowski). Units: pu.
     #[serde(rename = "L_d")]
     pub l_d: f64,
-    ///Inductance of fictitious damping that represent the effect of the three-phase stator winding in the q-axis of the rotor, in per unit. This value is denoted as Laq + Ll in Kundur (and Ld in Machowski)
+    ///Inductance of fictitious damping that represent the effect of the three-phase stator winding in the q-axis of the rotor, in per unit. This value is denoted as Laq + Ll in Kundur (and Ld in Machowski). Units: pu.
     #[serde(rename = "L_q")]
     pub l_q: f64,
-    ///Mutual inductance between stator winding and rotor field (and damping) winding inductance on d-axis, in per unit
+    ///Mutual inductance between stator winding and rotor field (and damping) winding inductance on d-axis, in per unit. Units: pu.
     #[serde(rename = "L_ad")]
     pub l_ad: f64,
-    ///Mutual inductance between stator winding and rotor damping winding inductance on q-axis, in per unit
+    ///Mutual inductance between stator winding and rotor damping winding inductance on q-axis, in per unit. Units: pu.
     #[serde(rename = "L_aq")]
     pub l_aq: f64,
-    ///Mutual inductance between rotor field winding and rotor damping winding inductance on d-axis, in per unit
+    ///Mutual inductance between rotor field winding and rotor damping winding inductance on d-axis, in per unit. Units: pu.
     #[serde(rename = "L_f1d")]
     pub l_f1d: f64,
-    ///Field rotor winding inductance, in per unit
+    ///Field rotor winding inductance, in per unit. Units: pu.
     #[serde(rename = "L_ff")]
     pub l_ff: f64,
-    ///Inductance of the d-axis rotor damping circuit, in per unit
+    ///Inductance of the d-axis rotor damping circuit, in per unit. Units: pu.
     #[serde(rename = "L_1d")]
     pub l_1d: f64,
-    ///Inductance of the q-axis rotor damping circuit, in per unit
+    ///Inductance of the q-axis rotor damping circuit, in per unit. Units: pu.
     #[serde(rename = "L_1q")]
     pub l_1q: f64,
 }
@@ -19250,13 +19846,13 @@ pub struct GasTG {
     ///Speed droop parameter
     #[serde(rename = "R")]
     pub r: f64,
-    ///Governor time constant
+    ///Governor time constant. Units: s.
     #[serde(rename = "T1")]
     pub t1: f64,
-    ///Combustion chamber time constant
+    ///Combustion chamber time constant. Units: s.
     #[serde(rename = "T2")]
     pub t2: f64,
-    ///Load limit time constant (exhaust gas measurement time)
+    ///Load limit time constant (exhaust gas measurement time). Units: s.
     #[serde(rename = "T3")]
     pub t3: f64,
     ///Ambient temperature load limit
@@ -19314,6 +19910,8 @@ pub struct HourlyMatching {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct HybridOutputCurrentLimiter {
+    ///Unique integer identifier for this component
+    pub id: i64,
     ///Maximum limit on current controller input current
     #[serde(rename = "I_max")]
     pub i_max: f64,
@@ -19358,22 +19956,22 @@ pub struct IEEEST {
     ///Filter coefficient
     #[serde(rename = "A6")]
     pub a6: f64,
-    ///Time constant
+    ///Time constant. Units: s.
     #[serde(rename = "T1")]
     pub t1: f64,
-    ///Time constant
+    ///Time constant. Units: s.
     #[serde(rename = "T2")]
     pub t2: f64,
-    ///Time constant
+    ///Time constant. Units: s.
     #[serde(rename = "T3")]
     pub t3: f64,
-    ///Time constant
+    ///Time constant. Units: s.
     #[serde(rename = "T4")]
     pub t4: f64,
-    ///Time constant
+    ///Time constant. Units: s.
     #[serde(rename = "T5")]
     pub t5: f64,
-    ///Time constant
+    ///Time constant. Units: s.
     #[serde(rename = "T6")]
     pub t6: f64,
     ///Proportional gain
@@ -19394,6 +19992,8 @@ pub struct IEEEST {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct InstantaneousOutputCurrentLimiter {
+    ///Unique integer identifier for this component
+    pub id: i64,
     ///Maximum limit on d-axis current controller input current
     #[serde(rename = "Id_max")]
     pub id_max: f64,
@@ -19405,8 +20005,10 @@ pub struct InstantaneousOutputCurrentLimiter {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct KauraPLL {
-    ///PLL low-pass filter frequency
-    pub omega_lp: f64,
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///PLL low-pass filter cutoff frequency, in natural units. Units: Hz.
+    pub frequency_lp: f64,
     ///PLL proportional gain
     pub kp_pll: f64,
     ///PLL integral gain
@@ -19416,32 +20018,38 @@ pub struct KauraPLL {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct LCFilter {
-    ///Filter inductance
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Filter inductance. Units: pu.
     pub lf: f64,
-    ///Filter resistance
+    ///Filter resistance. Units: pu.
     pub rf: f64,
-    ///Filter capacitance
+    ///Filter capacitance. Units: pu.
     pub cf: f64,
 }
 ///Parameters of a LCL filter outside the converter, the states are in the grid's reference frame
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct LCLFilter {
-    ///Series inductance of converter filter
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Series inductance of converter filter. Units: pu.
     pub lf: f64,
-    ///Series resistance of converter filter
+    ///Series resistance of converter filter. Units: pu.
     pub rf: f64,
-    ///Shunt capacitance of converter filter
+    ///Shunt capacitance of converter filter. Units: pu.
     pub cf: f64,
-    ///Series inductance of converter filter to the grid
+    ///Series inductance of converter filter to the grid. Units: pu.
     pub lg: f64,
-    ///Series resistance of converter filter to the grid
+    ///Series resistance of converter filter to the grid. Units: pu.
     pub rg: f64,
 }
 ///Parameters of Magnitude (Circular) Current Controller Limiter. Regulates only the magnitude of the inverter output current
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct MagnitudeOutputCurrentLimiter {
+    ///Unique integer identifier for this component
+    pub id: i64,
     ///Maximum limit on current controller input current
     #[serde(rename = "I_max")]
     pub i_max: f64,
@@ -19452,40 +20060,40 @@ pub struct MagnitudeOutputCurrentLimiter {
 pub struct MarconatoMachine {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Resistance after EMF
+    ///Resistance after EMF. Units: pu.
     #[serde(rename = "R")]
     pub r: f64,
-    ///Reactance after EMF in d-axis
+    ///Reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd")]
     pub xd: f64,
-    ///Reactance after EMF in q-axis
+    ///Reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq")]
     pub xq: f64,
-    ///Transient reactance after EMF in d-axis
+    ///Transient reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd_p")]
     pub xd_p: f64,
-    ///Transient reactance after EMF in q-axis
+    ///Transient reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq_p")]
     pub xq_p: f64,
-    ///Sub-Transient reactance after EMF in d-axis
+    ///Sub-Transient reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd_pp")]
     pub xd_pp: f64,
-    ///Sub-Transient reactance after EMF in q-axis
+    ///Sub-Transient reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq_pp")]
     pub xq_pp: f64,
-    ///Time constant of transient d-axis voltage
+    ///Time constant of transient d-axis voltage. Units: s.
     #[serde(rename = "Td0_p")]
     pub td0_p: f64,
-    ///Time constant of transient q-axis voltage
+    ///Time constant of transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_p")]
     pub tq0_p: f64,
-    ///Time constant of sub-transient d-axis voltage
+    ///Time constant of sub-transient d-axis voltage. Units: s.
     #[serde(rename = "Td0_pp")]
     pub td0_pp: f64,
-    ///Time constant of sub-transient q-axis voltage
+    ///Time constant of sub-transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_pp")]
     pub tq0_pp: f64,
-    ///Time constant of d-axis additional leakage, validation range
+    ///Time constant of d-axis additional leakage, validation range. Units: s.
     #[serde(rename = "T_AA")]
     pub t_aa: f64,
 }
@@ -19529,25 +20137,25 @@ pub struct MinimumCapacityRequirements {
 pub struct OneDOneQMachine {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Resistance after EMF
+    ///Resistance after EMF. Units: pu.
     #[serde(rename = "R")]
     pub r: f64,
-    ///Reactance after EMF in d-axis
+    ///Reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd")]
     pub xd: f64,
-    ///Reactance after EMF in q-axis
+    ///Reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq")]
     pub xq: f64,
-    ///Transient reactance after EMF in d-axis
+    ///Transient reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd_p")]
     pub xd_p: f64,
-    ///Transient reactance after EMF in q-axis
+    ///Transient reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq_p")]
     pub xq_p: f64,
-    ///Time constant of transient d-axis voltage
+    ///Time constant of transient d-axis voltage. Units: s.
     #[serde(rename = "Td0_p")]
     pub td0_p: f64,
-    ///Time constant of transient q-axis voltage
+    ///Time constant of transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_p")]
     pub tq0_p: f64,
 }
@@ -19571,22 +20179,22 @@ pub struct PSS2A {
     ///N parameter for ramp tracking filter
     #[serde(rename = "N_rtf")]
     pub n_rtf: i64,
-    ///Time constant for first washout filter for first input
+    ///Time constant for first washout filter for first input. Units: s.
     #[serde(rename = "Tw1")]
     pub tw1: f64,
-    ///Time constant for second washout filter for first input
+    ///Time constant for second washout filter for first input. Units: s.
     #[serde(rename = "Tw2")]
     pub tw2: f64,
-    ///Time constant for low-pass filter for first input
+    ///Time constant for low-pass filter for first input. Units: s.
     #[serde(rename = "T6")]
     pub t6: f64,
-    ///Time constant for first washout filter for second input
+    ///Time constant for first washout filter for second input. Units: s.
     #[serde(rename = "Tw3")]
     pub tw3: f64,
-    ///Time constant for second washout filter for second input
+    ///Time constant for second washout filter for second input. Units: s.
     #[serde(rename = "Tw4")]
     pub tw4: f64,
-    ///Time constant for low-pass filter for second input
+    ///Time constant for low-pass filter for second input. Units: s.
     #[serde(rename = "T7")]
     pub t7: f64,
     ///Gain for low-pass filter for second input
@@ -19595,25 +20203,25 @@ pub struct PSS2A {
     ///Gain for second input
     #[serde(rename = "Ks3")]
     pub ks3: f64,
-    ///Time constant for ramp tracking filter
+    ///Time constant for ramp tracking filter. Units: s.
     #[serde(rename = "T8")]
     pub t8: f64,
-    ///Time constant for ramp tracking filter
+    ///Time constant for ramp tracking filter. Units: s.
     #[serde(rename = "T9")]
     pub t9: f64,
     ///Gain before lead-lag blocks
     #[serde(rename = "Ks1")]
     pub ks1: f64,
-    ///Time constant for first lead-lag block
+    ///Time constant for first lead-lag block. Units: s.
     #[serde(rename = "T1")]
     pub t1: f64,
-    ///Time constant for first lead-lag block
+    ///Time constant for first lead-lag block. Units: s.
     #[serde(rename = "T2")]
     pub t2: f64,
-    ///Time constant for second lead-lag block
+    ///Time constant for second lead-lag block. Units: s.
     #[serde(rename = "T3")]
     pub t3: f64,
-    ///Time constant for second lead-lag block
+    ///Time constant for second lead-lag block. Units: s.
     #[serde(rename = "T4")]
     pub t4: f64,
     ///PSS output limits (Vst_min, Vst_max)
@@ -19641,22 +20249,22 @@ pub struct PSS2B {
     ///N parameter for ramp tracking filter
     #[serde(rename = "N_rtf")]
     pub n_rtf: i64,
-    ///Time constant for first washout filter for first input
+    ///Time constant for first washout filter for first input. Units: s.
     #[serde(rename = "Tw1")]
     pub tw1: f64,
-    ///Time constant for second washout filter for first input
+    ///Time constant for second washout filter for first input. Units: s.
     #[serde(rename = "Tw2")]
     pub tw2: f64,
-    ///Time constant for low-pass filter for first input
+    ///Time constant for low-pass filter for first input. Units: s.
     #[serde(rename = "T6")]
     pub t6: f64,
-    ///Time constant for first washout filter for second input
+    ///Time constant for first washout filter for second input. Units: s.
     #[serde(rename = "Tw3")]
     pub tw3: f64,
-    ///Time constant for second washout filter for second input
+    ///Time constant for second washout filter for second input. Units: s.
     #[serde(rename = "Tw4")]
     pub tw4: f64,
-    ///Time constant for low-pass filter for second input
+    ///Time constant for low-pass filter for second input. Units: s.
     #[serde(rename = "T7")]
     pub t7: f64,
     ///Gain for low-pass filter for second input
@@ -19665,31 +20273,31 @@ pub struct PSS2B {
     ///Gain for second input
     #[serde(rename = "Ks3")]
     pub ks3: f64,
-    ///Time constant for ramp tracking filter
+    ///Time constant for ramp tracking filter. Units: s.
     #[serde(rename = "T8")]
     pub t8: f64,
-    ///Time constant for ramp tracking filter
+    ///Time constant for ramp tracking filter. Units: s.
     #[serde(rename = "T9")]
     pub t9: f64,
     ///Gain before lead-lag blocks
     #[serde(rename = "Ks1")]
     pub ks1: f64,
-    ///Time constant for first lead-lag block
+    ///Time constant for first lead-lag block. Units: s.
     #[serde(rename = "T1")]
     pub t1: f64,
-    ///Time constant for first lead-lag block
+    ///Time constant for first lead-lag block. Units: s.
     #[serde(rename = "T2")]
     pub t2: f64,
-    ///Time constant for second lead-lag block
+    ///Time constant for second lead-lag block. Units: s.
     #[serde(rename = "T3")]
     pub t3: f64,
-    ///Time constant for second lead-lag block
+    ///Time constant for second lead-lag block. Units: s.
     #[serde(rename = "T4")]
     pub t4: f64,
-    ///Time constant for third lead-lag block
+    ///Time constant for third lead-lag block. Units: s.
     #[serde(rename = "T10")]
     pub t10: f64,
-    ///Time constant for third lead-lag block
+    ///Time constant for third lead-lag block. Units: s.
     #[serde(rename = "T11")]
     pub t11: f64,
     ///First input limits (Vs1_min, Vs1_max)
@@ -19725,22 +20333,22 @@ pub struct PSS2C {
     ///N parameter for ramp tracking filter
     #[serde(rename = "N_rtf")]
     pub n_rtf: i64,
-    ///Time constant for first washout filter for first input
+    ///Time constant for first washout filter for first input. Units: s.
     #[serde(rename = "Tw1")]
     pub tw1: f64,
-    ///Time constant for second washout filter for first input
+    ///Time constant for second washout filter for first input. Units: s.
     #[serde(rename = "Tw2")]
     pub tw2: f64,
-    ///Time constant for low-pass filter for first input
+    ///Time constant for low-pass filter for first input. Units: s.
     #[serde(rename = "T6")]
     pub t6: f64,
-    ///Time constant for first washout filter for second input
+    ///Time constant for first washout filter for second input. Units: s.
     #[serde(rename = "Tw3")]
     pub tw3: f64,
-    ///Time constant for second washout filter for second input
+    ///Time constant for second washout filter for second input. Units: s.
     #[serde(rename = "Tw4")]
     pub tw4: f64,
-    ///Time constant for low-pass filter for second input
+    ///Time constant for low-pass filter for second input. Units: s.
     #[serde(rename = "T7")]
     pub t7: f64,
     ///Gain for low-pass filter for second input
@@ -19749,31 +20357,31 @@ pub struct PSS2C {
     ///Gain for second input
     #[serde(rename = "Ks3")]
     pub ks3: f64,
-    ///Time constant for ramp tracking filter
+    ///Time constant for ramp tracking filter. Units: s.
     #[serde(rename = "T8")]
     pub t8: f64,
-    ///Time constant for ramp tracking filter
+    ///Time constant for ramp tracking filter. Units: s.
     #[serde(rename = "T9")]
     pub t9: f64,
     ///Gain before lead-lag blocks
     #[serde(rename = "Ks1")]
     pub ks1: f64,
-    ///Time constant for first lead-lag block
+    ///Time constant for first lead-lag block. Units: s.
     #[serde(rename = "T1")]
     pub t1: f64,
-    ///Time constant for first lead-lag block
+    ///Time constant for first lead-lag block. Units: s.
     #[serde(rename = "T2")]
     pub t2: f64,
-    ///Time constant for second lead-lag block
+    ///Time constant for second lead-lag block. Units: s.
     #[serde(rename = "T3")]
     pub t3: f64,
-    ///Time constant for second lead-lag block
+    ///Time constant for second lead-lag block. Units: s.
     #[serde(rename = "T4")]
     pub t4: f64,
-    ///Time constant for third lead-lag block
+    ///Time constant for third lead-lag block. Units: s.
     #[serde(rename = "T10")]
     pub t10: f64,
-    ///Time constant for third lead-lag block
+    ///Time constant for third lead-lag block. Units: s.
     #[serde(rename = "T11")]
     pub t11: f64,
     ///First input limits (Vs1_min, Vs1_max)
@@ -19788,10 +20396,10 @@ pub struct PSS2C {
     ///Constraint: minItems=2, maxItems=2
     #[serde(rename = "Vst_lim")]
     pub vst_lim: Vec<f64>,
-    ///Time constant for fourth lead-lag block
+    ///Time constant for fourth lead-lag block. Units: s.
     #[serde(rename = "T12")]
     pub t12: f64,
-    ///Time constant for fourth lead-lag block
+    ///Time constant for fourth lead-lag block. Units: s.
     #[serde(rename = "T13")]
     pub t13: f64,
     ///PSS output hysteresis parameters (PSSOFF, PSSON)
@@ -19801,7 +20409,7 @@ pub struct PSS2C {
     ///Stator leakage reactance
     #[serde(rename = "Xcomp")]
     pub xcomp: f64,
-    ///Time measured with compensated frequency
+    ///Time measured with compensated frequency. Units: s.
     #[serde(rename = "Tcomp")]
     pub tcomp: f64,
     ///Hysteresis memory variable
@@ -19825,22 +20433,54 @@ pub struct PSSSimple {
     ///Unique integer identifier for this component
     pub id: i64,
     ///Proportional gain for frequency
-    #[serde(rename = "K_omega")]
-    pub k_omega: f64,
+    #[serde(rename = "K_frequency")]
+    pub k_frequency: f64,
     ///Proportional gain for active power
     #[serde(rename = "K_p")]
     pub k_p: f64,
 }
-///Supplemental attribute describing outages that are scheduled in advance, naming the time series that carries the schedule.
+///This struct acts as an infinity bus with time varying phasor values magnitude and angle V(t) heta(t). Time varying functions are represented using fourier series It has no bus of its own: exactly one static injection device, with the same name, names it in its `dynamic_injector` property, and that device supplies the rest of its data.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct PeriodicVariableSource {
+    ///Unique integer identifier for this component.
+    pub id: i64,
+    ///Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.
+    pub name: String,
+    ///Source Thevenin resistance
+    #[serde(rename = "R_th")]
+    pub r_th: f64,
+    ///Source Thevenin reactance
+    #[serde(rename = "X_th")]
+    pub x_th: f64,
+    ///a0 term of the Fourier Series for the voltage
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub internal_voltage_bias: Option<f64>,
+    ///Frequencies in radians/s
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub internal_voltage_frequencies: Option<Vec<f64>>,
+    ///Coefficients for terms n > 1. First component corresponds to sin and second component to cos
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub internal_voltage_coefficients: Option<Vec<Vec<f64>>>,
+    ///a0 term of the Fourier Series for the angle
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub internal_angle_bias: Option<f64>,
+    ///Frequencies in radians/s
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub internal_angle_frequencies: Option<Vec<f64>>,
+    ///Coefficients for terms n > 1. First component corresponds to sin and second component to cos
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub internal_angle_coefficients: Option<Vec<Vec<f64>>>,
+    ///Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.
+    ///Constraint: exclusiveMinimum=0
+    pub base_power: f64,
+}
+///Supplemental attribute describing outages that are scheduled in advance, naming the time series that carries the schedule. A planned outage is not a contingency, so it has no monitored components.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct PlannedOutage {
     pub id: i64,
     pub outage_schedule: String,
-    ///IDs of devices whose post-contingency state should be modeled when this outage occurs. Empty by default; semantics of an empty list are decided by the downstream consumer.
-    ///Constraint: uniqueItems=true
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub monitored_components: Option<Vec<i64>>,
     ///Optional user-supplied identifier for the outage, such as a name or a block id. Null when not set.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -19860,25 +20500,12 @@ pub struct PlantAssociation {
     ///Group number within the plant (shaft, penstock, PCC, or exclusion group, depending on the parent plant's type)
     pub group_index: i64,
 }
-///Financial data for the portfolio as a whole: the base economic year that all costs are converted to a net present value in, and the discount, inflation, and interest rates used in that conversion.
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
-#[serde(deny_unknown_fields)]
-pub struct PortfolioFinancialData {
-    ///ID for individual component.
-    pub id: i64,
-    ///Discount rate for financial calculations. Units: 1.
-    pub discount_rate: f64,
-    ///Inflation rate for cost adjustments. Units: 1.
-    pub inflation_rate: f64,
-    ///Interest rate for financing calculations. Units: 1.
-    pub interest_rate: f64,
-    ///Base economic year. All costs will be converted to a net present value in this year.
-    pub base_year: i64,
-}
 ///Parameters of Priority-Based Current Controller Limiter. Regulates the magnitude of the inverter output current and prioritizes a specific angle for the resultant current signal
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct PriorityOutputCurrentLimiter {
+    ///Unique integer identifier for this component
+    pub id: i64,
     ///Maximum limit on current controller input current
     #[serde(rename = "I_max")]
     pub i_max: f64,
@@ -19890,29 +20517,43 @@ pub struct PriorityOutputCurrentLimiter {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct RLFilter {
-    ///Series resistance in p.u. of converter filter to the grid
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Series resistance in p.u. of converter filter to the grid. Units: pu.
     pub rf: f64,
-    ///Series inductance in p.u. of converter filter to the grid
+    ///Series inductance in p.u. of converter filter to the grid. Units: pu.
     pub lf: f64,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ReactivePowerDroop {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///frequency droop gain
     pub kq: f64,
-    pub omegaf: f64,
+    ///Filter cutoff frequency, in natural units. Units: Hz.
+    pub reactive_power_filter_frequency: f64,
+    ///Reference Voltage Set-point (pu). Units: pu.
     #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
     pub v_ref: Option<f64>,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ReactivePowerPI {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///Proportional Gain
     #[serde(rename = "Kp_q")]
     pub kp_q: f64,
+    ///Integral Gain
     #[serde(rename = "Ki_q")]
     pub ki_q: f64,
-    pub omegaf: f64,
+    ///Filter cutoff frequency, in natural units. Units: Hz.
+    pub reactive_power_filter_frequency: f64,
+    ///Voltage Set-point (pu). Units: pu.
     #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
     pub v_ref: Option<f64>,
+    ///Reactive Power Set-point (pu). Units: pu.
     #[serde(rename = "Q_ref", skip_serializing_if = "Option::is_none")]
     pub q_ref: Option<f64>,
 }
@@ -19928,9 +20569,14 @@ pub struct ReactivePowerSharing {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ReactiveVirtualOscillator {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///VOC voltage-amplitude control gain
     pub k2: f64,
+    ///Reference Voltage Set-point (pu). Units: pu.
     #[serde(rename = "V_ref", skip_serializing_if = "Option::is_none")]
     pub v_ref: Option<f64>,
+    ///Reference Reactive Power Set-point (pu). Units: pu.
     #[serde(rename = "Q_ref", skip_serializing_if = "Option::is_none")]
     pub q_ref: Option<f64>,
 }
@@ -19938,8 +20584,10 @@ pub struct ReactiveVirtualOscillator {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ReducedOrderPLL {
-    ///PLL low-pass filter frequency
-    pub omega_lp: f64,
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///PLL low-pass filter cutoff frequency, in natural units. Units: Hz.
+    pub frequency_lp: f64,
     ///PLL proportional gain
     pub kp_pll: f64,
     ///PLL integral gain
@@ -19995,7 +20643,7 @@ impl AsRef<str> for ReservoirLocation {
 pub struct RoundRotorExponential {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Round Rotor machine parameters
+    ///ID of the RoundRotorMachine function block that holds the base parameters of this machine.
     pub base_machine: i64,
     ///Derived saturation coefficients for the exponential saturation model, computed from the Se input
     ///Constraint: minItems=2, maxItems=2
@@ -20007,7 +20655,7 @@ pub struct RoundRotorExponential {
 pub struct RoundRotorMachine {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Armature resistance
+    ///Armature resistance. Units: pu.
     #[serde(rename = "R")]
     pub r: f64,
     ///Time constant of transient d-axis voltage. Units: s.
@@ -20022,22 +20670,22 @@ pub struct RoundRotorMachine {
     ///Time constant of sub-transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_pp")]
     pub tq0_pp: f64,
-    ///Reactance after EMF in d-axis
+    ///Reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd")]
     pub xd: f64,
-    ///Reactance after EMF in q-axis
+    ///Reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq")]
     pub xq: f64,
-    ///Transient reactance after EMF in d-axis
+    ///Transient reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd_p")]
     pub xd_p: f64,
-    ///Transient reactance after EMF in q-axis
+    ///Transient reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq_p")]
     pub xq_p: f64,
-    ///Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp
+    ///Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp. Units: pu.
     #[serde(rename = "Xd_pp")]
     pub xd_pp: f64,
-    ///Stator leakage reactance
+    ///Stator leakage reactance. Units: pu.
     #[serde(rename = "Xl")]
     pub xl: f64,
     ///Saturation factor at 1 and 1.2 pu flux: S(1.0) = B(|psi_pp|-A)^2
@@ -20051,7 +20699,7 @@ pub struct RoundRotorMachine {
 pub struct RoundRotorQuadratic {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Round Rotor machine parameters
+    ///ID of the RoundRotorMachine function block that holds the base parameters of this machine.
     pub base_machine: i64,
     ///Derived saturation coefficients for the quadratic saturation model, computed from the Se input
     ///Constraint: minItems=2, maxItems=2
@@ -20066,19 +20714,19 @@ pub struct STAB1 {
     ///K/T for washout filter
     #[serde(rename = "KT")]
     pub kt: f64,
-    ///Time constant for washout filter
+    ///Time constant for washout filter. Units: s.
     #[serde(rename = "T")]
     pub t: f64,
     ///Time constant division T1/T3
     #[serde(rename = "T1T3")]
     pub t1_t3: f64,
-    ///Time constant
+    ///Time constant. Units: s.
     #[serde(rename = "T3")]
     pub t3: f64,
     ///Time constant division T2/T4
     #[serde(rename = "T2T4")]
     pub t2_t4: f64,
-    ///Time constant
+    ///Time constant. Units: s.
     #[serde(rename = "T4")]
     pub t4: f64,
     ///PSS output limit
@@ -20091,7 +20739,7 @@ pub struct STAB1 {
 pub struct SalientPoleExponential {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Salient pole machine parameters
+    ///ID of the SalientPoleMachine function block that holds the base parameters of this machine.
     pub base_machine: i64,
     ///Derived saturation coefficients for the exponential saturation model, computed from the Se input
     ///Constraint: minItems=2, maxItems=2
@@ -20103,31 +20751,31 @@ pub struct SalientPoleExponential {
 pub struct SalientPoleMachine {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Armature resistance
+    ///Armature resistance. Units: pu.
     #[serde(rename = "R")]
     pub r: f64,
-    ///Time constant of transient d-axis voltage Units: s.
+    ///Time constant of transient d-axis voltage. Units: s.
     #[serde(rename = "Td0_p")]
     pub td0_p: f64,
-    ///Time constant of sub-transient d-axis voltage Units: s.
+    ///Time constant of sub-transient d-axis voltage. Units: s.
     #[serde(rename = "Td0_pp")]
     pub td0_pp: f64,
-    ///Time constant of sub-transient q-axis voltage Units: s.
+    ///Time constant of sub-transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_pp")]
     pub tq0_pp: f64,
-    ///Reactance after EMF in d-axis
+    ///Reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd")]
     pub xd: f64,
-    ///Reactance after EMF in q-axis
+    ///Reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq")]
     pub xq: f64,
-    ///Transient reactance after EMF in d-axis
+    ///Transient reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd_p")]
     pub xd_p: f64,
-    ///Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp
+    ///Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp. Units: pu.
     #[serde(rename = "Xd_pp")]
     pub xd_pp: f64,
-    ///Stator leakage reactance
+    ///Stator leakage reactance. Units: pu.
     #[serde(rename = "Xl")]
     pub xl: f64,
     ///Saturation factor at 1 and 1.2 pu flux: Se(eqp) = B(eqp-A)^2
@@ -20141,7 +20789,7 @@ pub struct SalientPoleMachine {
 pub struct SalientPoleQuadratic {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Salient pole machine parameters
+    ///ID of the SalientPoleMachine function block that holds the base parameters of this machine.
     pub base_machine: i64,
     ///Derived saturation coefficients for the quadratic saturation model, computed from the Se input
     ///Constraint: minItems=2, maxItems=2
@@ -20151,6 +20799,8 @@ pub struct SalientPoleQuadratic {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct SaturationOutputCurrentLimiter {
+    ///Unique integer identifier for this component
+    pub id: i64,
     ///Maximum limit on current controller input current
     #[serde(rename = "I_max")]
     pub i_max: f64,
@@ -20163,40 +20813,40 @@ pub struct SaturationOutputCurrentLimiter {
 pub struct SauerPaiMachine {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Resistance after EMF
+    ///Resistance after EMF. Units: pu.
     #[serde(rename = "R")]
     pub r: f64,
-    ///Reactance after EMF in d-axis
+    ///Reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd")]
     pub xd: f64,
-    ///Reactance after EMF in q-axis
+    ///Reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq")]
     pub xq: f64,
-    ///Transient reactance after EMF in d-axis
+    ///Transient reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd_p")]
     pub xd_p: f64,
-    ///Transient reactance after EMF in q-axis
+    ///Transient reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq_p")]
     pub xq_p: f64,
-    ///Sub-Transient reactance after EMF in d-axis
+    ///Sub-Transient reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd_pp")]
     pub xd_pp: f64,
-    ///Sub-Transient reactance after EMF in q-axis
+    ///Sub-Transient reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq_pp")]
     pub xq_pp: f64,
-    ///Stator leakage reactance
+    ///Stator leakage reactance. Units: pu.
     #[serde(rename = "Xl")]
     pub xl: f64,
-    ///Time constant of transient d-axis voltage Units: s.
+    ///Time constant of transient d-axis voltage. Units: s.
     #[serde(rename = "Td0_p")]
     pub td0_p: f64,
-    ///Time constant of transient q-axis voltage Units: s.
+    ///Time constant of transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_p")]
     pub tq0_p: f64,
-    ///Time constant of sub-transient d-axis voltage Units: s.
+    ///Time constant of sub-transient d-axis voltage. Units: s.
     #[serde(rename = "Td0_pp")]
     pub td0_pp: f64,
-    ///Time constant of sub-transient q-axis voltage Units: s.
+    ///Time constant of sub-transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_pp")]
     pub tq0_pp: f64,
 }
@@ -20215,37 +20865,37 @@ pub struct ServiceAssociation {
 pub struct SimpleAFMachine {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Resistance after EMF
+    ///Resistance after EMF. Units: pu.
     #[serde(rename = "R")]
     pub r: f64,
-    ///Reactance after EMF in d-axis
+    ///Reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd")]
     pub xd: f64,
-    ///Reactance after EMF in q-axis
+    ///Reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq")]
     pub xq: f64,
-    ///Transient reactance after EMF in d-axis
+    ///Transient reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd_p")]
     pub xd_p: f64,
-    ///Transient reactance after EMF in q-axis
+    ///Transient reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq_p")]
     pub xq_p: f64,
-    ///Sub-Transient reactance after EMF in d-axis
+    ///Sub-Transient reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd_pp")]
     pub xd_pp: f64,
-    ///Sub-Transient reactance after EMF in q-axis
+    ///Sub-Transient reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq_pp")]
     pub xq_pp: f64,
-    ///Time constant of transient d-axis voltage Units: s.
+    ///Time constant of transient d-axis voltage. Units: s.
     #[serde(rename = "Td0_p")]
     pub td0_p: f64,
-    ///Time constant of transient q-axis voltage Units: s.
+    ///Time constant of transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_p")]
     pub tq0_p: f64,
-    ///Time constant of sub-transient d-axis voltage Units: s.
+    ///Time constant of sub-transient d-axis voltage. Units: s.
     #[serde(rename = "Td0_pp")]
     pub td0_pp: f64,
-    ///Time constant of sub-transient q-axis voltage Units: s.
+    ///Time constant of sub-transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_pp")]
     pub tq0_pp: f64,
 }
@@ -20255,40 +20905,40 @@ pub struct SimpleAFMachine {
 pub struct SimpleFullMachine {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Resistance after EMF
+    ///Resistance after EMF. Units: pu.
     #[serde(rename = "R")]
     pub r: f64,
-    ///Field motor winding resistance
+    ///Field motor winding resistance. Units: pu.
     #[serde(rename = "R_f")]
     pub r_f: f64,
-    ///Damping rotor winding resistance on d-axis, denoted as RD in Machowski
+    ///Damping rotor winding resistance on d-axis, denoted as RD in Machowski. Units: pu.
     #[serde(rename = "R_1d")]
     pub r_1d: f64,
-    ///Damping rotor winding resistance on q-axis, denoted as RQ in Machowski
+    ///Damping rotor winding resistance on q-axis, denoted as RQ in Machowski. Units: pu.
     #[serde(rename = "R_1q")]
     pub r_1q: f64,
-    ///Inductance of fictitious damping that represent the effect of the three-phase stator winding in the d-axis of the rotor, in per unit. This value is denoted as Lad + Ll in Kundur (and Ld in Machowski)
+    ///Inductance of fictitious damping that represent the effect of the three-phase stator winding in the d-axis of the rotor, in per unit. This value is denoted as Lad + Ll in Kundur (and Ld in Machowski). Units: pu.
     #[serde(rename = "L_d")]
     pub l_d: f64,
-    ///Inductance of fictitious damping that represent the effect of the three-phase stator winding in the q-axis of the rotor, in per unit. This value is denoted as Laq + Ll in Kundur
+    ///Inductance of fictitious damping that represent the effect of the three-phase stator winding in the q-axis of the rotor, in per unit. This value is denoted as Laq + Ll in Kundur. Units: pu.
     #[serde(rename = "L_q")]
     pub l_q: f64,
-    ///Mutual inductance between stator winding and rotor field (and damping) winding inductance on d-axis
+    ///Mutual inductance between stator winding and rotor field (and damping) winding inductance on d-axis. Units: pu.
     #[serde(rename = "L_ad")]
     pub l_ad: f64,
-    ///Mutual inductance between stator winding and rotor damping winding inductance on q-axi
+    ///Mutual inductance between stator winding and rotor damping winding inductance on q-axi. Units: pu.
     #[serde(rename = "L_aq")]
     pub l_aq: f64,
-    ///Mutual inductance between rotor field winding and rotor damping winding inductance on d-axis
+    ///Mutual inductance between rotor field winding and rotor damping winding inductance on d-axis. Units: pu.
     #[serde(rename = "L_f1d")]
     pub l_f1d: f64,
-    ///Field rotor winding inductance
+    ///Field rotor winding inductance. Units: pu.
     #[serde(rename = "L_ff")]
     pub l_ff: f64,
-    ///Inductance of the d-axis rotor damping circuit
+    ///Inductance of the d-axis rotor damping circuit. Units: pu.
     #[serde(rename = "L_1d")]
     pub l_1d: f64,
-    ///Inductance of the q-axis rotor damping circuit
+    ///Inductance of the q-axis rotor damping circuit. Units: pu.
     #[serde(rename = "L_1q")]
     pub l_1q: f64,
 }
@@ -20298,42 +20948,124 @@ pub struct SimpleFullMachine {
 pub struct SimpleMarconatoMachine {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Resistance after EMF
+    ///Resistance after EMF. Units: pu.
     #[serde(rename = "R")]
     pub r: f64,
-    ///Reactance after EMF in d-axis
+    ///Reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd")]
     pub xd: f64,
-    ///Reactance after EMF in q-axis
+    ///Reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq")]
     pub xq: f64,
-    ///Transient reactance after EMF in d-axis
+    ///Transient reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd_p")]
     pub xd_p: f64,
-    ///Transient reactance after EMF in q-axis
+    ///Transient reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq_p")]
     pub xq_p: f64,
-    ///Sub-Transient reactance after EMF in d-axis
+    ///Sub-Transient reactance after EMF in d-axis. Units: pu.
     #[serde(rename = "Xd_pp")]
     pub xd_pp: f64,
-    ///Sub-Transient reactance after EMF in q-axis
+    ///Sub-Transient reactance after EMF in q-axis. Units: pu.
     #[serde(rename = "Xq_pp")]
     pub xq_pp: f64,
-    ///Time constant of transient d-axis voltage
+    ///Time constant of transient d-axis voltage. Units: s.
     #[serde(rename = "Td0_p")]
     pub td0_p: f64,
-    ///Time constant of transient q-axis voltage
+    ///Time constant of transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_p")]
     pub tq0_p: f64,
-    ///Time constant of sub-transient d-axis voltage
+    ///Time constant of sub-transient d-axis voltage. Units: s.
     #[serde(rename = "Td0_pp")]
     pub td0_pp: f64,
-    ///Time constant of sub-transient q-axis voltage
+    ///Time constant of sub-transient q-axis voltage. Units: s.
     #[serde(rename = "Tq0_pp")]
     pub tq0_pp: f64,
-    ///Time constant of d-axis additional leakage
+    ///Time constant of d-axis additional leakage. Units: s.
     #[serde(rename = "T_AA")]
     pub t_aa: f64,
+}
+///Parameters of 3-states three-phase single cage induction machine with quadratic torque-speed relationship It has no bus of its own: exactly one static injection device, with the same name, names it in its `dynamic_injector` property, and that device supplies the rest of its data.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct SimplifiedSingleCageInductionMachine {
+    ///Unique integer identifier for this component.
+    pub id: i64,
+    ///Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.
+    pub name: String,
+    ///Armature stator resistance. Units: pu.
+    #[serde(rename = "R_s")]
+    pub r_s: f64,
+    ///Rotor resistance. Units: pu.
+    #[serde(rename = "R_r")]
+    pub r_r: f64,
+    ///Stator Leakage Reactance. Units: pu.
+    #[serde(rename = "X_ls")]
+    pub x_ls: f64,
+    ///Rotor Leakage Reactance. Units: pu.
+    #[serde(rename = "X_lr")]
+    pub x_lr: f64,
+    ///Stator-Rotor Mutual Reactance. Units: pu.
+    #[serde(rename = "X_m")]
+    pub x_m: f64,
+    ///Motor Inertia Constant [s]. Units: s.
+    #[serde(rename = "H")]
+    pub h: f64,
+    ///Torque-Speed Quadratic Term
+    #[serde(rename = "A")]
+    pub a: f64,
+    ///Torque-Speed Linear Term
+    #[serde(rename = "B")]
+    pub b: f64,
+    ///Reference torque parameter
+    pub torque_ref: f64,
+    ///Susceptance Initialization Corrector Term
+    #[serde(rename = "B_shunt")]
+    pub b_shunt: f64,
+    ///Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.
+    ///Constraint: exclusiveMinimum=0
+    pub base_power: f64,
+}
+///Parameters of 5-states three-phase single cage induction machine with quadratic torque-speed relationship It has no bus of its own: exactly one static injection device, with the same name, names it in its `dynamic_injector` property, and that device supplies the rest of its data.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct SingleCageInductionMachine {
+    ///Unique integer identifier for this component.
+    pub id: i64,
+    ///Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.
+    pub name: String,
+    ///Armature stator resistance. Units: pu.
+    #[serde(rename = "R_s")]
+    pub r_s: f64,
+    ///Rotor resistance. Units: pu.
+    #[serde(rename = "R_r")]
+    pub r_r: f64,
+    ///Stator Leakage Reactance. Units: pu.
+    #[serde(rename = "X_ls")]
+    pub x_ls: f64,
+    ///Rotor Leakage Reactance. Units: pu.
+    #[serde(rename = "X_lr")]
+    pub x_lr: f64,
+    ///Stator-Rotor Mutual Reactance. Units: pu.
+    #[serde(rename = "X_m")]
+    pub x_m: f64,
+    ///Motor Inertia Constant [s]. Units: s.
+    #[serde(rename = "H")]
+    pub h: f64,
+    ///Torque-Speed Quadratic Term
+    #[serde(rename = "A")]
+    pub a: f64,
+    ///Torque-Speed Linear Term
+    #[serde(rename = "B")]
+    pub b: f64,
+    ///Reference torque parameter
+    pub torque_ref: f64,
+    ///Susceptance Initialization Corrector Term
+    #[serde(rename = "B_shunt")]
+    pub b_shunt: f64,
+    ///Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.
+    ///Constraint: exclusiveMinimum=0
+    pub base_power: f64,
 }
 ///Parameters of single mass shaft model. Typically represents the rotor mass
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -20341,7 +21073,7 @@ pub struct SimpleMarconatoMachine {
 pub struct SingleMass {
     ///Unique integer identifier for this component
     pub id: i64,
-    ///Rotor inertia constant in MWs/MVA
+    ///Rotor inertia constant in MWs/MVA. Units: s.
     #[serde(rename = "H")]
     pub h: f64,
     ///Rotor natural damping
@@ -20393,7 +21125,7 @@ pub struct TGSimple {
     pub id: i64,
     ///Inverse droop parameter
     pub d_t: f64,
-    ///Turbine governor low-pass time constant
+    ///Turbine governor low-pass time constant. Units: s.
     #[serde(rename = "Tm")]
     pub tm: f64,
     ///Reference power set-point
@@ -20429,31 +21161,51 @@ pub struct TradingHubAssociation {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct VirtualInertia {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///VSM inertia constant. Units: s.
     #[serde(rename = "Ta")]
     pub ta: f64,
+    ///VSM damping constant
     pub kd: f64,
-    pub komega: f64,
+    ///frequency droop gain
+    pub k_frequency: f64,
+    ///Reference Power Set-point (pu). Units: pu.
     #[serde(rename = "P_ref", skip_serializing_if = "Option::is_none")]
     pub p_ref: Option<f64>,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct VoltageModeControl {
+    ///Unique integer identifier for this component
+    pub id: i64,
+    ///voltage controller proportional gain
     pub kpv: f64,
+    ///voltage controller integral gain
     pub kiv: f64,
+    ///Binary variable to enable feed-forward gain of voltage
     pub kffv: f64,
+    ///virtual resistance
     pub rv: f64,
+    ///virtual inductance
     pub lv: f64,
+    ///current controller proportional gain
     pub kpc: f64,
+    ///current controller integral gain
     pub kic: f64,
+    ///Binary variable to enable feed-forward gain of current
     pub kffi: f64,
-    pub omegaad: f64,
+    ///Active damping filter cutoff frequency, in natural units. Units: Hz.
+    pub active_damping_filter_frequency: f64,
+    ///active damping gain
     pub kad: f64,
 }
 ///Parameters for the DC-side with a Battery Energy Storage System from 'Grid-Coupled Dynamic Response of Battery-Driven Voltage Source Converters'
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ZeroOrderBESS {
+    ///Unique integer identifier for this component
+    pub id: i64,
     ///Rated voltage (V)
     pub rated_voltage: f64,
     ///Rated current (A)

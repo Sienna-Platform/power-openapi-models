@@ -55,6 +55,14 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
+        "ACBus",
+        "voltage_setpoint",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Voltage",
+        }),
+    ),
+    (
         "AGC",
         "bias",
         FieldUnit::Fixed(Unit {
@@ -68,6 +76,158 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         FieldUnit::Fixed(Unit {
             unit: "s",
             quantity: "Duration",
+        }),
+    ),
+    (
+        "AVRTypeI",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AVRTypeI",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AVRTypeI",
+        "tf",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AVRTypeI",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AVRTypeII",
+        "t1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AVRTypeII",
+        "t2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AVRTypeII",
+        "t3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AVRTypeII",
+        "t4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AVRTypeII",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AVRTypeII",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ActiveConstantPowerLoad",
+        "base_power",
+        FieldUnit::Fixed(Unit {
+            unit: "MVA",
+            quantity: "ApparentPower",
+        }),
+    ),
+    (
+        "ActiveConstantPowerLoad",
+        "frequency_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
+        }),
+    ),
+    (
+        "ActiveConstantPowerLoad",
+        "p_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "ActivePower",
+        }),
+    ),
+    (
+        "ActiveConstantPowerLoad",
+        "q_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "ReactivePower",
+        }),
+    ),
+    (
+        "ActiveConstantPowerLoad",
+        "v_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Voltage",
+        }),
+    ),
+    (
+        "ActivePowerDroop",
+        "active_power_filter_frequency",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
+        }),
+    ),
+    (
+        "ActivePowerDroop",
+        "p_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "ActivePower",
+        }),
+    ),
+    (
+        "ActivePowerPI",
+        "active_power_filter_frequency",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
+        }),
+    ),
+    (
+        "ActivePowerPI",
+        "p_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "ActivePower",
         }),
     ),
     (
@@ -95,6 +255,142 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
+        "ActiveVirtualOscillator",
+        "p_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "ActivePower",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "base_power",
+        FieldUnit::Fixed(Unit {
+            unit: "MVA",
+            quantity: "ApparentPower",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "fh",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "fl",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "frequency_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "p_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "ActivePower",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "q_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "ReactivePower",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "t_iq",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "t_rv",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "tfh",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "tfl",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "tg",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "tp",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "tpord",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "trf",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "tv",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "AggregateDistributedGenerationA",
+        "vpr",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Voltage",
+        }),
+    ),
+    (
         "AggregateTransportTechnology",
         "capacity_limits",
         FieldUnit::Fixed(Unit {
@@ -116,6 +412,14 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         FieldUnit::Fixed(Unit {
             unit: "MW",
             quantity: "ActivePower",
+        }),
+    ),
+    (
+        "AndersonFouadMachine",
+        "r",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
         }),
     ),
     (
@@ -148,6 +452,54 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         FieldUnit::Fixed(Unit {
             unit: "s",
             quantity: "Duration",
+        }),
+    ),
+    (
+        "AndersonFouadMachine",
+        "xd",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "AndersonFouadMachine",
+        "xd_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "AndersonFouadMachine",
+        "xd_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "AndersonFouadMachine",
+        "xq",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "AndersonFouadMachine",
+        "xq_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "AndersonFouadMachine",
+        "xq_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
         }),
     ),
     (
@@ -290,11 +642,91 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
+        "BaseMachine",
+        "r",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "BaseMachine",
+        "xd_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
         "BilateralTransaction",
         "max_active_power",
         FieldUnit::Fixed(Unit {
             unit: "MW",
             quantity: "ActivePower",
+        }),
+    ),
+    (
+        "CSVGN1",
+        "base_power",
+        FieldUnit::Fixed(Unit {
+            unit: "MVA",
+            quantity: "ApparentPower",
+        }),
+    ),
+    (
+        "CSVGN1",
+        "t1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "CSVGN1",
+        "t2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "CSVGN1",
+        "t3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "CSVGN1",
+        "t4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "CSVGN1",
+        "t5",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "CSVGN1",
+        "vmax",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Voltage",
+        }),
+    ),
+    (
+        "CSVGN1",
+        "vmin",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Voltage",
         }),
     ),
     (
@@ -383,6 +815,126 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         FieldUnit::Fixed(Unit {
             unit: "pu",
             quantity: "Voltage",
+        }),
+    ),
+    (
+        "DEGOV",
+        "t1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV",
+        "t2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV",
+        "t3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV",
+        "t4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV",
+        "t5",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV",
+        "t6",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV",
+        "td",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV1",
+        "t1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV1",
+        "t2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV1",
+        "t3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV1",
+        "t4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV1",
+        "t5",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV1",
+        "t6",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV1",
+        "td",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DEGOV1",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
         }),
     ),
     (
@@ -584,6 +1136,52 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
     ),
     (
         "DiscreteControlledACBranch",
+        "rating_b",
+        FieldUnit::Discriminated {
+            discriminator: "power_units",
+            units: &[
+                (
+                    "NATURAL_UNITS",
+                    Unit {
+                        unit: "MVA",
+                        quantity: "ApparentPower",
+                    },
+                ),
+                (
+                    "COMPONENT_BASE",
+                    Unit {
+                        unit: "pu",
+                        quantity: "ApparentPower",
+                    },
+                ),
+            ],
+        },
+    ),
+    (
+        "DiscreteControlledACBranch",
+        "rating_c",
+        FieldUnit::Discriminated {
+            discriminator: "power_units",
+            units: &[
+                (
+                    "NATURAL_UNITS",
+                    Unit {
+                        unit: "MVA",
+                        quantity: "ApparentPower",
+                    },
+                ),
+                (
+                    "COMPONENT_BASE",
+                    Unit {
+                        unit: "pu",
+                        quantity: "ApparentPower",
+                    },
+                ),
+            ],
+        },
+    ),
+    (
+        "DiscreteControlledACBranch",
         "reactive_power_flow",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -611,6 +1209,654 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         FieldUnit::Fixed(Unit {
             unit: "pu",
             quantity: "Reactance",
+        }),
+    ),
+    (
+        "DynamicExponentialLoad",
+        "base_power",
+        FieldUnit::Fixed(Unit {
+            unit: "MVA",
+            quantity: "ApparentPower",
+        }),
+    ),
+    (
+        "DynamicExponentialLoad",
+        "t_p",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DynamicExponentialLoad",
+        "t_q",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "DynamicGenerator",
+        "base_power",
+        FieldUnit::Fixed(Unit {
+            unit: "MVA",
+            quantity: "ApparentPower",
+        }),
+    ),
+    (
+        "DynamicGenerator",
+        "frequency_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
+        }),
+    ),
+    (
+        "DynamicInverter",
+        "base_power",
+        FieldUnit::Fixed(Unit {
+            unit: "MVA",
+            quantity: "ApparentPower",
+        }),
+    ),
+    (
+        "DynamicInverter",
+        "frequency_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
+        }),
+    ),
+    (
+        "ESAC1A",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC1A",
+        "tb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC1A",
+        "tc",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC1A",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC1A",
+        "tf",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC1A",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC6A",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC6A",
+        "tb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC6A",
+        "tc",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC6A",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC6A",
+        "th",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC6A",
+        "tj",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC6A",
+        "tk",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC6A",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC8B",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC8B",
+        "td",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC8B",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESAC8B",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESDC1A",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESDC1A",
+        "tb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESDC1A",
+        "tc",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESDC1A",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESDC1A",
+        "tf",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESDC1A",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESDC2A",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESDC2A",
+        "tb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESDC2A",
+        "tc",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESDC2A",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESDC2A",
+        "tf",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESDC2A",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESST1A",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESST1A",
+        "tb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESST1A",
+        "tb1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESST1A",
+        "tc",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESST1A",
+        "tc1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESST1A",
+        "tf",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESST1A",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESST4B",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ESST4B",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EX4VSA",
+        "k1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EX4VSA",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EX4VSA",
+        "tb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EX4VSA",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC1",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC1",
+        "tb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC1",
+        "tc",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC1",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC1",
+        "tf",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC1",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC1A",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC1A",
+        "tb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC1A",
+        "tc",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC1A",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC1A",
+        "tf",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC1A",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC2",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC2",
+        "tb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC2",
+        "tc",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC2",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC2",
+        "tf",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXAC2",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXPIC1",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXPIC1",
+        "ta_2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXPIC1",
+        "ta_3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXPIC1",
+        "ta_4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXPIC1",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXPIC1",
+        "tf_1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXPIC1",
+        "tf_2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXPIC1",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXST1",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXST1",
+        "tb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXST1",
+        "tc",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXST1",
+        "tf",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "EXST1",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
         }),
     ),
     (
@@ -1084,35 +2330,44 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
-        "FACTSControlDevice",
-        "regulated_bus_number",
+        "FiveMassShaft",
+        "h",
         FieldUnit::Fixed(Unit {
-            unit: "1",
-            quantity: "Dimensionless",
+            unit: "s",
+            quantity: "Duration",
         }),
     ),
     (
-        "FACTSControlDevice",
-        "voltage_setpoint",
-        FieldUnit::Discriminated {
-            discriminator: "voltage_setpoint_units",
-            units: &[
-                (
-                    "NATURAL_UNITS",
-                    Unit {
-                        unit: "kV",
-                        quantity: "Voltage",
-                    },
-                ),
-                (
-                    "COMPONENT_BASE",
-                    Unit {
-                        unit: "pu",
-                        quantity: "Voltage",
-                    },
-                ),
-            ],
-        },
+        "FiveMassShaft",
+        "h_ex",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "FiveMassShaft",
+        "h_hp",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "FiveMassShaft",
+        "h_ip",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "FiveMassShaft",
+        "h_lp",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
     ),
     (
         "FixedAdmittance",
@@ -1144,6 +2399,214 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
                 ),
             ],
         },
+    ),
+    (
+        "FixedFrequency",
+        "frequency",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
+        }),
+    ),
+    (
+        "FullMachine",
+        "l_1d",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "FullMachine",
+        "l_1q",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "FullMachine",
+        "l_ad",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "FullMachine",
+        "l_aq",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "FullMachine",
+        "l_d",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "FullMachine",
+        "l_f1d",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "FullMachine",
+        "l_ff",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "FullMachine",
+        "l_q",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "FullMachine",
+        "r",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "FullMachine",
+        "r_1d",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "FullMachine",
+        "r_1q",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "FullMachine",
+        "r_f",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "GasTG",
+        "t1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GasTG",
+        "t2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GasTG",
+        "t3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GeneralGovModel",
+        "t_act",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GeneralGovModel",
+        "t_eng",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GeneralGovModel",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GeneralGovModel",
+        "tb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GeneralGovModel",
+        "tc",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GeneralGovModel",
+        "td_gov",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GeneralGovModel",
+        "tf_load",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GeneralGovModel",
+        "tpelec",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GeneralGovModel",
+        "tsa",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GeneralGovModel",
+        "tsb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
     ),
     (
         "GenericArcImpedance",
@@ -1202,25 +2665,10 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
     (
         "GenericArcImpedance",
         "r",
-        FieldUnit::Discriminated {
-            discriminator: "parameter_units",
-            units: &[
-                (
-                    "NATURAL_UNITS",
-                    Unit {
-                        unit: "ohm",
-                        quantity: "Resistance",
-                    },
-                ),
-                (
-                    "COMPONENT_BASE",
-                    Unit {
-                        unit: "pu",
-                        quantity: "Resistance",
-                    },
-                ),
-            ],
-        },
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
     ),
     (
         "GenericArcImpedance",
@@ -1248,25 +2696,90 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
     (
         "GenericArcImpedance",
         "x",
-        FieldUnit::Discriminated {
-            discriminator: "parameter_units",
-            units: &[
-                (
-                    "NATURAL_UNITS",
-                    Unit {
-                        unit: "ohm",
-                        quantity: "Reactance",
-                    },
-                ),
-                (
-                    "COMPONENT_BASE",
-                    Unit {
-                        unit: "pu",
-                        quantity: "Reactance",
-                    },
-                ),
-            ],
-        },
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "GenericDER",
+        "base_power",
+        FieldUnit::Fixed(Unit {
+            unit: "MVA",
+            quantity: "ApparentPower",
+        }),
+    ),
+    (
+        "GenericDER",
+        "p_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "ActivePower",
+        }),
+    ),
+    (
+        "GenericDER",
+        "q_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "ReactivePower",
+        }),
+    ),
+    (
+        "GenericDER",
+        "t_f_delay",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GenericDER",
+        "t_pord",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GenericDER",
+        "t_v_delay",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GenericDER",
+        "tg",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GenericDER",
+        "tp",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GenericDER",
+        "trf",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "GenericDER",
+        "trv",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
     ),
     (
         "GeometricDistributionForcedOutage",
@@ -2305,6 +3818,158 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
+        "HydroTurbineGov",
+        "tf",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "HydroTurbineGov",
+        "tg",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "HydroTurbineGov",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "HydroTurbineGov",
+        "tw",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEEST",
+        "t1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEEST",
+        "t2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEEST",
+        "t3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEEST",
+        "t4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEEST",
+        "t5",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEEST",
+        "t6",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEET1",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEET1",
+        "te",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEET1",
+        "tf",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEET1",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEETurbineGov1",
+        "t3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEETurbineGov1",
+        "t4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEETurbineGov1",
+        "t5",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEETurbineGov1",
+        "t6",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "IEEETurbineGov1",
+        "t7",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
         "ImpedanceCorrectionData",
         "phase_angle_correction_curve",
         FieldUnit::Fixed(Unit {
@@ -2350,14 +4015,6 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         FieldUnit::Fixed(Unit {
             unit: "MWh",
             quantity: "ElectricalEnergy",
-        }),
-    ),
-    (
-        "InterconnectingConverter",
-        "ac_voltage_setpoint",
-        FieldUnit::Fixed(Unit {
-            unit: "kV",
-            quantity: "Voltage",
         }),
     ),
     (
@@ -2940,6 +4597,78 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
+        "KauraPLL",
+        "frequency_lp",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
+        }),
+    ),
+    (
+        "LCFilter",
+        "cf",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Susceptance",
+        }),
+    ),
+    (
+        "LCFilter",
+        "lf",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "LCFilter",
+        "rf",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "LCLFilter",
+        "cf",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Susceptance",
+        }),
+    ),
+    (
+        "LCLFilter",
+        "lf",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "LCLFilter",
+        "lg",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "LCLFilter",
+        "rf",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "LCLFilter",
+        "rg",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
         "Line",
         "active_power_flow",
         FieldUnit::Discriminated {
@@ -3240,6 +4969,102 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
+        "MarconatoMachine",
+        "r",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "MarconatoMachine",
+        "t_aa",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "MarconatoMachine",
+        "td0_p",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "MarconatoMachine",
+        "td0_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "MarconatoMachine",
+        "tq0_p",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "MarconatoMachine",
+        "tq0_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "MarconatoMachine",
+        "xd",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "MarconatoMachine",
+        "xd_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "MarconatoMachine",
+        "xd_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "MarconatoMachine",
+        "xq",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "MarconatoMachine",
+        "xq_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "MarconatoMachine",
+        "xq_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
         "MaximumCapacityRequirements",
         "max_capacity_mw",
         FieldUnit::Fixed(Unit {
@@ -3467,6 +5292,62 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
+        "OneDOneQMachine",
+        "r",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "OneDOneQMachine",
+        "td0_p",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "OneDOneQMachine",
+        "tq0_p",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "OneDOneQMachine",
+        "xd",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "OneDOneQMachine",
+        "xd_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "OneDOneQMachine",
+        "xq",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "OneDOneQMachine",
+        "xq_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
         "OnlineReserve",
         "requirement",
         FieldUnit::Fixed(Unit {
@@ -3491,6 +5372,390 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
+        "PIDGOV",
+        "t_reg",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PIDGOV",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PIDGOV",
+        "tb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PIDGOV",
+        "tw",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2A",
+        "t1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2A",
+        "t2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2A",
+        "t3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2A",
+        "t4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2A",
+        "t6",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2A",
+        "t7",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2A",
+        "t8",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2A",
+        "t9",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2A",
+        "tw1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2A",
+        "tw2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2A",
+        "tw3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2A",
+        "tw4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "t1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "t10",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "t11",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "t2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "t3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "t4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "t6",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "t7",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "t8",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "t9",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "tw1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "tw2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "tw3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2B",
+        "tw4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "t1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "t10",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "t11",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "t12",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "t13",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "t2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "t3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "t4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "t6",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "t7",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "t8",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "t9",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "tcomp",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "tw1",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "tw2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "tw3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PSS2C",
+        "tw4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "PeriodicVariableSource",
+        "base_power",
+        FieldUnit::Fixed(Unit {
+            unit: "MVA",
+            quantity: "ApparentPower",
+        }),
+    ),
+    (
         "PointToPointBid",
         "max_active_power",
         FieldUnit::Fixed(Unit {
@@ -3504,30 +5769,6 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         FieldUnit::Fixed(Unit {
             unit: "USD/MWh",
             quantity: "CostPerEnergy",
-        }),
-    ),
-    (
-        "PortfolioFinancialData",
-        "discount_rate",
-        FieldUnit::Fixed(Unit {
-            unit: "1",
-            quantity: "Fraction",
-        }),
-    ),
-    (
-        "PortfolioFinancialData",
-        "inflation_rate",
-        FieldUnit::Fixed(Unit {
-            unit: "1",
-            quantity: "Fraction",
-        }),
-    ),
-    (
-        "PortfolioFinancialData",
-        "interest_rate",
-        FieldUnit::Fixed(Unit {
-            unit: "1",
-            quantity: "Fraction",
         }),
     ),
     (
@@ -3631,6 +5872,78 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
+        "RECurrentControlB",
+        "t_iq",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "RECurrentControlB",
+        "t_rv",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "RLFilter",
+        "lf",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "RLFilter",
+        "rf",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "ReactivePowerDroop",
+        "reactive_power_filter_frequency",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
+        }),
+    ),
+    (
+        "ReactivePowerDroop",
+        "v_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Voltage",
+        }),
+    ),
+    (
+        "ReactivePowerPI",
+        "q_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "ReactivePower",
+        }),
+    ),
+    (
+        "ReactivePowerPI",
+        "reactive_power_filter_frequency",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
+        }),
+    ),
+    (
+        "ReactivePowerPI",
+        "v_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Voltage",
+        }),
+    ),
+    (
         "ReactiveRenewableControllerAB",
         "t_fltr",
         FieldUnit::Fixed(Unit {
@@ -3660,6 +5973,30 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         FieldUnit::Fixed(Unit {
             unit: "s",
             quantity: "Duration",
+        }),
+    ),
+    (
+        "ReactiveVirtualOscillator",
+        "q_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "ReactivePower",
+        }),
+    ),
+    (
+        "ReactiveVirtualOscillator",
+        "v_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Voltage",
+        }),
+    ),
+    (
+        "ReducedOrderPLL",
+        "frequency_lp",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
         }),
     ),
     (
@@ -3913,6 +6250,14 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
     ),
     (
         "RoundRotorMachine",
+        "r",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "RoundRotorMachine",
         "td0_p",
         FieldUnit::Fixed(Unit {
             unit: "s",
@@ -3938,6 +6283,62 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
     (
         "RoundRotorMachine",
         "tq0_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "RoundRotorMachine",
+        "xd",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "RoundRotorMachine",
+        "xd_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "RoundRotorMachine",
+        "xd_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "RoundRotorMachine",
+        "xl",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "RoundRotorMachine",
+        "xq",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "RoundRotorMachine",
+        "xq_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SCRX",
+        "te",
         FieldUnit::Fixed(Unit {
             unit: "s",
             quantity: "Duration",
@@ -3960,6 +6361,86 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
+        "ST6B",
+        "t_da",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ST6B",
+        "tg",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ST6B",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ST8C",
+        "t_a",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ST8C",
+        "t_f",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "ST8C",
+        "tr",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "STAB1",
+        "t",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "STAB1",
+        "t3",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "STAB1",
+        "t4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "SalientPoleMachine",
+        "r",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
         "SalientPoleMachine",
         "td0_p",
         FieldUnit::Fixed(Unit {
@@ -3981,6 +6462,54 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         FieldUnit::Fixed(Unit {
             unit: "s",
             quantity: "Duration",
+        }),
+    ),
+    (
+        "SalientPoleMachine",
+        "xd",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SalientPoleMachine",
+        "xd_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SalientPoleMachine",
+        "xd_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SalientPoleMachine",
+        "xl",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SalientPoleMachine",
+        "xq",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SauerPaiMachine",
+        "r",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
         }),
     ),
     (
@@ -4016,31 +6545,64 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         }),
     ),
     (
-        "SeriesCompensator",
-        "active_power_flow",
-        FieldUnit::Discriminated {
-            discriminator: "power_units",
-            units: &[
-                (
-                    "NATURAL_UNITS",
-                    Unit {
-                        unit: "MW",
-                        quantity: "ActivePower",
-                    },
-                ),
-                (
-                    "COMPONENT_BASE",
-                    Unit {
-                        unit: "pu",
-                        quantity: "ActivePower",
-                    },
-                ),
-            ],
-        },
+        "SauerPaiMachine",
+        "xd",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SauerPaiMachine",
+        "xd_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SauerPaiMachine",
+        "xd_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SauerPaiMachine",
+        "xl",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SauerPaiMachine",
+        "xq",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SauerPaiMachine",
+        "xq_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SauerPaiMachine",
+        "xq_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
     ),
     (
         "SeriesCompensator",
-        "active_power_flow_setpoint",
+        "active_power_flow",
         FieldUnit::Discriminated {
             discriminator: "power_units",
             units: &[
@@ -4179,29 +6741,6 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
                     Unit {
                         unit: "pu",
                         quantity: "ApparentPower",
-                    },
-                ),
-            ],
-        },
-    ),
-    (
-        "SeriesCompensator",
-        "reactance_limits",
-        FieldUnit::Discriminated {
-            discriminator: "parameter_units",
-            units: &[
-                (
-                    "NATURAL_UNITS",
-                    Unit {
-                        unit: "ohm",
-                        quantity: "Reactance",
-                    },
-                ),
-                (
-                    "COMPONENT_BASE",
-                    Unit {
-                        unit: "pu",
-                        quantity: "Reactance",
                     },
                 ),
             ],
@@ -4378,6 +6917,14 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
     ),
     (
         "SimpleAFMachine",
+        "r",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "SimpleAFMachine",
         "td0_p",
         FieldUnit::Fixed(Unit {
             unit: "s",
@@ -4403,6 +6950,366 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
     (
         "SimpleAFMachine",
         "tq0_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "SimpleAFMachine",
+        "xd",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleAFMachine",
+        "xd_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleAFMachine",
+        "xd_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleAFMachine",
+        "xq",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleAFMachine",
+        "xq_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleAFMachine",
+        "xq_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleFullMachine",
+        "l_1d",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleFullMachine",
+        "l_1q",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleFullMachine",
+        "l_ad",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleFullMachine",
+        "l_aq",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleFullMachine",
+        "l_d",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleFullMachine",
+        "l_f1d",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleFullMachine",
+        "l_ff",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleFullMachine",
+        "l_q",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleFullMachine",
+        "r",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "SimpleFullMachine",
+        "r_1d",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "SimpleFullMachine",
+        "r_1q",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "SimpleFullMachine",
+        "r_f",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "SimpleMarconatoMachine",
+        "r",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "SimpleMarconatoMachine",
+        "t_aa",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "SimpleMarconatoMachine",
+        "td0_p",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "SimpleMarconatoMachine",
+        "td0_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "SimpleMarconatoMachine",
+        "tq0_p",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "SimpleMarconatoMachine",
+        "tq0_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "SimpleMarconatoMachine",
+        "xd",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleMarconatoMachine",
+        "xd_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleMarconatoMachine",
+        "xd_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleMarconatoMachine",
+        "xq",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleMarconatoMachine",
+        "xq_p",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimpleMarconatoMachine",
+        "xq_pp",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimplifiedSingleCageInductionMachine",
+        "base_power",
+        FieldUnit::Fixed(Unit {
+            unit: "MVA",
+            quantity: "ApparentPower",
+        }),
+    ),
+    (
+        "SimplifiedSingleCageInductionMachine",
+        "h",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "SimplifiedSingleCageInductionMachine",
+        "r_r",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "SimplifiedSingleCageInductionMachine",
+        "r_s",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "SimplifiedSingleCageInductionMachine",
+        "x_lr",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimplifiedSingleCageInductionMachine",
+        "x_ls",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SimplifiedSingleCageInductionMachine",
+        "x_m",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SingleCageInductionMachine",
+        "base_power",
+        FieldUnit::Fixed(Unit {
+            unit: "MVA",
+            quantity: "ApparentPower",
+        }),
+    ),
+    (
+        "SingleCageInductionMachine",
+        "h",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "SingleCageInductionMachine",
+        "r_r",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "SingleCageInductionMachine",
+        "r_s",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Resistance",
+        }),
+    ),
+    (
+        "SingleCageInductionMachine",
+        "x_lr",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SingleCageInductionMachine",
+        "x_ls",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SingleCageInductionMachine",
+        "x_m",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "Reactance",
+        }),
+    ),
+    (
+        "SingleMass",
+        "h",
         FieldUnit::Fixed(Unit {
             unit: "s",
             quantity: "Duration",
@@ -5088,14 +7995,6 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
     ),
     (
         "SwitchedAdmittance",
-        "regulated_bus_number",
-        FieldUnit::Fixed(Unit {
-            unit: "1",
-            quantity: "Dimensionless",
-        }),
-    ),
-    (
-        "SwitchedAdmittance",
         "solved_admittance",
         FieldUnit::Discriminated {
             discriminator: "admittance_units",
@@ -5249,6 +8148,54 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
+        "TGSimple",
+        "tm",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "TGTypeI",
+        "t4",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "TGTypeI",
+        "t5",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "TGTypeI",
+        "tc",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "TGTypeI",
+        "ts",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "TGTypeII",
+        "t2",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
         "TModelHVDCLine",
         "active_power_flow",
         FieldUnit::Fixed(Unit {
@@ -5315,6 +8262,30 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
     (
         "TechnologyFinancialData",
         "debt_rate",
+        FieldUnit::Fixed(Unit {
+            unit: "1",
+            quantity: "Fraction",
+        }),
+    ),
+    (
+        "TechnologyFinancialData",
+        "discount_rate",
+        FieldUnit::Fixed(Unit {
+            unit: "1",
+            quantity: "Fraction",
+        }),
+    ),
+    (
+        "TechnologyFinancialData",
+        "inflation_rate",
+        FieldUnit::Fixed(Unit {
+            unit: "1",
+            quantity: "Fraction",
+        }),
+    ),
+    (
+        "TechnologyFinancialData",
+        "interest_rate",
         FieldUnit::Fixed(Unit {
             unit: "1",
             quantity: "Fraction",
@@ -6795,22 +9766,6 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
     ),
     (
         "TwoTerminalVSCLine",
-        "ac_voltage_setpoint_from",
-        FieldUnit::Fixed(Unit {
-            unit: "kV",
-            quantity: "Voltage",
-        }),
-    ),
-    (
-        "TwoTerminalVSCLine",
-        "ac_voltage_setpoint_to",
-        FieldUnit::Fixed(Unit {
-            unit: "kV",
-            quantity: "Voltage",
-        }),
-    ),
-    (
-        "TwoTerminalVSCLine",
         "active_power_flow",
         FieldUnit::Discriminated {
             discriminator: "power_units",
@@ -7237,6 +10192,22 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
         },
     ),
     (
+        "VirtualInertia",
+        "p_ref",
+        FieldUnit::Fixed(Unit {
+            unit: "pu",
+            quantity: "ActivePower",
+        }),
+    ),
+    (
+        "VirtualInertia",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
         "VirtualParticipant",
         "max_demand",
         FieldUnit::Fixed(Unit {
@@ -7322,11 +10293,52 @@ pub static FIELD_UNITS: &[(&str, &str, FieldUnit)] = &[
             ],
         },
     ),
+    (
+        "VoltageModeControl",
+        "active_damping_filter_frequency",
+        FieldUnit::Fixed(Unit {
+            unit: "Hz",
+            quantity: "Frequency",
+        }),
+    ),
+    (
+        "WPIDHY",
+        "t_reg",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "WPIDHY",
+        "ta",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "WPIDHY",
+        "tb",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
+    (
+        "WPIDHY",
+        "tw",
+        FieldUnit::Fixed(Unit {
+            unit: "s",
+            quantity: "Duration",
+        }),
+    ),
 ];
 /// `(type, field, base field)`: the sibling field that holds the base of a `pu` value, sorted.
 pub static UNIT_BASES: &[(&str, &str, &str)] = &[
     ("ACBus", "magnitude", "base_voltage"),
     ("ACBus", "voltage_limits", "base_voltage"),
+    ("ACBus", "voltage_setpoint", "base_voltage"),
     ("DCBus", "magnitude", "base_voltage"),
     ("DCBus", "voltage_limits", "base_voltage"),
     ("Source", "internal_voltage", "base_voltage"),
@@ -7390,6 +10402,7 @@ pub static CONVERSION_FACTORS: &[(&str, &str, f64)] = &[
     ("Susceptance", "S", 1f64),
     ("Voltage", "kV", 1f64),
     ("VoltagePerPower", "kV/MW", 1f64),
+    ("Volume", "km3", 1000000000f64),
     ("Volume", "m3", 1f64),
     ("VolumeFlowRate", "m3/s", 1f64),
 ];

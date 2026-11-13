@@ -3,7 +3,7 @@
  * Do not edit manually.
  * InfrastructureCoreOpenAPIModels
  * Domain-neutral shared types: the unit convention, the function-data family, and the value shapes and supplemental attributes that carry no power semantics. Consumed by the data layer and the time series store, neither of which should inherit power-specific definitions.
- * OpenAPI spec version: 0.4.0
+ * OpenAPI spec version: 0.5.0
  */
 import * as zod from "zod";
 

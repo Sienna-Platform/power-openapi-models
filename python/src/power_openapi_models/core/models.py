@@ -140,13 +140,13 @@ class DCBus(BaseModel):
     )
     base_voltage: float | None = Field(
         None,
-        description="The base voltage. in psy5 a required param with an option to be nothing Units: kV.",
+        description="The base voltage. in psy5 a required param with an option to be nothing. Units: kV.",
     )
     id: int = Field(..., description="Unique integer identifier for this component.")
     load_zone: int | None = Field(None, description="ID of the load zone containing the DC bus.")
     magnitude: float | None = Field(
         None,
-        description="Voltage as a multiple of `base_voltage`. in psy5 a required param with an option to be nothing Units: pu.",
+        description="Voltage as a multiple of `base_voltage`. in psy5 a required param with an option to be nothing. Units: pu.",
     )
     name: str = Field(
         ...,
@@ -155,7 +155,7 @@ class DCBus(BaseModel):
     number: float = Field(..., description="A unique bus identification number (positive integer).")
     voltage_limits: MinMax | None = Field(
         None,
-        description="Limits on the voltage variation as multiples of `base_voltage`. in psy5 a required param with an option to be nothing Units: pu.",
+        description="Limits on the voltage variation as multiples of `base_voltage`. in psy5 a required param with an option to be nothing. Units: pu.",
     )
 
 
@@ -378,11 +378,19 @@ class ACBus(BaseModel):
     )
     bustype: ACBusType | None = Field(
         None,
-        description="Used to describe the connectivity and behavior of this bus. in psy5 a required param with an option to be nothing",
+        description="Power flow classification of this bus. It does not by itself say which bus voltage is held; the regulating devices and the bus `voltage_setpoint` say that.",
     )
-    angle: float | None = Field(None, description="Angle of the bus. Units: rad.")
+    angle: float | None = Field(
+        None,
+        description="Solved voltage angle from the last power flow, or the start value for the next solve. Units: rad.",
+    )
     magnitude: float | None = Field(
-        None, description="Voltage as a multiple of `base_voltage`. Units: pu."
+        None,
+        description="Solved voltage magnitude from the last power flow, or the start value for the next solve, as a multiple of `base_voltage`. This is a result, not a control target; the target is `voltage_setpoint`. Units: pu.",
+    )
+    voltage_setpoint: float | None = Field(
+        None,
+        description="Scheduled voltage magnitude for this bus, as a multiple of `base_voltage`. It is the target of every device that regulates this bus, at the bus or from a remote terminal. The devices that regulate this bus hold it at this value unless a droop or a reactive power limit prevents it. `null` when no device regulates this bus. Units: pu.",
     )
     voltage_limits: MinMax | None = Field(
         None,

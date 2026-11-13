@@ -3,13 +3,14 @@
 
 from __future__ import annotations
 from power_openapi_models.core.models import DbdPnts, FdbdPnts, MinMax, UpDown
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, PositiveFloat, RootModel, conint
 
 
 class AverageConverter(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    id: int = Field(..., description="Unique integer identifier for this component")
     rated_voltage: float = Field(..., description="Rated voltage (V)")
     rated_current: float = Field(..., description="Rated current (A)")
 
@@ -18,6 +19,7 @@ class RenewableEnergyConverterTypeA(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    id: int = Field(..., description="Unique integer identifier for this component")
     T_g: float = Field(..., description="Converter time constant. Units: s.")
     Rrpwr: float = Field(..., description="Low Voltage Power Logic (LVPL) ramp rate limit.")
     Brkpt: float = Field(..., description="LVPL characteristic voltage 2.")
@@ -65,6 +67,7 @@ class RenewableEnergyVoltageConverterTypeA(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    id: int = Field(..., description="Unique integer identifier for this component")
     T_g: float = Field(..., description="Converter time constant. Units: s.")
     Rrpwr: float = Field(..., description="Low Voltage Power Logic (LVPL) ramp rate limit.")
     Brkpt: float = Field(..., description="LVPL characteristic voltage 2.")
@@ -103,6 +106,7 @@ class FixedDCSource(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    id: int = Field(..., description="Unique integer identifier for this component")
     voltage: float = Field(..., description="Voltage (V)")
 
 
@@ -110,6 +114,7 @@ class ZeroOrderBESS(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    id: int = Field(..., description="Unique integer identifier for this component")
     rated_voltage: float = Field(..., description="Rated voltage (V)")
     rated_current: float = Field(..., description="Rated current (A)")
     battery_voltage: float = Field(..., description="Battery voltage")
@@ -128,42 +133,59 @@ class LCFilter(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    lf: float = Field(..., description="Filter inductance")
-    rf: float = Field(..., description="Filter resistance")
-    cf: float = Field(..., description="Filter capacitance")
+    id: int = Field(..., description="Unique integer identifier for this component")
+    lf: float = Field(..., description="Filter inductance. Units: pu.")
+    rf: float = Field(..., description="Filter resistance. Units: pu.")
+    cf: float = Field(..., description="Filter capacitance. Units: pu.")
 
 
 class LCLFilter(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    lf: float = Field(..., description="Series inductance of converter filter")
-    rf: float = Field(..., description="Series resistance of converter filter")
-    cf: float = Field(..., description="Shunt capacitance of converter filter")
-    lg: float = Field(..., description="Series inductance of converter filter to the grid")
-    rg: float = Field(..., description="Series resistance of converter filter to the grid")
+    id: int = Field(..., description="Unique integer identifier for this component")
+    lf: float = Field(..., description="Series inductance of converter filter. Units: pu.")
+    rf: float = Field(..., description="Series resistance of converter filter. Units: pu.")
+    cf: float = Field(..., description="Shunt capacitance of converter filter. Units: pu.")
+    lg: float = Field(
+        ..., description="Series inductance of converter filter to the grid. Units: pu."
+    )
+    rg: float = Field(
+        ..., description="Series resistance of converter filter to the grid. Units: pu."
+    )
 
 
 class RLFilter(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    rf: float = Field(..., description="Series resistance in p.u. of converter filter to the grid")
-    lf: float = Field(..., description="Series inductance in p.u. of converter filter to the grid")
+    id: int = Field(..., description="Unique integer identifier for this component")
+    rf: float = Field(
+        ..., description="Series resistance in p.u. of converter filter to the grid. Units: pu."
+    )
+    lf: float = Field(
+        ..., description="Series inductance in p.u. of converter filter to the grid. Units: pu."
+    )
 
 
 class FixedFrequency(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    frequency: float | None = Field(None, description="Reference frequency")
+    id: int = Field(..., description="Unique integer identifier for this component")
+    frequency: PositiveFloat = Field(
+        ..., description="Reference frequency, in natural units. Units: Hz."
+    )
 
 
 class KauraPLL(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    omega_lp: float = Field(..., description="PLL low-pass filter frequency")
+    id: int = Field(..., description="Unique integer identifier for this component")
+    frequency_lp: float = Field(
+        ..., description="PLL low-pass filter cutoff frequency, in natural units. Units: Hz."
+    )
     kp_pll: float = Field(..., description="PLL proportional gain")
     ki_pll: float = Field(..., description="PLL integral gain")
 
@@ -172,7 +194,10 @@ class ReducedOrderPLL(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    omega_lp: float = Field(..., description="PLL low-pass filter frequency")
+    id: int = Field(..., description="Unique integer identifier for this component")
+    frequency_lp: float = Field(
+        ..., description="PLL low-pass filter cutoff frequency, in natural units. Units: Hz."
+    )
     kp_pll: float = Field(..., description="PLL proportional gain")
     ki_pll: float = Field(..., description="PLL integral gain")
 
@@ -181,68 +206,89 @@ class CurrentModeControl(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    kpc: float
-    kic: float
-    kffv: float
+    id: int = Field(..., description="Unique integer identifier for this component")
+    kpc: float = Field(..., description="Current controller proportional gain")
+    kic: float = Field(..., description="Current controller integral gain")
+    kffv: float = Field(..., description="Gain to enable feed-forward gain of voltage")
 
 
 class RECurrentControlB(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    Q_Flag: bool
-    PQ_Flag: bool
-    Vdip_lim: MinMax
-    T_rv: float
-    dbd_pnts: DbdPnts
-    K_qv: float
-    Iqinj_lim: MinMax
-    V_ref0: float
-    K_vp: float
-    K_vi: float
-    T_iq: float
-    I_max: float
+    id: int = Field(..., description="Unique integer identifier for this component")
+    Q_Flag: bool = Field(..., description="Q Flag used for I_qinj")
+    PQ_Flag: bool = Field(..., description="PQ Flag used for the Current Limit Logic")
+    Vdip_lim: MinMax = Field(..., description="Limits for Voltage Dip Logic `(Vdip, Vup)`")
+    T_rv: float = Field(..., description="Voltage Filter Time Constant. Units: s.")
+    dbd_pnts: DbdPnts = Field(..., description="Voltage error deadband thresholds `(dbd1, dbd2)`")
+    K_qv: float = Field(
+        ..., description="Reactive current injection gain during over and undervoltage conditions"
+    )
+    Iqinj_lim: MinMax = Field(..., description="Limits for Iqinj `(I_qh1, I_ql1)`")
+    V_ref0: float = Field(
+        ...,
+        description="User defined reference. If 0, it is initialized to the initial terminal voltage",
+    )
+    K_vp: float = Field(
+        ..., description="Voltage regulator proportional gain (used when QFlag = 1)"
+    )
+    K_vi: float = Field(..., description="Voltage regulator integral gain (used when QFlag = 1)")
+    T_iq: float = Field(
+        ..., description="Time constant for low-pass filter for state q_V when QFlag = 0. Units: s."
+    )
+    I_max: float = Field(..., description="Maximum limit on total converter current")
 
 
 class VoltageModeControl(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    kpv: float
-    kiv: float
-    kffv: float
-    rv: float
-    lv: float
-    kpc: float
-    kic: float
-    kffi: float
-    omegaad: float
-    kad: float
+    id: int = Field(..., description="Unique integer identifier for this component")
+    kpv: float = Field(..., description="voltage controller proportional gain")
+    kiv: float = Field(..., description="voltage controller integral gain")
+    kffv: float = Field(..., description="Binary variable to enable feed-forward gain of voltage")
+    rv: float = Field(..., description="virtual resistance")
+    lv: float = Field(..., description="virtual inductance")
+    kpc: float = Field(..., description="current controller proportional gain")
+    kic: float = Field(..., description="current controller integral gain")
+    kffi: float = Field(..., description="Binary variable to enable feed-forward gain of current")
+    active_damping_filter_frequency: float = Field(
+        ..., description="Active damping filter cutoff frequency, in natural units. Units: Hz."
+    )
+    kad: float = Field(..., description="active damping gain")
 
 
 class ActivePowerDroop(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    Rp: float
-    omegaz: float
-    P_ref: float | None = None
+    id: int = Field(..., description="Unique integer identifier for this component")
+    Rp: float = Field(..., description="Droop Gain")
+    active_power_filter_frequency: float = Field(
+        ..., description="Filter cutoff frequency, in natural units. Units: Hz."
+    )
+    P_ref: float | None = Field(None, description="Reference Power Set-point (pu). Units: pu.")
 
 
 class ActivePowerPI(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    Kp_p: float
-    Ki_p: float
-    omegaz: float
-    P_ref: float | None = None
+    id: int = Field(..., description="Unique integer identifier for this component")
+    Kp_p: float = Field(..., description="Proportional Gain")
+    Ki_p: float = Field(..., description="Integral Gain")
+    active_power_filter_frequency: float = Field(
+        ..., description="Filter cutoff frequency, in natural units. Units: Hz."
+    )
+    P_ref: float | None = Field(None, description="Reference Power Set-point (pu). Units: pu.")
 
 
 class ActiveRenewableControllerAB(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    id: int = Field(..., description="Unique integer identifier for this component")
     bus_control: int = Field(
         ...,
         description="ACBus identification number for voltage control. `0` identifies the local bus connected to this component.",
@@ -292,35 +338,43 @@ class ActiveVirtualOscillator(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    k1: float
-    psi: float
-    P_ref: float | None = None
+    id: int = Field(..., description="Unique integer identifier for this component")
+    k1: float = Field(..., description="VOC Synchronization Gain")
+    psi: float = Field(..., description="Rotation angle of the controller")
+    P_ref: float | None = Field(None, description="Reference Power Set-point (pu). Units: pu.")
 
 
 class ReactivePowerDroop(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    kq: float
-    omegaf: float
-    V_ref: float | None = None
+    id: int = Field(..., description="Unique integer identifier for this component")
+    kq: float = Field(..., description="frequency droop gain")
+    reactive_power_filter_frequency: float = Field(
+        ..., description="Filter cutoff frequency, in natural units. Units: Hz."
+    )
+    V_ref: float | None = Field(None, description="Reference Voltage Set-point (pu). Units: pu.")
 
 
 class ReactivePowerPI(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    Kp_q: float
-    Ki_q: float
-    omegaf: float
-    V_ref: float | None = None
-    Q_ref: float | None = None
+    id: int = Field(..., description="Unique integer identifier for this component")
+    Kp_q: float = Field(..., description="Proportional Gain")
+    Ki_q: float = Field(..., description="Integral Gain")
+    reactive_power_filter_frequency: float = Field(
+        ..., description="Filter cutoff frequency, in natural units. Units: Hz."
+    )
+    V_ref: float | None = Field(None, description="Voltage Set-point (pu). Units: pu.")
+    Q_ref: float | None = Field(None, description="Reactive Power Set-point (pu). Units: pu.")
 
 
 class ReactiveRenewableControllerAB(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    id: int = Field(..., description="Unique integer identifier for this component")
     bus_control: int = Field(
         ...,
         description="ACBus identification number for voltage control. `0` identifies the local bus connected to this component.",
@@ -403,25 +457,30 @@ class ReactiveVirtualOscillator(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    k2: float
-    V_ref: float | None = None
-    Q_ref: float | None = None
+    id: int = Field(..., description="Unique integer identifier for this component")
+    k2: float = Field(..., description="VOC voltage-amplitude control gain")
+    V_ref: float | None = Field(None, description="Reference Voltage Set-point (pu). Units: pu.")
+    Q_ref: float | None = Field(
+        None, description="Reference Reactive Power Set-point (pu). Units: pu."
+    )
 
 
 class VirtualInertia(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    Ta: float
-    kd: float
-    komega: float
-    P_ref: float | None = None
+    id: int = Field(..., description="Unique integer identifier for this component")
+    Ta: float = Field(..., description="VSM inertia constant. Units: s.")
+    kd: float = Field(..., description="VSM damping constant")
+    k_frequency: float = Field(..., description="frequency droop gain")
+    P_ref: float | None = Field(None, description="Reference Power Set-point (pu). Units: pu.")
 
 
 class HybridOutputCurrentLimiter(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    id: int = Field(..., description="Unique integer identifier for this component")
     I_max: float = Field(..., description="Maximum limit on current controller input current")
     rv: float = Field(..., description="Real part of the virtual impedance")
     lv: float = Field(..., description="Imaginary part of the virtual impedance")
@@ -431,6 +490,7 @@ class InstantaneousOutputCurrentLimiter(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    id: int = Field(..., description="Unique integer identifier for this component")
     Id_max: float = Field(
         ..., description="Maximum limit on d-axis current controller input current"
     )
@@ -443,6 +503,7 @@ class MagnitudeOutputCurrentLimiter(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    id: int = Field(..., description="Unique integer identifier for this component")
     I_max: float = Field(..., description="Maximum limit on current controller input current")
 
 
@@ -450,6 +511,7 @@ class PriorityOutputCurrentLimiter(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    id: int = Field(..., description="Unique integer identifier for this component")
     I_max: float = Field(..., description="Maximum limit on current controller input current")
     phi_I: float = Field(
         ...,
@@ -461,6 +523,7 @@ class SaturationOutputCurrentLimiter(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    id: int = Field(..., description="Unique integer identifier for this component")
     I_max: float = Field(..., description="Maximum limit on current controller input current")
     kw: float = Field(..., description="Defined feedback gain")
 
@@ -491,10 +554,10 @@ class AVRTypeI(BaseModel):
     Ka: float = Field(..., description="Amplifier gain")
     Ke: float = Field(..., description="Field circuit integral deviation")
     Kf: float = Field(..., description="Stabilizer gain")
-    Ta: float = Field(..., description="Amplifier time constant")
-    Te: float = Field(..., description="Field circuit time constant")
-    Tf: float = Field(..., description="Stabilizer time constant")
-    Tr: float = Field(..., description="Voltage measurement time constant")
+    Ta: float = Field(..., description="Amplifier time constant. Units: s.")
+    Te: float = Field(..., description="Field circuit time constant. Units: s.")
+    Tf: float = Field(..., description="Stabilizer time constant. Units: s.")
+    Tr: float = Field(..., description="Voltage measurement time constant. Units: s.")
     Va_lim: MinMax = Field(..., description="Limits for pi controller")
     Ae: float = Field(..., description="1st ceiling coefficient")
     Be: float = Field(..., description="2nd ceiling coefficient")
@@ -507,12 +570,12 @@ class AVRTypeII(BaseModel):
     )
     id: int = Field(..., description="Unique integer identifier for this component")
     K0: float = Field(..., description="Regulator gain")
-    T1: float = Field(..., description="First pole in s")
-    T2: float = Field(..., description="First zero in s")
-    T3: float = Field(..., description="First pole in s")
-    T4: float = Field(..., description="First zero in s")
-    Te: float = Field(..., description="Field circuit time constant")
-    Tr: float = Field(..., description="Voltage measurement time constant")
+    T1: float = Field(..., description="First pole in s. Units: s.")
+    T2: float = Field(..., description="First zero in s. Units: s.")
+    T3: float = Field(..., description="First pole in s. Units: s.")
+    T4: float = Field(..., description="First zero in s. Units: s.")
+    Te: float = Field(..., description="Field circuit time constant. Units: s.")
+    Tr: float = Field(..., description="Voltage measurement time constant. Units: s.")
     Va_lim: MinMax = Field(..., description="Limits for pi controller")
     Ae: float = Field(..., description="1st ceiling coefficient")
     Be: float = Field(..., description="2nd ceiling coefficient")
@@ -524,15 +587,15 @@ class ESAC1A(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    Tr: float = Field(..., description="Regulator input filter time constant")
-    Tb: float = Field(..., description="Regulator denominator (lag) time constant")
-    Tc: float = Field(..., description="Regulator numerator (lead) time constant")
+    Tr: float = Field(..., description="Regulator input filter time constant. Units: s.")
+    Tb: float = Field(..., description="Regulator denominator (lag) time constant. Units: s.")
+    Tc: float = Field(..., description="Regulator numerator (lead) time constant. Units: s.")
     Ka: float = Field(..., description="Regulator output gain")
-    Ta: float = Field(..., description="Regulator output time constant")
+    Ta: float = Field(..., description="Regulator output time constant. Units: s.")
     Va_lim: MinMax = Field(..., description="Limits for regulator output")
-    Te: float = Field(..., description="Exciter field time constant")
+    Te: float = Field(..., description="Exciter field time constant. Units: s.")
     Kf: float = Field(..., description="Rate feedback excitation system stabilizer gain")
-    Tf: float = Field(..., description="Rate feedback time constant")
+    Tf: float = Field(..., description="Rate feedback time constant. Units: s.")
     Kc: float = Field(
         ..., description="Rectifier loading factor proportional to commutating reactance"
     )
@@ -558,22 +621,24 @@ class ESAC6A(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    Tr: float = Field(..., description="Regulator input filter time constant")
+    Tr: float = Field(..., description="Regulator input filter time constant. Units: s.")
     Ka: float = Field(..., description="Regulator output gain")
-    Ta: float = Field(..., description="Regulator output lag time constant")
-    Tk: float = Field(..., description="Voltage regulator lead time constant")
-    Tb: float = Field(..., description="Regulator denominator (lag) time constant")
-    Tc: float = Field(..., description="Regulator numerator (lead) time constant")
+    Ta: float = Field(..., description="Regulator output lag time constant. Units: s.")
+    Tk: float = Field(..., description="Voltage regulator lead time constant. Units: s.")
+    Tb: float = Field(..., description="Regulator denominator (lag) time constant. Units: s.")
+    Tc: float = Field(..., description="Regulator numerator (lead) time constant. Units: s.")
     Va_lim: MinMax = Field(..., description="Limits for regulator output")
     Vr_lim: MinMax = Field(..., description="Limits for excitor field voltage")
-    Te: float = Field(..., description="Exciter field time constant")
+    Te: float = Field(..., description="Exciter field time constant. Units: s.")
     VFE_lim: float = Field(..., description="Exciter field current limiter reference")
     Kh: float = Field(..., description="Exciter field current regulator feedback gain")
     VH_max: float = Field(..., description="Exciter field current limiter maximum output")
     Th: float = Field(
-        ..., description="Exciter field current limiter denominator (lag) time constant"
+        ..., description="Exciter field current limiter denominator (lag) time constant. Units: s."
     )
-    Tj: float = Field(..., description="Exciter field current limiter (lead) time constant")
+    Tj: float = Field(
+        ..., description="Exciter field current limiter (lead) time constant. Units: s."
+    )
     Kc: float = Field(
         ..., description="Rectifier loading factor proportional to commutating reactance"
     )
@@ -598,15 +663,15 @@ class ESAC8B(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    Tr: float = Field(..., description="Regulator input filter time constant")
+    Tr: float = Field(..., description="Regulator input filter time constant. Units: s.")
     Kp: float = Field(..., description="Regulator proportional PID gain")
     Ki: float = Field(..., description="Regulator integral PID gain")
     Kd: float = Field(..., description="Regulator derivative PID gain")
-    Td: float = Field(..., description="Regulator derivative PID time constant")
+    Td: float = Field(..., description="Regulator derivative PID time constant. Units: s.")
     Ka: float = Field(..., description="Regulator output gain")
-    Ta: float = Field(..., description="Regulator output lag time constant")
+    Ta: float = Field(..., description="Regulator output lag time constant. Units: s.")
     Vr_lim: MinMax = Field(..., description="Limits for excitor field voltage")
-    Te: float = Field(..., description="Exciter field time constant")
+    Te: float = Field(..., description="Exciter field time constant. Units: s.")
     Ke: float = Field(..., description="Exciter field proportional constant")
     E_sat: list[float] = Field(
         ..., description="Exciter output voltage for saturation factor", max_length=2, min_length=2
@@ -625,18 +690,21 @@ class ESDC1A(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    Tr: float = Field(..., description="Voltage measurement time constant")
+    Tr: float = Field(..., description="Voltage measurement time constant. Units: s.")
     Ka: float = Field(..., description="Amplifier gain")
-    Ta: float = Field(..., description="Amplifier time constant")
-    Tb: float = Field(..., description="Regulator input time constant")
-    Tc: float = Field(..., description="Regulator input time constant")
+    Ta: float = Field(..., description="Amplifier time constant. Units: s.")
+    Tb: float = Field(..., description="Regulator input time constant. Units: s.")
+    Tc: float = Field(..., description="Regulator input time constant. Units: s.")
     Vr_lim: MinMax = Field(..., description="Voltage regulator limits (regulator output)")
     Ke: float = Field(..., description="Exciter constant related to self-excited field")
     Te: float = Field(
-        ..., description="Exciter time constant, integration rate associated with exciter control"
+        ...,
+        description="Exciter time constant, integration rate associated with exciter control. Units: s.",
     )
     Kf: float = Field(..., description="Excitation control system stabilizer gain")
-    Tf: float = Field(..., description="Excitation control system stabilizer time constant")
+    Tf: float = Field(
+        ..., description="Excitation control system stabilizer time constant. Units: s."
+    )
     switch: int = Field(..., description="switch")
     E_sat: list[float] = Field(
         ..., description="Exciter output voltage for saturation factor", max_length=2, min_length=2
@@ -655,18 +723,21 @@ class ESDC2A(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    Tr: float = Field(..., description="Voltage measurement time constant")
+    Tr: float = Field(..., description="Voltage measurement time constant. Units: s.")
     Ka: float = Field(..., description="Amplifier gain")
-    Ta: float = Field(..., description="Amplifier time constant")
-    Tb: float = Field(..., description="Regulator input time constant")
-    Tc: float = Field(..., description="Regulator input time constant")
+    Ta: float = Field(..., description="Amplifier time constant. Units: s.")
+    Tb: float = Field(..., description="Regulator input time constant. Units: s.")
+    Tc: float = Field(..., description="Regulator input time constant. Units: s.")
     Vr_lim: MinMax = Field(..., description="Voltage regulator limits (regulator output)")
     Ke: float = Field(..., description="Exciter constant related to self-excited field")
     Te: float = Field(
-        ..., description="Exciter time constant, integration rate associated with exciter control"
+        ...,
+        description="Exciter time constant, integration rate associated with exciter control. Units: s.",
     )
     Kf: float = Field(..., description="Excitation control system stabilizer gain")
-    Tf: float = Field(..., description="Excitation control system stabilizer time constant")
+    Tf: float = Field(
+        ..., description="Excitation control system stabilizer time constant. Units: s."
+    )
     switch: int = Field(..., description="switch")
     E_sat: list[float] = Field(
         ..., description="Exciter output voltage for saturation factor", max_length=2, min_length=2
@@ -689,23 +760,27 @@ class ESST1A(BaseModel):
     PSS_flags: int = Field(
         ..., description="Code input for Power System Stabilizer (PSS) or (VOS) entry"
     )
-    Tr: float = Field(..., description="Regulator input filter time constant")
+    Tr: float = Field(..., description="Regulator input filter time constant. Units: s.")
     Vi_lim: list[float] = Field(
         ..., description="Voltage error limits (regulator input)", max_length=2, min_length=2
     )
-    Tc: float = Field(..., description="First regulator numerator (lead) time constant")
-    Tb: float = Field(..., description="First regulator denominator (lag) time constant")
-    Tc1: float = Field(..., description="Second regulator numerator (lead) time constant")
-    Tb1: float = Field(..., description="Second regulator denominator (lag) time constant")
+    Tc: float = Field(..., description="First regulator numerator (lead) time constant. Units: s.")
+    Tb: float = Field(..., description="First regulator denominator (lag) time constant. Units: s.")
+    Tc1: float = Field(
+        ..., description="Second regulator numerator (lead) time constant. Units: s."
+    )
+    Tb1: float = Field(
+        ..., description="Second regulator denominator (lag) time constant. Units: s."
+    )
     Ka: float = Field(..., description="Voltage regulator gain")
-    Ta: float = Field(..., description="Voltage regulator time constant")
+    Ta: float = Field(..., description="Voltage regulator time constant. Units: s.")
     Va_lim: MinMax = Field(..., description="Limits for regulator output")
     Vr_lim: MinMax = Field(..., description="Limits for excitor output")
     Kc: float = Field(
         ..., description="Rectifier loading factor proportional to commutating reactance"
     )
     Kf: float = Field(..., description="Rate feedback gain")
-    Tf: float = Field(..., description="Rate feedback time constant")
+    Tf: float = Field(..., description="Rate feedback time constant. Units: s.")
     K_lr: float = Field(..., description="Exciter output current limiter gain")
     I_lr: float = Field(..., description="Exciter output current limit reference")
     V_ref: float | None = Field(None, description="Reference voltage set-point")
@@ -715,12 +790,12 @@ class ESST4B(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    Tr: float = Field(..., description="Regulator input filter time constant")
+    Tr: float = Field(..., description="Regulator input filter time constant. Units: s.")
     id: int = Field(..., description="Unique integer identifier for this component")
     K_pr: float = Field(..., description="Regulator proportional gain")
     K_ir: float = Field(..., description="Regulator integral gain")
     Vr_lim: MinMax = Field(..., description="Voltage regulator limits")
-    Ta: float = Field(..., description="Voltage regulator time constant")
+    Ta: float = Field(..., description="Voltage regulator time constant. Units: s.")
     K_pm: float = Field(..., description="Voltage regulator proportional gain output")
     K_im: float = Field(..., description="Voltage regulator integral gain output")
     Vm_lim: MinMax = Field(..., description="Limits for inner loop output")
@@ -745,13 +820,13 @@ class EX4VSA(BaseModel):
     d: float = Field(..., description="OEL parameter d")
     f: float = Field(..., description="OEL parameter f")
     Spar: float = Field(..., description="OEL parameter Spar")
-    K1: float = Field(..., description="OEL delay time constant")
+    K1: float = Field(..., description="OEL delay time constant. Units: s.")
     K2: float = Field(..., description="OEL parameter K2")
     Oel_lim: MinMax = Field(..., description="OEL integrator limits")
     G: float = Field(..., description="AVR exciter gain")
-    Ta: float = Field(..., description="Numerator lead-lag (lead) time constant")
-    Tb: float = Field(..., description="Denominator lead-lag (lag) time constant")
-    Te: float = Field(..., description="Exciter time constant")
+    Ta: float = Field(..., description="Numerator lead-lag (lead) time constant. Units: s.")
+    Tb: float = Field(..., description="Denominator lead-lag (lag) time constant. Units: s.")
+    Te: float = Field(..., description="Exciter time constant. Units: s.")
     E_lim: MinMax = Field(..., description="Voltage regulator limits (regulator output)")
     V_ref: float | None = Field(None, description="Reference voltage set-point")
 
@@ -761,15 +836,15 @@ class EXAC1(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    Tr: float = Field(..., description="Regulator input filter time constant")
-    Tb: float = Field(..., description="Regulator denominator (lag) time constant")
-    Tc: float = Field(..., description="Regulator numerator (lead) time constant")
+    Tr: float = Field(..., description="Regulator input filter time constant. Units: s.")
+    Tb: float = Field(..., description="Regulator denominator (lag) time constant. Units: s.")
+    Tc: float = Field(..., description="Regulator numerator (lead) time constant. Units: s.")
     Ka: float = Field(..., description="Regulator output gain")
-    Ta: float = Field(..., description="Regulator output time constant")
+    Ta: float = Field(..., description="Regulator output time constant. Units: s.")
     Vr_lim: MinMax = Field(..., description="Limits for regulator output")
-    Te: float = Field(..., description="Exciter field time constant")
+    Te: float = Field(..., description="Exciter field time constant. Units: s.")
     Kf: float = Field(..., description="Rate feedback excitation system stabilizer gain")
-    Tf: float = Field(..., description="Rate feedback time constant")
+    Tf: float = Field(..., description="Rate feedback time constant. Units: s.")
     Kc: float = Field(
         ..., description="Rectifier loading factor proportional to commutating reactance"
     )
@@ -794,15 +869,15 @@ class EXAC1A(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    Tr: float = Field(..., description="Regulator input filter time constant")
-    Tb: float = Field(..., description="Regulator denominator (lag) time constant")
-    Tc: float = Field(..., description="Regulator numerator (lead) time constant")
+    Tr: float = Field(..., description="Regulator input filter time constant. Units: s.")
+    Tb: float = Field(..., description="Regulator denominator (lag) time constant. Units: s.")
+    Tc: float = Field(..., description="Regulator numerator (lead) time constant. Units: s.")
     Ka: float = Field(..., description="Regulator output gain")
-    Ta: float = Field(..., description="Regulator output time constant")
+    Ta: float = Field(..., description="Regulator output time constant. Units: s.")
     Va_lim: MinMax = Field(..., description="Limits for regulator output")
-    Te: float = Field(..., description="Exciter field time constant")
+    Te: float = Field(..., description="Exciter field time constant. Units: s.")
     Kf: float = Field(..., description="Rate feedback excitation system stabilizer gain")
-    Tf: float = Field(..., description="Rate feedback time constant")
+    Tf: float = Field(..., description="Rate feedback time constant. Units: s.")
     Kc: float = Field(
         ..., description="Rectifier loading factor proportional to commutating reactance"
     )
@@ -828,19 +903,19 @@ class EXAC2(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    Tr: float = Field(..., description="Regulator input filter time constant")
-    Tb: float = Field(..., description="Regulator denominator (lag) time constant")
-    Tc: float = Field(..., description="Regulator numerator (lead) time constant")
+    Tr: float = Field(..., description="Regulator input filter time constant. Units: s.")
+    Tb: float = Field(..., description="Regulator denominator (lag) time constant. Units: s.")
+    Tc: float = Field(..., description="Regulator numerator (lead) time constant. Units: s.")
     Ka: float = Field(..., description="Regulator output gain")
-    Ta: float = Field(..., description="Regulator output time constant")
+    Ta: float = Field(..., description="Regulator output time constant. Units: s.")
     Va_lim: MinMax = Field(..., description="Limits for regulator output")
     Kb: float = Field(..., description="Second stage regulator gain")
     Vr_lim: MinMax = Field(..., description="Limits for exciter field voltage")
-    Te: float = Field(..., description="Exciter field time constant")
+    Te: float = Field(..., description="Exciter field time constant. Units: s.")
     Kl: float = Field(..., description="Exciter field current limiter gain")
     Kh: float = Field(..., description="Exciter field current regulator feedback gain")
     Kf: float = Field(..., description="Rate feedback excitation system stabilizer gain")
-    Tf: float = Field(..., description="Rate feedback time constant")
+    Tf: float = Field(..., description="Rate feedback time constant. Units: s.")
     Kc: float = Field(
         ..., description="Rectifier loading factor proportional to commutating reactance"
     )
@@ -866,20 +941,20 @@ class EXPIC1(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    Tr: float = Field(..., description="Regulator input filter time constant")
+    Tr: float = Field(..., description="Regulator input filter time constant. Units: s.")
     Ka: float = Field(..., description="Voltage regulator gain")
-    Ta: float = Field(..., description="Voltage regulator time constant")
+    Ta: float = Field(..., description="Voltage regulator time constant. Units: s.")
     Va_lim: MinMax = Field(..., description="Limits for pi controller")
-    Ta_2: float = Field(..., description="Voltage regulator time constant")
-    Ta_3: float = Field(..., description="Voltage regulator time constant")
-    Ta_4: float = Field(..., description="Voltage regulator time constant")
+    Ta_2: float = Field(..., description="Voltage regulator time constant. Units: s.")
+    Ta_3: float = Field(..., description="Voltage regulator time constant. Units: s.")
+    Ta_4: float = Field(..., description="Voltage regulator time constant. Units: s.")
     Vr_lim: MinMax = Field(..., description="Voltage regulator limits (regulator output)")
     Kf: float = Field(..., description="Rate feedback excitation system stabilizer gain")
-    Tf_1: float = Field(..., description="Rate feedback time constant")
-    Tf_2: float = Field(..., description="Rate feedback time constant")
+    Tf_1: float = Field(..., description="Rate feedback time constant. Units: s.")
+    Tf_2: float = Field(..., description="Rate feedback time constant. Units: s.")
     Efd_lim: MinMax = Field(..., description="Field voltage regulator limits (regulator output)")
     Ke: float = Field(..., description="Exciter constant")
-    Te: float = Field(..., description="Exciter time constant")
+    Te: float = Field(..., description="Exciter time constant. Units: s.")
     E_sat: list[float] = Field(
         ..., description="Exciter output voltage for saturation factor", max_length=2, min_length=2
     )
@@ -900,16 +975,18 @@ class EXST1(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    Tr: float = Field(..., description="Voltage measurement time constant")
+    Tr: float = Field(..., description="Voltage measurement time constant. Units: s.")
     Vi_lim: MinMax = Field(..., description="Voltage input limits")
-    Tc: float = Field(..., description="Numerator lead-lag (lead) time constant")
-    Tb: float = Field(..., description="Denominator lead-lag (lag) time constant")
+    Tc: float = Field(..., description="Numerator lead-lag (lead) time constant. Units: s.")
+    Tb: float = Field(..., description="Denominator lead-lag (lag) time constant. Units: s.")
     Ka: float = Field(..., description="Amplifier gain")
-    Ta: float = Field(..., description="Amplifier time constant")
+    Ta: float = Field(..., description="Amplifier time constant. Units: s.")
     Vr_lim: MinMax = Field(..., description="Voltage regulator limits (regulator output)")
     Kc: float = Field(..., description="Current field constant limiter multiplier")
     Kf: float = Field(..., description="Excitation control system stabilizer gain")
-    Tf: float = Field(..., description="Excitation control system stabilizer time constant")
+    Tf: float = Field(
+        ..., description="Excitation control system stabilizer time constant. Units: s."
+    )
     V_ref: float | None = Field(None, description="Reference voltage set-point")
 
 
@@ -918,16 +995,19 @@ class IEEET1(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    Tr: float = Field(..., description="Voltage measurement time constant")
+    Tr: float = Field(..., description="Voltage measurement time constant. Units: s.")
     Ka: float = Field(..., description="Amplifier gain")
-    Ta: float = Field(..., description="Amplifier time constant")
+    Ta: float = Field(..., description="Amplifier time constant. Units: s.")
     Vr_lim: MinMax = Field(..., description="Voltage regulator limits (regulator output)")
     Ke: float = Field(..., description="Exciter constant related to self-excited field")
     Te: float = Field(
-        ..., description="Exciter time constant, integration rate associated with exciter control"
+        ...,
+        description="Exciter time constant, integration rate associated with exciter control. Units: s.",
     )
     Kf: float = Field(..., description="Excitation control system stabilizer gain")
-    Tf: float = Field(..., description="Excitation control system stabilizer time constant")
+    Tf: float = Field(
+        ..., description="Excitation control system stabilizer time constant. Units: s."
+    )
     switch: int = Field(..., description="Switch")
     E_sat: list[float] = Field(
         ..., description="Exciter output voltage for saturation factor", max_length=2, min_length=2
@@ -949,7 +1029,7 @@ class SCRX(BaseModel):
     Ta_Tb: float = Field(..., description="Lead input constant ratio")
     Tb: float = Field(..., description="Lag input constant")
     K: float = Field(..., description="Regulator gain")
-    Te: float = Field(..., description="Regulator time constant")
+    Te: float = Field(..., description="Regulator time constant. Units: s.")
     Efd_lim: MinMax = Field(..., description="Field voltage regulator limits (regulator output)")
     switch: int = Field(..., description="Switch")
     rc_rfd: float = Field(
@@ -978,11 +1058,13 @@ class ST6B(BaseModel):
     )
     id: int = Field(..., description="Unique integer identifier for this component")
     OEL_Flag: int = Field(..., description="OEL Flag for ST6B: 1: before HV gate, 2: after HV gate")
-    Tr: float = Field(..., description="Regulator input filter time constant")
+    Tr: float = Field(..., description="Regulator input filter time constant. Units: s.")
     K_pa: float = Field(..., description="Regulator proportional gain")
     K_ia: float = Field(..., description="Regulator integral gain")
     K_da: float = Field(..., description="Regulator derivative gain")
-    T_da: float = Field(..., description="Voltage regulator derivative channel time constant")
+    T_da: float = Field(
+        ..., description="Voltage regulator derivative channel time constant. Units: s."
+    )
     Va_lim: MinMax = Field(..., description="Regulator output limits")
     K_ff: float = Field(..., description="Pre-control gain of the inner loop field regulator")
     K_m: float = Field(..., description="Forward gain of the inner loop field regulator")
@@ -992,7 +1074,8 @@ class ST6B(BaseModel):
     Vr_lim: MinMax = Field(..., description="Voltage regulator limits")
     Kg: float = Field(..., description="Feedback gain constant of the inner loop field regulator")
     Tg: float = Field(
-        ..., description="Feedback time constant of the inner loop field voltage regulator"
+        ...,
+        description="Feedback time constant of the inner loop field voltage regulator. Units: s.",
     )
     V_ref: float | None = Field(None, description="Reference voltage set-point")
 
@@ -1018,7 +1101,7 @@ class ST8C(BaseModel):
         ...,
         description="SW1 Flag for power source selector for ST8C: <2: Source from generator terminal voltage, 2: Independent power source",
     )
-    Tr: float = Field(..., description="Regulator input filter time constant")
+    Tr: float = Field(..., description="Regulator input filter time constant. Units: s.")
     K_pr: float = Field(..., description="Regulator proportional gain")
     K_ir: float = Field(..., description="Regulator integral gain")
     Vpi_lim: MinMax = Field(..., description="Regulator input limits")
@@ -1026,10 +1109,12 @@ class ST8C(BaseModel):
     K_ia: float = Field(..., description="Field current regulator integral gain")
     Va_lim: MinMax = Field(..., description="Field current regulator output limits")
     K_a: float = Field(..., description="Field current regulator proportional gain")
-    T_a: float = Field(..., description="Controlled rectifier bridge equivalent time constant")
+    T_a: float = Field(
+        ..., description="Controlled rectifier bridge equivalent time constant. Units: s."
+    )
     Vr_lim: MinMax = Field(..., description="Voltage regulator limits")
     K_f: float = Field(..., description="Exciter field current feedback gain")
-    T_f: float = Field(..., description="Field current feedback time constant")
+    T_f: float = Field(..., description="Field current feedback time constant. Units: s.")
     K_c1: float = Field(
         ..., description="Rectifier loading factor proportional to commutating reactance"
     )
@@ -1052,20 +1137,20 @@ class AndersonFouadMachine(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    R: float = Field(..., description="Resistance after EMF")
-    Xd: float = Field(..., description="Reactance after EMF in d-axis")
-    Xq: float = Field(..., description="Reactance after EMF in q-axis")
-    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis")
-    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis")
-    Xd_pp: float = Field(..., description="Sub-Transient reactance after EMF in d-axis")
-    Xq_pp: float = Field(..., description="Sub-Transient reactance after EMF in q-axis")
-    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage Units: s.")
-    Tq0_p: float = Field(..., description="Time constant of transient q-axis voltage Units: s.")
+    R: float = Field(..., description="Resistance after EMF. Units: pu.")
+    Xd: float = Field(..., description="Reactance after EMF in d-axis. Units: pu.")
+    Xq: float = Field(..., description="Reactance after EMF in q-axis. Units: pu.")
+    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis. Units: pu.")
+    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis. Units: pu.")
+    Xd_pp: float = Field(..., description="Sub-Transient reactance after EMF in d-axis. Units: pu.")
+    Xq_pp: float = Field(..., description="Sub-Transient reactance after EMF in q-axis. Units: pu.")
+    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage. Units: s.")
+    Tq0_p: float = Field(..., description="Time constant of transient q-axis voltage. Units: s.")
     Td0_pp: float = Field(
-        ..., description="Time constant of sub-transient d-axis voltage Units: s."
+        ..., description="Time constant of sub-transient d-axis voltage. Units: s."
     )
     Tq0_pp: float = Field(
-        ..., description="Time constant of sub-transient q-axis voltage Units: s."
+        ..., description="Time constant of sub-transient q-axis voltage. Units: s."
     )
 
 
@@ -1074,8 +1159,8 @@ class BaseMachine(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    R: float = Field(..., description="Resistance after EMF")
-    Xd_p: float = Field(..., description="Reactance after EMF")
+    R: float = Field(..., description="Resistance after EMF. Units: pu.")
+    Xd_p: float = Field(..., description="Reactance after EMF. Units: pu.")
     eq_p: float = Field(..., description="Fixed EMF behind the impedance")
 
 
@@ -1084,42 +1169,42 @@ class FullMachine(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    R: float = Field(..., description="Resistance after EMF")
-    R_f: float = Field(..., description="Field rotor winding resistance")
+    R: float = Field(..., description="Resistance after EMF. Units: pu.")
+    R_f: float = Field(..., description="Field rotor winding resistance. Units: pu.")
     R_1d: float = Field(
         ...,
-        description="Damping rotor winding resistance on d-axis in per unit. This value is denoted as RD in Machowski",
+        description="Damping rotor winding resistance on d-axis in per unit. This value is denoted as RD in Machowski. Units: pu.",
     )
     R_1q: float = Field(
         ...,
-        description="Damping rotor winding resistance on q-axis in per unit. This value is denoted as RQ in Machowski",
+        description="Damping rotor winding resistance on q-axis in per unit. This value is denoted as RQ in Machowski. Units: pu.",
     )
     L_d: float = Field(
         ...,
-        description="Inductance of fictitious damping that represent the effect of the three-phase stator winding in the d-axis of the rotor, in per unit. This value is denoted as Lad + Ll in Kundur (and Ld in Machowski)",
+        description="Inductance of fictitious damping that represent the effect of the three-phase stator winding in the d-axis of the rotor, in per unit. This value is denoted as Lad + Ll in Kundur (and Ld in Machowski). Units: pu.",
     )
     L_q: float = Field(
         ...,
-        description="Inductance of fictitious damping that represent the effect of the three-phase stator winding in the q-axis of the rotor, in per unit. This value is denoted as Laq + Ll in Kundur (and Ld in Machowski)",
+        description="Inductance of fictitious damping that represent the effect of the three-phase stator winding in the q-axis of the rotor, in per unit. This value is denoted as Laq + Ll in Kundur (and Ld in Machowski). Units: pu.",
     )
     L_ad: float = Field(
         ...,
-        description="Mutual inductance between stator winding and rotor field (and damping) winding inductance on d-axis, in per unit",
+        description="Mutual inductance between stator winding and rotor field (and damping) winding inductance on d-axis, in per unit. Units: pu.",
     )
     L_aq: float = Field(
         ...,
-        description="Mutual inductance between stator winding and rotor damping winding inductance on q-axis, in per unit",
+        description="Mutual inductance between stator winding and rotor damping winding inductance on q-axis, in per unit. Units: pu.",
     )
     L_f1d: float = Field(
         ...,
-        description="Mutual inductance between rotor field winding and rotor damping winding inductance on d-axis, in per unit",
+        description="Mutual inductance between rotor field winding and rotor damping winding inductance on d-axis, in per unit. Units: pu.",
     )
-    L_ff: float = Field(..., description="Field rotor winding inductance, in per unit")
+    L_ff: float = Field(..., description="Field rotor winding inductance, in per unit. Units: pu.")
     L_1d: float = Field(
-        ..., description="Inductance of the d-axis rotor damping circuit, in per unit"
+        ..., description="Inductance of the d-axis rotor damping circuit, in per unit. Units: pu."
     )
     L_1q: float = Field(
-        ..., description="Inductance of the q-axis rotor damping circuit, in per unit"
+        ..., description="Inductance of the q-axis rotor damping circuit, in per unit. Units: pu."
     )
 
 
@@ -1128,19 +1213,23 @@ class MarconatoMachine(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    R: float = Field(..., description="Resistance after EMF")
-    Xd: float = Field(..., description="Reactance after EMF in d-axis")
-    Xq: float = Field(..., description="Reactance after EMF in q-axis")
-    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis")
-    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis")
-    Xd_pp: float = Field(..., description="Sub-Transient reactance after EMF in d-axis")
-    Xq_pp: float = Field(..., description="Sub-Transient reactance after EMF in q-axis")
-    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage")
-    Tq0_p: float = Field(..., description="Time constant of transient q-axis voltage")
-    Td0_pp: float = Field(..., description="Time constant of sub-transient d-axis voltage")
-    Tq0_pp: float = Field(..., description="Time constant of sub-transient q-axis voltage")
+    R: float = Field(..., description="Resistance after EMF. Units: pu.")
+    Xd: float = Field(..., description="Reactance after EMF in d-axis. Units: pu.")
+    Xq: float = Field(..., description="Reactance after EMF in q-axis. Units: pu.")
+    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis. Units: pu.")
+    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis. Units: pu.")
+    Xd_pp: float = Field(..., description="Sub-Transient reactance after EMF in d-axis. Units: pu.")
+    Xq_pp: float = Field(..., description="Sub-Transient reactance after EMF in q-axis. Units: pu.")
+    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage. Units: s.")
+    Tq0_p: float = Field(..., description="Time constant of transient q-axis voltage. Units: s.")
+    Td0_pp: float = Field(
+        ..., description="Time constant of sub-transient d-axis voltage. Units: s."
+    )
+    Tq0_pp: float = Field(
+        ..., description="Time constant of sub-transient q-axis voltage. Units: s."
+    )
     T_AA: float = Field(
-        ..., description="Time constant of d-axis additional leakage, validation range"
+        ..., description="Time constant of d-axis additional leakage, validation range. Units: s."
     )
 
 
@@ -1149,13 +1238,13 @@ class OneDOneQMachine(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    R: float = Field(..., description="Resistance after EMF")
-    Xd: float = Field(..., description="Reactance after EMF in d-axis")
-    Xq: float = Field(..., description="Reactance after EMF in q-axis")
-    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis")
-    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis")
-    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage")
-    Tq0_p: float = Field(..., description="Time constant of transient q-axis voltage")
+    R: float = Field(..., description="Resistance after EMF. Units: pu.")
+    Xd: float = Field(..., description="Reactance after EMF in d-axis. Units: pu.")
+    Xq: float = Field(..., description="Reactance after EMF in q-axis. Units: pu.")
+    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis. Units: pu.")
+    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis. Units: pu.")
+    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage. Units: s.")
+    Tq0_p: float = Field(..., description="Time constant of transient q-axis voltage. Units: s.")
 
 
 class RoundRotorExponential(BaseModel):
@@ -1163,7 +1252,10 @@ class RoundRotorExponential(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    base_machine: int = Field(..., description="Round Rotor machine parameters")
+    base_machine: int = Field(
+        ...,
+        description="ID of the RoundRotorMachine function block that holds the base parameters of this machine.",
+    )
     saturation_coeffs: list[float] = Field(
         ...,
         description="Derived saturation coefficients for the exponential saturation model, computed from the Se input",
@@ -1177,7 +1269,7 @@ class RoundRotorMachine(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    R: float = Field(..., description="Armature resistance")
+    R: float = Field(..., description="Armature resistance. Units: pu.")
     Td0_p: float = Field(..., description="Time constant of transient d-axis voltage. Units: s.")
     Td0_pp: float = Field(
         ..., description="Time constant of sub-transient d-axis voltage. Units: s."
@@ -1186,14 +1278,15 @@ class RoundRotorMachine(BaseModel):
     Tq0_pp: float = Field(
         ..., description="Time constant of sub-transient q-axis voltage. Units: s."
     )
-    Xd: float = Field(..., description="Reactance after EMF in d-axis")
-    Xq: float = Field(..., description="Reactance after EMF in q-axis")
-    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis")
-    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis")
+    Xd: float = Field(..., description="Reactance after EMF in d-axis. Units: pu.")
+    Xq: float = Field(..., description="Reactance after EMF in q-axis. Units: pu.")
+    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis. Units: pu.")
+    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis. Units: pu.")
     Xd_pp: float = Field(
-        ..., description="Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp"
+        ...,
+        description="Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp. Units: pu.",
     )
-    Xl: float = Field(..., description="Stator leakage reactance")
+    Xl: float = Field(..., description="Stator leakage reactance. Units: pu.")
     Se: list[float] = Field(
         ...,
         description="Saturation factor at 1 and 1.2 pu flux: S(1.0) = B(|psi_pp|-A)^2",
@@ -1207,7 +1300,10 @@ class RoundRotorQuadratic(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    base_machine: int = Field(..., description="Round Rotor machine parameters")
+    base_machine: int = Field(
+        ...,
+        description="ID of the RoundRotorMachine function block that holds the base parameters of this machine.",
+    )
     saturation_coeffs: list[float] = Field(
         ...,
         description="Derived saturation coefficients for the quadratic saturation model, computed from the Se input",
@@ -1221,7 +1317,10 @@ class SalientPoleExponential(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    base_machine: int = Field(..., description="Salient pole machine parameters")
+    base_machine: int = Field(
+        ...,
+        description="ID of the SalientPoleMachine function block that holds the base parameters of this machine.",
+    )
     saturation_coeffs: list[float] = Field(
         ...,
         description="Derived saturation coefficients for the exponential saturation model, computed from the Se input",
@@ -1235,21 +1334,22 @@ class SalientPoleMachine(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    R: float = Field(..., description="Armature resistance")
-    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage Units: s.")
+    R: float = Field(..., description="Armature resistance. Units: pu.")
+    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage. Units: s.")
     Td0_pp: float = Field(
-        ..., description="Time constant of sub-transient d-axis voltage Units: s."
+        ..., description="Time constant of sub-transient d-axis voltage. Units: s."
     )
     Tq0_pp: float = Field(
-        ..., description="Time constant of sub-transient q-axis voltage Units: s."
+        ..., description="Time constant of sub-transient q-axis voltage. Units: s."
     )
-    Xd: float = Field(..., description="Reactance after EMF in d-axis")
-    Xq: float = Field(..., description="Reactance after EMF in q-axis")
-    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis")
+    Xd: float = Field(..., description="Reactance after EMF in d-axis. Units: pu.")
+    Xq: float = Field(..., description="Reactance after EMF in q-axis. Units: pu.")
+    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis. Units: pu.")
     Xd_pp: float = Field(
-        ..., description="Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp"
+        ...,
+        description="Sub-Transient reactance after EMF in d-axis. Note: Xd_pp = Xq_pp. Units: pu.",
     )
-    Xl: float = Field(..., description="Stator leakage reactance")
+    Xl: float = Field(..., description="Stator leakage reactance. Units: pu.")
     Se: list[float] = Field(
         ...,
         description="Saturation factor at 1 and 1.2 pu flux: Se(eqp) = B(eqp-A)^2",
@@ -1263,7 +1363,10 @@ class SalientPoleQuadratic(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    base_machine: int = Field(..., description="Salient pole machine parameters")
+    base_machine: int = Field(
+        ...,
+        description="ID of the SalientPoleMachine function block that holds the base parameters of this machine.",
+    )
     saturation_coeffs: list[float] = Field(
         ...,
         description="Derived saturation coefficients for the quadratic saturation model, computed from the Se input",
@@ -1277,21 +1380,21 @@ class SauerPaiMachine(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    R: float = Field(..., description="Resistance after EMF")
-    Xd: float = Field(..., description="Reactance after EMF in d-axis")
-    Xq: float = Field(..., description="Reactance after EMF in q-axis")
-    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis")
-    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis")
-    Xd_pp: float = Field(..., description="Sub-Transient reactance after EMF in d-axis")
-    Xq_pp: float = Field(..., description="Sub-Transient reactance after EMF in q-axis")
-    Xl: float = Field(..., description="Stator leakage reactance")
-    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage Units: s.")
-    Tq0_p: float = Field(..., description="Time constant of transient q-axis voltage Units: s.")
+    R: float = Field(..., description="Resistance after EMF. Units: pu.")
+    Xd: float = Field(..., description="Reactance after EMF in d-axis. Units: pu.")
+    Xq: float = Field(..., description="Reactance after EMF in q-axis. Units: pu.")
+    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis. Units: pu.")
+    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis. Units: pu.")
+    Xd_pp: float = Field(..., description="Sub-Transient reactance after EMF in d-axis. Units: pu.")
+    Xq_pp: float = Field(..., description="Sub-Transient reactance after EMF in q-axis. Units: pu.")
+    Xl: float = Field(..., description="Stator leakage reactance. Units: pu.")
+    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage. Units: s.")
+    Tq0_p: float = Field(..., description="Time constant of transient q-axis voltage. Units: s.")
     Td0_pp: float = Field(
-        ..., description="Time constant of sub-transient d-axis voltage Units: s."
+        ..., description="Time constant of sub-transient d-axis voltage. Units: s."
     )
     Tq0_pp: float = Field(
-        ..., description="Time constant of sub-transient q-axis voltage Units: s."
+        ..., description="Time constant of sub-transient q-axis voltage. Units: s."
     )
 
 
@@ -1300,20 +1403,20 @@ class SimpleAFMachine(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    R: float = Field(..., description="Resistance after EMF")
-    Xd: float = Field(..., description="Reactance after EMF in d-axis")
-    Xq: float = Field(..., description="Reactance after EMF in q-axis")
-    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis")
-    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis")
-    Xd_pp: float = Field(..., description="Sub-Transient reactance after EMF in d-axis")
-    Xq_pp: float = Field(..., description="Sub-Transient reactance after EMF in q-axis")
-    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage Units: s.")
-    Tq0_p: float = Field(..., description="Time constant of transient q-axis voltage Units: s.")
+    R: float = Field(..., description="Resistance after EMF. Units: pu.")
+    Xd: float = Field(..., description="Reactance after EMF in d-axis. Units: pu.")
+    Xq: float = Field(..., description="Reactance after EMF in q-axis. Units: pu.")
+    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis. Units: pu.")
+    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis. Units: pu.")
+    Xd_pp: float = Field(..., description="Sub-Transient reactance after EMF in d-axis. Units: pu.")
+    Xq_pp: float = Field(..., description="Sub-Transient reactance after EMF in q-axis. Units: pu.")
+    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage. Units: s.")
+    Tq0_p: float = Field(..., description="Time constant of transient q-axis voltage. Units: s.")
     Td0_pp: float = Field(
-        ..., description="Time constant of sub-transient d-axis voltage Units: s."
+        ..., description="Time constant of sub-transient d-axis voltage. Units: s."
     )
     Tq0_pp: float = Field(
-        ..., description="Time constant of sub-transient q-axis voltage Units: s."
+        ..., description="Time constant of sub-transient q-axis voltage. Units: s."
     )
 
 
@@ -1322,37 +1425,43 @@ class SimpleFullMachine(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    R: float = Field(..., description="Resistance after EMF")
-    R_f: float = Field(..., description="Field motor winding resistance")
+    R: float = Field(..., description="Resistance after EMF. Units: pu.")
+    R_f: float = Field(..., description="Field motor winding resistance. Units: pu.")
     R_1d: float = Field(
-        ..., description="Damping rotor winding resistance on d-axis, denoted as RD in Machowski"
+        ...,
+        description="Damping rotor winding resistance on d-axis, denoted as RD in Machowski. Units: pu.",
     )
     R_1q: float = Field(
-        ..., description="Damping rotor winding resistance on q-axis, denoted as RQ in Machowski"
+        ...,
+        description="Damping rotor winding resistance on q-axis, denoted as RQ in Machowski. Units: pu.",
     )
     L_d: float = Field(
         ...,
-        description="Inductance of fictitious damping that represent the effect of the three-phase stator winding in the d-axis of the rotor, in per unit. This value is denoted as Lad + Ll in Kundur (and Ld in Machowski)",
+        description="Inductance of fictitious damping that represent the effect of the three-phase stator winding in the d-axis of the rotor, in per unit. This value is denoted as Lad + Ll in Kundur (and Ld in Machowski). Units: pu.",
     )
     L_q: float = Field(
         ...,
-        description="Inductance of fictitious damping that represent the effect of the three-phase stator winding in the q-axis of the rotor, in per unit. This value is denoted as Laq + Ll in Kundur",
+        description="Inductance of fictitious damping that represent the effect of the three-phase stator winding in the q-axis of the rotor, in per unit. This value is denoted as Laq + Ll in Kundur. Units: pu.",
     )
     L_ad: float = Field(
         ...,
-        description="Mutual inductance between stator winding and rotor field (and damping) winding inductance on d-axis",
+        description="Mutual inductance between stator winding and rotor field (and damping) winding inductance on d-axis. Units: pu.",
     )
     L_aq: float = Field(
         ...,
-        description="Mutual inductance between stator winding and rotor damping winding inductance on q-axi",
+        description="Mutual inductance between stator winding and rotor damping winding inductance on q-axi. Units: pu.",
     )
     L_f1d: float = Field(
         ...,
-        description="Mutual inductance between rotor field winding and rotor damping winding inductance on d-axis",
+        description="Mutual inductance between rotor field winding and rotor damping winding inductance on d-axis. Units: pu.",
     )
-    L_ff: float = Field(..., description="Field rotor winding inductance")
-    L_1d: float = Field(..., description="Inductance of the d-axis rotor damping circuit")
-    L_1q: float = Field(..., description="Inductance of the q-axis rotor damping circuit")
+    L_ff: float = Field(..., description="Field rotor winding inductance. Units: pu.")
+    L_1d: float = Field(
+        ..., description="Inductance of the d-axis rotor damping circuit. Units: pu."
+    )
+    L_1q: float = Field(
+        ..., description="Inductance of the q-axis rotor damping circuit. Units: pu."
+    )
 
 
 class SimpleMarconatoMachine(BaseModel):
@@ -1360,18 +1469,22 @@ class SimpleMarconatoMachine(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    R: float = Field(..., description="Resistance after EMF")
-    Xd: float = Field(..., description="Reactance after EMF in d-axis")
-    Xq: float = Field(..., description="Reactance after EMF in q-axis")
-    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis")
-    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis")
-    Xd_pp: float = Field(..., description="Sub-Transient reactance after EMF in d-axis")
-    Xq_pp: float = Field(..., description="Sub-Transient reactance after EMF in q-axis")
-    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage")
-    Tq0_p: float = Field(..., description="Time constant of transient q-axis voltage")
-    Td0_pp: float = Field(..., description="Time constant of sub-transient d-axis voltage")
-    Tq0_pp: float = Field(..., description="Time constant of sub-transient q-axis voltage")
-    T_AA: float = Field(..., description="Time constant of d-axis additional leakage")
+    R: float = Field(..., description="Resistance after EMF. Units: pu.")
+    Xd: float = Field(..., description="Reactance after EMF in d-axis. Units: pu.")
+    Xq: float = Field(..., description="Reactance after EMF in q-axis. Units: pu.")
+    Xd_p: float = Field(..., description="Transient reactance after EMF in d-axis. Units: pu.")
+    Xq_p: float = Field(..., description="Transient reactance after EMF in q-axis. Units: pu.")
+    Xd_pp: float = Field(..., description="Sub-Transient reactance after EMF in d-axis. Units: pu.")
+    Xq_pp: float = Field(..., description="Sub-Transient reactance after EMF in q-axis. Units: pu.")
+    Td0_p: float = Field(..., description="Time constant of transient d-axis voltage. Units: s.")
+    Tq0_p: float = Field(..., description="Time constant of transient q-axis voltage. Units: s.")
+    Td0_pp: float = Field(
+        ..., description="Time constant of sub-transient d-axis voltage. Units: s."
+    )
+    Tq0_pp: float = Field(
+        ..., description="Time constant of sub-transient q-axis voltage. Units: s."
+    )
+    T_AA: float = Field(..., description="Time constant of d-axis additional leakage. Units: s.")
 
 
 class IEEEST(BaseModel):
@@ -1390,12 +1503,12 @@ class IEEEST(BaseModel):
     A4: float = Field(..., description="Filter coefficient")
     A5: float = Field(..., description="Filter coefficient")
     A6: float = Field(..., description="Filter coefficient")
-    T1: float = Field(..., description="Time constant")
-    T2: float = Field(..., description="Time constant")
-    T3: float = Field(..., description="Time constant")
-    T4: float = Field(..., description="Time constant")
-    T5: float = Field(..., description="Time constant")
-    T6: float = Field(..., description="Time constant")
+    T1: float = Field(..., description="Time constant. Units: s.")
+    T2: float = Field(..., description="Time constant. Units: s.")
+    T3: float = Field(..., description="Time constant. Units: s.")
+    T4: float = Field(..., description="Time constant. Units: s.")
+    T5: float = Field(..., description="Time constant. Units: s.")
+    T6: float = Field(..., description="Time constant. Units: s.")
     Ks: float = Field(..., description="Proportional gain")
     Ls_lim: list[float] = Field(
         ...,
@@ -1424,21 +1537,33 @@ class PSS2A(BaseModel):
     )
     M_rtf: int = Field(..., description="M parameter for ramp tracking filter")
     N_rtf: int = Field(..., description="N parameter for ramp tracking filter")
-    Tw1: float = Field(..., description="Time constant for first washout filter for first input")
-    Tw2: float = Field(..., description="Time constant for second washout filter for first input")
-    T6: float = Field(..., description="Time constant for low-pass filter for first input")
-    Tw3: float = Field(..., description="Time constant for first washout filter for second input")
-    Tw4: float = Field(..., description="Time constant for second washout filter for second input")
-    T7: float = Field(..., description="Time constant for low-pass filter for second input")
+    Tw1: float = Field(
+        ..., description="Time constant for first washout filter for first input. Units: s."
+    )
+    Tw2: float = Field(
+        ..., description="Time constant for second washout filter for first input. Units: s."
+    )
+    T6: float = Field(
+        ..., description="Time constant for low-pass filter for first input. Units: s."
+    )
+    Tw3: float = Field(
+        ..., description="Time constant for first washout filter for second input. Units: s."
+    )
+    Tw4: float = Field(
+        ..., description="Time constant for second washout filter for second input. Units: s."
+    )
+    T7: float = Field(
+        ..., description="Time constant for low-pass filter for second input. Units: s."
+    )
     Ks2: float = Field(..., description="Gain for low-pass filter for second input")
     Ks3: float = Field(..., description="Gain for second input")
-    T8: float = Field(..., description="Time constant for ramp tracking filter")
-    T9: float = Field(..., description="Time constant for ramp tracking filter")
+    T8: float = Field(..., description="Time constant for ramp tracking filter. Units: s.")
+    T9: float = Field(..., description="Time constant for ramp tracking filter. Units: s.")
     Ks1: float = Field(..., description="Gain before lead-lag blocks")
-    T1: float = Field(..., description="Time constant for first lead-lag block")
-    T2: float = Field(..., description="Time constant for first lead-lag block")
-    T3: float = Field(..., description="Time constant for second lead-lag block")
-    T4: float = Field(..., description="Time constant for second lead-lag block")
+    T1: float = Field(..., description="Time constant for first lead-lag block. Units: s.")
+    T2: float = Field(..., description="Time constant for first lead-lag block. Units: s.")
+    T3: float = Field(..., description="Time constant for second lead-lag block. Units: s.")
+    T4: float = Field(..., description="Time constant for second lead-lag block. Units: s.")
     Vst_lim: list[float] = Field(
         ..., description="PSS output limits (Vst_min, Vst_max)", max_length=2, min_length=2
     )
@@ -1461,23 +1586,35 @@ class PSS2B(BaseModel):
     )
     M_rtf: int = Field(..., description="M parameter for ramp tracking filter")
     N_rtf: int = Field(..., description="N parameter for ramp tracking filter")
-    Tw1: float = Field(..., description="Time constant for first washout filter for first input")
-    Tw2: float = Field(..., description="Time constant for second washout filter for first input")
-    T6: float = Field(..., description="Time constant for low-pass filter for first input")
-    Tw3: float = Field(..., description="Time constant for first washout filter for second input")
-    Tw4: float = Field(..., description="Time constant for second washout filter for second input")
-    T7: float = Field(..., description="Time constant for low-pass filter for second input")
+    Tw1: float = Field(
+        ..., description="Time constant for first washout filter for first input. Units: s."
+    )
+    Tw2: float = Field(
+        ..., description="Time constant for second washout filter for first input. Units: s."
+    )
+    T6: float = Field(
+        ..., description="Time constant for low-pass filter for first input. Units: s."
+    )
+    Tw3: float = Field(
+        ..., description="Time constant for first washout filter for second input. Units: s."
+    )
+    Tw4: float = Field(
+        ..., description="Time constant for second washout filter for second input. Units: s."
+    )
+    T7: float = Field(
+        ..., description="Time constant for low-pass filter for second input. Units: s."
+    )
     Ks2: float = Field(..., description="Gain for low-pass filter for second input")
     Ks3: float = Field(..., description="Gain for second input")
-    T8: float = Field(..., description="Time constant for ramp tracking filter")
-    T9: float = Field(..., description="Time constant for ramp tracking filter")
+    T8: float = Field(..., description="Time constant for ramp tracking filter. Units: s.")
+    T9: float = Field(..., description="Time constant for ramp tracking filter. Units: s.")
     Ks1: float = Field(..., description="Gain before lead-lag blocks")
-    T1: float = Field(..., description="Time constant for first lead-lag block")
-    T2: float = Field(..., description="Time constant for first lead-lag block")
-    T3: float = Field(..., description="Time constant for second lead-lag block")
-    T4: float = Field(..., description="Time constant for second lead-lag block")
-    T10: float = Field(..., description="Time constant for third lead-lag block")
-    T11: float = Field(..., description="Time constant for third lead-lag block")
+    T1: float = Field(..., description="Time constant for first lead-lag block. Units: s.")
+    T2: float = Field(..., description="Time constant for first lead-lag block. Units: s.")
+    T3: float = Field(..., description="Time constant for second lead-lag block. Units: s.")
+    T4: float = Field(..., description="Time constant for second lead-lag block. Units: s.")
+    T10: float = Field(..., description="Time constant for third lead-lag block. Units: s.")
+    T11: float = Field(..., description="Time constant for third lead-lag block. Units: s.")
     Vs1_lim: list[float] = Field(
         ..., description="First input limits (Vs1_min, Vs1_max)", max_length=2, min_length=2
     )
@@ -1506,23 +1643,35 @@ class PSS2C(BaseModel):
     )
     M_rtf: int = Field(..., description="M parameter for ramp tracking filter")
     N_rtf: int = Field(..., description="N parameter for ramp tracking filter")
-    Tw1: float = Field(..., description="Time constant for first washout filter for first input")
-    Tw2: float = Field(..., description="Time constant for second washout filter for first input")
-    T6: float = Field(..., description="Time constant for low-pass filter for first input")
-    Tw3: float = Field(..., description="Time constant for first washout filter for second input")
-    Tw4: float = Field(..., description="Time constant for second washout filter for second input")
-    T7: float = Field(..., description="Time constant for low-pass filter for second input")
+    Tw1: float = Field(
+        ..., description="Time constant for first washout filter for first input. Units: s."
+    )
+    Tw2: float = Field(
+        ..., description="Time constant for second washout filter for first input. Units: s."
+    )
+    T6: float = Field(
+        ..., description="Time constant for low-pass filter for first input. Units: s."
+    )
+    Tw3: float = Field(
+        ..., description="Time constant for first washout filter for second input. Units: s."
+    )
+    Tw4: float = Field(
+        ..., description="Time constant for second washout filter for second input. Units: s."
+    )
+    T7: float = Field(
+        ..., description="Time constant for low-pass filter for second input. Units: s."
+    )
     Ks2: float = Field(..., description="Gain for low-pass filter for second input")
     Ks3: float = Field(..., description="Gain for second input")
-    T8: float = Field(..., description="Time constant for ramp tracking filter")
-    T9: float = Field(..., description="Time constant for ramp tracking filter")
+    T8: float = Field(..., description="Time constant for ramp tracking filter. Units: s.")
+    T9: float = Field(..., description="Time constant for ramp tracking filter. Units: s.")
     Ks1: float = Field(..., description="Gain before lead-lag blocks")
-    T1: float = Field(..., description="Time constant for first lead-lag block")
-    T2: float = Field(..., description="Time constant for first lead-lag block")
-    T3: float = Field(..., description="Time constant for second lead-lag block")
-    T4: float = Field(..., description="Time constant for second lead-lag block")
-    T10: float = Field(..., description="Time constant for third lead-lag block")
-    T11: float = Field(..., description="Time constant for third lead-lag block")
+    T1: float = Field(..., description="Time constant for first lead-lag block. Units: s.")
+    T2: float = Field(..., description="Time constant for first lead-lag block. Units: s.")
+    T3: float = Field(..., description="Time constant for second lead-lag block. Units: s.")
+    T4: float = Field(..., description="Time constant for second lead-lag block. Units: s.")
+    T10: float = Field(..., description="Time constant for third lead-lag block. Units: s.")
+    T11: float = Field(..., description="Time constant for third lead-lag block. Units: s.")
     Vs1_lim: list[float] = Field(
         ..., description="First input limits (Vs1_min, Vs1_max)", max_length=2, min_length=2
     )
@@ -1532,8 +1681,8 @@ class PSS2C(BaseModel):
     Vst_lim: list[float] = Field(
         ..., description="PSS output limits (Vst_min, Vst_max)", max_length=2, min_length=2
     )
-    T12: float = Field(..., description="Time constant for fourth lead-lag block")
-    T13: float = Field(..., description="Time constant for fourth lead-lag block")
+    T12: float = Field(..., description="Time constant for fourth lead-lag block. Units: s.")
+    T13: float = Field(..., description="Time constant for fourth lead-lag block. Units: s.")
     PSS_Hysteresis_param: list[float] = Field(
         ...,
         description="PSS output hysteresis parameters (PSSOFF, PSSON)",
@@ -1541,7 +1690,7 @@ class PSS2C(BaseModel):
         min_length=2,
     )
     Xcomp: float = Field(..., description="Stator leakage reactance")
-    Tcomp: float = Field(..., description="Time measured with compensated frequency")
+    Tcomp: float = Field(..., description="Time measured with compensated frequency. Units: s.")
     hysteresis_binary_logic: int | None = Field(None, description="Hysteresis memory variable")
 
 
@@ -1558,7 +1707,7 @@ class PSSSimple(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    K_omega: float = Field(..., description="Proportional gain for frequency")
+    K_frequency: float = Field(..., description="Proportional gain for frequency")
     K_p: float = Field(..., description="Proportional gain for active power")
 
 
@@ -1568,11 +1717,11 @@ class STAB1(BaseModel):
     )
     id: int = Field(..., description="Unique integer identifier for this component")
     KT: float = Field(..., description="K/T for washout filter")
-    T: float = Field(..., description="Time constant for washout filter")
+    T: float = Field(..., description="Time constant for washout filter. Units: s.")
     T1T3: float = Field(..., description="Time constant division T1/T3")
-    T3: float = Field(..., description="Time constant")
+    T3: float = Field(..., description="Time constant. Units: s.")
     T2T4: float = Field(..., description="Time constant division T2/T4")
-    T4: float = Field(..., description="Time constant")
+    T4: float = Field(..., description="Time constant. Units: s.")
     H_lim: float = Field(..., description="PSS output limit")
 
 
@@ -1581,13 +1730,17 @@ class FiveMassShaft(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    H: float = Field(..., description="Rotor inertia constant in MWs/MVA")
-    H_hp: float = Field(..., description="High pressure turbine inertia constant in MWs/MVA")
-    H_ip: float = Field(
-        ..., description="Intermediate pressure turbine inertia constant in MWs/MVA"
+    H: float = Field(..., description="Rotor inertia constant in MWs/MVA. Units: s.")
+    H_hp: float = Field(
+        ..., description="High pressure turbine inertia constant in MWs/MVA. Units: s."
     )
-    H_lp: float = Field(..., description="Low pressure turbine inertia constant in MWs/MVA")
-    H_ex: float = Field(..., description="Exciter inertia constant in MWs/MVA")
+    H_ip: float = Field(
+        ..., description="Intermediate pressure turbine inertia constant in MWs/MVA. Units: s."
+    )
+    H_lp: float = Field(
+        ..., description="Low pressure turbine inertia constant in MWs/MVA. Units: s."
+    )
+    H_ex: float = Field(..., description="Exciter inertia constant in MWs/MVA. Units: s.")
     D: float = Field(..., description="Rotor natural damping")
     D_hp: float = Field(..., description="High pressure turbine natural damping")
     D_ip: float = Field(..., description="Intermediate pressure turbine natural damping")
@@ -1608,7 +1761,7 @@ class SingleMass(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    H: float = Field(..., description="Rotor inertia constant in MWs/MVA")
+    H: float = Field(..., description="Rotor inertia constant in MWs/MVA. Units: s.")
     D: float = Field(..., description="Rotor natural damping")
 
 
@@ -1617,14 +1770,14 @@ class DEGOV(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    T1: float = Field(..., description="Governor mechanism time constant")
-    T2: float = Field(..., description="Turbine power time constant")
-    T3: float = Field(..., description="Turbine exhaust temperature time constant")
+    T1: float = Field(..., description="Governor mechanism time constant. Units: s.")
+    T2: float = Field(..., description="Turbine power time constant. Units: s.")
+    T3: float = Field(..., description="Turbine exhaust temperature time constant. Units: s.")
     K: float = Field(..., description="Governor gain (reciproical of droop)")
-    T4: float = Field(..., description="Governor lead time constant")
-    T5: float = Field(..., description="Governor lag time constant")
-    T6: float = Field(..., description="Actuator time constant")
-    Td: float = Field(..., description="Engine time delay")
+    T4: float = Field(..., description="Governor lead time constant. Units: s.")
+    T5: float = Field(..., description="Governor lag time constant. Units: s.")
+    T6: float = Field(..., description="Actuator time constant. Units: s.")
+    Td: float = Field(..., description="Engine time delay. Units: s.")
     P_ref: float | None = Field(None, description="Reference power set-point")
 
 
@@ -1637,14 +1790,14 @@ class DEGOV1(BaseModel):
         None,
         description="Droop control Flag. 0 for throttle feedback and 1 for electric power feedback",
     )
-    T1: float = Field(..., description="Governor mechanism time constant")
-    T2: float = Field(..., description="Turbine power time constant")
-    T3: float = Field(..., description="Turbine exhaust temperature time constant")
+    T1: float = Field(..., description="Governor mechanism time constant. Units: s.")
+    T2: float = Field(..., description="Turbine power time constant. Units: s.")
+    T3: float = Field(..., description="Turbine exhaust temperature time constant. Units: s.")
     K: float = Field(..., description="Governor gain for actuator")
-    T4: float = Field(..., description="Governor lead time constant")
-    T5: float = Field(..., description="Governor lag time constant")
-    T6: float = Field(..., description="Actuator time constant")
-    Td: float = Field(..., description="Engine time delay")
+    T4: float = Field(..., description="Governor lead time constant. Units: s.")
+    T5: float = Field(..., description="Governor lag time constant. Units: s.")
+    T6: float = Field(..., description="Actuator time constant. Units: s.")
+    Td: float = Field(..., description="Engine time delay. Units: s.")
     T_lim: list[float] = Field(
         ...,
         description="Operational control limits on actuator (Tmin, Tmax)",
@@ -1652,7 +1805,7 @@ class DEGOV1(BaseModel):
         min_length=2,
     )
     R: float = Field(..., description="Steady state droop parameter")
-    Te: float = Field(..., description="Power transducer time constant")
+    Te: float = Field(..., description="Power transducer time constant. Units: s.")
     P_ref: float | None = Field(None, description="Reference power set-point")
 
 
@@ -1662,9 +1815,11 @@ class GasTG(BaseModel):
     )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Speed droop parameter")
-    T1: float = Field(..., description="Governor time constant")
-    T2: float = Field(..., description="Combustion chamber time constant")
-    T3: float = Field(..., description="Load limit time constant (exhaust gas measurement time)")
+    T1: float = Field(..., description="Governor time constant. Units: s.")
+    T2: float = Field(..., description="Combustion chamber time constant. Units: s.")
+    T3: float = Field(
+        ..., description="Load limit time constant (exhaust gas measurement time). Units: s."
+    )
     AT: float = Field(..., description="Ambient temperature load limit")
     Kt: float = Field(..., description="Load limit feedback gain")
     V_lim: list[float] = Field(
@@ -1685,20 +1840,22 @@ class GeneralGovModel(BaseModel):
     Rselect: int = Field(..., description="Feedback signal for governor droop")
     fuel_flag: int = Field(..., description="Flag switch for fuel source characteristic")
     R: float | None = Field(None, description="Speed droop parameter")
-    Tpelec: float = Field(..., description="Electrical power transducer time constant")
+    Tpelec: float = Field(..., description="Electrical power transducer time constant. Units: s.")
     speed_error_signal: MinMax = Field(..., description="Speed error signal limits")
     Kp_gov: float = Field(..., description="Governor proportional gain")
     Ki_gov: float = Field(..., description="Governor integral gain")
     Kd_gov: float = Field(..., description="Governor derivative gain")
-    Td_gov: float = Field(..., description="Governor derivative time constant")
+    Td_gov: float = Field(..., description="Governor derivative time constant. Units: s.")
     valve_position_limits: MinMax = Field(..., description="Valve position limits")
-    T_act: float = Field(..., description="Actuator time constant")
+    T_act: float = Field(..., description="Actuator time constant. Units: s.")
     K_turb: float = Field(..., description="Turbine gain")
     Wf_nl: float = Field(..., description="No load fuel flow")
-    Tb: float = Field(..., description="Turbine lag time constant")
-    Tc: float = Field(..., description="Turbine lead time constant")
-    T_eng: float = Field(..., description="Transport lag time constant for diesel engine")
-    Tf_load: float = Field(..., description="Load limiter time constant")
+    Tb: float = Field(..., description="Turbine lag time constant. Units: s.")
+    Tc: float = Field(..., description="Turbine lead time constant. Units: s.")
+    T_eng: float = Field(
+        ..., description="Transport lag time constant for diesel engine. Units: s."
+    )
+    Tf_load: float = Field(..., description="Load limiter time constant. Units: s.")
     Kp_load: float = Field(..., description="Load limiter proportional gain for PI controller")
     Ki_load: float = Field(..., description="Load integral gain for PI controller")
     Ld_ref: float = Field(..., description="Load limiter integral gain for PI controller")
@@ -1708,11 +1865,11 @@ class GeneralGovModel(BaseModel):
     Ki_mw: float = Field(..., description="Power controller (reset) gain")
     A_set: float = Field(..., description="Acceleration limiter setpoint")
     Ka: float = Field(..., description="Acceleration limiter gain")
-    Ta: float = Field(..., description="Acceleration limiter time constant")
+    Ta: float = Field(..., description="Acceleration limiter time constant. Units: s.")
     T_rate: float = Field(..., description="Turbine rating")
     db: float = Field(..., description="Speed governor deadband")
-    Tsa: float = Field(..., description="Temperature detection lead time constant")
-    Tsb: float = Field(..., description="Temperature detection lag time constant")
+    Tsa: float = Field(..., description="Temperature detection lead time constant. Units: s.")
+    Tsb: float = Field(..., description="Temperature detection lag time constant. Units: s.")
     R_lim: UpDown = Field(..., description="Maximum rate of load increase")
     P_ref: float | None = Field(None, description="Reference power set-point")
 
@@ -1722,14 +1879,14 @@ class HydroTurbineGov(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    R: float = Field(..., description="Permanent droop parameter")
-    r: float = Field(..., description="Temporary droop")
-    Tr: float = Field(..., description="Governor time constant")
-    Tf: float = Field(..., description="Filter time constant")
-    Tg: float = Field(..., description="Servo time constant")
+    R_BIG: float = Field(..., description="Permanent droop, in pu.")
+    R_SMALL: float = Field(..., description="Temporary droop, in pu.")
+    Tr: float = Field(..., description="Governor time constant. Units: s.")
+    Tf: float = Field(..., description="Filter time constant. Units: s.")
+    Tg: float = Field(..., description="Servo time constant. Units: s.")
     VELM: float = Field(..., description="Gate velocity limit")
     gate_position_limits: MinMax = Field(..., description="Gate position limits")
-    Tw: float = Field(..., description="Water time constant")
+    Tw: float = Field(..., description="Water time constant. Units: s.")
     At: float = Field(..., description="Turbine gain")
     D_T: float = Field(..., description="Turbine damping")
     q_nl: float = Field(..., description="No power flow")
@@ -1741,23 +1898,23 @@ class IEEETurbineGov1(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    K: int = Field(..., description="Governor gain")
-    T1: int = Field(..., description="Input filter lag")
+    K: float = Field(..., description="Governor gain")
+    T1: float = Field(..., description="Input filter lag")
     T2: float = Field(..., description="Input filter lead")
-    T3: float = Field(..., description="Valve position time constant")
+    T3: float = Field(..., description="Valve position time constant. Units: s.")
     U0: float = Field(..., description="Maximum valve opening rate")
     U_c: float = Field(..., description="Maximum valve closing rate")
     valve_position_limits: MinMax = Field(..., description="Valve position limits")
-    T4: float = Field(..., description="Time constant inlet steam")
+    T4: float = Field(..., description="Time constant inlet steam. Units: s.")
     K1: float = Field(..., description="Fraction of high pressure shaft power")
     K2: float = Field(..., description="Fraction of low pressure shaft power")
-    T5: float = Field(..., description="Time constant for second boiler pass")
+    T5: float = Field(..., description="Time constant for second boiler pass. Units: s.")
     K3: float = Field(..., description="Fraction of high pressure shaft power second boiler pass")
     K4: float = Field(..., description="Fraction of low pressure shaft power second boiler pass")
-    T6: float = Field(..., description="Time constant for third boiler pass")
+    T6: float = Field(..., description="Time constant for third boiler pass. Units: s.")
     K5: float = Field(..., description="Fraction of high pressure shaft power third boiler pass")
     K6: float = Field(..., description="Fraction of low pressure shaft power third boiler pass")
-    T7: float = Field(..., description="Time constant for fourth boiler pass")
+    T7: float = Field(..., description="Time constant for fourth boiler pass. Units: s.")
     K7: float = Field(..., description="Fraction of high pressure shaft power fourth boiler pass")
     K8: float = Field(..., description="Fraction of low pressure shaft power fourth boiler pass")
     P_ref: float | None = Field(None, description="Reference power set-point")
@@ -1773,12 +1930,12 @@ class PIDGOV(BaseModel):
         description="Feedback signal for governor droop: 0 for electrical power, and 1 for gate position",
     )
     Rperm: float = Field(..., description="Speed permanent droop parameter")
-    T_reg: float = Field(..., description="Speed detector time constant")
+    T_reg: float = Field(..., description="Speed detector time constant. Units: s.")
     Kp: float = Field(..., description="Governor proportional gain")
     Ki: float = Field(..., description="Governor integral gain")
     Kd: float = Field(..., description="Governor derivative gain")
-    Ta: float = Field(..., description="Governor derivative time constant")
-    Tb: float = Field(..., description="Gate-servo time constant")
+    Ta: float = Field(..., description="Governor derivative time constant. Units: s.")
+    Tb: float = Field(..., description="Gate-servo time constant. Units: s.")
     D_turb: float = Field(..., description="Turbine damping factor")
     gate_openings: list[float] = Field(
         ..., description="Gate opening speed at different loads", max_length=3, min_length=3
@@ -1786,9 +1943,9 @@ class PIDGOV(BaseModel):
     power_gate_openings: list[float] = Field(
         ..., description="Power at gate_openings", max_length=3, min_length=3
     )
-    G_lim: MinMax = Field(..., description="Gate opening velocity limits")
+    G_lim: MinMax = Field(..., description="Minimum and maximum gate openings")
     A_tw: float = Field(..., description="Factor multiplying Tw")
-    Tw: float = Field(..., description="Water inertia time constant")
+    Tw: float = Field(..., description="Water inertia time constant. Units: s.")
     V_lim: MinMax = Field(..., description="Gate opening velocity limits")
     P_ref: float | None = Field(None, description="Reference load set-point")
 
@@ -1827,7 +1984,7 @@ class TGSimple(BaseModel):
     )
     id: int = Field(..., description="Unique integer identifier for this component")
     d_t: float = Field(..., description="Inverse droop parameter")
-    Tm: float = Field(..., description="Turbine governor low-pass time constant")
+    Tm: float = Field(..., description="Turbine governor low-pass time constant. Units: s.")
     P_ref: float | None = Field(None, description="Reference power set-point")
 
 
@@ -1837,11 +1994,11 @@ class TGTypeI(BaseModel):
     )
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Droop parameter")
-    Ts: float = Field(..., description="Governor time constant")
-    Tc: float = Field(..., description="Servo time constant")
+    Ts: float = Field(..., description="Governor time constant. Units: s.")
+    Tc: float = Field(..., description="Servo time constant. Units: s.")
     T3: float = Field(..., description="Transient gain time constant")
-    T4: float = Field(..., description="Power fraction time constant")
-    T5: float = Field(..., description="Reheat time constant")
+    T4: float = Field(..., description="Power fraction time constant. Units: s.")
+    T5: float = Field(..., description="Reheat time constant. Units: s.")
     valve_position_limits: MinMax = Field(..., description="Valve position limits")
     P_ref: float | None = Field(None, description="Reference power set-point")
 
@@ -1853,7 +2010,7 @@ class TGTypeII(BaseModel):
     id: int = Field(..., description="Unique integer identifier for this component")
     R: float = Field(..., description="Droop parameter")
     T1: float = Field(..., description="Transient gain time constant")
-    T2: float = Field(..., description="Power fraction time constant")
+    T2: float = Field(..., description="Power fraction time constant. Units: s.")
     tau_limits: MinMax = Field(..., description="Power limits into the governor")
     P_ref: float | None = Field(None, description="Reference power set-point")
 
@@ -1863,16 +2020,18 @@ class WPIDHY(BaseModel):
         extra="forbid",
     )
     id: int = Field(..., description="Unique integer identifier for this component")
-    T_reg: float = Field(..., description="Input time constant of the governor")
+    T_reg: float = Field(..., description="Input time constant of the governor. Units: s.")
     reg: float = Field(..., description="Input governor gain")
     Kp: float = Field(..., description="Governor proportional gain")
     Ki: float = Field(..., description="Governor integral gain")
     Kd: float = Field(..., description="Governor derivative gain")
-    Ta: float = Field(..., description="Governor derivative/high-frequency time constant")
-    Tb: float = Field(..., description="Gate-servo time constant")
+    Ta: float = Field(
+        ..., description="Governor derivative/high-frequency time constant. Units: s."
+    )
+    Tb: float = Field(..., description="Gate-servo time constant. Units: s.")
     V_lim: MinMax = Field(..., description="Gate opening velocity limits")
     G_lim: MinMax = Field(..., description="Minimum and maximum gate velocity")
-    Tw: float = Field(..., description="Water inertia time constant")
+    Tw: float = Field(..., description="Water inertia time constant. Units: s.")
     P_lim: MinMax = Field(..., description="Minimum and maximum gate openings")
     D: float = Field(..., description="Turbine damping coefficient")
     gate_openings: list[float] = Field(
@@ -1882,3 +2041,522 @@ class WPIDHY(BaseModel):
         ..., description="Power at gate_openings", max_length=3, min_length=3
     )
     P_ref: float | None = Field(None, description="Reference load set-point")
+
+
+class FrequencyRideThroughPnts(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    frt1: float
+    frt2: float
+    frt3: float
+    frt4: float
+
+
+class FrequencyRideThroughTimePnts(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    tfrt1: float
+    tfrt2: float
+
+
+class VoltVarPnts(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    V1: float
+    V2: float
+    V3: float
+    V4: float
+
+
+class VoltageRideThroughPnts(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    vrt1: float
+    vrt2: float
+    vrt3: float
+    vrt4: float
+    vrt5: float
+
+
+class VoltageRideThroughTimePnts(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    tvrt1: float
+    tvrt2: float
+    tvrt3: float
+
+
+class DynamicGenerator(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.",
+    )
+    frequency_ref: PositiveFloat = Field(
+        ...,
+        description="Frequency reference set-point, in natural units. Usually equal to the system frequency. Units: Hz.",
+    )
+    synchronous_machine_dynamics: int = Field(
+        ...,
+        description="ID of the SynchronousMachineDynamics function block: the machine model for the electromagnetic dynamics.",
+    )
+    shaft: int = Field(
+        ...,
+        description="ID of the Shaft function block: the shaft model for the electromechanical dynamics.",
+    )
+    excitation_system_dynamics: int = Field(
+        ...,
+        description="ID of the ExcitationSystemDynamics function block: the excitation system model.",
+    )
+    turbine_governor_dynamics: int = Field(
+        ...,
+        description="ID of the TurbineGovernorDynamics function block: the prime mover and turbine governor model.",
+    )
+    power_system_stabilizer_dynamics: int = Field(
+        ...,
+        description="ID of the PowerSystemStabilizerDynamics function block: the power system stabilizer model.",
+    )
+    base_power: PositiveFloat = Field(
+        ...,
+        description="Base power for the per-unit parameters of the referenced function blocks. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.",
+    )
+
+
+class DynamicInverter(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.",
+    )
+    frequency_ref: PositiveFloat = Field(
+        ...,
+        description="Frequency reference set-point, in natural units. Usually equal to the system frequency. Units: Hz.",
+    )
+    converter: int = Field(
+        ..., description="ID of the Converter function block: the converter model."
+    )
+    active_power_control: int = Field(
+        ...,
+        description="ID of the ActivePowerControl function block: the outer active power control.",
+    )
+    reactive_power_control: int = Field(
+        ...,
+        description="ID of the ReactivePowerControl function block: the outer reactive power control.",
+    )
+    inner_control: int = Field(
+        ..., description="ID of the InnerControl function block: the inner control model."
+    )
+    dc_source: int = Field(
+        ..., description="ID of the DCSource function block: the DC source model."
+    )
+    reference_frame_rotation: int = Field(
+        ...,
+        description="ID of the ReferenceFrameRotation function block: the frequency estimator (PLL) model.",
+    )
+    filter: int = Field(
+        ..., description="ID of the Filter function block: the output filter model."
+    )
+    current_limitation: int | None = Field(
+        None,
+        description="ID of the CurrentLimitation function block: the output current limiter model, or null when the inverter has no limiter.",
+    )
+    base_power: PositiveFloat = Field(
+        ...,
+        description="Base power for the per-unit parameters of the referenced function blocks. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.",
+    )
+
+
+class SingleCageInductionMachine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.",
+    )
+    R_s: float = Field(..., description="Armature stator resistance. Units: pu.")
+    R_r: float = Field(..., description="Rotor resistance. Units: pu.")
+    X_ls: float = Field(..., description="Stator Leakage Reactance. Units: pu.")
+    X_lr: float = Field(..., description="Rotor Leakage Reactance. Units: pu.")
+    X_m: float = Field(..., description="Stator-Rotor Mutual Reactance. Units: pu.")
+    H: float = Field(..., description="Motor Inertia Constant [s]. Units: s.")
+    A: float = Field(..., description="Torque-Speed Quadratic Term")
+    B: float = Field(..., description="Torque-Speed Linear Term")
+    torque_ref: float = Field(..., description="Reference torque parameter")
+    B_shunt: float = Field(..., description="Susceptance Initialization Corrector Term")
+    base_power: PositiveFloat = Field(
+        ...,
+        description="Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.",
+    )
+
+
+class SimplifiedSingleCageInductionMachine(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.",
+    )
+    R_s: float = Field(..., description="Armature stator resistance. Units: pu.")
+    R_r: float = Field(..., description="Rotor resistance. Units: pu.")
+    X_ls: float = Field(..., description="Stator Leakage Reactance. Units: pu.")
+    X_lr: float = Field(..., description="Rotor Leakage Reactance. Units: pu.")
+    X_m: float = Field(..., description="Stator-Rotor Mutual Reactance. Units: pu.")
+    H: float = Field(..., description="Motor Inertia Constant [s]. Units: s.")
+    A: float = Field(..., description="Torque-Speed Quadratic Term")
+    B: float = Field(..., description="Torque-Speed Linear Term")
+    torque_ref: float = Field(..., description="Reference torque parameter")
+    B_shunt: float = Field(..., description="Susceptance Initialization Corrector Term")
+    base_power: PositiveFloat = Field(
+        ...,
+        description="Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.",
+    )
+
+
+class DynamicExponentialLoad(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.",
+    )
+    a: float = Field(..., description="Active power static exponential coefficient")
+    b: float = Field(..., description="Reactive power static exponential coefficient")
+    alpha: float = Field(..., description="Active power transient exponential coefficient")
+    beta: float = Field(..., description="Reactive power transient exponential coefficient")
+    T_p: float = Field(..., description="Active Power Time Constant. Units: s.")
+    T_q: float = Field(..., description="Reactive Power Time Constant. Units: s.")
+    base_power: PositiveFloat = Field(
+        ...,
+        description="Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.",
+    )
+
+
+class ActiveConstantPowerLoad(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.",
+    )
+    r_load: float = Field(..., description="DC-side resistor")
+    c_dc: float = Field(..., description="DC-side capacitor")
+    rf: float = Field(..., description="Converter side filter resistance")
+    lf: float = Field(..., description="Converter side filter inductance")
+    cf: float = Field(..., description="AC Converter filter capacitance")
+    rg: float = Field(..., description="Network side filter resistance")
+    lg: float = Field(..., description="Network side filter inductance")
+    kp_pll: float = Field(..., description="Proportional constant for PI-PLL block")
+    ki_pll: float = Field(..., description="Integral constant for PI-PLL block")
+    kpv: float = Field(..., description="Proportional constant for Voltage Control block")
+    kiv: float = Field(..., description="Integral constant for Voltage Control block")
+    kpc: float = Field(..., description="Proportional constant for Current Control block")
+    kic: float = Field(..., description="Integral constant for Current Control block")
+    P_ref: float = Field(..., description="Reference active power (pu). Units: pu.")
+    Q_ref: float = Field(..., description="Reference reactive power (pu). Units: pu.")
+    V_ref: float = Field(..., description="Reference voltage (pu). Units: pu.")
+    frequency_ref: float = Field(
+        ...,
+        description="Reference frequency, in natural units. Usually equal to the system frequency. Units: Hz.",
+    )
+    is_filter_differential: bool = Field(
+        ..., description="Boolean to decide if filter states are differential or algebraic"
+    )
+    base_power: PositiveFloat = Field(
+        ...,
+        description="Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.",
+    )
+
+
+class CSVGN1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.",
+    )
+    K: float = Field(..., description="Gain in pu (`DEVICE_BASE`)")
+    T1: float = Field(..., description="Time constant in s. Units: s.")
+    T2: float = Field(..., description="Time constant in s. Units: s.")
+    T3: float = Field(..., description="Time constant in s. Units: s.")
+    T4: float = Field(..., description="Time constant in s. Units: s.")
+    T5: float = Field(..., description="Time constant in s. Units: s.")
+    Rmin: float = Field(..., description="Reactor minimum MVAr")
+    Vmax: float = Field(..., description="Maximum voltage in pu. Units: pu.")
+    Vmin: float = Field(..., description="Minimum voltage in pu. Units: pu.")
+    CBase: float = Field(..., description="Capacitor (MVAR)")
+    R_th: float = Field(..., description="Source Thevenin resistance")
+    X_th: float = Field(..., description="Source Thevenin reactance")
+    base_power: PositiveFloat = Field(
+        ...,
+        description="Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.",
+    )
+
+
+class VlPnt(RootModel[list[float]]):
+    root: list[float]
+
+
+class VhPnt(RootModel[list[float]]):
+    root: list[float]
+
+
+class AggregateDistributedGenerationA(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.",
+    )
+    Pf_Flag: bool = Field(..., description="Flag for Power Factor Control")
+    Freq_Flag: bool = Field(..., description="Flag to enable/disable frequency control")
+    PQ_Flag: bool = Field(..., description="Flag used to enforce maximum current")
+    Gen_Flag: bool = Field(..., description="Flag to specify generator or storage")
+    Vtrip_Flag: bool = Field(..., description="Flag to enable/disable voltage trip logic")
+    Ftrip_Flag: bool = Field(..., description="Flag to enable/disable frequency trip logic")
+    T_rv: float = Field(..., description="Voltage measurement transducer time constant. Units: s.")
+    Trf: float = Field(..., description="Frequency measurement transducer time constant. Units: s.")
+    dbd_pnts: DbdPnts = Field(..., description="Voltage deadband thresholds `(dbd1, dbd2)`")
+    K_qv: float = Field(..., description="Proportional voltage control gain (pu)")
+    Tp: float = Field(..., description="Power measurement transducer time constant. Units: s.")
+    T_iq: float = Field(
+        ..., description="Time constant for low-pass filter for state q_V when QFlag = 0. Units: s."
+    )
+    D_dn: float = Field(
+        ..., description="Reciprocal of droop for over-frequency conditions (>0) (pu)"
+    )
+    D_up: float = Field(
+        ..., description="Reciprocal of droop for under-frequency conditions <=0) (pu)"
+    )
+    fdbd_pnts: FdbdPnts = Field(
+        ..., description="Frequency control deadband thresholds `(fdbd1, fdbd2)`"
+    )
+    fe_lim: MinMax = Field(..., description="Frequency error limits (femin, femax)")
+    P_lim: MinMax = Field(..., description="Power limits (Pmin, Pmax)")
+    dP_lim: MinMax = Field(..., description="Power reference ramp rate limits (dPmin, dPmax)")
+    Tpord: float = Field(..., description="Power filter time constant. Units: s.")
+    Kpg: float = Field(..., description="PI controller proportional gain (pu)")
+    Kig: float = Field(..., description="PI controller integral gain (pu)")
+    I_max: float = Field(..., description="Maximum limit on total converter current (pu)")
+    vl_pnts: list[VlPnt] = Field(
+        ...,
+        description="Low voltage cutout points `[(tv10, vl0), (tv11, vl1)]`",
+        max_length=2,
+        min_length=2,
+    )
+    vh_pnts: list[VhPnt] = Field(
+        ...,
+        description="High voltage cutout points `[(tvh0, vh0), (tvh1, vh1)]`",
+        max_length=2,
+        min_length=2,
+    )
+    Vrfrac: float = Field(
+        ...,
+        description="Fraction of device that recovers after voltage comes back to within vl1 < V < vh1 (0 <= Vrfrac <= 1)",
+    )
+    fl: float = Field(
+        ..., description="Inverter frequency break-point for low frequency cut-out (Hz). Units: Hz."
+    )
+    fh: float = Field(
+        ...,
+        description="Inverter frequency break-point for high frequency cut-out (Hz). Units: Hz.",
+    )
+    tfl: float = Field(
+        ..., description="Low frequency cut-out timer corresponding to frequency fl (s). Units: s."
+    )
+    tfh: float = Field(
+        ..., description="High frequency cut-out timer corresponding to frequency fh (s). Units: s."
+    )
+    Tg: float = Field(
+        ...,
+        description="Current control time constant (to represent behavior of inner control loops) (> 0) (s). Units: s.",
+    )
+    rrpwr: float = Field(
+        ..., description="Ramp rate for real power increase following a fault (pu/s)"
+    )
+    Tv: float = Field(
+        ..., description="Time constant on the output of the multiplier (s). Units: s."
+    )
+    Vpr: float = Field(
+        ..., description="Voltage below which frequency tripping is disabled (pu). Units: pu."
+    )
+    Iq_lim: MinMax = Field(..., description="Reactive current injection limits (Iqll, Iqhl)")
+    V_ref: float | None = Field(
+        None,
+        description="User defined voltage reference. If 0, `PowerSimulationsDynamics.jl` initializes to initial terminal voltage",
+    )
+    Pfa_ref: float | None = Field(None, description="Reference power factor")
+    frequency_ref: float | None = Field(
+        None,
+        description="Reference frequency, in natural units. Usually equal to the system frequency. Units: Hz.",
+    )
+    Q_ref: float | None = Field(None, description="Reference reactive power, in pu. Units: pu.")
+    P_ref: float | None = Field(None, description="Reference active power, in pu. Units: pu.")
+    base_power: PositiveFloat = Field(
+        ...,
+        description="Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.",
+    )
+
+
+class PeriodicVariableSource(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.",
+    )
+    R_th: float = Field(..., description="Source Thevenin resistance")
+    X_th: float = Field(..., description="Source Thevenin reactance")
+    internal_voltage_bias: float | None = Field(
+        None, description="a0 term of the Fourier Series for the voltage"
+    )
+    internal_voltage_frequencies: list[float] | None = Field(
+        None, description="Frequencies in radians/s"
+    )
+    internal_voltage_coefficients: list[list[float]] | None = Field(
+        None,
+        description="Coefficients for terms n > 1. First component corresponds to sin and second component to cos",
+    )
+    internal_angle_bias: float | None = Field(
+        None, description="a0 term of the Fourier Series for the angle"
+    )
+    internal_angle_frequencies: list[float] | None = Field(
+        None, description="Frequencies in radians/s"
+    )
+    internal_angle_coefficients: list[list[float]] | None = Field(
+        None,
+        description="Coefficients for terms n > 1. First component corresponds to sin and second component to cos",
+    )
+    base_power: PositiveFloat = Field(
+        ...,
+        description="Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.",
+    )
+
+
+class GenericDER(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: int = Field(..., description="Unique integer identifier for this component.")
+    name: str = Field(
+        ...,
+        description="Name of the dynamic injection. Must equal the name of the static injection device that names it in `dynamic_injector`.",
+    )
+    Qref_Flag: conint(ge=1, le=3) = Field(
+        ...,
+        description="Reactive Power Control Mode. 1 VoltVar Control, 2 Constant Q Control, 3 Constant PF Control",
+    )
+    PQ_Flag: bool = Field(
+        ...,
+        description="Active and reactive power priority mode. 0 for Q priority, 1 for P priority",
+    )
+    Gen_Flag: bool = Field(
+        ...,
+        description="Define generator or storage system. 0 unit is a storage device, 1 unit is a generator",
+    )
+    PerOp_Flag: bool = Field(
+        ...,
+        description="Defines operation of permisible region in VRT characteristic. 0 for cease, 1 for continuous operation",
+    )
+    Recon_Flag: bool = Field(
+        ..., description="Defines if DER can reconnect after voltage ride-through disconnection"
+    )
+    Trv: float = Field(
+        ..., description="Voltage measurement transducer's time constant, in s. Units: s."
+    )
+    VV_pnts: VoltVarPnts = Field(..., description="Y-axis Volt-var curve points (V1,V2,V3,V4)")
+    Q_lim: MinMax = Field(..., description="Reactive power limits in pu (Q_min, Q_max)")
+    Tp: float = Field(
+        ..., description="Power measurement transducer's time constant, in s. Units: s."
+    )
+    e_lim: MinMax = Field(
+        ..., description="Error limit in PI controller for q control (e_min, e_max)"
+    )
+    Kpq: float = Field(..., description="PI controller proportional gain for q control")
+    Kiq: float = Field(..., description="PI controller integral gain for q control")
+    Iqr_lim: MinMax = Field(
+        ..., description="Limit on rate of change for reactive current (pu/s) (Iqr_min, Iqr_max)"
+    )
+    I_max: float = Field(..., description="Max. inverter's current")
+    Tg: float = Field(..., description="Current control's time constant, in s. Units: s.")
+    kWh_Cap: float = Field(..., description="BESS capacity in kWh")
+    SOC_ini: float = Field(..., description="Initial state of charge (SOC) in pu")
+    SOC_lim: MinMax = Field(..., description="Battery's SOC limits (SOC_min, SOC_max)")
+    Trf: float = Field(
+        ..., description="Time constant to estimate system frequency, in s. Units: s."
+    )
+    fdbd_pnts: FdbdPnts = Field(
+        ..., description="Frequency error dead band thresholds `(fdbd1, fdbd2)`"
+    )
+    D_dn: float = Field(..., description="reciprocal of droop for over-frequency conditions, in pu")
+    D_up: float = Field(
+        ..., description="reciprocal of droop for under-frequency conditions, in pu"
+    )
+    fe_lim: MinMax = Field(..., description="Frequency error limits in pu (fe_min, fe_max)")
+    Kpp: float = Field(..., description="PI controller proportional gain for p control")
+    Kip: float = Field(..., description="PI controller integral gain for p control")
+    P_lim: MinMax = Field(..., description="Active power limits in pu (P_min, P_max)")
+    dP_lim: MinMax = Field(
+        ..., description="Ramp rate limits for active power in pu/s (dP_min, dP_max)"
+    )
+    T_pord: float = Field(..., description="Power filter time constant in s. Units: s.")
+    rrpwr: float = Field(
+        ..., description="Ramp rate for real power increase following a fault, in pu/s"
+    )
+    VRT_pnts: VoltageRideThroughPnts = Field(
+        ..., description="Voltage ride through v points (vrt1,vrt2,vrt3,vrt4,vrt5)"
+    )
+    TVRT_pnts: VoltageRideThroughTimePnts = Field(
+        ..., description="Voltage ride through time points (tvrt1,tvrt2,tvrt3)"
+    )
+    tV_delay: float = Field(
+        ...,
+        description="Time delay for reconnection after voltage ride-through disconnection. Units: s.",
+    )
+    VES_lim: MinMax = Field(
+        ..., description="Min and max voltage for entering service (VES_min,VES_max)"
+    )
+    FRT_pnts: FrequencyRideThroughPnts = Field(
+        ..., description="Frequency ride through v points (frt1,frt2,frt3,frt4)"
+    )
+    TFRT_pnts: FrequencyRideThroughTimePnts = Field(
+        ..., description="Frequency ride through time points (tfrt1,tfrt2)"
+    )
+    tF_delay: float = Field(
+        ...,
+        description="Time delay for reconnection after frequency ride-through disconnection. Units: s.",
+    )
+    FES_lim: MinMax = Field(
+        ..., description="Min and max frequency for entering service (FES_min,FES_max)"
+    )
+    Pfa_ref: float | None = Field(None, description="Reference power factor")
+    Q_ref: float | None = Field(None, description="Reference reactive power, in pu. Units: pu.")
+    P_ref: float | None = Field(None, description="Reference active power, in pu. Units: pu.")
+    base_power: PositiveFloat = Field(
+        ...,
+        description="Base power for the per-unit parameters of this model. Usually equal to the `base_power` of the static injection device that names this model. Units: MVA.",
+    )
